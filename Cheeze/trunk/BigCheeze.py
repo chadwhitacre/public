@@ -19,6 +19,7 @@ from OFS.SimpleItem import Item
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Globals import DTMLFile, ImageFile
 import os
+from os.path import join
 
 
 class BigCheeze(Implicit, Persistent, \
@@ -31,13 +32,14 @@ class BigCheeze(Implicit, Persistent, \
     id = 'Cheeze'
     title = 'Centralized instance management'
     meta_type= 'Big Cheeze'
-    instance_root = ''
+    instance_root = join(os.environ['INSTANCE_HOME'], '../')
     skel_root = ''
     vhosting = 0
 
     BigCheeze_manage_options = (
-        {'label':'Edit', 'action':'big_cheeze_edit',
-         'help': ('Cheeze', 'Big_Cheeze_Edit.stx')},
+        {'label':'Zopes', 'action':'big_cheeze_edit',},
+        {'label':'Domains', 'action':'big_cheeze_domains',},
+        {'label':'Documenttion', 'action':'big_cheeze_doc',},
         )
 
 
@@ -68,85 +70,41 @@ class BigCheeze(Implicit, Persistent, \
     # These are attributes that we will call TTW for manage views
     ##
 
-    # edit form
     big_cheeze_edit = PageTemplateFile('www/big_cheeze_edit.pt',
                                        globals(),
                                        __name__='big_cheeze_edit',)
-    big_cheeze_edit._owner = None
-    manage = manage_main = big_cheeze_edit
 
-    # stylesheet
+    big_cheeze_domains = PageTemplateFile('www/big_cheeze_domains.pt',
+                                          globals(),
+                                          __name__='big_cheeze_domains',)
+
+    big_cheeze_doc = PageTemplateFile('www/big_cheeze_doc.pt',
+                                       globals(),
+                                       __name__='big_cheeze_doc',)
+
     big_cheeze_style = DTMLFile('www/style.css',
                                 globals(),
                                 __name__ = 'big_cheeze_style',)
-    big_cheeze_edit._owner = None
 
-    # delete icon
     big_cheeze_delete = ImageFile('www/delete.gif',
                                   globals(),)
-    big_cheeze_delete._owner = None
 
 
 
-    ##
-    # helper routines
-    ##
+    big_cheeze_edit._owner = big_cheeze_domains._owner \
+                           = big_cheeze_doc._owner \
+                           = big_cheeze_style._owner \
+                           = big_cheeze_delete._owner \
+                           = None
+    manage = manage_main = big_cheeze_edit
 
-    def _setPropValue(self, id, value):
-        """ override PropertyManager default in order to provide validation """
-        if id == 'instance_root':
-            self._set_instance_root(value)
-        elif id == 'skel_root':
-            self._set_skel_root(value)
-        else:
-            PropertyManager._setPropValue(self, id, value)
 
-    def _set_instance_root(self, instance_root):
-        """ validate and set the instance root """
-        if os.path.exists(instance_root):
-            if os.path.isdir(instance_root):
-                clean_path = self._scrub_path(instance_root)
-                PropertyManager._setPropValue(self,
-                                              'instance_root',
-                                              clean_path)
-            else:
-                raise 'Cheeze Error', "Proposed instance root '%s' " \
-                                    + "does not point to a directory" \
-                                    % instance_root
-        else:
-            raise 'Cheeze Error', "Proposed instance root '%s' " \
-                                + "does not exist" % instance_root
-
-    def _set_skel_root(self, skel_root):
-        """ validate and set the skel root """
-        if skel_root == '':
-            PropertyManager._setPropValue(self,
-                                          'skel_root',
-                                          skel_root)
-        elif os.path.exists(skel_root):
-            if os.path.isdir(skel_root):
-                clean_path = self._scrub_path(skel_root)
-                PropertyManager._setPropValue(self,
-                                              'skel_root',
-                                              clean_path)
-            else:
-                raise 'Cheeze Error', "Proposed skel root '%s' " \
-                                    + "does not point to a directory" \
-                                    % skel_root
-        else:
-            raise 'Cheeze Error', "Proposed skel root '%s' " \
-                                + "does not exist" % skel_root
-
-    def _scrub_path(self, p):
-        """ given a valid path, return a clean path """
-        p = os.path.normcase(p)
-        p = os.path.normpath(p)
-        return p
 
 
     ##
     # info providers
     ##
+
     security.declareProtected('Manage Big Cheeze', 'list_zopes',
                                                    'list_skel',
                                                    'list_ports',
@@ -207,11 +165,11 @@ class BigCheeze(Implicit, Persistent, \
             skel = zope['skel']
             if skel == '':
                 skel = 'default'
-            skelsrc = os.path.join(self.skel_root, skel)
+            skelsrc = join(self.skel_root, skel)
 
             # set skeltarget
             kw['INSTANCE_HOME'] = skeltarget \
-                                = os.path.join(self.instance_root,
+                                = join(self.instance_root,
                                                zope['name'])
 
             # set port number
@@ -226,17 +184,82 @@ class BigCheeze(Implicit, Persistent, \
 
             # and finally create the inituser
             # username:password are hardcoded for now
-            inituser = os.path.join(kw['INSTANCE_HOME'], "inituser")
+            inituser = join(kw['INSTANCE_HOME'], "inituser")
             mkzopeinstance.write_inituser(inituser, 'admin', 'jesus')
 
             # if we are vhosting then make those changes to
             if vhosting:
+                # this is rote from previous product
                 zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
                 update_vhosts({zs_name:zope['port']},www=1)
         else:
             raise 'Cheeze Error', 'Please enter the name of the Zope to create'
         return response.redirect('manage')
 
+
+    security.declareProtected('Manage Big Cheeze', 'delete_zope'),
+    def delete_zope(self, zope):
+        """ given an instance name, delete a zope """
+        top = join(self.instance_root, zope)
+        #raise 'top', top
+        for root, dirs, files in os.walk(top, topdown=False):
+            for name in files:
+                os.remove(join(root, name))
+            for name in dirs:
+                os.rmdir(join(root, name))
+        os.rmdir(top)
+        return self.REQUEST.RESPONSE.redirect('manage')
+
+    ##
+    # helper routines
+    ##
+
+    def _setPropValue(self, id, value):
+        """ override PropertyManager default in order to provide validation """
+        if id == 'instance_root':
+            self._set_instance_root(value)
+        elif id == 'skel_root':
+            self._set_skel_root(value)
+        else:
+            PropertyManager._setPropValue(self, id, value)
+
+    def _set_instance_root(self, instance_root):
+        """ validate and set the instance root """
+        if instance_root == '':
+            raise 'Cheeze Error', "You must enter an instance root"
+        elif not os.path.exists(instance_root):
+            raise 'Cheeze Error', "Proposed instance root '%s' " \
+                                + "does not exist" % instance_root
+        elif not os.path.isdir(instance_root):
+            raise 'Cheeze Error', "Proposed instance root '%s' " \
+                                + "does not point to a directory" \
+                                % instance_root
+        else:
+            clean_path = self._scrub_path(instance_root)
+            PropertyManager._setPropValue(self,
+                                          'instance_root',
+                                          clean_path)
+
+    def _set_skel_root(self, skel_root):
+        """ validate and set the skel root """
+        if skel_root == '':
+            return
+        elif not os.path.exists(skel_root):
+            raise 'Cheeze Error', "Proposed skel root '%s' " \
+                                + "does not exist" % skel_root
+        elif not os.path.isdir(skel_root):
+            raise 'Cheeze Error', "Proposed skel root '%s' " \
+                                + "does not point to a directory" \
+                                % skel_root
+        else:
+            clean_path = self._scrub_path(skel_root)
+            PropertyManager._setPropValue(self, 'skel_root', clean_path)
+
+    def _scrub_path(self, p):
+        """ given a valid path, return a clean path """
+        p = os.path.normpath(p)
+        p = os.path.normcase(p)
+        return p
 
     def _initialize_kw(self):
         """ return initial kw for use in copyzopeskel """
@@ -249,9 +272,9 @@ class BigCheeze(Implicit, Persistent, \
         # console window and pythonw.exe when run as a service, so we do a bit
         # of sniffing here.
         psplit = os.path.split(sys.executable)
-        exedir = os.path.join(*psplit[:-1])
-        pythonexe = os.path.join(exedir, 'python.exe')
-        pythonwexe = os.path.join(exedir, 'pythonw.exe')
+        exedir = join(*psplit[:-1])
+        pythonexe = join(exedir, 'python.exe')
+        pythonwexe = join(exedir, 'pythonw.exe')
 
         if ( os.path.isfile(pythonwexe) and os.path.isfile(pythonexe) and
              (sys.executable in [pythonwexe, pythonexe]) ):
@@ -267,30 +290,12 @@ class BigCheeze(Implicit, Persistent, \
 
         softwarehome = os.environ.get('SOFTWARE_HOME', '')
         zopehome     = os.environ.get('ZOPE_HOME', '')
-        #configfile   = os.path.join(instancehome, 'etc', 'zope.conf')
 
         return {"PYTHON"        : PYTHON,
                 "PYTHONW"       : PYTHONW,
                 "SOFTWARE_HOME" : softwarehome,
                 "ZOPE_HOME"     : zopehome,
                 }
-
-
-#    security.declareProtected('zopes_process','Manage Big Cheeze'),
-#    def zopes_process(self):
-#        "this processes the zopes pt"
-#        request = self.REQUEST
-#        response = request.RESPONSE
-#        form = request.form
-#        zope = form['zope']
-#        if zope['name']:
-#            zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
-#            update_vhosts({zs_name:zope['port']},www=1)
-#        return response.redirect('zopes')
-
-
-
-
 
 
 ##
