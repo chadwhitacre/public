@@ -1,3 +1,4 @@
+#!/usr/local/bin/python
 from PorterCmd import PorterCmd
 import sys
 

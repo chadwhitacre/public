@@ -70,6 +70,62 @@ class PorterCmd(Cmd):
                 if domain in self.websites[w]:
                     self.websites[w].remove(domain)
 
+    ##
+    # vhost mgmt
+    ##
 
+    def _vhosts_get(self,www=0):
+        self._confirm_db()
+        data = dbm.open(self.vhost_db,'r')
+        output = {}
+        for vhost in data.keys():
+            server = data[vhost]
+            if (vhost[:4]=='www.' and www) or vhost[:4]<>'www.':
+                output[vhost]=server
+        data.close()
+        return output
+
+    def _vhost_delete(self,vhost,www=1):
+        self._confirm_db()
+        _vhosts_dict = self._vhosts_get(www)
+        del(_vhosts_dict[vhost])
+        if _vhosts_dict.has_key('www.'+vhost):
+            del(_vhosts_dict['www.'+vhost])
+        self._vhosts_recreate(_vhosts_dict)
+
+    def _vhosts_update(self,_vhosts_dict,www=1):
+        self._confirm_db()
+        data = dbm.open(self.vhost_db,'w')
+        for vhost,server in _vhosts_dict.items():
+            data[vhost]=server
+            if www:
+               wwwvhost = 'www.'+vhost
+               data[wwwvhost]=server
+        data.close()
+        return 'updated'
+
+    def _vhosts_recreate(self,_vhosts_dict,www=1):
+        self._confirm_db(check_db=0)
+        data = dbm.open(self.vhost_db,'n')
+        for vhost,server in _vhosts_dict.items():
+            data[vhost]=server
+            if vhost[:4]<>'www.' and www:
+                wwwvhost = 'www.'+vhost
+                data[wwwvhost]=server
+        data.close()
+        return 'recreated'
+
+    def _confirm_db(self, check_attr=1, check_db=1, check_dbm_compat=1):
+        if check_dbm_compat and not unix:
+            raise ImportError, '''Apache management requires support for the
+            dbm file format which is currently only available on *nix versions
+            of python.'''
+        if check_attr and not self.vhost_db:
+            raise ValueError, '''In order to access the apache related functions
+            of this product you need to input a value for vhost_db under the
+            properties tab'''
+        if check_db:
+            if not os.path.exists(self.vhost_db+'.db'):
+                self._vhosts_recreate({})
 
 
