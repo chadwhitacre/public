@@ -1,6 +1,6 @@
 0.2
 =======================
-separate svn-managed porter from content
+separate svn-managed porter from content (var/, htdocs/, cgi-bin/)
 
 
 0.4
