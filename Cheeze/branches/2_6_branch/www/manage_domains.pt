@@ -9,21 +9,21 @@
 
 <body>
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
-    tal:replace="structure context/manage_tabs">Tabs</h2>
+    tal:replace="structure here/manage_tabs">Tabs</h2>
 <p>
     <strong>Mode <span tal:content="here/mode" />:</strong>
     <span tal:content="here/friendly_mode"/>
 </p>
 
 <div class="padding"
-     tal:condition="context/managesVhosting">
+     tal:condition="here/managesVhosting">
      
     <p class="form-help">Need help? <a href="manage_doc#domains">RTFM</a>. :-)</p>
 
     <form action="domain_add"
           method="post"
-          tal:define="dummy context/fs_db_sync;
-                      info  context/domains_info;">
+          tal:define="dummy here/fs_db_sync;
+                      info  here/domains_info;">
     <table id="table">
         <thead>
             <tr>
@@ -85,7 +85,7 @@
                 </td>
                 <td class="action">
                     <a tal:define="tmp python:'%s/domain_remove?vhost=%s';
-                                   href python:tmp % (context.absolute_url(),
+                                   href python:tmp % (here.absolute_url(),
                                                       domain['name']);"
                        tal:attributes="href href;
                        onclick python:'''return confirm('Delete domain: %s?\\n No data will be lost, but the domain will no longer point anywhere.');;'''%domain['name']">
@@ -118,7 +118,7 @@
     </form>
 
 </div>
-<div class="padding" tal:condition="not:context/managesVhosting">
+<div class="padding" tal:condition="not:here/managesVhosting">
 
     <p class="form-help">This page is blank because you do not have the
     <b>vhost_db</b> property set. For more info, <a
