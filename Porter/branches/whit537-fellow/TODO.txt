@@ -1,7 +1,3 @@
-0.2
-=======================
-
-
 0.4
 =======================
 should we wrap Binder and Porter into one package, Cambridge?
@@ -9,28 +5,12 @@ should we wrap Binder and Porter into one package, Cambridge?
 ls arg should affect all ls modes
 it would be nice to be able to do ping from within porter
 ^C should cancel the command if there is one, or exit the program otherwise
-porter> named # manually flush current settings to named frags
-
-    flush -- Force a write of our data to disk. This is useful if the named
-             files become corrupt and need to be recreated. Note that this
-             won't help if the db is corrupt, since that is our primary data
-             store. In that case, running this command would actually make
-             things worse by propagating the bad data out to the named.conf
-             fragments.
-
-    def do_flush(self, inStr=''):
-        """ force a write of our data to disk """
-        self._write_to_disk()
-        print >> self.stdout, "Data has been written to disk."
-
-    I decided not to implement because it makes me think that storage to disk
-    should really be transactional with the program. I.e., only write to disk on
-    clean exit. also made the help page too long. :^/
-deal with orphans -- we have a domain record but there is no server (API may solve this)
 only work with lowercase domain names
 tab complete available servers (from etc/hosts) and ports (from rpc to servers)
-build in fault-tolerance, no more proxy errors! put in a default "parked" page for orphans, from porter's Apache!
+build in fault-tolerance, no more proxy errors!
 figure out how to deal with SSL, since we need it for svn
+fit codenames back into the mix, somehow?
+ls -h shows report on /etc/hosts
 
 
 future
@@ -39,7 +19,6 @@ install properly with distutils
 non-interactive mode
 log ourselves
 write a function to columnize domains ... should be lined up on the first dot from the right
-fit codenames back into the mix, somehow?
 be sure we work with weird paths, e.g., coming from cron
 porter> test (?)
 
@@ -83,3 +62,4 @@ tease named mgmt out into a separate program called "Binder"
     update README
     update tests
     update program itself
+deal with orphans -- we have a domain record but there is no server (API may solve this)
