@@ -8,10 +8,6 @@ class ZopeManager:
 
     security = ClassSecurityInfo()
 
-    def __init__(self):
-        pass
-
-
     ##
     # info providers - these can be used in mgmt zpt's
     ##
@@ -24,7 +20,12 @@ class ZopeManager:
 
     def zope_ids_list(self):
         """ return a list of available zope instances """
-        return os.listdir(self.instance_root)
+        mode = self.mode()
+        if mode in [1,3]:
+            return os.listdir(self.instance_root)
+        elif mode==2:
+            pattern = '.zetaserver.com'
+            return [dname.replace(pattern,'') for dname, port in self.canonical_names_list() if dname.count(pattern)]
 
     def zopes_list(self):
         """ return a list of name, port tuples """
@@ -46,6 +47,7 @@ class ZopeManager:
     def ports_list_available(self, include = None):
         """ return a list of available ports,
             including an optional arbitrary port """
+        mode = self.mode()
         if include is not None:
             try:
                 include = int(include)
@@ -69,7 +71,7 @@ class ZopeManager:
     # heavy lifters - these are only used by BigCheeze wrappers
     ##
 
-    def _zope_create(self):
+    def _zope_add(self):
         """ create a new zope instance """
         form = self.REQUEST.form
         name = form['name']
@@ -117,7 +119,7 @@ class ZopeManager:
         #if vhosting:
         #    # this is rote from previous product
         #    zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
-        #    update_vhosts({zs_name:zope['port']},www=1)
+        #    _vhosts_update({zs_name:zope['port']},www=1)
 
     def _zope_edit(self):
         form = self.REQUEST.form
@@ -133,7 +135,7 @@ class ZopeManager:
         if old_port != new_port:
             self._port_set(new_zope_id, old_port)
 
-    def _zope_delete(self, zope):
+    def _zope_remove(self, zope):
         if self.production_mode:
             raise CheezeError, 'Cannot delete instances in production mode'
         """ given an instance name, delete a zope """
