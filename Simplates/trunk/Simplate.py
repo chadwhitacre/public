@@ -110,12 +110,12 @@ class Simplate(Base):
                                       self._text))
 
     def _replace(self):
-        # First, do some escapes. Then do replacement if we have anything to replace with.
-        unprocessed = self._text.replace('%','%%').replace('%%(','%(').replace('%%%(','%%(')
         if self._value_dict:
+            # First, do some escapes, then do replacement if we have anything to replace with.
+            unprocessed = self._text.replace('%','%%').replace('%%(','%(').replace('%%%(','%%(')
             return unprocessed % self._value_dict
         else:
-            return unprocessed
+            return self._text
 
 
     def _cook_check(self):
