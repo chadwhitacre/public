@@ -58,8 +58,11 @@ class FSSimplate(FSObject, Script, Simplate):
 
     def _createZODBClone(self):
         """Create a ZODB (editable) equivalent of this object."""
-        obj = ZopeSimplate(self.getId(), self._text, self.content_type)
-#        obj.expand = 0
+        obj = ZopeSimplate(self.getId(), 
+                           self._text, 
+                           self.content_type, 
+                           self.value_paths,
+                           )
         obj.write(self.read())
         return obj
 
