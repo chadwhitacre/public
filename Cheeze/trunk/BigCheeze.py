@@ -152,7 +152,6 @@ class BigCheeze(Implicit, Persistent, \
         """ edit a zope instance """
         if self.production_mode:
             raise CheezeError, 'Cannot edit instances in production mode'
-            
         mode = self.mode()
         if mode in [1,3]:  
             ZopeManager._zope_edit(self)
@@ -172,10 +171,11 @@ class BigCheeze(Implicit, Persistent, \
             if mode==3:      
                 self.fs_db_sync()
         elif mode==2:
-            ApacheVHostManager._zope.remove(self)
+            ApacheVHostManager._zope_remove(self)
         return self.REQUEST.RESPONSE.redirect('manage')
     
     def zope_info(self):
+        '''just passes stuff over to manage_zopes'''
         info = {}
         zopes = []
         mode = self.mode()
@@ -188,8 +188,9 @@ class BigCheeze(Implicit, Persistent, \
                 'canonical':zope_id+'.zetaserver.com',
             }
             zopes.append(zope_info)
+        
+        #if mode==2: zopes = []
         info['zopes'] = zopes
-            
         return info
 
 
@@ -202,12 +203,12 @@ class BigCheeze(Implicit, Persistent, \
     def domain_add(self):
         """handles adding domains"""
         self._domain_add()
-        return self.REQUEST.RESPONSE.redirect('manage_domains')
+        
 
     def domain_edit(self):
         """ add a domain instance """
         self._domain_edit()
-        raise CheezeError, 'domain editing not yet implemented'
+        return self.REQUEST.RESPONSE.redirect('manage_domains')
 
     def domain_remove(self):
         """handles removing domains"""

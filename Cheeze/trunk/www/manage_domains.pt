@@ -8,13 +8,13 @@
 </head>
 
 <body>
-
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure context/manage_tabs">Tabs</h2>
 <p>
     <strong>Mode <span tal:content="here/mode" />:</strong>
     <span tal:content="here/friendly_mode"/>
 </p>
+
 <div class="padding"
      tal:condition="context/managesVhosting">
      

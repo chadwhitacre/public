@@ -15,6 +15,14 @@
         <strong>Mode <span tal:content="here/mode" />:</strong>
         <span tal:content="here/friendly_mode"/>
 </p>
+
+
+<div tal:condition="here/managesVhosting">
+    <hr />
+    <pre tal:content="python:here.pformat(here.vhosts_get())" />
+    <hr />
+</div>
+
 <div class="padding" >
 <tal:definer tal:define="info here/zope_info">
 
@@ -144,7 +152,8 @@
                             tal:content="python:test(port == int(zope['port']),
                                                      '*%s' % port, port)"
                             tal:attributes="selected python:test(port == int(zope['port']),
-                                                                 'selected','')" />
+                                                                 'selected','');
+                                            value port" />
                 </select>
  
                 <!-- show an <input> if we don't have port_range -->

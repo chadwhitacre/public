@@ -41,13 +41,30 @@ class ApacheVHostManager:
     ##
 
     def _zope_add(self):
-        pass
+        form = self.REQUEST.form
+        name = form['name']
+        port = str(form['port'])
+        canonical = '%s_%s.zetaserver.com'%(name,port)
+        data = {canonical:port}
+        self._vhosts_update(data)
     
     def _zope_edit(self):
-        pass
+        form = self.REQUEST.form
+        old_name = form['old_name']
+        old_port = form['old_port']
+        old_canonical = '%s_%s.zetaserver.com'%(old_name,old_port)
+        new_name = form['new_name']
+        new_port = str(form['new_port'])
+        new_canonical = '%s_%s.zetaserver.com'%(new_name,new_port)
+        data = self._vhosts_get()
+        del(data[old_canonical])
+        data[new_canonical]=new_port
+        self._vhosts_recreate(data)
 
     def _zope_remove(self):
-        pass
+        form = self.REQUEST.form
+        canonical = form['zope_id']+'.zetaserver.com'
+        self._vhost_delete(canonical)
 
 
     def _domain_add(self):
@@ -118,7 +135,8 @@ class ApacheVHostManager:
                 output[vhost]=server
         data.close()
         return output
-
+    vhosts_get = _vhosts_get
+    
     def _vhost_delete(self,vhost,www=1):
         self._confirm_db()
         _vhosts_dict = self._vhosts_get(www)
