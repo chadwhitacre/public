@@ -11,7 +11,7 @@
 
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure context/manage_tabs">Tabs</h2>
-<div class="padding">
+<div class="padding" tal:condition="context/instance_root">
 
 <p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
 
@@ -184,6 +184,13 @@
 
     </tbody>
 </table>
+</div>
+<div class="padding" tal:condition="not:context/instance_root">
+
+    <p class="form-help">This page is blank because you do not have the
+    <b>instance_root</b> property set. For more info, <a
+    href="manage_doc#instance_root">RTFM</a>. :-)</p>
+
 </div>
 </body>
 </html>
