@@ -8,109 +8,122 @@ from glob import glob
 from sets import Set
 from ConfigParser import RawConfigParser
 
+__version__ = '0.9'
 
 
-def confgen(top):
-    """given a tree root, walk the tree and generate an auto-props section
-    based on the filenames found
+class EOLToolkit:
+    """toolkit for cleaning up line endings in a tree
     """
 
-    globs = Set()
-    for path, dirs, files in os.walk(top):
-        for filename in files:
-            parts = filename.split('.')
-            if len(parts) > 1:
-                glob = '*.%s' % parts[-1]
-            else:
-                glob = parts[-1]
-            globs.add(glob)
-
-        # skip svn directories
-        if '.svn' in dirs: dirs.remove('.svn')
-    globs = list(globs); globs.sort()
-
-    print '[miscellany]'
-    print 'enable-auto-props = yes'
-    print
-    print '[auto-props]'
-    for glob in globs:
-        print "%s = svn:eol-style=native" % glob.ljust(12)
+    def __init__(self):
+        pass
 
 
+    def __call__(self, subcommand, path):
+        getattr(self, subcommand)(path)
 
-def clean(top):
-    """given a tree root, walk the tree, find all the text files, and clean up
-    their newlines
-    """
 
-    ##
-    # Parse the config file into a list of patterns that match text files
-    ##
+    def _confglobs(self):
+        """get a list of patterns that match text files from the svn config
+        """
 
-    config = RawConfigParser()
-    config.read(os.path.expanduser('~/.subversion/config'))
-    if not config.has_section('auto-props'):
-        print 'your subversion config file has no auto-props section'
-    else:
+        config = RawConfigParser()
+        config.read(os.path.expanduser('~/.subversion/config'))
+        if not config.has_section('auto-props'):
+            print 'your subversion config file has no auto-props section'
+            sys.exit(1)
+
         autoprops = config.options('auto-props')
-        globlist = []
+        globs = Set()
         for pattern in autoprops:
             if 'svn:eol-style' in config.get('auto-props', pattern):
-                globlist.append(pattern)
-        globlist.sort()
+                globs.add(pattern)
+        globs = list(globs); globs.sort()
+        return globs
 
 
+    def confgen(self, top):
+        """given a tree root, walk the tree and generate an auto-props section
+        based on the filenames found
+        """
 
-    ##
-    # Walk the tree and get a list of paths for all the text files.
-    ##
+        globs = Set()
+        for path, dirs, files in os.walk(top):
+            for filename in files:
+                parts = filename.split('.')
+                if len(parts) > 1:
+                    pattern = '*.%s' % parts[-1]
+                else:
+                    pattern = parts[-1]
+                globs.add(pattern)
 
-    textfiles = Set()
-    i = 0; sys.stdout.write('locating text files ...')
+            # skip svn directories
+            if '.svn' in dirs: dirs.remove('.svn')
+        globs = list(globs); globs.sort()
 
-    for path, dirs, foo in os.walk(top):
-        for pattern in globlist:
-            fullpattern = '%s/%s' % (path, pattern)
-            for textfile in glob(fullpattern):
+        print '[miscellany]'
+        print 'enable-auto-props = yes'
+        print
+        print '[auto-props]'
+        for pattern in globs:
+            print "%s = svn:eol-style=native" % pattern.ljust(12)
+
+
+    def clean(self, top):
+        """given a tree root, clean up newlines in all text files
+        """
+
+        filepaths = self.find(top, raw=1)
+        win = re.compile(r'\r\n') # not worrying about mac for now
+        j = 0; sys.stdout.write('scrubbing newlines ...')
+
+        for path in filepaths:
+            textfile = file(path, 'r+')
+            tmp = textfile.read()
+            dirty = len(win.findall(tmp))
+            if dirty > 0:
                 # indicate progress
-                i += 1
-                if i % 50 == 0:
+                j += 1
+                if j % 50 == 0:
                     sys.stdout.write('.')
                     sys.stdout.flush()
-                textfiles.add(textfile)
 
-        # skip svn directories
-        if '.svn' in dirs: dirs.remove('.svn')
+                # progress
+                tmp = win.sub('\n', tmp)
+                textfile.seek(0); textfile.truncate(); textfile.write(tmp)
+            textfile.close()
 
-    textfiles = tuple(textfiles)
-    print ' %s found' % len(textfiles)
+        print ' %s files cleaned' % j
 
 
+    def find(self, top, raw=0):
+        """given a tree root, walk the tree and find all text files
+        """
 
-    ##
-    # Now actually do the replacement.
-    ##
+        textfiles = Set()
+        i = 0; sys.stdout.write('locating text files ...')
+        globs = self._confglobs()
 
-    win = re.compile(r'\r\n') # not worrying about mac for now
-    j = 0; sys.stdout.write('scrubbing newlines ...')
+        for path, dirs, foo in os.walk(top):
+            for pattern in globs:
+                fullpattern = '%s/%s' % (path, pattern)
+                for textfile in glob(fullpattern):
+                    # indicate progress
+                    i += 1
+                    if i % 50 == 0:
+                        sys.stdout.write('.')
+                        sys.stdout.flush()
+                    textfiles.add(textfile)
 
-    for path in textfiles:
-        textfile = file(path, 'r+')
-        tmp = textfile.read()
-        dirty = len(win.findall(tmp))
-        if dirty > 0:
-            # indicate progress
-            j += 1
-            if j % 50 == 0:
-                sys.stdout.write('.')
-                sys.stdout.flush()
+            # skip svn directories
+            if '.svn' in dirs: dirs.remove('.svn')
 
-            # progress
-            tmp = win.sub('\n', tmp)
-            textfile.seek(0); textfile.truncate(); textfile.write(tmp)
-        textfile.close()
+        textfiles = tuple(textfiles)
+        print ' %s found' % len(textfiles)
 
-    print ' %s files cleaned' % j
+        if raw: return textfiles
+
+        for textfile in textfiles: print textfile
 
 
 
@@ -121,7 +134,7 @@ if __name__ == '__main__':
     if not subcommand:
         print "see man 1 svneol for usage"
         sys.exit(2)
-    elif subcommand not in (['clean'], ['confgen']):
+    elif subcommand not in (['clean'], ['confgen'], ['find']):
         print "'%s' command not available; " % subcommand +\
               "see man 1 svneol for usage"
         sys.exit(2)
@@ -130,11 +143,10 @@ if __name__ == '__main__':
 
     # determine the root of the tree
     arg = sys.argv[2:3]
-    if arg: top = arg[0]
-    else:   top = '.'
-    top = os.path.realpath(top)
+    if arg: path = arg[0]
+    else:   path = '.'
+    path = os.path.realpath(path)
 
-    # call the appropriate function
-    vars()[subcommand](top)
-
-
+    # instantiate and invoke the toolkit
+    toolkit = EOLToolkit()
+    toolkit(subcommand, path)
