@@ -47,8 +47,8 @@ these changes to the db and regenerate our named.conf.frag file.
 
 """
 
-import os, dbm, cmd, shutil
-from os.path import join, abspath, isfile
+import os, dbm, cmd, shutil, sys
+from os.path import join, abspath, isfile, isabs
 from StringIO import StringIO
 
 class PorterError(RuntimeError):
@@ -59,9 +59,10 @@ class Porter(cmd.Cmd):
 
     def __init__(self, var, *args, **kw):
 
-        # set our data paths -- TODO: make sure these will work nicely from
-        #  cron, etc.
-        self.var = abspath(var)
+        # set our data paths 
+        if not isabs(var):
+            var = join(sys.path[0], var)
+        self.var = var
         self.db_path = join(self.var, "rewrite")
         self.frag_path = join(self.var, "named.conf.frag")
 
@@ -72,7 +73,7 @@ class Porter(cmd.Cmd):
         db.close()
 
         # should we do some integrity checking here? i.e., make sure that all
-        # domains have a www? check for dupes?
+        # domains have a www counterpart? check for dupes?
 
         # filter out www's for our users, we will add them back in when we
         #  write to disk
@@ -103,7 +104,6 @@ class Porter(cmd.Cmd):
 You are currently managing %s domains.
         """ % len(self.domains)
         self.prompt = 'porter> '
-
 
 
 
