@@ -12,7 +12,7 @@
 
     V. CREDITS & LEGAL
 
-    NI. NOTES
+    VI. NOTES
 
 
 
@@ -53,7 +53,7 @@
     II. DEFINITIONS
 ========================================
 
-    These definitions are part of Cambridge, and are repeated here for convenience
+    These definitions are part of Cambridge.
 
     DOMAIN NAME -- To register a domain name with Porter it must have at least
     two levels, i.e., sub.example.com or example.com, but not example.
@@ -132,7 +132,7 @@
     ----------------------------------------
     websrvr -- example web server hostname
     127.0.0.1 -- example IP address for websrvr
-    cheese@websrvr:8080 -- example website id
+    fooCodename@websrvr:8080 -- example website id
 
     4) Install a website.
 
@@ -148,26 +148,27 @@
     5) Register a domain at the registrar of your choice, and set your DNS
     servers to namesrvr.
 
-    6) Register your domain name with porter:
+    6) Register your domain name with Porter:
 
-        prtrsrvr# sudo /usr/local/porter/porter.py
+        prtrsrvr# sudo porter
         porter> add example.com websrvr 8080
 
     7) Once DNS propagates, http://example.com/ should hit prtrsrvr (thanks to
     our named mgmt), which should give you your website from websrvr (thanks to
     our httpd mgmt).
 
-    Note that porter automatically configures an additional www subdomain for each
-    domain you register with it. So when you add example.com, www.example.com is
-    added as well. If you added sub1.example.com, porter would also add
-    www.sub1.example.com. Directly adding a www subdomain in porter is an error.
+    Note that Porter automatically configures an additional www subdomain for
+    each domain you register with it. So when you add example.com,
+    www.example.com is added as well. If you added sub1.example.com, Porter
+    would also add www.sub1.example.com. Directly adding a www subdomain in
+    Porter is an error.
 
     TODO: Further usage documentation is provided inline.
 
 
 
 ========================================
-    CREDITS & LEGAL
+    V. CREDITS & LEGAL
 ========================================
 
     Porter was written and is maintained by Chad Whitacre <chad zetaweb com>.
@@ -177,12 +178,12 @@
 
 
 ========================================
-    NOTES
+    VI. NOTES
 ========================================
 
 [1] I'll look at using distutils in future versions.
 
-[2] In a future version of porter, the plan is to constrain the server hostnames
-available in step 6 to those hosts named in /etc/hosts that provide a certain API,
-and to constrain the available port numbers to those that $server tells us about
-via the API.
+[2] In a future version of Porter, the plan is to constrain the server hostnames
+available in step 6 to those hosts named in /etc/hosts that provide a certain
+API, and to constrain the available port numbers to those that each server tells
+us about via the API.
