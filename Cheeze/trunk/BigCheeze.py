@@ -48,7 +48,6 @@ class BigCheeze(Implicit, Persistent, \
         {'label':'Documentation', 'action':'big_cheeze_doc',},
         )
 
-
     manage_options = BigCheeze_manage_options \
                    + PropertyManager.manage_options \
                    + RoleManager.manage_options \
@@ -113,6 +112,24 @@ class BigCheeze(Implicit, Persistent, \
                            = big_cheeze_delete._owner \
                            = None
     manage = manage_main = big_cheeze_edit
+
+
+    ##
+    # wrapper functions for heavy lifting in *Manager classes
+    ##
+
+    def zope_add(self):
+        """ add a zope instance """
+        pass
+
+    def zope_decommission(self):
+        """ add a zope instance """
+        pass
+
+    def zope_remove(self):
+        """ add a zope instance """
+        pass
+
 
     ##
     # helper routines
