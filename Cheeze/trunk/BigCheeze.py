@@ -33,6 +33,7 @@ class BigCheeze(Implicit, Persistent, \
     meta_type= 'Big Cheeze'
     instance_root = ''
     skel_root = ''
+    vhosting = 0
 
     BigCheeze_manage_options = (
         {'label':'Edit', 'action':'big_cheeze_edit',
@@ -63,16 +64,27 @@ class BigCheeze(Implicit, Persistent, \
         self._set_instance_root(str(instance_root))
         self._set_skel_root(str(skel_root))
 
-    big_cheeze_edit = PageTemplateFile('www/big_cheeze_edit.pt', globals(),
+    ##
+    # These are attributes that we will call TTW for manage views
+    ##
+
+    big_cheeze_edit = PageTemplateFile('www/big_cheeze_edit.pt',
+                                       globals(),
                                        __name__='big_cheeze_edit')
     big_cheeze_edit._owner = None
     manage = manage_main = big_cheeze_edit
 
-    big_cheeze_style = DTMLFile('www/style.css', globals(),
+    big_cheeze_style = DTMLFile('www/style.css',
+                                globals(),
                                 __name__ = 'big_cheeze_style',
                                   )
     big_cheeze_edit._owner = None
 
+#    big_cheeze_delete = ImageFile('www/delete.gif',
+#                                globals(),
+#                                __name__ = 'big_cheeze_delete',
+#                                  )
+#    big_cheeze_delete._owner = None
 
     ##
     # helper routines
@@ -105,7 +117,11 @@ class BigCheeze(Implicit, Persistent, \
 
     def _set_skel_root(self, skel_root):
         """ validate and set the skel root """
-        if os.path.exists(skel_root):
+        if skel_root == '':
+            PropertyManager._setPropValue(self,
+                                          'skel_root',
+                                          skel_root)
+        elif os.path.exists(skel_root):
             if os.path.isdir(skel_root):
                 clean_path = self._scrub_path(skel_root)
                 PropertyManager._setPropValue(self,
@@ -125,37 +141,49 @@ class BigCheeze(Implicit, Persistent, \
         p = os.path.normpath(p)
         return p
 
-    def _list_zopes(self):
-        """ return a list of available zope instances """
-
-        # get a directory listing of the instance root!
-
-        return os.listdir(self.instance_root)
-
-
 
     ##
     # Helpers for the zopes pt
     ##
+    security.declareProtected('Manage Big Cheeze', 'list_zopes',
+                                                   'list_skel',
+                                                   'list_ports',
+                                                   'get_port',
+                                                   )
 
-    security.declareProtected('zopes_info','Manage Big Cheeze')
-    def zopes_info(self, troubleshoot=0):
-        "populate the zopes pt"
-        avail_ports = [str(x) for x in range(8010,9000,10)]
-        zopes = self._list_zopes()
-        index_sort(zopes,0,cmp)
-        for name, port in zopes:
-            if port in avail_ports:
-                avail_ports.remove(port)
-        info={
-        'avail_ports':avail_ports,
-        'zopes':zopes,
-        }
-        return info
+
+    def list_zopes(self):
+        """ return a list of available zope instances """
+        return os.listdir(self.instance_root)
+
+    def list_skel(self):
+        """ return a list of available zope skel """
+        if self.skel_root == '':
+            return None
+        else:
+            return os.listdir(self.skel_root)
+
+    def list_ports(self):
+        """ return a list of available ports """
+        if vhosting:
+            avail_ports = [str(x) for x in range(8010,9000,10)]
+            for zope in self.list_zopes():
+                if self.get_port(zope) in avail_ports:
+                    avail_ports.remove(port)
+        else:
+            return None
+
+    def get_port(self, zope):
+        """ given a zope instance return its port number """
+        if vhosting:
+            pass
+        else:
+            return None
+
 
     security.declareProtected('zopes_process','Manage Big Cheeze'),
-    def zopes_process(self):
-        "this processes the zopes pt"
+    def create_zope(self):
+        """ create a new zope instance """
         request = self.REQUEST
         response = request.RESPONSE
         form = request.form
@@ -163,7 +191,19 @@ class BigCheeze(Implicit, Persistent, \
         if zope['name']:
             zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
             update_vhosts({zs_name:zope['port']},www=1)
-        return response.redirect('zopes')
+        return response.redirect('manage')
+
+#    security.declareProtected('zopes_process','Manage Big Cheeze'),
+#    def zopes_process(self):
+#        "this processes the zopes pt"
+#        request = self.REQUEST
+#        response = request.RESPONSE
+#        form = request.form
+#        zope = form['zope']
+#        if zope['name']:
+#            zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
+#            update_vhosts({zs_name:zope['port']},www=1)
+#        return response.redirect('zopes')
 
     ##
     # vhost wrappers

@@ -1,55 +1,82 @@
-<h1 tal:replace="structure context/manage_page_header">Header</h1>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html;charset=iso-8859-1" />
+    <title>Zope</title>
+    <style>@import url("/manage_page_style.css");
+           @import url("big_cheeze_style");</style>
+</head>
+
+<body>
 
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure context/manage_tabs">Tabs</h2>
+<div class="padding">
+<p class="form-help"> Form help </p>
 
-<p class="form-help"> A Big Cheeze allows you to manage a number of Zope
-instances TTW. Cheeze stands for 'cheap Zope'. You usually only need one Big
-Cheeze per server (you may want more than one if you have multiple Zope versions
-on your server). If your client Zope instances have Little Cheeze objects in
-them then they can provide their Big Cheeze with some extra info.</p>
 
-<p>The 'instance root' is the filesystem path to the directory where your
-instances do/will reside. The 'skel root' is the filesystem path to the
-directory where your Zope skel reside (skel are templates for new Zope
-instances).</p>
 
-<style>@import ("big_cheeze_style");</style>
-
-<form action="zopes_process" method="post"
-      tal:define="info context/zopes_info">
-<table>
+<table id="table" tal:define="zopes context/list_zopes">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Port</th>
+            <th colspan="2" style="text-align: left;">Name</th>
+            <th>
+                <tal:x condition="context/vhosting">Port</tal:x>
+                <tal:x condition="not:context/vhosting">&nbsp;</tal:x>
+            </th>
             <th>Actions</th>
         </tr>
 
         <tr class="green">
+        <form action="create_zope" method="post"
+              tal:define="availaskel context/list_skel;
+                          skel_root  context/skel_root;">
             <td><input name="zope.name:record" type="text"/></td>
-            <td><select name="zope.port:record">
-                    <option tal:repeat="port info/avail_ports" tal:content="port" />
-                </select></td>
-
-            <td><input type="submit" value="Add" /></td>
+            <td><select name="zope.skel:record"
+                        tal:condition="availaskel">
+                    <option>CHOOSE A SKEL</option>
+                    <option tal:repeat="skel availaskel" tal:content="skel" />
+                </select>
+                <tal:x condition="python:skel_root == ''">&nbsp;</tal:x>
+                <tal:x condition="python:skel_root and not availaskel">(No skel available)</tal:x>
+            </td>
+            <td><select name="zope.port:record"
+                        tal:condition="context/vhosting">
+                    <option tal:repeat="port context/list_ports" tal:content="port" />
+                </select>
+                <tal:x condition="not:context/vhosting">&nbsp;</tal:x>
+            </td>
+            <td class="action"><input type="submit" value="Create" /></td>
+        </form>
         </tr>
+
     </thead>
-    <tbody>
+    <tbody tal:condition="zopes">
 
-        <tr tal:repeat="zzope info/zopes">
-            <td tal:content="python:zzope[0]"></td>
-            <td tal:content="python:zzope[1]"></td>
-
-            <td style="text-align: center;">
-                <a tal:attributes="href python:'delete_vhost?vhostname=%s%s.zetaserver.com'%(zzope[0],zzope[1])">
+        <tr tal:repeat="zope zopes">
+            <td colspan="2" tal:content="python:zope"></td>
+            <td>
+                <tal:x content="python:context.get_port(zzope)"
+                       condition="context/vhosting" />
+                <tal:x condition="not:context/vhosting">&nbsp;</tal:x>
+            </td>
+            <td class="action">
+                <a tal:attributes="href python:'delete_vhost?vhostname=%s%s.zetaserver.com'%(zope,zope)">
                     <img style="border:none;" src="delete.gif" />
                 </a>
             </td>
         </tr>
 
     </tbody>
-</table>
-</form>
+    <tbody tal:condition="not:zopes">
 
-<h1 tal:replace="structure here/manage_page_footer">Footer</h1>
+        <tr>
+            <td colspan="4">
+                There are no Zope instances in the instance root.
+            </td>
+        </tr>
+
+    </tbody>
+</table>
+</div>
+</body>
+</html>
