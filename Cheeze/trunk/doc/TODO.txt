@@ -1,14 +1,17 @@
 Steve's todo
 ------------------------------
 
-High Priority (we need this to host sites)
+Very High Priority (we need this to develop sites)
 
     on zope instance create, create canonical address and file it in the apache dbm
 
     handle edits in apache for zopes
 
+
+High Priority (we need this to host sites)
+
     smarter error messages (which domain did you click?)
-    
+
     production version disables instance edit and delete
 
     implement domain edits
@@ -29,14 +32,14 @@ Medium Priority (needed to make the project solid and polished)
     stop and restart instances TTW
 
     stop and restart instances when we edit them
-    
+
     instance delete/decommission settingv
 
     tests/
 
     interfaces/
 
-    
+
 
 
 
