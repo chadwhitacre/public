@@ -77,15 +77,25 @@ class ApacheVHostManager:
 
         domains =[]
         for domain, port in vhosts:
-            aliases = alias_map[port][:]
-            aliases.remove(domain)
-            domain_info = {
-                'name':domain,
-                'port':port,
-                'zope':zope_map[port],
-                'canonical':canon_map[port],
-                'aliases':aliases,
-            }
+            try:
+                aliases = alias_map[port][:]
+                aliases.remove(domain)
+                domain_info = {
+                    'name':domain,
+                    'port':port,
+                    'zope':zope_map[port],
+                    'canonical':canon_map[port],
+                    'aliases':aliases,
+                }
+                
+            except KeyError:
+                domain_info = {
+                    'name':domain,
+                    'port':port,
+                    'zope':'ORPHANED',
+                    'canonical':'',
+                    'aliases':[],
+                }
             domains.append(domain_info)
         info['domains']=domains
 
@@ -164,7 +174,7 @@ class ApacheVHostManager:
     def _confirm_db(self, check_attr=1, check_db=1, check_dbm_compat=1):
         if check_dbm_compat and not unix:
             raise ImportError, '''Apache management requires support for the
-            dbm file format which is currently only available on unix versions
+            dbm file format which is currently only available on *nix versions
             of python.'''
         if check_attr and not self.vhost_db:
             raise ValueError, '''In order to access the apache related functions

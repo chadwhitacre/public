@@ -1,3 +1,45 @@
+Steve's todo
+------------------------------
+
+on zope instance create, create canonical address and file it in the apache dbm
+
+implement domain edits
+
+handle edits in apache for zopes and domains
+
+smarter error messages (which domain did you click?)
+
+parked pages for domains without instances, using master instance
+
+
+update all of chad's copious documentation :-)
+
+shuffle around my funcs according to chad's scheme
+
+confirm security settings
+
+instance delete/decommission setting
+
+need to check for running instances
+
+stop and restart instances when we edit them
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 TODO
 
 finish Domains tab for tonight
