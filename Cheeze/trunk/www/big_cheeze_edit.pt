@@ -18,7 +18,7 @@
 will be 8080 no matter what you put in there. Should be working for devel and
 production though. :)</p>
 
-<table id="table" tal:define="zopes context/list_zopes">
+<table id="table" tal:define="zopes context/zopes_list">
     <thead>
         <tr>
             <th colspan="2" style="text-align: left;">Name</th>
@@ -31,7 +31,7 @@ production though. :)</p>
 
         <tr class="green">
         <form action="zope_create" method="post"
-              tal:define="availaskel context/list_skel;
+              tal:define="availaskel context/skel_list;
                           skel_root  context/skel_root;">
             <td><input name="zope.name:record" type="text"/></td>
             <td><select name="zope.skel:record">
@@ -62,7 +62,7 @@ production though. :)</p>
         <tr tal:repeat="zope zopes">
             <td colspan="2" tal:content="python:zope"></td>
             <td>
-                <tal:x content="python:context.get_port(zzope)"
+                <tal:x content="python:context.port_get(zzope)"
                        condition="context/vhosting" />
                 <tal:x condition="not:context/vhosting">&nbsp;</tal:x>
             </td>
