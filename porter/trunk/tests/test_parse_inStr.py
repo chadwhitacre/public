@@ -1,7 +1,7 @@
 import unittest
 from porter.PorterCmd import PorterCmd
 
-class TestPorter(unittest.TestCase):
+class TestParseInStr(unittest.TestCase):
 
     def setUp(self):
         self.c = PorterCmd

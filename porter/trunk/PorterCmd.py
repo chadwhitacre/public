@@ -2,7 +2,7 @@ from cmd import Cmd
 
 class PorterCmd(Cmd):
 
-    def __init__(self):
+    def __init__(self, **kw):
         self.intro = 'here we go ...'
         self.prompt = 'porter> '
 
@@ -10,7 +10,7 @@ class PorterCmd(Cmd):
         self.domains  = {} # one-to-one mapping of domains to websites
         self.websites = {} # one-to-many mapping of websites to domains
 
-        Cmd.__init__(self)
+        Cmd.__init__(self, **kw)
 
     def parse_inStr(inStr):
         """ given a Cmd inStr string, return a tuple containing a list of
@@ -38,19 +38,21 @@ class PorterCmd(Cmd):
     def do_ls(self, inStr=''): self.do_list(inStr) # alias
     def do_list(self, inStr=''):
         """ print out a list of the domains we are managing """
-        # eventually we want to mimic the columns we get from shell ls
-        for d in self.domains:
-            print d
+        # columnize is undocumented
+        items = self.domains.keys()
+        if len(items) > 0:
+            items.sort()
+            self.columnize(items, displaywidth=79)
 
     def do_add(self, inStr=''): self.do_map(inStr) # alias
+    def do_edit(self, inStr=''): self.do_map(inStr) # alias
     def do_map(self, inStr=''):
         """ given a domain name and a website, map them """
-        args = self.parse_inStr(inStr)
+        opts, args = self.parse_inStr(inStr)
         if len(args) < 2:
-            print "We need both a domain name and a website id"
+            print >> self.stdout, "We need a domain name and a website id."
             return
-        domain, website = args
-        print domain, website
+        domain, website = args[:2]
         self.domains[domain] = website
         if website in self.websites:
             self.websites[website].append(domain)
@@ -59,10 +61,14 @@ class PorterCmd(Cmd):
 
     def do_rm(self, inStr=''): self.do_remove(inStr) # alias
     def do_remove(self, inStr=''):
-        """ given a domain name, remove it from our mapping """
-        domain = self.parse_inStr(inStr)[:1]
-        if domain in self.domains:
-            self.domains.remove()
+        """ given one or more domain names, remove it/them from our indices """
+        opts, args = self.parse_inStr(inStr)
+        for domain in args:
+            if domain in self.domains:
+                self.domains.pop(domain)
+            for w in self.websites:
+                if domain in self.websites[w]:
+                    self.websites[w].remove(domain)
 
 
 
