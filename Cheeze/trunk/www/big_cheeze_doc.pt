@@ -1,0 +1,92 @@
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html;charset=iso-8859-1" />
+    <title>Zope</title>
+    <style>@import url("/manage_page_style.css");
+           @import url("big_cheeze_style");</style>
+</head>
+
+<body>
+
+<h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
+    tal:replace="structure context/manage_tabs">Tabs</h2>
+<div class="padding">
+<p class="form-help"> Form help </p>
+
+
+
+<table id="table" tal:define="zopes context/list_zopes">
+    <thead>
+        <tr>
+            <th colspan="2" style="text-align: left;">Name</th>
+            <th>
+                <tal:x condition="context/vhosting">Port</tal:x>
+                <tal:x condition="not:context/vhosting">&nbsp;</tal:x>
+            </th>
+            <th>Actions</th>
+        </tr>
+
+        <tr class="green">
+        <form action="create_zope" method="post"
+              tal:define="availaskel context/list_skel;
+                          skel_root  context/skel_root;">
+            <td><input name="zope.name:record" type="text"/></td>
+            <td><select name="zope.skel:record"
+                        tal:condition="availaskel">
+                    <option tal:repeat="skel availaskel"
+                            tal:attributes="value skel"
+                            tal:content="skel" />
+                </select>
+                <tal:x condition="python:skel_root == ''">
+                    <input type="hidden" name="zope.skel:record" value="" />
+                    &nbsp;
+                </tal:x>
+                <tal:x condition="python:skel_root and not availaskel">
+                    <input type="hidden" name="zope.skel:record" value="" />
+                    (No skel available)
+                </tal:x>
+            </td>
+            <td><select name="zope.port:record"
+                        tal:condition="context/vhosting">
+                    <option tal:repeat="port context/list_ports" tal:content="port" />
+                </select>
+                <tal:x condition="not:context/vhosting">
+                    <input type="hidden" name="zope.port:record" value="" />
+                    &nbsp;
+                </tal:x>
+            </td>
+            <td class="action"><input type="submit" value="Create" /></td>
+        </form>
+        </tr>
+
+    </thead>
+    <tbody tal:condition="zopes">
+
+        <tr tal:repeat="zope zopes">
+            <td colspan="2" tal:content="python:zope"></td>
+            <td>
+                <tal:x content="python:context.get_port(zzope)"
+                       condition="context/vhosting" />
+                <tal:x condition="not:context/vhosting">&nbsp;</tal:x>
+            </td>
+            <td class="action">
+                <a tal:attributes="href python:'delete_vhost?vhostname=%s%s.zetaserver.com'%(zope,zope)">
+                    <img style="border:none;" src="big_cheeze_delete" />
+                </a>
+            </td>
+        </tr>
+
+    </tbody>
+    <tbody tal:condition="not:zopes">
+
+        <tr>
+            <td colspan="4">
+                There are no Zope instances in the instance root.
+            </td>
+        </tr>
+
+    </tbody>
+</table>
+</div>
+</body>
+</html>
