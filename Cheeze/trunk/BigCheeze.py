@@ -32,7 +32,7 @@ from utils import *
 
 class BigCheeze(Implicit, Persistent, \
                 PropertyManager, Item, \
-                ZopeManager, DNSManager, ApacheVHostManager):
+                ZopeManager, DNSManager,  ApacheVHostManager):
 
 
     security = ClassSecurityInfo()
@@ -103,7 +103,7 @@ class BigCheeze(Implicit, Persistent, \
             return 0
     
     def managesVhosting(self):
-        if self.vhost_db:
+        if self.managesVhosting():
             return 1
         else:
             return 0
@@ -144,7 +144,7 @@ class BigCheeze(Implicit, Persistent, \
             if mode==3:      
                 self.fs_db_sync()
         elif mode==2:
-            pass
+            ApacheVHostManager._zope_add(self)
         return self.REQUEST.RESPONSE.redirect('manage')
 
     security.declareProtected('Manage Big Cheeze', 'zope_edit'),
@@ -159,20 +159,20 @@ class BigCheeze(Implicit, Persistent, \
             if mode==3:      
                 self.fs_db_sync()
         elif mode==2:
-            pass
+            ApacheVHostManager._zope_edit(self)
         
         return self.REQUEST.RESPONSE.redirect('manage')
 
     security.declareProtected('Manage Big Cheeze', 'zope_remove'),
-    def zope_remove(self, zope_id):
+    def zope_remove(self):
         """ remove a zope instance """
         mode = self.mode()
         if mode in [1,3]:  
-            ZopeManager._zope_remove(self,zope_id)
+            ZopeManager._zope_remove(self)
             if mode==3:      
                 self.fs_db_sync()
         elif mode==2:
-            pass
+            ApacheVHostManager._zope.remove(self)
         return self.REQUEST.RESPONSE.redirect('manage')
     
     def zope_info(self):
@@ -201,18 +201,17 @@ class BigCheeze(Implicit, Persistent, \
     
     def domain_add(self):
         """handles adding domains"""
-        if self.vhost_db:
-            self._domain_add()
+        self._domain_add()
         return self.REQUEST.RESPONSE.redirect('manage_domains')
 
     def domain_edit(self):
         """ add a domain instance """
-        pass
+        self._domain_edit()
+        raise CheezeError, 'domain editing not yet implemented'
 
     def domain_remove(self):
         """handles removing domains"""
-        if self.vhost_db: 
-            self._domain_remove()
+        self._domain_remove()
         return self.REQUEST.RESPONSE.redirect('manage_domains')
         
     def domains_info(self):

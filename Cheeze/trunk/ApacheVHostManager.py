@@ -40,6 +40,16 @@ class ApacheVHostManager:
     # heavy lifters - these are only used by BigCheeze wrappers
     ##
 
+    def _zope_add(self):
+        pass
+    
+    def _zope_edit(self):
+        pass
+
+    def _zope_remove(self):
+        pass
+
+
     def _domain_add(self):
         request = self.REQUEST
         response = request.RESPONSE
@@ -48,7 +58,7 @@ class ApacheVHostManager:
         self._vhosts_update(data)
 
     def _domain_edit(self):
-        pass
+        raise CheezeError, 'domain editing not yet implemented'
 
     def _domain_remove(self):
         request = self.REQUEST
