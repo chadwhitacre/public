@@ -44,7 +44,6 @@ class Kraken:
         self.list_addr = cp.get('default', 'list_addr')
 
         self.send_to = self.addrs('conf/send_to.conf')
-        raise 'um', self.send_to
         self.accept_from = self.send_to + \
                            self.addrs('conf/also_accept_from.conf')
 
