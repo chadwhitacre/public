@@ -1,14 +1,7 @@
-Steve,
-
-Ok man, here's what I did: I mercilessly refactored ZetaServerAdmin into a
-Product, which is now called Cheeze and which is in the public repo. "Cheeze"
-stands for "Cheap Zopes". :)
-
-I decided to keep the vhosting and instance mgmt functionality a little more
-distinct than we have been. Doing this means we can use Cheeze on our local
-machines, cause we need cheap zopes for dev at least as much as for production.
-I didn't remove any of your vhosting work, but it only shows up if we are on
-unix (haven't actually fully tested this yet).
+"Cheeze" stands for "Cheap Zopes". :)  Cheap zopes are the foundation of
+efficiency in both development and production zope hosting environments. This
+product allows you to quickly create new zopes, and optionally use Apache and
+DNS to pave roads to your zopes.
 
 So here's how to set up a Cheeze server (dev or production):
 
@@ -34,6 +27,7 @@ So here's how to set up a Cheeze server (dev or production):
      manually to confirm that they are indeed working)
 
   8) Also note "domains" and "documentation" tabs.
+
 
 
 Notes:

@@ -179,7 +179,7 @@ class BigCheeze(Implicit, Persistent, \
                                                zope['name'])
 
             # set port number
-            port = zope['port'] # we will only get a port if vhosting is true
+            port = zope['port']
             if port == '':
                 port = '80'
             kw['HTTP_PORT'] = port
@@ -193,7 +193,7 @@ class BigCheeze(Implicit, Persistent, \
             inituser = join(kw['INSTANCE_HOME'], "inituser")
             mkzopeinstance.write_inituser(inituser, 'admin', 'jesus')
 
-            # if we are vhosting then make those changes to
+            # if we are vhosting then make those changes too
             if vhosting:
                 # this is rote from previous product
                 zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
