@@ -1,5 +1,6 @@
 from AccessControl import ClassSecurityInfo
 import os
+from os.path import join
 
 class ZopeManager:
     """ provides functionality to manage Zope instances """
@@ -31,30 +32,13 @@ class ZopeManager:
         else:
             return os.listdir(self.skel_root)
 
-    def list_ports(self):
-        """ return a list of available ports """
-        if vhosting:
-            avail_ports = [str(x) for x in range(8010,9000,10)]
-            for zope in self.list_zopes():
-                if self.get_port(zope) in avail_ports:
-                    avail_ports.remove(port)
-        else:
-            return None
-
-    def get_port(self, zope):
-        """ given a zope instance, return its port number """
-        if vhosting:
-            pass
-        else:
-            return None
-
 
     ##
-    # zope instance managment routines
+    # heavy lifters
     ##
 
-    security.declareProtected('Manage Big Cheeze', 'create_zope'),
-    def create_zope(self):
+    security.declareProtected('Manage Big Cheeze', 'zope_create'),
+    def zope_create(self):
         """ create a new zope instance """
         request = self.REQUEST
         response = request.RESPONSE
@@ -112,8 +96,8 @@ class ZopeManager:
         return response.redirect('manage')
 
 
-    security.declareProtected('Manage Big Cheeze', 'delete_zope'),
-    def delete_zope(self, zope):
+    security.declareProtected('Manage Big Cheeze', 'zope_delete'),
+    def zope_delete(self, zope):
         """ given an instance name, delete a zope """
         top = join(self.instance_root, zope)
         #raise 'top', top
