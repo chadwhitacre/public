@@ -38,6 +38,7 @@ class Sanity:
             ##
             # sync our porter data and read it in
             ##
+            os.system('/usr/local/bin/svn cleanup %s' % self.porter_path)
             if self.verbose:
                 sys.stdout.write('syncing dbm ...')
                 os.system('/usr/local/bin/svn up %s' % self.porter_path)
