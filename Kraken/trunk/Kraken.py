@@ -1,3 +1,5 @@
+import os
+from ConfigParser import SafeConfigParser as ConfigParser
 import re
 import imaplib
 import smtplib
@@ -33,55 +35,41 @@ class Kraken:
 
     """
 
-    username = 'homegroup@whit537.org'
-    password = 'ihsouj'
-    server   = 'imap-5.luxsci.com'
-    port     = 143
-
-    accept_from = ('whit537@gmail.com',
-                   'chad@zetaweb.com',
-                   'jesslloydwhit@gmail.com',
-
-                   'bill@maya.com',
-                   'hope_lucas@yahoo.com',
-
-                   'vburens@hotmail.com',
-                   'lburens@athletics.pitt.edu',
-
-                   'douglas.wicker@pnc.com',
-
-                   'tpangburn@hvhs.org',
-                   'skunkhollow@comcast.net',
-                   )
-
-    send_to     = ('whit537@gmail.com',
-                   'jesslloydwhit@gmail.com',
-
-                   'bill@maya.com',
-                   'hope_lucas@yahoo.com',
-
-                   'vburens@hotmail.com',
-                   'lburens@athletics.pitt.edu',
-
-                   'douglas.wicker@pnc.com',
-
-                   'tpangburn@hvhs.org',
-                   'skunkhollow@comcast.net',
-                   )
-
-    # use this for testing
-    #send_to     = ('whit537@gmail.com','chad@zetaweb.com')
-
     def __init__(self):
-        pass
+        """ read in config info """
+        cp = ConfigParser()
+        cp.read('conf/kraken.conf')
+        self.imap = dict(cp.items('imap'))
+        self.smtp = dict(cp.items('smtp'))
+        self.list_addr = cp.get('default', 'list_addr')
+
+        self.send_to = self.addrs('conf/send_to.txt')
+        self.accept_from = self.send_to + \
+                           self.addrs('conf/also_accept_from.txt')
+
+
+    def addrs(self, fn):
+        """ given a filename, return a list of email addresses """
+        raw = file(fn).read()
+        return raw.split(os.linesep)
+
 
     def release(self):
         """ get all mail from our inbox and process """
-        M = imaplib.IMAP4(self.server, self.port)
-        M.login(self.username, self.password)
-        M.select()
-        typ, raw = M.search(None, 'ALL')
-        msg_nums = raw[0].split()
+
+        imap = self.imap
+        smtp = self.smtp
+
+        # open the IMAP connection and get everything in the INBOX
+
+        if imap['secure'] == 'True':
+            raise 'NotImplemented', 'secure IMAP is not implemented yet'
+        else:
+            M = imaplib.IMAP4(imap['server'], int(imap['port']))
+            M.login(imap['username'], imap['password'])
+            M.select()
+            typ, raw = M.search(None, 'ALL')
+            msg_nums = raw[0].split()
 
 
         if len(msg_nums) == 0:
@@ -97,10 +85,17 @@ class Kraken:
             i_good = i_bad = 0
 
             for num in msg_nums:
+
+                # get the From header
+
                 typ, raw = M.fetch(num, '(BODY[HEADER.FIELDS (FROM)])')
                 FROM = raw[0][1]
                 pattern = r'From: .* <(.*)>'
                 from_addr = re.search(pattern, FROM).group(1)
+
+
+                # and compare it to our membership lists
+
                 if from_addr in self.accept_from:
 
                     # get the raw email
@@ -110,16 +105,19 @@ class Kraken:
 
                     # tweak the headers
                     try:
-                        msg.replace_header('Reply-To', 'homegroup@whit537.org')
+                        msg.replace_header('Reply-To', self.list_addr)
                     except KeyError:
-                        msg.__setitem__('Reply-To', 'homegroup@whit537.org')
+                        msg.__setitem__('Reply-To', self.list_addr)
                     msg.add_header('X-Released-By','THE KRAKEN!!!!!!!!1')
 
                     # and pass it on!
-                    server = smtplib.SMTP('smtp-5.luxsci.com',25)
-                    server.login(self.username,self.password)
-                    server.sendmail('homegroup@whit537.org',self.send_to,msg.__str__())
-                    server.quit()
+                    if smtp['secure'] == 'True':
+                       raise 'NotImplemented', 'secure SMTP is not implemented yet'
+                    else:
+                        server = smtplib.SMTP(smtp['server'],smtp['port'])
+                        server.login(smtp['username'],smtp['password'])
+                        server.sendmail(self.list_addr,self.send_to,msg.__str__())
+                        server.quit()
 
                     # and move to archive
                     M.copy(num, 'Archive')
