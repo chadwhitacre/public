@@ -64,12 +64,13 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
                  {'id':'value_paths', 'type':'lines', 'mode': 'w'},
                  )
 
-    def __init__(self, id, text='(empty)', content_type=None):
+    def __init__(self, id, text='(empty)', content_type=None, value_paths=[]):
         self.id = str(id)
         self.ZBindings_edit(self._default_bindings)
         if text is None:
             text = open(self._default_content_fn).read()
         self.simplate_edit(text, content_type)
+        self.simplate_setValue_paths(value_paths)
 
     def _setPropValue(self, id, value):
         PropertyManager._setPropValue(self, id, value)
