@@ -102,11 +102,11 @@ Commands available:
 
     ls -- list available domains
           OPTIONS: -l/--long, -i/--info, -r/--raw
-          ARGS: With the -l option or with no options, ls takes an optional 
-                argument. If you pass in this argument, Porter only lists domains 
-                that begin with that value. So for example, 'ls zeta' would list 
-                zetaweb.com and zetaserver.com, but not sub1.zetaweb.com nor 
-                zogurt.org. 
+          ARGS: With the -l option or with no options, ls takes an optional
+                argument. If you pass in this argument, Porter only lists 
+                domains that begin with that value. So for example, 'ls zeta' 
+                would list zetaweb.com and zetaserver.com, but not 
+                sub1.zetaweb.com nor zogurt.org.
 
     mk -- register a domain with Porter
           ARGS: domain server port, e.g.: example.com srvrname 8080
