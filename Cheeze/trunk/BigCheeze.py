@@ -73,15 +73,14 @@ class BigCheeze(Implicit, Persistent, \
 
     manage_doc = PageTemplateFile('www/manage_doc.pt',globals())
 
+    style_doc  = DTMLFile('www/style_doc.css',globals())
+
 
     ##
     # Zope mgmt
     ##
 
     manage_zopes = PageTemplateFile('www/manage_zopes.pt',globals())
-
-    style_zopes = DTMLFile('www/style_zopes.css',globals())
-
 
     security.declareProtected('Manage Big Cheeze', 'zope_add'),
     def zope_add(self):
@@ -149,12 +148,12 @@ class BigCheeze(Implicit, Persistent, \
         if instance_root == '':
             PropertyManager._setPropValue(self, 'instance_root', '')
         elif not os.path.exists(instance_root):
-            raise 'Cheeze Error', "Proposed instance root '%s' " \
-                                + "does not exist" % instance_root
+            raise 'Cheeze Error', "Proposed instance root " \
+                                + "'%s' does not exist" % instance_root
         elif not os.path.isdir(instance_root):
-            raise 'Cheeze Error', "Proposed instance root '%s' " \
-                                + "does not point to a directory" \
-                                % instance_root
+            raise 'Cheeze Error', "Proposed instance root " \
+                                + "'%s' " % instance_root \
+                                + "does not point to a directory"
         else:
             clean_path = self._scrub_path(instance_root)
             PropertyManager._setPropValue(self,
@@ -166,12 +165,11 @@ class BigCheeze(Implicit, Persistent, \
         if skel_root == '':
             PropertyManager._setPropValue(self, 'skel_root', '')
         elif not os.path.exists(skel_root):
-            raise 'Cheeze Error', "Proposed skel root '%s' " \
-                                + "does not exist" % skel_root
+            raise 'Cheeze Error', "Proposed skel root " \
+                                + "'%s' does not exist" % skel_root
         elif not os.path.isdir(skel_root):
-            raise 'Cheeze Error', "Proposed skel root '%s' " \
-                                + "does not point to a directory" \
-                                % skel_root
+            raise 'Cheeze Error', "Proposed skel root '%s' " % skel_root \
+                                + "does not point to a directory"
         else:
             clean_path = self._scrub_path(skel_root)
             PropertyManager._setPropValue(self, 'skel_root', clean_path)
@@ -192,6 +190,8 @@ class BigCheeze(Implicit, Persistent, \
     image_delete    = ImageFile('www/delete.png',globals(),)
 
     image_save      = ImageFile('www/save.png',globals(),)
+
+    image_zopes     = ImageFile('www/zopes.png',globals(),)
 
     manage = manage_main = manage_zopes
 
