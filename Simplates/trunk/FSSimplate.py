@@ -19,9 +19,7 @@ from Products.CMFCore.CMFCorePermissions import ViewManagementScreens
 from Products.CMFCore.CMFCorePermissions import View
 from Products.CMFCore.CMFCorePermissions import FTPAccess
 from Products.CMFCore.FSObject import FSObject
-from Products.CMFCore.utils import _setCacheHeaders
-
-#xml_detect_re = re.compile('^\s*<\?xml\s+')
+from Products.CMFCore.utils import _setCacheHeaders, registerIcon
 
 from OFS.Cache import Cacheable
 
@@ -100,11 +98,6 @@ class FSSimplate(FSObject, Script, Simplate):
     _default_bindings = ZopeSimplate._default_bindings
 
     security.declareProtected(View, '__call__')
-
-#    def simplate_macros(self):
-#        # Tie in on an opportunity to auto-reload
-#        self._updateFromFS()
-#        return FSSimplate.inheritedAttribute('simplate_macros')(self)
 
     def simplate_render(self, source=0, extra_context={}):
         self._updateFromFS()  # Make sure the template has been loaded.
@@ -205,15 +198,11 @@ class FSSimplate(FSObject, Script, Simplate):
     ZScriptHTML_tryParams = ZopeSimplate.ZScriptHTML_tryParams
 
 
-#s = Src()
-#setattr(FSSimplate, 'source.xml', s)
-#setattr(FSSimplate, 'source.html', s)
-#del s
-
 Globals.InitializeClass(FSSimplate)
 
 registerFileExtension('smpt', FSSimplate)
 registerFileExtension('smpl', FSSimplate)
 registerFileExtension('spt', FSSimplate)
 registerMetaType('Simplate', FSSimplate)
+registerIcon(FSSimplate, 'www/fssimplate.png', globals())
 
