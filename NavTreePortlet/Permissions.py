@@ -1,2 +1,0 @@
-from Products.CMFCore.CMFCorePermissions import AddPortalContent
-ADD_CONTENT_PERMISSION = AddPortalContent
