@@ -73,13 +73,17 @@ class Porter(cmd.Cmd):
         cmd.Cmd.__init__(self, *args, **kw)
 
         # ui settings
+        num = len(self.domains)
+        if num == 1: word = 'domain'
+        if num <> 1: word = 'domains'
+
         self.intro = """
 #-------------------------------------------------------------------#
 #  Porter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
 #-------------------------------------------------------------------#
 
-You are currently managing %s domains. Type ? for help.
-        """ % len(self.domains)
+You are currently managing %s %s. Type ? for help.
+        """ % (num, word)
         self.prompt = 'porter> '
 
     ##
@@ -95,7 +99,7 @@ You are currently managing %s domains. Type ? for help.
             print >> self.stdout, """\
 
 Porter is a piece of software for managing the interface between the public
-Internet and a server cluster set up according to the Cambridge distributed 
+Internet and a server cluster set up according to the Cambridge distributed
 http server architecture. For more on Cambridge ... um, talk to Chad. ;^)
 
 Commands available:
@@ -103,9 +107,9 @@ Commands available:
     ls -- list available domains
           OPTIONS: -l/--long, -i/--info, -r/--raw
           ARGS: With the -l option or with no options, ls takes an optional
-                argument. If you pass in this argument, Porter only lists 
-                domains that begin with that value. So for example, 'ls zeta' 
-                would list zetaweb.com and zetaserver.com, but not 
+                argument. If you pass in this argument, Porter only lists
+                domains that begin with that value. So for example, 'ls zeta'
+                would list zetaweb.com and zetaserver.com, but not
                 sub1.zetaweb.com nor zogurt.org.
 
     mk -- register a domain with Porter
@@ -114,7 +118,7 @@ Commands available:
 
     rm -- unregister a domain
           ARGS: one or more space-separated domain names, e.g.: foo.example.net
-          domain names can be tab completed 
+          domain names can be tab completed
             """
 
     ##
@@ -184,18 +188,24 @@ Commands available:
         opts, args = self._parse_inStr(inStr)
         domains = self.domains.keys()
         if ('i' in opts) or ('info' in opts):
-            print >> self.stdout, "You are currently managing %s domains." % len(self.domains)
+            num = len(self.domains)
+            if num == 1: word = 'domain'
+            if num <> 1: word = 'domains'
+            print >> self.stdout, "You are currently managing " +\
+                                  "%s %s." % (num, word)
             return
         if len(domains) > 0: # otherwise columnize gives us "<empty>"
 
-            # TODO: this might be big enough to refactor into dict switch notation
+            # TODO: this might be big enough to refactor into dict switch
+            # notation
 
             if ('r' in opts) or ('raw' in opts):
                 print >> self.stdout, """
 KEY                           VALUE\n%s""" % (self.ruler*60,)
                 raw = dbm.open(self.db_path,'r')
                 for key in dict(raw):
-                    print >> self.stdout, "%s  %s" % (key.ljust(28), raw[key].ljust(28))
+                    print >> self.stdout, "%s  %s" % (key.ljust(28),
+                                                      raw[key].ljust(28))
                 print >> self.stdout
                 raw.close()
             else:
@@ -206,25 +216,29 @@ KEY                           VALUE\n%s""" % (self.ruler*60,)
 
                 if ('l' in opts) or ('long' in opts):
                     header = """
-DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*79,)
+DOMAIN NAME                   SERVER        PORT  ALIASES
+%s""" % (self.ruler*79,)
                     print >> self.stdout, header
                     for domain in domains:
                         server, portnum = self.domains[domain].split(':')
                         aliases = self.aliases[self.domains[domain]][:]
-                        aliases.remove(domain) # don't list ourselves in aliases
+                        aliases.remove(domain) # don't list ourselves in
+                                               # aliases
 
+                        # format our fields
                         domain  = domain.ljust(28)[:28]
                         server  = server.ljust(12)[:12]
                         portnum = str(portnum).rjust(4)
                         if aliases: alias = aliases.pop(0)[:28]
                         else:       alias = ''
 
-                        record = "%s  %s  %s  %s" % (domain, server, portnum, alias)
-
+                        # build and output our record
+                        record = "%s  %s  %s  %s" % (domain, server,
+                                                     portnum, alias)
                         print >> self.stdout, record
                         for alias in aliases:
                             print >> self.stdout, ' '*50 + alias
-                    print >> self.stdout
+                    print >> self.stdout # newline
 
                 else:
                     # columnize is an undocumented method in cmd.py
@@ -241,12 +255,12 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
         """ given one or more domain names, remove it/them from our storage """
         opts, args = self._parse_inStr(inStr)
         for domain in args:
-            
+
             if domain in self.domains:
                 del self.domains[domain]
             else:
                 print >> self.stdout, "%s is not in our database" % domain
-            
+
             for website in self.aliases:
                 if domain in self.aliases[website]:
                     self.aliases[website].remove(domain)

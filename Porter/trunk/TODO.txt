@@ -1,10 +1,10 @@
 0.2
 =======================
-reformat do_ls for 80-char width
 grace -> gremlin
 output slave and master named.conf files
 named frags go to /home/gremlin
 don't keep backups of named.conf files
+
 porter> named # manually flush current settings to named frags
 
 
@@ -53,4 +53,5 @@ separate svn-managed porter from content (var/, htdocs/, cgi-bin/)
 named.conf.frag -> named.porter.conf
 inline help
 removing a non-existent domain should get a message
-
+reformat do_ls for 80-char width
+1 domains
