@@ -100,7 +100,7 @@
                        size="3"
                        style="text-align: right;" />
             </td>
-            <td colspan="2 class="action">
+            <td colspan="2" class="action">
                 <input type="submit" value="add" />
             </td>
             <td tal:condition="context/vhost_db">&nbsp;</td>
