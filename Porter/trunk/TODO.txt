@@ -1,6 +1,5 @@
 0.2
 =======================
-separate svn-managed porter from content (var/, htdocs/, cgi-bin/)
 
 
 0.4
@@ -45,3 +44,5 @@ ls --info
 locate and fix double-up bug
 fix paths for testing framework
 still getting double-up bug :/
+separate svn-managed porter from content (var/, htdocs/, cgi-bin/)
+named.conf.frag -> named.porter.conf
