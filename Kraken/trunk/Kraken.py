@@ -20,6 +20,7 @@ class Kraken:
     >>> pattern = r'From:.* <?(.*@.*\..*)>?$'
     >>> from_addr = re.search(pattern, FROM).group(1)
     >>> print from_addr
+    douglas.wicker@pncyeah.com
 
     #>>> from Kraken import Kraken
     #>>> k = Kraken()
