@@ -59,6 +59,15 @@ class PorterCmd(Cmd):
     def emptyline(self):
         pass
 
+    def do_EOF(self, inStr=''):
+        print >> self.stdout; return True
+    def do_exit(self, *foo):
+        return True
+    do_q = do_quit = do_exit
+
+
+    def complete_ls(self,text, line, begidx, endidx):
+        return [d for d in self.domains.keys() if d.startswith(text)]
 
     def do_ls(self, inStr=''):
         """ print out a list of the domains we are managing """
@@ -97,12 +106,14 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
             else:
                 self.columnize(domains, displaywidth=79)
 
-    def complete_ls(self,text, line, begidx, endidx):
-        return [d for d in self.domains.keys() if d.startswith(text)]
 
+    complete_mv = complete_ls
 
-    def do_map(self, inStr=''): self.do_add(inStr) # alias
-    def do_add(self, inStr=''):
+    def do_mv(self, inStr=''):
+        """ alias for mk, but with tab-completion """
+        self.do_mk(inStr)
+
+    def do_mk(self, inStr=''):
         """ given a domain name and a website, map them """
 
         # get our arguments and validate them
@@ -121,7 +132,7 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
 
         # update our data
         self.domains[domain] = website
-        self.update_db()
+        self._update_db()
 
         # and update our indices
         if website in self.aliases:
@@ -129,6 +140,8 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
         else:
             self.aliases[website] = [domain]
 
+
+    complete_rm = complete_ls
 
     def do_rm(self, inStr=''):
         """ given one or more domain names, remove it/them from our storage """
@@ -139,20 +152,16 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
             for website in self.aliases:
                 if domain in self.aliases[website]:
                     self.aliases[website].remove(domain)
-        self.update_db()
+        self._update_db()
 
-    complete_rm = complete_ls
 
-    def do_EOF(self, inStr=''):
-        print >> self.stdout; return True
 
-    def update_db(self):
+
+    def _update_db(self):
         """ given that our data is clean, store it to file """
         db = dbm.open(self.db_path, 'n')
         for domain in self.domains:
-            if domain.startswith('www.'):
-                db[domain] = self.domains[domain]
-            else:
-                db[domain] = self.domains[domain]
-                db[domain] = 'www.' + self.domains[domain]
+            website = self.domains[domain]
+            db[domain] = website
+            db['www.' + domain] = website
         db.close()
