@@ -1,0 +1,78 @@
+<h1 tal:replace="structure here/manage_page_header">Header</h1>
+<h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
+    tal:replace="structure here/manage_tabs">Tabs</h2>
+
+<form action="manage_doCustomize" method="post">
+    <table cellspacing="2">
+        <tr>
+            <th align="left" valign="top" class="form-label">id</th>
+            <td align="left" valign="top" class="form-element"
+                tal:content="here/title_or_id" />
+        </tr>
+        <tr>
+            <th align="left" valign="top" class="form-label">
+            <em>size</em>
+            </th>
+            <td align="left" valign="top" class="form-element">
+                <tal:x content="here/get_size" /> bytes
+            </td>
+        </tr>
+        <tr>
+            <th align="left" valign="top" class="form-label">
+                <em>last modified</em>
+            </th>
+            <td align="left" valign="top" class="form-element"
+                tal:define="mod_time context/bobobase_modification_time"
+                tal:content="python:mod_time.strftime('%Y-%m-%d %I:%M %p')" />
+        </tr>
+        <tr>
+            <th align="left" valign="top"  class="form-label">
+            <em>source file</em>
+            </th>
+            <td align="left" valign="top" class="form-element"
+                tal:content="context/getDirPath" />
+        </tr>
+        <tr>
+            <th align="left" valign="top" class="form-label">
+                customize
+            </th>
+            <td align="left" valign="top" class="form-element">
+
+                <em>select a destination folder and press the button to make a
+                copy of this template that can be customized.</em><br />
+
+                <select name="folder_path" size="1"
+                        tal:define="paths python:context.listCustFolderPaths('Simplate')">
+                    <option tal:repeat="path paths"
+                            tal:attributes="value python:path[0]"
+                            tal:content="python:path[1]" />
+                </select>
+
+                <input type="submit" name="submit" value=" customize ">
+            </td>
+        </tr>
+    </table>
+</form>
+
+<table>
+    <tr>
+        <th align="left" valign="top"  class="form-label">
+            Value suppliers
+        </th>
+        <td align="left" valign="top" class="form-element"
+            border="1" bgcolor="#cccccc">
+            <pre><div tal:repeat="path context/value_paths"
+                      tal:content="path" /></pre>
+        </td>
+    </tr>
+    <tr>
+        <th align="left" valign="top"  class="form-label">
+            Body
+        </th>
+        <td border="1" bgcolor="#cccccc">
+            <pre tal:content="context/document_src">[Content will go here]</pre>
+        </td>
+    </tr>
+</table>
+
+<h1 tal:replace="structure here/manage_page_footer">Footer</h1>
