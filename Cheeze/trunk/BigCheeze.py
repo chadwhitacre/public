@@ -32,8 +32,12 @@ class BigCheeze(Implicit, Persistent, \
     id = 'Cheeze'
     title = 'Centralized instance management'
     meta_type= 'Big Cheeze'
+
     instance_root = join(os.environ['INSTANCE_HOME'], '../')
     skel_root = ''
+    apache_db = ''
+    dns_file = ''
+
     vhosting = 0
 
     BigCheeze_manage_options = (
@@ -55,6 +59,16 @@ class BigCheeze(Implicit, Persistent, \
          'mode': 'w',
          },
         {'id'   :'skel_root',
+         'type' :'string',
+         'value':'',
+         'mode': 'w',
+         },
+        {'id'   :'apache_db',
+         'type' :'string',
+         'value':'',
+         'mode': 'w',
+         },
+        {'id'   :'dns_file',
          'type' :'string',
          'value':'',
          'mode': 'w',
