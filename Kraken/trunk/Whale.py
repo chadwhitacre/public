@@ -38,7 +38,7 @@ class Whale:
         send_path = join(nest,'send_to.addrs')
         from_path = join(nest,'accept_from.addrs')
 
-        self.id   = os.path.split(nest)
+        self.id   = os.path.split(nest)[1]
         self.nest = nest
 
         cp = ConfigParser()
