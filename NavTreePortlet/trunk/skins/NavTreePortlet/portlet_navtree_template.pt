@@ -1,0 +1,5 @@
+<div class="portletContent odd" tal:define="data here/getPortletData">
+    <ul tal:content="structure python:here.portlet_navtree_macro(children=data.get('children', []))">
+        SUBTREE
+	 </ul>
+</div>
