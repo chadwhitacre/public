@@ -28,22 +28,6 @@ instances).</p>
         </td>
     </tr>
     <tr>
-        <td align="left" valign="top">
-            <div class="form-label">Instance Root</div>
-        </td>
-        <td align="left" valign="top">
-            <input type="text" name="instance_root" size="40" />
-        </td>
-    </tr>
-    <tr>
-        <td align="left" valign="top">
-            <div class="form-label">Skel Root</div>
-        </td>
-        <td align="left" valign="top">
-            <input type="text" name="skel_root" size="40" />
-        </td>
-    </tr>
-    <tr>
         <td align="left" valign="top">&nbsp;</td>
         <td align="left" valign="top">
             <div class="form-element">

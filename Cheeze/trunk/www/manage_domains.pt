@@ -12,13 +12,15 @@
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure context/manage_tabs">Tabs</h2>
 
-<div tal:condition="context/vhost_db"
-     tal:replace="context/orphans_handle" />
+<div class="padding"
+     tal:condition="context/vhost_db">
 
-<div class="padding" tal:condition="context/vhost_db">
+    <p class="form-help">Need help? <a href="manage_doc#domains">RTFM</a>. :-)</p>
 
-    <form action="domain_add" method="post"
-          tal:define="info context/domains_info">
+    <form action="domain_add"
+          method="post"
+          tal:define="dummy context/orphans_handle;
+                      info  context/domains_info;">
     <table id="table">
         <thead>
             <tr>
@@ -26,14 +28,18 @@
                 <th>Zope</th>
                 <th>Actions</th>
                 <th>Canonical</th>
-
                 <th>Aliases</th>
             </tr>
             <tr class="green">
-                <td><input name="name" value="domain name to add" onclick="if(this.value=='domain name to add'){this.value=''}" type="text"></td>
+                <td><input name="name" value="domain name to add"
+                           onclick="if(this.value=='domain name to add')
+                                        {this.value=''}"
+                           type="text"></td>
                 <td>
                     <select name="zope">
-                        <option tal:repeat="zope info/zopes" tal:content="python:zope[0]" tal:attributes="value python:zope[1]" />
+                        <option tal:repeat="zope info/zopes"
+                                tal:content="python:zope[0]"
+                                tal:attributes="value python:zope[1];" />
                     </select>
                 </td>
                 <td class="action"><input value="Add" type="submit"></td>
@@ -44,19 +50,45 @@
         </thead>
         <tbody>
             <tr tal:repeat="domain info/domains">
-                <td><a href="" tal:content="domain/name"></a></td>
+                <td>
+                    <a target="_blank"
+                       tal:attributes="href python:'http://'
+                                                 + domain['canonical']"
+                       tal:content="domain/name" /></td>
                 <td>
                     <span tal:content="domain/zope" />
                 </td>
 
                 <td class="action">
-                    <a tal:attributes="href python:here.absolute_url()+'/domain_remove?vhost='+domain['name']"
-                       onclick="return confirm('Delete this domain?\nNo data will be lost, but the domain will no longer point anywhere.')">
-                        <img style="border:none;" src="image_delete" />
+                    <a tal:define="tmp python:'%s/domain_remove?vhost=%s';
+                                   href python:tmp % (context.absolute_url(),
+                                                      domain['name']);"
+                       tal:attributes="href href"
+                       onclick="return confirm('Delete this domain?\n \
+                                                No data will be lost, but the \
+                                                domain will no longer point \
+                                                anywhere.')">
+                        <img style="border:none;" src="image_delete"
+                             alt="delete" title="delete" />
                     </a>
                 </td>
-                <td><a href="" tal:content="domain/canonical" /></td>
-                <td><span tal:repeat="alias domain/aliases"><a href="" tal:content="alias" /><span tal:condition="python:test(repeat['alias'].index<len(domain['aliases'])-1)">, </span></span>
+                <td>
+                    <a target="_blank"
+                       tal:attributes="href python:'http://'
+                                                 + domain['canonical']"
+                       tal:content="domain/canonical" /></td>
+                <td>
+                    <tal:x condition="domain/aliases"
+                           repeat="alias domain/aliases">
+                        <a target="_blank"
+                           tal:attributes="href python:'http://' + alias"
+                           tal:content="alias" />
+                        <tal:x define="rpt  python: repeat['alias'].index;
+                                       all  python: len(domain['aliases'])-1;
+                                       more python: rpt < all;"
+                               condition="python:test(more)">, </tal:x>
+                    </tal:x>
+                    <tal:x condition="not:domain/aliases">&nbsp;</tal:x>
                 </td>
             </tr>
         </tbody>
@@ -67,8 +99,8 @@
 <div class="padding" tal:condition="not:context/vhost_db">
 
     <p class="form-help">This page is blank because you do not have the
-    <b>vhost_db</b> property set. For more info, <a href="manage_doc#vhost_db">RTFM</a>.
-    :-)</p>
+    <b>vhost_db</b> property set. For more info, <a
+    href="manage_doc#vhost_db">RTFM</a>. :-)</p>
 
 </div>
 </body>

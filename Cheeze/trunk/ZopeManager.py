@@ -26,18 +26,22 @@ class ZopeManager:
         """ return a list of available zope instances """
         return os.listdir(self.instance_root)
 
-    def skel_list(self):
-        """ return a list of available zope skel """
-        if self.skel_root == '':
-            return None
-        else:
-            return os.listdir(self.skel_root)
+    def zopes_list(self):
+        """ return a list of name, port tuples """
+        return [zope_info_get(z) for z in self.zope_ids_list()]
 
     def zope_info_get(self, zope):
         """ given a zope instance, return (name, port number) """
         port = zope.split('_')[-1]
         name = ''.join(zope.split('_')[0:-1])
         return (name, port)
+
+    def skel_list(self):
+        """ return a list of available zope skel """
+        if self.skel_root == '':
+            return None
+        else:
+            return os.listdir(self.skel_root)
 
     def ports_list_available(self, include = None):
         """ return a list of available ports,
