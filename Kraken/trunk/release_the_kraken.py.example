@@ -7,6 +7,17 @@
 # this stuff is worth it, you can buy me a beer in return. --Chad Whitacre
 # ----------------------------------------------------------------------------
 
+###### change this value ######
+
+LAIR = '/home/whit537/Kraken'
+
+# This is here so that we work properly when called from cron. It can't be in
+# conf/kraken.conf because we need it to get there! Catch-22! If you know the
+# right way to do this please let me know! !!!
+
+###############################
+
+
 from Kraken import Kraken
-k = Kraken()
+k = Kraken(LAIR)
 k.release()
