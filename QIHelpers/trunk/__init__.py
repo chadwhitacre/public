@@ -1,6 +1,7 @@
 from Skins      import  installSkins, uninstallSkins
-from Properties import  installFolderTypes
-from Catalog    import  installIndices \
+from Properties import  installFolderTypes, \
+                        installRootProps
+from Catalog    import  installIndices, \
                         installMetadata
 
 try:
