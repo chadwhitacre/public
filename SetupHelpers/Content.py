@@ -9,7 +9,7 @@ content objects. This neatly divides testing, and configuration.
 
 
 def createFolders(portal, parent, folders):
-    """ takes an n-depth tuple of (id, title, children) triples """
+    """ takes a sequence of dictionaries of {id,title,publish,children} """
     wft = getToolByName(portal, 'portal_workflow')
     for folder in folders:
 
@@ -18,10 +18,7 @@ def createFolders(portal, parent, folders):
         # first grab a couple magic elements; invokeFactory will
         # choke on these if we leave them in
 
-        try:
-            publish    = folder.pop('publish')
-        except:
-            raise 'hrm', folder
+        publish    = folder.pop('publish')
         children   = folder.pop('children')
 
 
@@ -36,7 +33,6 @@ def createFolders(portal, parent, folders):
         if publish:
             wft.doActionFor(new_folder, 'publish')
         if children:
-            raise 'shouldn\'t ever get here'
             createFolders(portal, new_folder, children)
 
 
