@@ -4,7 +4,7 @@ from Porter import Porter
 from ConfigParser import RawConfigParser
 
 def main():
-    c = Porter(var="var")
+    c = Porter()
     try:
         c.cmdloop()
     except KeyboardInterrupt:

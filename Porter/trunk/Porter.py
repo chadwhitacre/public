@@ -57,12 +57,12 @@ class PorterError(RuntimeError):
 
 class Porter(cmd.Cmd):
 
-    def __init__(self, var, *args, **kw):
+    def __init__(self, *args, **kw):
 
         # set our data paths
-        if not isabs(var):
-            var = join(sys.path[0], var)
-        self.var = var
+        PKG_HOME = os.environ.get('PKG_HOME', sys.path[0])
+        INSTANCE_HOME = os.environ.get('INSTANCE_HOME', PKG_HOME)
+        self.var = join(INSTANCE_HOME, 'var')
         self.db_path = join(self.var, "rewrite")
         self.frag_path = join(self.var, "named.conf.frag")
 

@@ -5,6 +5,7 @@
 # 4) sudo porter
 
 export PYTHON=python
-export PKG_HOME=/usr/local/porter
+export PKG_HOME=/usr/local/lib/python2.4/site-packages/Porter
+export INSTANCE_HOME=/usr/local/porter
 
 $PYTHON $PKG_HOME/start.py

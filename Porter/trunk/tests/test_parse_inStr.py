@@ -2,7 +2,7 @@ if __name__ == '__main__':
     import framework
 
 import unittest
-from porter.Porter import Porter
+from Porter.Porter import Porter
 
 class TestParseInStr(unittest.TestCase):
 
