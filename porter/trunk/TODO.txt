@@ -2,6 +2,9 @@
 =======================
 we don't actually handle DNS for tesm.edu -- does it matter if we still have a record for them?
 get VirtualHostMonster working
+still getting double-up bug :/
+
+
 
 
 0.4
@@ -14,6 +17,41 @@ figure out how to deal with SSL, since we need it for svn
 
 
 future
+B
+rter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
+#-------------------------------------------------------------------#
+
+You are currently managing 2 domains.
+
+porter> ls -l
+
+DOMAIN NAME                   SERVER        PORT  ALIASES
+===============================================================================
+ugandapartners.org            bridei        8090  zetaweb.com
+zetaweb.com                   bridei        8090  ugandapartners.org
+
+porter> mv zetaweb.com bridei 8080
+porter> mv zetaweb.com bridei 8090
+porter> ls -l
+
+DOMAIN NAME                   SERVER        PORT  ALIASES
+===============================================================================
+ugandapartners.org            bridei        8090  zetaweb.com
+zetaweb.com                   bridei        8090  ugandapartners.org
+
+porter> mv zetaweb.com bridei 8080
+porter> ls- l
+<empty>
+porter> ls -l
+
+DOMAIN NAME                   SERVER        PORT  ALIASES
+===============================================================================
+ugandapartners.org            bridei        8090  zetaweb.com
+zetaweb.com                   bridei        8080
+
+porter>
+whit537@alpin: cd /usr/local/porter/
+
 =======================
 inline help
 install properly with distutils
