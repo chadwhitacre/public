@@ -20,26 +20,42 @@ class ApacheVHostManager:
     ##
 
     def test_func(self):
-        return self.domains_info()
+        '''teehee'''
+        output = self.db_orphans_find()
+        return self.pformat(output)
 
-    def orphans_handle(self):
+    def db_orphans_handle(self):
+        orphans, leftovers = self.db_orphans_find()
         orphan_dict ={}
-        for zope in self.orphans_find():
+        for zope in orphans:
             zope_canonical_name= zope+'.zetaserver.com'
             port = zope.split('_')[-1]
             orphan_dict[zope_canonical_name]=port
-        self.update_vhosts(orphan_dict)
+        self.vhosts_update(orphan_dict)
+        for leftover in leftovers:
+            self.vhost_delete(leftover)
 
-    def orphans_find(self):
+    def db_orphans_find(self):
         orphans =[]
+        leftovers=[]
         if self.instance_root:
+            # these are actually existing instances
             zopes = self.zope_ids_list()
+            # these are all the instances in the db
             zope_entries = [z[0] for z in self.canonical_names_list()]
+            
+            
+            # becuase the storage of instances is actually the filesystem, we 
+            # need to sync the db with the fs
             for zope in zopes:
                 zope_canonical_name= zope+'.zetaserver.com'
                 if not zope_canonical_name in zope_entries:
                     orphans.append(zope)
-        return orphans
+                else:
+                    zope_entries.remove(zope_canonical_name)
+            leftovers = zope_entries
+                
+        return (orphans,leftovers)
 
     def _domain_add(self):
         request = self.REQUEST

@@ -119,6 +119,20 @@ class ZopeManager:
         #    zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
         #    update_vhosts({zs_name:zope['port']},www=1)
 
+    def _zope_edit(self):
+        form = self.REQUEST.form
+        old_name = form['old_name']
+        new_name = form['new_name']
+        old_port = form['old_port']
+        new_port = form['new_port']
+        
+        old_zope_id = self._zope_id_make(old_name, old_port)
+        new_zope_id = self._zope_id_make(new_name, new_port)
+        if old_zope_id != new_zope_id:
+            self._zope_id_set(old_zope_id, new_zope_id)
+        if old_port != new_port:
+            self._port_set(new_zope_id, old_port)
+
     def _zope_delete(self, zope):
         if self.production_mode:
             raise CheezeError, 'Cannot delete instances in production mode'

@@ -19,7 +19,7 @@
 
     <form action="domain_add"
           method="post"
-          tal:define="dummy context/orphans_handle;
+          tal:define="dummy context/db_orphans_handle;
                       info  context/domains_info;">
     <table id="table">
         <thead>
