@@ -1,0 +1,166 @@
+New implementation of portlets in Plone:
+
+Motivation
+
+Administering portlets in plone today is cumbersom and not very streamlined. The
+only real way to provide new portlets is to write new templates, something not
+everyone feels capable of. Administering portlets is a common task that every
+portal-administrator should be capable of.
+
+Portlets are very hard to cache the way they currently work in Plone. It is
+neccesary to simplify caching of portlets to make more people able to scale
+their sites to higher traffic.
+
+We need to make it simpler to package and redistribute portlets.
+
+We need to make it simpler for product authors to register product related
+authors.
+
+We need to enable users to minimize/disable portlets on a personal basis.
+
+
+Proposal for new implementation:
+
+Implement all Portlets as Archetypes objects, all using a common Portlet
+baseclass that provides a common interface and common default templates. This
+basically transforms portlets from templates into content objects.
+
+Implement a portal_portlets tool to contain, administer and  track the portlets.
+
+Implment a user interface for site administrators to arrange a layout of
+portlets in columns as a default set-up.
+
+Implement rules and user-interface for site-admin/content-admins to override
+portlet display on a per-folder-basis.
+
+Implement rules and user-interface for site members to override portlet display
+on personal basis.
+
+
+Implementation of portlets:
+
+All portlets inherit the Archetypes baseclass Portlet, and its Portlet base-
+schema.
+
+The baseclass will provide Portlets with the basic interface a portlet has to fulfill.
+
+The baseclass will provide Portlets with default waysof rendering themselves and
+default interfaces for administration.
+
+The baseclass will provide a common set of attributes and behaviors believed to
+be common for all or most Portlet implementations.
+
+    - id
+    - title
+    - description
+    - condition (tal-expression)
+
+
+
+Templates we need to make:
+
+Column-renderer that will replace Plones default mechanism of inserting
+portlets. Needs to be very cache-friendly.
+
+A macro/template for wrapping each portlet in borders and title
+several contents templates: simple templates for displaying portlets contents.
+
+Variations depending on whether the content is static, results or similar.
+
+
+Common Portlet object methods
+
+    getPortletContentsLazy():
+	Lazy method to make sure the contents/quesries are only fetched once per portlet per request, even if it is required as a condition for rendering.
+	Calls getPortletContents() if it has not already been called.
+
+     getPortletContents():
+	the real fetcher for the portlet contents
+
+
+     hasPortletContents():
+	returns true if getPortletContentsLazy returns anything
+
+     getTemplate():
+	returns a proper template for rendering the portlet contents.
+
+
+Example Portlets :
+
+	TemplatePortlet -- has no contents of its own, but points to a template
+	which is rendered when it is called. The closest you get to the portlets in
+	Plone today.
+
+	StaticPortlet -- A content-portlet. It has a text-entry-field, stx, or
+	richwidget for storing html content. Renders its contents.
+
+	ImagePortlet -- upload an image or have an expression evaulate to an image
+	object or store a reference to an image object. Show the image on rendering.
+
+	Topic Portlet -- Inherit the topic object from ATContentTypes. Provides
+	widgets for easily creating queries against the portal_catalog. Renders a
+	list of objects(brains) that match the query. One should be able to define
+	how long the list is, and possibly which fields to display.
+
+
+	NavigationPortlet -- The Plone navigation-tree we all know and curse.
+	This one should be improved but for now it will be a simple cut/paste of
+	the existing templates.
+
+	CalendarPortlet -- Also a cut/paste of the existing one
+
+	Worklist Portlet -- Similar to topic portlets, but with very specific uses.
+	Should be a special kind, linked to worklists in portal_workflow
+
+
+
+Portlet Tool implementation
+
+a Plone tool , portal_portlets, a folderish container to keep and manage the
+portlet objects.
+
+Should be catalog-based, to allow for fast look-ups of a large number of
+portlets if necessary.
+
+Should have a convenient user interface for laying out the portlets into
+columns.
+
+Will have to effectively (fast) return a (categorised) collection of portlets to
+render in a particular context according to the portlet business rules of the
+site.
+
+
+
+Tasks to implement
+
+make a portlet baseclass
+make generic portlet tempaltes
+make the portlets tool
+make plone render the portlets returned by the tool
+make user interface for layout
+make user interface / method for filtering portlets by containment
+make user interface / method for filtering portlets by  user
+
+
+
+Negotiation of which to show:
+
+Usecase:	globally define portlets into groups (left, right) and order them inside the groups.
+		enable override of this datastructure on a per-object-basis, both absolute, additive and subtractive
+		enable override on a per-user-basis, additive and subtractive
+
+
+We will store a datastructure directly on objects. similar to this :
+	{'column1':{	UID1:10,
+			UID2:20,
+			UID3:50,
+		    }
+	'filterOut':{UID1:0}}
+
+on rendering, we will traverse from root to object and update the global dictionary for every step.
+- Hopefully ending up with a dict of dicts of portlets to render.
+
+
+
+
+

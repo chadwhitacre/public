@@ -1,0 +1,6 @@
+import StaticPortlet
+import TemplatePortlet
+import LoginPortlet
+import ClockPortlet
+import WorklistsPortlet
+import RecentObjectsPortlet
