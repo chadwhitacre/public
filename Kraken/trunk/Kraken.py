@@ -43,15 +43,20 @@ class Kraken:
         self.smtp = dict(cp.items('smtp'))
         self.list_addr = cp.get('default', 'list_addr')
 
-        self.send_to = self.addrs('conf/send_to.txt')
+        self.send_to = self.addrs('conf/send_to.conf')
+        raise 'um', self.send_to
         self.accept_from = self.send_to + \
-                           self.addrs('conf/also_accept_from.txt')
+                           self.addrs('conf/also_accept_from.conf')
 
 
     def addrs(self, fn):
         """ given a filename, return a list of email addresses """
         raw = file(fn).read()
-        return raw.split(os.linesep)
+        lines = [l.strip() for l in raw.split(os.linesep)]
+        return [l for l in lines
+                  if not l.startswith('#') and
+                     not l == '']
+        # maybe eventually validate email addresses
 
 
     def release(self):
