@@ -14,7 +14,7 @@
 
 <p class="form-help">Careful! Create and delete really work. :-)</p>
 
-<p class="form-help">Note that port number is not meaningul for stock skel. It
+<p class="form-help">Note that port number is not meaningful for stock skel. It
 will be 8080 no matter what you put in there. Should be working for devel and
 production though. :)</p>
 
