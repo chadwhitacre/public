@@ -80,7 +80,7 @@ about the simplest solution for my requirements.
 
 0.4 -- new use case: announcement list (do not accept from send_to)
 
-    - use SSL/TSL
+    - use SSL/TLS
 
 future versions -- who knows? Some random TODO's:
 
