@@ -1,7 +1,6 @@
 0.2
 =======================
 we don't actually handle DNS for tesm.edu -- does it matter if we still have a record for them?
-be sure we work with weird paths, e.g., coming from cron
 
 
 0.4
@@ -21,6 +20,8 @@ non-interactive mode
 log ourselves
 write a function to columnize domains ... should be lined up on the first dot from the right
 fit codenames back into the mix, somehow?
+be sure we work with weird paths, e.g., coming from cron
+porter> test (?)
 
 
 done - 0.2
@@ -42,3 +43,4 @@ write dns module
 backup data files before writing
 ls --info
 locate and fix double-up bug
+fix paths for testing framework

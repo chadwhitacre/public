@@ -1,7 +1,6 @@
-#!/usr/local/bin/python
 import sys
 from os.path import join
-from Porter import Porter, PorterError
+from Porter import Porter
 from ConfigParser import RawConfigParser
 
 def main():
