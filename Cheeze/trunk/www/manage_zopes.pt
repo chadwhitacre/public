@@ -7,16 +7,21 @@
            @import url("style_zopes");</style>
 </head>
 
-<body tal:define="info here/zope_info">
+<body>
 
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure context/manage_tabs">Tabs</h2>
-<div class="padding" tal:condition="context/instance_root">
+<p>
+        <strong>Mode <span tal:content="here/mode" />:</strong>
+        <span tal:content="here/friendly_mode"/>
+</p>
+<div class="padding" >
+<tal:definer tal:define="info here/zope_info">
 
+    
 <p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
 <table id="table"
-       tal:define="zope_ids     context/zope_ids_list;
-                   availaskel   context/skel_list;
+       tal:define="availaskel   context/skel_list;
                    port_range   python:context.port_range != '';
                    availaports  context/ports_list_available;
                    skel_root    context/skel_root;
@@ -115,7 +120,7 @@
 
 
     </thead>
-    <tbody tal:condition="zope_ids">
+    <tbody tal:condition="info/zopes">
 
         <!-- Now loop through all our zopes and make a form for each -->
         <tr tal:repeat="zope info/zopes">
@@ -184,7 +189,7 @@
         </tr>
 
     </tbody>
-    <tbody tal:condition="not:zope_ids">
+    <tbody tal:condition="not:info/zopes">
 
         <tr>
             <td colspan="3">
@@ -194,8 +199,9 @@
 
     </tbody>
 </table>
+</tal:definer>
 </div>
-<div class="padding" tal:condition="not:context/instance_root">
+<div class="padding" tal:condition="python:0">
 
     <p class="form-help">This page is blank because you do not have the
     <b>instance_root</b> property set. For more info, <a

@@ -1,7 +1,7 @@
 try:
-    from Products.Cheeze.vh_utils import update_vhosts, \
-                                         recreate_vhosts, \
-                                         get_vhosts
+    from Products.Cheeze.vh_utils import _vhosts_update, \
+                                         _vhosts_recreate, \
+                                         _vhosts_get
     vhosting = 1
 except:
     # we are not on unix :/
@@ -92,20 +92,59 @@ class BigCheeze(Implicit, Persistent, \
         """  """
         return 'Cheap Zopes :-)'
 
+    ##
+    # A couple of functions to help us figure out how to act
+    ##
+
+    def managesInstances(self):
+        if self.instance_root:
+            return 1
+        else:
+            return 0
+    
+    def managesVhosting(self):
+        if self.vhost_db:
+            return 1
+        else:
+            return 0
+    
+    def mode(self):
+        managesInstances = self.managesInstances()
+        managesVhosting = self.managesVhosting()
+        if not(managesInstances or managesVhosting):
+            return 0
+        elif managesInstances and not managesVhosting:
+            return 1
+        elif not managesInstances and managesVhosting:
+            return 2
+        elif managesInstances and managesVhosting:
+            return 3
+
+    def friendly_mode(self):
+        friendlies={
+        0:'''Just installed''',
+        1:'''Manages zope instances''',
+        2:'''Manages vhosting db''',
+        3:'''Manages zope instances and vhosting db'''
+        }
+        return friendlies[self.mode()]
 
     ##
     # Zope mgmt
     ##
 
     manage_zopes = PageTemplateFile('www/manage_zopes.pt',globals())
-    
+        
     security.declareProtected('Manage Big Cheeze', 'zope_add'),
     def zope_add(self):
         """ add a zope instance """
-        if self.instance_root:  
-            self._zope_create()
-        if self.vhost_db:      
-            self.db_orphans_handle()
+        mode = self.mode()
+        if mode in [1,3]:  
+            ZopeManager._zope_add(self)
+            if mode==3:      
+                self.fs_db_sync()
+        elif mode==2:
+            pass
         return self.REQUEST.RESPONSE.redirect('manage')
 
     security.declareProtected('Manage Big Cheeze', 'zope_edit'),
@@ -113,25 +152,33 @@ class BigCheeze(Implicit, Persistent, \
         """ edit a zope instance """
         if self.production_mode:
             raise CheezeError, 'Cannot edit instances in production mode'
-        if self.instance_root:  
-            self._zope_edit()
-        if self.vhost_db:
-            self.db_orphans_handle()
+            
+        mode = self.mode()
+        if mode in [1,3]:  
+            ZopeManager._zope_edit(self)
+            if mode==3:      
+                self.fs_db_sync()
+        elif mode==2:
+            pass
+        
         return self.REQUEST.RESPONSE.redirect('manage')
 
     security.declareProtected('Manage Big Cheeze', 'zope_remove'),
     def zope_remove(self, zope_id):
         """ remove a zope instance """
-        if self.instance_root:
-            self._zope_delete(zope_id)
-        if self.vhost_db:
-            self.db_orphans_handle()
+        mode = self.mode()
+        if mode in [1,3]:  
+            ZopeManager._zope_remove(self,zope_id)
+            if mode==3:      
+                self.fs_db_sync()
+        elif mode==2:
+            pass
         return self.REQUEST.RESPONSE.redirect('manage')
     
     def zope_info(self):
         info = {}
         zopes = []
-        orphans=0
+        mode = self.mode()
         for zope_id in self.zope_ids_list():
             name, port = self.zope_info_get(zope_id)
             zope_info = {
@@ -142,6 +189,7 @@ class BigCheeze(Implicit, Persistent, \
             }
             zopes.append(zope_info)
         info['zopes'] = zopes
+            
         return info
 
 
@@ -155,6 +203,7 @@ class BigCheeze(Implicit, Persistent, \
         """handles adding domains"""
         if self.vhost_db:
             self._domain_add()
+        return self.REQUEST.RESPONSE.redirect('manage_domains')
 
     def domain_edit(self):
         """ add a domain instance """
@@ -164,6 +213,7 @@ class BigCheeze(Implicit, Persistent, \
         """handles removing domains"""
         if self.vhost_db: 
             self._domain_remove()
+        return self.REQUEST.RESPONSE.redirect('manage_domains')
         
     def domains_info(self):
         """ populates the domains pt """
@@ -176,8 +226,13 @@ class BigCheeze(Implicit, Persistent, \
             domain_list = alias_map.get(port,[])
             domain_list.append(domain)
             alias_map[port]=domain_list
-
-        info['zopes'] = zopes = [(z,z.split('_')[-1]) for z in self.zope_ids_list()]
+        #ok so if we have an instance_root, then we wanna sync up with the filesystem
+        #otherwise, we just store it in there and count on humans to make sure it actually works
+        if self.instance_root:
+            zopes = [(z,z.split('_')[-1]) for z in self.zope_ids_list()]
+        else:
+            zopes=[]
+        info['zopes'] = zopes
 
         zope_map = dict([(zport, zname) for zname, zport in zopes])
 
