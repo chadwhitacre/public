@@ -8,12 +8,21 @@ from glob import glob
 from sets import Set
 from ConfigParser import RawConfigParser
 
+
+##
+# Determine the root of our tree.
+##
+
 arg = sys.argv[1:2]
 if arg: top = arg[0]
 else:   top = '.'
 top = os.path.realpath(top)
 
-# parse the config file into a list of patterns matching text files
+
+##
+# Parse the config file into a list of patterns matching text files
+##
+
 config = RawConfigParser()
 config.read(os.path.expanduser('~/.subversion/config'))
 if not config.has_section('auto-props'):
@@ -26,31 +35,54 @@ else:
             globlist.append(pattern)
     globlist.sort()
 
-# walk the tree and get a list of paths to text files
+
+##
+# Walk the tree and scrub get a list of paths for all the text files.
+##
+
 textfiles = Set()
-for path, dirs, files in os.walk(top):
-    for filename in files:
-        for pattern in globlist:
-            fullpattern = '%s/%s' % (path, pattern)
-            for textfile in glob(fullpattern):
-                textfiles.add(textfile)
+i = 0; sys.stdout.write('locating text files ...')
+
+for path, dirs, foo in os.walk(top):
+    for pattern in globlist:
+        fullpattern = '%s/%s' % (path, pattern)
+        for textfile in glob(fullpattern):
+            # indicate progress
+            i += 1
+            if i % 50 == 0:
+                sys.stdout.write('.')
+                sys.stdout.flush()
+            textfiles.add(textfile)
+
+    # skip svn directories
     if '.svn' in dirs: dirs.remove('.svn')
+
 textfiles = tuple(textfiles)
+print ' %s found' % len(textfiles)
 
-print 'found %s text files; cleaning...' % len(textfiles)
 
-# now actually do the replacement
+
+##
+# Now actually do the replacement.
+##
+
 win = re.compile(r'\r\n') # not worrying about mac for now
-i = 0
+j = 0; sys.stdout.write('scrubbing newlines ...')
+
 for path in textfiles:
     textfile = file(path, 'r+')
     tmp = textfile.read()
     dirty = len(win.findall(tmp))
     if dirty > 0:
-        i += 1
-        print '  %s' % path
+        # indicate progress
+        j += 1
+        if j % 50 == 0:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+
+        # progress
         tmp = win.sub('\n', tmp)
         textfile.seek(0); textfile.truncate(); textfile.write(tmp)
     textfile.close()
 
-print 'done; cleaned up %s files' % i
+print ' %s files cleaned' % j
