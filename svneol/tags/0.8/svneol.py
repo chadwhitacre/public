@@ -13,7 +13,7 @@ class EOLToolkit:
     """toolkit for cleaning up line endings in a tree
     """
 
-    __version__ = '0.9'
+    __version__ = '0.8'
 
     def __init__(self):
         pass
