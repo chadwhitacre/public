@@ -1,0 +1,54 @@
+Changes in FCK 2.0 FC-Preview for Plone/CMF integration :
+
+
+1. The folder skins is renamed fck_skins because 'skins' is reserved in Zope CMF
+
+2. Change file fckconfig.js  (line 29 for skinPath)
+
+3. Change fonts in fckconfig.js 
+
+4. Change all files in ".html" as ".html.html" .
+
+5. Added wysiwyg_support files (CMF template) for CMF integration
+
+6. Added CMF/plone installation files at product root
+
+7. Move all files in folder skins/editor_fck/ for CMF product integration
+
+8. Added default basepath in fckconfig.js
+
+9. Customization of toolbars in fckconfig.js
+
+10. Added link to BrowseLink and BrowseImage in fckconfig.js
+
+11. Added dtml and scripts python for browseLinks and BrowseImages
+
+12. Rename fckstyles.xml in fckstyles.xml.pt for Zope compatibility
+
+13. Added a .metadata file for each file (for Zope HttpCache) with vbs script (routine_for_zope_files.vbs)
+
+14. Since Zope 2.7.2 Zope doesn't accept anymore "</" in javascript strings inside html files, for example we must change '</div>' in '<'+ '/div>' 
+    Très chiant de vérifier tout ça - j'arrive pas à faire une routine propre > please Frederico can you change these files
+
+Détails : files and lines with corrections
+editor/fckdialog.html 40
+editor/fckdebug.html 38 46 78
+filemanager/browser/default/frmfolders.html 60 65 70 
+filemanager/browser/default/frmresourceslist.html 47 52 58 67 75 79
+editor/dialog/fck_anchor.html  57
+editor/dialog/fck_specialchar.html  76 81 85 86 89
+editor/dialog/fck_smiley.html  70 76 77 80 81 84
+editor/dialog/fck_about.html  119
+
+
+
+
+For the future :
+
+
+I will add a XML connector (ZPT xml) and i'll use fck browse interface . I can't do that immediatly because in Zope, files and folders don't exist, all elements are objects 
+wich contain a lot of information and, for example, file extensions are not important in Zope ... i need to think about it, very interesting.
+
+
+
+jean-mat@macadames.com

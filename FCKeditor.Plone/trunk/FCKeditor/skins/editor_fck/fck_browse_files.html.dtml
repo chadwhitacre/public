@@ -1,0 +1,44 @@
+<dtml-comment>
+FCK editor browse documents for links.
+</dtml-comment>
+<HTML>
+<HEAD>
+<META http-equiv="Content-Type"
+          content="text/html;charset=ISO-8859-1" />
+<TITLE>Browse Files</TITLE>
+<STYLE TYPE="text/css">
+ BODY   {margin:10px; font-family:Verdana, Arial, Geneva, Helvetica, "sans serif"; font-size:12; background:white; text-align:left;}
+ BUTTON {width:5em}
+ TABLE  {font-family: Verdana, Arial, Geneva, Helvetica, "sans serif"; font-size:12}
+</STYLE>
+
+</HEAD>
+<BODY>
+<p>Dossier : <b><dtml-var expr="this().aq_parent.title_or_id()"></b><br />
+&nbsp;&nbsp;<a href="../fck_browse_files.html">[Niveau supérieur]</a></p>
+
+<p>Pour explorer un sous-dossier cliquez sur "+" (ne pas cliquer sur le lien)</p>
+<p>Pour lier un objet cliquez sur le lien</p>
+
+<dtml-try>
+<dtml-tree expr="PARENTS[1]" branches="fck_browseFiles" skip_unauthorized>
+ <dtml-let niceIcon="getNiceIcon(this())">
+  <IMG SRC="./<dtml-var niceIcon>">
+  <A HREF="#" onClick="window.opener.SetUrl('<dtml-var absolute_url>');window.close();"><dtml-var title_or_id></a>
+ <dtml-if "portal_type=='Photo' or portal_type=='ZPhoto'">
+    <div style="text-align: right; padding: 0px; margin: 0px; padding-left:18px;">
+        <A HREF="#" onClick="window.opener.SetUrl('<dtml-var absolute_url>?size=thumb');window.close();">Vignette</a> - 
+        <A HREF="#" onClick="window.opener.SetUrl('<dtml-var absolute_url>?size=medium');window.close();">Taille moyenne</a> - 
+        <A HREF="#" onClick="window.opener.SetUrl('<dtml-var absolute_url>?size=full');window.close();">Pleine résolution</a>
+    </div>
+ </dtml-if>
+ </dtml-let>
+</dtml-tree>
+<dtml-except>
+<p>
+Ya1ProblM. 
+</p>
+</dtml-try>
+
+</BODY>
+</HTML>
