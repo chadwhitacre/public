@@ -17,7 +17,7 @@ from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import Item
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from Globals import DTMLFile
+from Globals import DTMLFile, ImageFile
 import os
 
 
@@ -68,23 +68,23 @@ class BigCheeze(Implicit, Persistent, \
     # These are attributes that we will call TTW for manage views
     ##
 
+    # edit form
     big_cheeze_edit = PageTemplateFile('www/big_cheeze_edit.pt',
                                        globals(),
-                                       __name__='big_cheeze_edit')
+                                       __name__='big_cheeze_edit',)
     big_cheeze_edit._owner = None
     manage = manage_main = big_cheeze_edit
 
+    # stylesheet
     big_cheeze_style = DTMLFile('www/style.css',
                                 globals(),
-                                __name__ = 'big_cheeze_style',
-                                  )
+                                __name__ = 'big_cheeze_style',)
     big_cheeze_edit._owner = None
 
-#    big_cheeze_delete = ImageFile('www/delete.gif',
-#                                globals(),
-#                                __name__ = 'big_cheeze_delete',
-#                                  )
-#    big_cheeze_delete._owner = None
+    # delete icon
+    big_cheeze_delete = ImageFile('www/delete.gif',
+                                  globals(),)
+    big_cheeze_delete._owner = None
 
 
 
@@ -200,22 +200,26 @@ class BigCheeze(Implicit, Persistent, \
             import copyzopeskel
             import mkzopeinstance
 
-            # prepare kw
-            kw = self._prepare_kw()
+            # initialize kw
+            kw = self._initialize_kw()
 
             # set skelsrc
             skel = zope['skel']
             if skel == '':
-                # default to using stock Zope skeleton source
-                skelsrc = os.path.join(kw['ZOPE_HOME'], "skel")
-            else:
-                skelsrc = os.path.join(self.skel_root, skel)
+                skel = 'default'
+            skelsrc = os.path.join(self.skel_root, skel)
 
             # set skeltarget
-
             kw['INSTANCE_HOME'] = skeltarget \
                                 = os.path.join(self.instance_root,
                                                zope['name'])
+
+            # set port number
+            port = zope['port'] # we will only get a port if vhosting is true
+            if port == '':
+                port = '80'
+            kw['HTTP_PORT'] = port
+            kw['FTP_PORT'] = '21' # should revisit this later
 
             # now make the zope!
             copyzopeskel.copyskel(skelsrc, skeltarget, None, None, **kw)
@@ -234,8 +238,8 @@ class BigCheeze(Implicit, Persistent, \
         return response.redirect('manage')
 
 
-    def _prepare_kw(self):
-        """ return kw for use in copyzopeskel """
+    def _initialize_kw(self):
+        """ return initial kw for use in copyzopeskel """
         import sys
 
         ### BEGIN COPY FROM mkzopeinstance.py ###
