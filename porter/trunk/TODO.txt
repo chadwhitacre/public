@@ -1,13 +1,16 @@
 0.2
 =======================
-use sample db in tests
-write dns module
+backup data files before writing
 
+ls --info
+write a function to columnize domains ... should be lined up on the first dot from the right
+only work with lowercase domain names
 deal with orphans
-
 tab complete available servers (from etc/hosts) and ports (from rpc to servers)
 fit codenames back into the mix, somehow?
+we don't actually handle DNS for tesm.edu -- does it matter if we still have a record for them?
 build in fault-tolerance, no more proxy errors! put in a default "parked" page for orphans, from porter's Apache!
+factor out a test case(?)
 
 
 future
@@ -15,6 +18,7 @@ future
 inline help
 install properly with distutils
 non-interactive mode
+log ourselves
 
 
 done - 0.2
@@ -30,3 +34,6 @@ get tests working from outside of site-packages
 runalltests.py
 README
 license
+use sample db in tests
+write a sort function for domains
+write dns module

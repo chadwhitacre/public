@@ -172,6 +172,8 @@
                 - We should keep at least one generation of backups for the two
                 named files, both on namesrvr and prtrsrvr.
 
+                - Grace should abort if named.conf.frag is empty
+
                 - Ideally the named.conf update should be transactional with the
                 porter.zone update.
 

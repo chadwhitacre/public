@@ -1,12 +1,65 @@
-import os, dbm, cmd
+"""
 
-class PorterError:
+ok, porter
+
+Porter is our Cmd app that basically does the ui for us. Our three data-relevant
+commands are:
+
+    add
+
+    rm
+
+    mv
+
+We have data stored in three places:
+
+    [codename] -- actually, not used atm, maybe in 0.6?
+
+    rewrite.db -- {'domain':'server:port'}
+
+    named.conf.frag -- fragment to be appended to named.conf, records are of the
+    form:
+
+zone "example.com" {
+        type master;
+        file "porter.zone";
+};
+
+    The good news here is that all we need to replace is example.com. So it
+    really shouldn't be too much overhead to just generate this entire file
+    fragment every time we store to disk. And the rest of the record can be
+    hard-coded, so we run very little chance of screwing this up. ;-)
+
+    [porter.zone] -- this is the main abstracted config file for named, but we
+    are going to manage it manually for now (forever?)
+
+Ok, so let's treat the db as authoritative, for these reasons:
+
+    - it is easier to parse data out
+
+    - it has all the data we need in it (named.conf.frag only has domain)
+
+    - it is harder to screw up (not being plaintext)
+
+On program initialization, we want to read data from rewrite.db into an internal
+data structure or two. Then whenever we do one of [add, mv, rm] we want to save
+these changes to the db and regenerate our named.conf.frag file.
+
+"""
+
+import os, dbm, cmd
+from os.path import join, abspath
+from StringIO import StringIO
+
+class PorterError(RuntimeError):
     """ error class for porter """
     pass
 
 class Porter(cmd.Cmd):
 
-    def __init__(self, rewrite_db_path, *args, **kw):
+    def __init__(self, var, *args, **kw):
+
+        # ui settings
         self.intro = """
 #-------------------------------------------------------------------#
 #  Porter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
@@ -14,14 +67,23 @@ class Porter(cmd.Cmd):
         """
         self.prompt = 'porter> '
 
-        # on startup, read in our data
-        #  a one-to-one mapping of domains to websites
-        self.rewrite_db_path = rewrite_db_path
-        db = dbm.open(self.rewrite_db_path, 'c')
+        # set our data paths -- TODO: make sure these will work nicely from
+        #  cron, etc.
+        self.var = abspath(var)
+        self.db_path = join(self.var, "rewrite")
+        self.frag_path = join(self.var, "named.conf.frag")
+
+        # read in data from our db, which is a one-to-one mapping of domains
+        #  to websites (website == server:port)
+        db = dbm.open(self.db_path, 'c')
         domains = dict(db)
         db.close()
 
-        # filter out www's for our users, they are just for apache
+        # should we do some integrity checking here? i.e., make sure that all
+        # domains have a www? check for dupes?
+
+        # filter out www's for our users, we will add them back in when we
+        #  write to disk
         self.domains = {}
         for domain in domains:
             if not domain.startswith('www.'):
@@ -69,6 +131,10 @@ class Porter(cmd.Cmd):
         return True
     do_q = do_quit = do_exit
 
+
+    ##
+    # Read
+    ##
 
     def complete_ls(self,text, line, begidx, endidx):
         return [d for d in self.domains.keys() if d.startswith(text)]
@@ -120,6 +186,10 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
                     self.columnize(domains, displaywidth=79)
 
 
+    ##
+    # Create/Update
+    ##
+
     complete_mv = complete_ls
 
     def do_mv(self, inStr=''):
@@ -149,7 +219,7 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
 
         # update our data
         self.domains[domain] = website
-        self._update_data()
+        self._write_to_disk()
 
         # and update our indices
         if website in self.aliases:
@@ -157,6 +227,10 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
         else:
             self.aliases[website] = [domain]
 
+
+    ##
+    # Delete
+    ##
 
     complete_rm = complete_ls
 
@@ -169,16 +243,87 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
             for website in self.aliases:
                 if domain in self.aliases[website]:
                     self.aliases[website].remove(domain)
-        self._update_data()
+        self._write_to_disk()
 
 
+    ##
+    # Store
+    ##
 
-    def _update_data(self):
-        """ given that our data is clean, store it to file """
-        db = dbm.open(self.rewrite_db_path, 'n')
+    def _write_to_disk(self):
+        """ given that our data is clean, store it to disk """
+
+        # create a local copy of self.domains, adding www's back in
+        #  we create separate record structs so that we can sort the one that
+        #  goes to named.conf.frag, thus making testing easier
+        db_records = {}; frag_records = []
         for domain in self.domains:
             website = self.domains[domain]
-            db[domain] = website
-            db['www.' + domain] = website
+            db_records[domain] = website
+            db_records['www.' + domain] = website
+        frag_records = db_records.keys()
+        frag_records.sort(self._domain_cmp)
+
+        # now first write our db file
+        db = dbm.open(self.db_path, 'n')
+        for domain in db_records:
+            db[domain] = db_records[domain]
         db.close()
 
+        # then generate our named.conf fragment
+        #  we generate the text before actually writing, just to be safe
+        tmp = StringIO()
+        print >> tmp, "\n// begin records generated by porter\n"
+        record="""\
+zone "%s" {
+        type master;
+        file "porter.zone";
+};\n"""
+        for domain in frag_records:
+            print >> tmp, record % domain
+        print >> tmp, "\n// end records generated by porter"
+        named_conf_frag = tmp.getvalue()
+        tmp.close()
+
+        # so we could do some integrity checking in here if we wanted to
+        #print named_conf_frag
+
+        frag = file(self.frag_path,'w+')
+        frag.write(named_conf_frag)
+        frag.close()
+
+    def _domain_cmp(x, y):
+        """
+
+        Given two domain names, return -1, 0, or 1
+
+        Domains should be at least two places long, i.e, example.com, not example
+
+        first sort on SLD (second level domain)
+        then sort on TLD
+        then sort on tertiary
+
+        """
+        # convert to lists, checking for bad data
+        try:    d1 = x.split('.')
+        except: raise PorterError, "unable to parse '%s' as a domain name" % x
+        try:    d2 = y.split('.')
+        except: raise PorterError, "unable to parse '%s' as a domain name" % y
+
+        # more data checks
+        if len(d1) < 2:
+            raise PorterError, "'%s' doesn't look like a full domain name" % x
+        if len(d2) < 2:
+            raise PorterError, "'%s' doesn't look like a full domain name" % y
+
+        # marshall into the order we want for sorting
+        d1tertiary = d1[:-2]; d1tertiary.reverse()
+        d2tertiary = d2[:-2]; d2tertiary.reverse()
+        d1 = [d1[-2], d1[-1], d1tertiary]
+        d2 = [d2[-2], d2[-1], d2tertiary]
+
+        # do the comparison
+        if d1 == d2: return 0
+        if d1 < d2: return -1
+        if d1 > d2: return 1
+    _domain_cmp = staticmethod(_domain_cmp)
