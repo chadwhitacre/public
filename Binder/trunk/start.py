@@ -1,10 +1,10 @@
 import sys
 from os.path import join
-from Porter import Porter
+from Binder import Binder
 from ConfigParser import RawConfigParser
 
 def main():
-    c = Porter()
+    c = Binder()
     try:
         c.cmdloop()
     except KeyboardInterrupt:

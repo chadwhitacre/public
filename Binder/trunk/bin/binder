@@ -1,0 +1,12 @@
+#!/bin/sh
+# 1) change the variables below as appropriate
+# 2) cp this file somewhere on your path (e.g., /usr/local/bin)
+# 3) chmod 755 /usr/local/bin/binder
+# 4) sudo binder
+
+export PYTHON=python
+export PKG_HOME=/usr/local/lib/python2.4/site-packages/Binder
+export INSTANCE_HOME=/usr/local/binder
+export OUTPUT_PATH=/home/robot
+
+$PYTHON $PKG_HOME/start.py
