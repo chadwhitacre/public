@@ -12,6 +12,8 @@
     tal:replace="structure context/manage_tabs">Tabs</h2>
 <div class="padding">
 
+<div class="form-help">Careful! Create and delete really work. :-)</div>
+
 <table id="table" tal:define="zopes context/list_zopes">
     <thead>
         <tr>

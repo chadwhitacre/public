@@ -30,6 +30,11 @@ So here's how to set up a Cheeze server (dev or production):
   6) In master/ZMI, add a Big Cheeze, and set the instance_root and skel_root to
      the directories you created above.
 
+  7) Now try creating and deleting zopes. :) th (you will need to start them
+     manually to confirm that they are indeed working)
+
+  8) Also note "domains" and "documentation" tabs.
+
 
 Notes:
 
