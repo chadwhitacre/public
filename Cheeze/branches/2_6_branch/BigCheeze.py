@@ -337,11 +337,11 @@ class BigCheeze(Implicit, Persistent, \
 
     def _set_vhost_db(self, vhost_db):
         """ validate and set the vhost db"""
-        from whichdb import whichdb
+        #from whichdb import whichdb
         if vhost_db == '':
             PropertyManager._setPropValue(self, 'vhost_db', '')
-        elif whichdb(vhost_db) is None or whichdb(vhost_db) == '':
-            raise CheezeError, "vhost_db must point to a valid dbm file"
+        #elif whichdb(vhost_db) is None or whichdb(vhost_db) == '':
+        #    raise CheezeError, "vhost_db must point to a valid dbm file"
         else:
             clean_path = self._scrub_path(vhost_db)
             PropertyManager._setPropValue(self, 'vhost_db', clean_path)
