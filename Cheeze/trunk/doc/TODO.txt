@@ -8,11 +8,11 @@ ports
 
 zopes
 
-    manage_zopes/style_zopes
-
-    refactor <<HTTP_PORT>>
-
     implement port_get
+
+    implement zope_edit
+
+    grey out port when |stock| is skelected
 
     put inituser in skel?
 

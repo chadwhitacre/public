@@ -33,7 +33,15 @@ class ZopeManager:
 
     def port_get(self, zope):
         """ given a zope instance, return its port number """
-        return 'DUDE'
+        import re
+
+        # get path to zope.conf
+        conf_path = join(self.instance_root, zope, 'etc/zope.conf')
+        conf_file = file(conf_path).read()
+
+        search = re.search('%define HTTP_PORT (.*)',conf_file)
+
+        return search.group(1)
 
 
     ##
