@@ -1,0 +1,79 @@
+<dtml-var manage_page_header>
+<dtml-var manage_tabs>
+
+<table>
+<dtml-if trigger>
+<tr><td align="left" valign="top">
+<div class="system-msg">
+<dtml-in "set_dp_map(domain, path, REQUEST)">
+<dtml-if sequence-start><dl></dtml-if>
+<dt><dtml-var sequence-key></dt>
+<dd><dtml-var sequence-item></dd>
+<dtml-if sequence-end></dl></dtml-if>
+<dtml-else>
+Update Succeeded
+</dtml-in>
+</div>
+</td></tr>
+</dtml-if>
+<tr>
+<td align="left" valign="top"><div class="form-label">Last Modified</div></td>
+<td align="left" valign="top"><div class="form-text">
+<dtml-var bobobase_modification_time fmt="%Y-%m-%d %H:%M">
+</div></td></tr>
+</table>
+
+<dtml-if helptrigger><dtml-call "change_show_help()"></dtml-if>
+<dtml-if "show_help()">
+<p class="form-help"><div class="form-label">Map domains to subfolders</div>
+This form defines the Domain-Folder Mappings for your Zope. It maps domains that you service in this Zope to folders in this Zope. For instance, if you want someone who asks for the domain "foobar.com" to be directed to your folder at "/Clients/Commercial/foobar" fill in "foobar.com" on the left and "/Clients/Commercial/foobar" on the right.</p> 
+<p class="form-help"><div class="form-label">Map a subdomain</div>
+To create a subdomain, fill in the full subdomain name on the left and the folder on the right. For instance, "myhelper.foobar.com" on the left and "/Clients/Commercial/foobar/myhelper" on the right will direct anyone who asks for "myhelper.foobar.com" to the myhelper subfolder.
+</p>
+<p class="form-help"><div class="form-label">Intercept random subdomain requests</div>
+By default, "random_thing_someone_typed_into_their_browser.foobar.com" will be routed to the root of your Zope, just as if there was no Domain-Folder mapping present. To intercept requests for random or misspelled subdomains, create an entry as follows: on the left enter "*.foobar.com". On the right enter the path to the folder you wish to show people who ask for arbitrary subdomains of foobar.com, for instance "/Clients/Commercial/foobar/lost".
+</p>
+
+<p class="form-help"><div class="form-label">To delete a mapping</div>Delete the path on the left and hit "Update Mappings"</p>
+<p class="form-label">
+Please take a moment to read the notes at the bottom of this page. Have fun ruling your domains!
+</p>
+</dtml-if>
+
+<br/><br/>
+<form action="&dtml-URL0;" method="post">
+<table border="0" cellpadding="9" cellspacing="9">
+<tr><th><h2>Domain</h2></th><th><h2>Path</h2></th></tr>
+<dtml-in "display_rules()">
+<tr>
+<td><dtml-var sequence-key></td>
+<td><input type="text" name="&dtml-sequence-key;" value="&dtml-sequence-item;"/></td>
+</tr>
+</dtml-in>
+<tr>
+<td><input type="text" name="domain"/></td>
+<td><input type="text" name="path"/></td>
+</tr>
+</table>
+<input type="submit" name="trigger" value="Update Mappings"/>
+</form>
+<dtml-if "show_help()">
+<h3 class="form-label" style="color: green">Notes:</h3><br/>
+<p class="form-help"><div class="form-label">Non-domain mappings</div>For redirects other than from a domain name to a subfolder, you must still write your own site access rule. If you need to do this, log in and view the documentation at iMeme client services for more info.</p>
+<p class="form-help"><div class="form-label">Mappings effect management screens!</div>Domain-Folder mappings will effect management screens as well. To get to your root folder (and the virtual host monster in it!) after you write a rule, you can access your Zope by ip address or by another domain.</p>
+<p class="form-help"><div class="form-label">What happens if I mess up?</div> If a path to a folder that you enter does not exist, it will cause a Site Error when someone tries to visit the corresponding domain. If a domain you enter does not exist (in this Zope) there will be no effect, except a useless entry will occupy space on this screen. In other words, it is very easy to recover from mistakes. Just access your Zope by ip and edit the mapping again!
+</p>
+<p class="form-help"><div class="form-label">The www trick</div>In order to direct someone who asks for "www.foobar.com" to the same folder as "foobar.com" maps to, you must create another entry. Fill in "www.foobar.com" on the left and the path to your folder on the right. Otherwise virtual host monster will treat "www.foobar.com" as a random subdomain.</p> 
+<p class="form-help"><div class="form-label">Permissions</div> The permission to access this screen and change/add mappings is "Add Site Roots". 
+</p>
+<p class="form-help"><div class="form-label">Can I map a domain to an object other than a folder?</div>Not recommended. If you map a domain or subdomain to something other than an object container (i.e. a folder) you may get some strange behavior.</p>
+<p class="form-help"><div class="form-label">Domain-Folder Mappings created by:</div>iMeme in June, 2001</p>
+<p class="form-help"><div class="form-label">Get all this help off my screen!</div>If you want to hide the documentation, just hit the button below. Another button called "Show Documentation" will take it's place. Thanks!</p>
+</dtml-if>
+<form action="&dtml-URL0;" method="post">
+<dtml-if "show_help()">
+<input type="submit" name="helptrigger" value="Hide Documentation">
+<dtml-else>
+<input type="submit" name="helptrigger" value="Show Documentation">
+</dtml-if>
+<dtml-var manage_page_footer>
