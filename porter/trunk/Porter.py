@@ -47,8 +47,8 @@ these changes to the db and regenerate our named.conf.frag file.
 
 """
 
-import os, dbm, cmd
-from os.path import join, abspath
+import os, dbm, cmd, shutil
+from os.path import join, abspath, isfile
 from StringIO import StringIO
 
 class PorterError(RuntimeError):
@@ -253,6 +253,11 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
     def _write_to_disk(self):
         """ given that our data is clean, store it to disk """
 
+        # first step is to back up the current files
+        shutil.copyfile(self.db_path + '.db', self.db_path + '.db.old')
+        if isfile(self.frag_path):
+            shutil.copyfile(self.frag_path, self.frag_path + '.old')
+
         # create a local copy of self.domains, adding www's back in
         #  we create separate record structs so that we can sort the one that
         #  goes to named.conf.frag, thus making testing easier
@@ -291,6 +296,7 @@ zone "%s" {
         frag = file(self.frag_path,'w+')
         frag.write(named_conf_frag)
         frag.close()
+
 
     def _domain_cmp(x, y):
         """

@@ -1,7 +1,5 @@
 0.2
 =======================
-backup data files before writing
-
 ls --info
 write a function to columnize domains ... should be lined up on the first dot from the right
 only work with lowercase domain names
@@ -37,3 +35,4 @@ license
 use sample db in tests
 write a sort function for domains
 write dns module
+backup data files before writing

@@ -51,8 +51,12 @@ class TestCRUD(unittest.TestCase):
         self.assertEqual(self.c.domains, {'zetaweb.com':'alpin:8010'})
         self.assertEqual(self.c.aliases, {'alpin:8010':['zetaweb.com']})
         self.assertEqual(self.out.getvalue(), 'zetaweb.com\n')
-        self.assertEqual(os.listdir(self.c.var), ['rewrite.db','named.conf.frag'])
-        # now we should have both files
+        self.assertEqual(os.listdir(self.c.var), ['rewrite.db'
+                                                 ,'rewrite.db.old'
+                                                 ,'named.conf.frag'
+                                                  ])
+        # now we should have both files, plus a backup!
+        # to be really thorough we should reload the backup and make sure it works
 
     def testExtraInputIsIgnored(self):
         self.c.onecmd("add example.com server port Frank Sinatra sings the blues")
@@ -160,6 +164,7 @@ latebutlaughing.com  tesm.edu         zetaweb.com \n"""
         # add three ...
         ##
 
+        self.assertEqual(os.listdir(self.c.var), ['rewrite.db'])
         self.c.onecmd("add zetaweb.com alpin 8010")
         self.c.onecmd("mk thedwarf.com duder 8020")
         self.c.onecmd("add very.malcontents.org duder 8020")
@@ -207,6 +212,11 @@ zone "www.zetaweb.com" {
         # ... then remove one ...
         ##
 
+        self.assertEqual(os.listdir(self.c.var), ['rewrite.db'
+                                                 ,'rewrite.db.old'
+                                                 ,'named.conf.frag'
+                                                 ,'named.conf.frag.old'
+                                                  ])
         self.c.onecmd("rm zetaweb.com")
         self.assertEqual(file(self.c.frag_path).read(),"""\
 
@@ -242,6 +252,11 @@ zone "www.thedwarf.com" {
         # ... then add two more ...
         ##
 
+        self.assertEqual(os.listdir(self.c.var), ['rewrite.db'
+                                                 ,'rewrite.db.old'
+                                                 ,'named.conf.frag'
+                                                 ,'named.conf.frag.old'
+                                                  ])
         self.c.onecmd("add malcontents.org duder 8020")
         self.c.onecmd("mk christyanity.com duder 8020")
         self.assertEqual(file(self.c.frag_path).read(),"""\
@@ -297,6 +312,11 @@ zone "www.thedwarf.com" {
         # ... then remove all
         ##
 
+        self.assertEqual(os.listdir(self.c.var), ['rewrite.db'
+                                                 ,'rewrite.db.old'
+                                                 ,'named.conf.frag'
+                                                 ,'named.conf.frag.old'
+                                                  ])
         self.c.onecmd("rm christyanity.com malcontents.org very.malcontents.org")
         self.c.onecmd("rm thedwarf.com")
         self.assertEqual(file(self.c.frag_path).read(),"""\
