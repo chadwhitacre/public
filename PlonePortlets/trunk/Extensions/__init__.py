@@ -1,3 +1,0 @@
-"""\
-PlonePortlets Extensions package
-"""
