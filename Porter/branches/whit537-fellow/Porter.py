@@ -87,15 +87,38 @@ Commands available:
     # Completes
     ##
 
-    def complete_domains(self, text, line, begidx, endidx):
+    def _complete_domains(self, text, line, begidx, endidx):
         return [d for d in self.domains.keys() if d.startswith(text)]
+
+    def _complete_servers(self, text, line, begidx, endidx):
+        def ping(hostname):
+            """ given a hostname, return a boolean """
+            # ping it on port 8000, return True unless ping fails
+            return True
+
+        etc_hosts = file('/etc/hosts')
+        servers= []
+        for hostname in etc_hosts:
+            if ping(hostname):
+                # info = http://hostname:8000/fellow
+                # if info is valid:
+                servers.append(hostname)
+        return [s for s in servers if s.startswith(text)]
+
+    def _complete_ports(self, text, line, begidx, endidx):
+        return [d for d in self.domains.keys() if d.startswith(text)]
+
+    # this is the one that actually gets called
+    def complete_smart(self, text, line, begidx, endidx):
+        # determine position of argument, and return appropriate completion
+        return self._complete_domains(text, line, begidx, endidx)
 
 
     ##
     # Create/Update
     ##
 
-    complete_mv = complete_domains
+    complete_mv = complete_smart
 
     def do_mv(self, inStr=''):
         """ alias for mk, but with tab-completion """
@@ -143,7 +166,7 @@ Commands available:
     # Read
     ##
 
-    complete_ls = complete_domains
+    complete_ls = complete_smart
 
     def do_ls(self, inStr=''):
         """ print out a list of the domains we are managing """
