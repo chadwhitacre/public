@@ -1,0 +1,35 @@
+Zopes tab
+    instance_root
+
+    create/delete/edit instances
+        instance_root
+
+    skel selection
+        populated skel_root
+
+    'Port' column
+        populated skel_root
+
+    port numbers as select
+        port_range
+
+
+Domains tab
+    dns_file or vhost_db
+
+    domains propagate to DNS file
+        dns_file
+
+    domains registered with Apache vhosting
+        vhost_db
+
+    'Zope' col
+        instance_root
+
+    'IP' col
+        not instance_root
+
+
+Diff at both template and python levels
+
+
