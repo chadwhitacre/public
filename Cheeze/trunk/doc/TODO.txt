@@ -8,7 +8,7 @@ ports
 
 zopes
 
-    implement port_get
+    implement ackawi8080 as instance name
 
     implement zope_edit
 
