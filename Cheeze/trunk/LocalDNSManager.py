@@ -25,23 +25,23 @@ class LocalDNSManager:
 
         self._hosts_init()
 
-        regex = self.hosts_filter_get()
-        all_domains = result = self._domain_map.keys()
+        regex = self.filter_get('hosts')
+        all_domains = results = self._domain_map.keys()
 
         if regex not in ['', self.regex_default]:
             import re
-            result = []
+            results = []
             for domain in all_domains:
                 str_to_search = self._domain_search_str(domain)
                 try:
                     found = re.search(regex, str_to_search) != None
                 except:
                     import sys
-                    self.hosts_filter_set("regex < %s > has an " % regex \
-                                        + "error: %s" % sys.exc_info()[1])
+                    self.filter_set("hosts", "regex < %s > has an " % regex \
+                                           + "error: %s" % sys.exc_info()[1])
                 if found:
-                    result.append(domain)
-        domains = result
+                    results.append(domain)
+        domains = results
         domains.sort()
         output = []
         for domain in domains:

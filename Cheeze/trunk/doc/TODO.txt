@@ -30,13 +30,15 @@ Low Priority (version 2)
 Chad's todo
 ------------------------------
 
-write manage_hosts
+validate port_range and port_list
 
-lightly refactor
+refactor flow control on ports_list_available
 
-mv props to chmod and tabs
+mv props to config tab
 
 zopes
+
+    update filtering
 
     grey out port when |stock| is skelected
 
@@ -48,3 +50,5 @@ zopes
 
     How cool would it be to query the zope socket or lock or pid or whatever to
     see if each zope is actually running? Then start, stop, restart ...
+
+include a default skel w/ package that works with port numbers
