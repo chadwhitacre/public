@@ -1,0 +1,4 @@
+This software is Copyright (c) Zope Corporation (tm) and Contributors. All
+rights reserved.
+
+copyright (c) 2004-2005 Zeta Design & Development, LLC <http://www.zetaweb.com>
