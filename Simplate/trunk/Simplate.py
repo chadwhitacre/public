@@ -4,25 +4,24 @@ A simple template that stores a text block and does python string replacement on
 it.
 """
 
-#__version__='$Revision: 1.30.10.1 $'[11:-2] I wonder where this comes from?
+__version__ = '0.2'
 
+import sys
 from ExtensionClass import Base
 
 class Simplate(Base):
     "Simplate using python string replacement"
 
     content_type = 'text/plain'
-    expand = 0
+    value_paths = []
     _v_errors = ()
     _v_warnings = ()
     _v_cooked = 0
     id = '(unknown)'
     _text = ''
+    _value_dict = {}
+    _error_start = '<!-- Simplate Diagnostics'
 
-    def StringIO(self):
-        # Third-party products wishing to provide a full Unicode-aware
-        # StringIO can do so by monkey-patching this method.
-        return FasterStringIO()
 
     def simplate_edit(self, text, content_type):
         if content_type:
@@ -59,7 +58,12 @@ class Simplate(Base):
         if self._v_errors:
             raise SimplateRuntimeError, 'Simplate %s has errors.' % self.id
 
-        return self._text
+        # First, do some escapes. Then do replacement if we have anything to replace with.
+        unprocessed = self._text.replace('%','%%').replace('%%(','%(').replace('%%%(','%%(')
+        if self._value_dict:
+            return unprocessed % self._value_dict
+        else:
+            return unprocessed
 
 #        output = self.StringIO()
 #        c = self.simplate_getContext()
@@ -82,7 +86,7 @@ class Simplate(Base):
         err = self._v_errors
         if err:
             return err
-        if not self.expand: return
+#        if not self.expand: return
 #        try:
 #            self.simplate_render(source=1)
 #        except:
@@ -93,23 +97,11 @@ class Simplate(Base):
             self._cook()
         return self._v_warnings
 
-#    def simplate_macros(self):
-#        if not self._v_cooked:
-#            self._cook()
-#        if self._v_errors:
-#            __traceback_supplement__ = (SimplateTracebackSupplement, self)
-#            raise SimplateRuntimeError, 'Simplate %s has errors.' % self.id
-#        return self._v_macros
-
     def simplate_source_file(self):
         return None  # Unknown.
 
     def write(self, text):
         assert type(text) is type('')
-#        if text[:len(self._error_start)] == self._error_start:
-#            errend = text.find('-->')
-#            if errend >= 0:
-#                text = text[errend + 4:]
         if self._text != text:
             self._text = text
         self._cook()
@@ -117,38 +109,46 @@ class Simplate(Base):
     def read(self):
         self._cook_check()
         if not self._v_errors:
-#            if not self.expand:
-#                return self._text
-#            try:
-#                return self.simplate_render(source=1)
-#            except:
-#                return ('%s\n Macro expansion failed\n %s\n-->\n%s' %
-#                        (self._error_start, "%s: %s" % sys.exc_info()[:2],
-#                         self._text) )
             return self._text
 
         return ('%s\n %s\n-->\n%s' % (self._error_start,
                                       '\n '.join(self._v_errors),
                                       self._text))
 
+    def _build_value_dict(self):
+        self._value_dict = {}
+
+        paths = list(self.value_paths)
+        paths.reverse()
+        for path in paths:
+            if path:
+                value_obj = self.restrictedTraverse(path)
+                value = value_obj()
+                if type(value) == type({}):
+                    self._value_dict.update(value)
+                else:
+                    warning = "Simplate value script '%s' " % value_obj.id + \
+                              "does not return a dictionary."
+                    self._v_warnings = ["String replacement warning", warning]
+
     def _cook_check(self):
         if not self._v_cooked:
             self._cook()
 
     def _cook(self):
-        """Do the string replacement.
+        """Compile the value dictionary.
 
         Cooking must not fail due to compilation errors in templates.
         """
-        source_file = self.simplate_source_file()
+#        source_file = self.simplate_source_file()
 #        if self.html():
 #            gen = TALGenerator(getEngine(), xml=0, source_file=source_file)
 #            parser = HTMLTALParser(gen)
 #        else:
 #            gen = TALGenerator(getEngine(), source_file=source_file)
 #            parser = TALParser(gen)
-
-        self._v_errors = ()
+#
+#        self._v_errors = ()
 #        try:
 #            parser.parseString(self._text)
 #            self._v_program, self._v_macros = parser.getCode()
@@ -156,8 +156,17 @@ class Simplate(Base):
 #            self._v_errors = ["Compilation failed",
 #                              "%s: %s" % sys.exc_info()[:2]]
 #        self._v_warnings = parser.getWarnings()
-        self._v_cooked = 1
 
+        self._v_errors = ()
+        try:
+            self._build_value_dict()
+        except:
+            self._v_errors = ["Compilation failed",
+                              "%s: %s" % sys.exc_info()[:2]]
+#        self._v_warnings = parser.getWarnings()
+
+        self._v_cooked = 1
+        
 #    def html(self):
 #        if not hasattr(getattr(self, 'aq_base', self), 'is_html'):
 #            return self.content_type == 'text/html'
@@ -179,8 +188,6 @@ class SimplateRuntimeError(RuntimeError):
 
 
 class SimplateTracebackSupplement:
-    #__implements__ = ITracebackSupplement
-
     def __init__(self, smpt):
         self.object = smpt
         w = smpt.simplate_warnings()

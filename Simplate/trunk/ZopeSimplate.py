@@ -46,8 +46,8 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
     func_code = FuncCode((), 0)
 
     _default_bindings = {'name_subpath': 'traverse_subpath'}
-#    _default_content_fn = os.path.join(package_home(globals()),
-#                                       'www', 'default.html')
+    _default_content_fn = os.path.join(package_home(globals()),
+                                       'www', 'default.html')
 
     manage_options = (
         {'label':'Edit', 'action':'simplate_editForm',
@@ -61,14 +61,14 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
     _properties=({'id':'title', 'type': 'string', 'mode': 'wd'},
                  {'id':'content_type', 'type':'string', 'mode': 'w'},
                  #{'id':'expand', 'type':'boolean', 'mode': 'w'},
-                 {'id':'values', 'type':'lines', 'mode': 'w'},
+                 {'id':'value_paths', 'type':'lines', 'mode': 'w'},
                  )
 
-    def __init__(self, id, text='', content_type=None):
+    def __init__(self, id, text='(empty)', content_type=None):
         self.id = str(id)
         self.ZBindings_edit(self._default_bindings)
-#        if text is None:
-#            text = open(self._default_content_fn).read()
+        if text is None:
+            text = open(self._default_content_fn).read()
         self.simplate_edit(text, content_type)
 
     def _setPropValue(self, id, value):
@@ -97,7 +97,7 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
                               'manage_FTPlist',
                               )
 
-    simplate_editForm = PageTemplateFile('www/ptEdit', globals(),
+    simplate_editForm = PageTemplateFile('www/simplateEdit.pt', globals(),
                                    __name__='simplate_editForm')
     simplate_editForm._owner = None
     manage = manage_main = simplate_editForm
@@ -105,18 +105,19 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
     security.declareProtected('Change simplates',
                               'simplate_editAction',
                               'simplate_setTitle',
+                              'simplate_setValue_paths',
                               'simplate_edit',
                               'simplate_upload',
                               'simplate_changePrefs',
                               )
                               
                               
-    def simplate_editAction(self, REQUEST, title, text, content_type):
+    def simplate_editAction(self, REQUEST, title, text, content_type, value_paths):
         """Change the title and document."""
         if SUPPORTS_WEBDAV_LOCKS and self.wl_isLocked():
             raise ResourceLockedError, "File is locked via WebDAV"
-#        self.expand=expand
         self.simplate_setTitle(title)
+        self.simplate_setValue_paths(value_paths)
         self.simplate_edit(text, content_type)
         REQUEST.set('text', self.read()) # May not equal 'text'!
         message = "Saved changes."
@@ -127,6 +128,10 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
 
     def simplate_setTitle(self, title):
         self._setPropValue('title', str(title))
+
+    def simplate_setValue_paths(self, value_paths):
+        self._setPropValue('value_paths', list(value_paths))
+        self._cook()
 
     def simplate_upload(self, REQUEST, file=''):
         """Replace the document with the text in file."""
@@ -232,9 +237,13 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
             security.removeContext(self)
 
     security.declareProtected('Change simplates',
-      'PUT', 'manage_FTPput', 'write',
-      'manage_historyCopy',
-      'manage_beforeHistoryCopy', 'manage_afterHistoryCopy')
+                              'PUT',
+                              'manage_FTPput',
+                              'write',
+                              'manage_historyCopy',
+                              'manage_beforeHistoryCopy',
+                              'manage_afterHistoryCopy',
+                              )
 
     def PUT(self, REQUEST, RESPONSE):
         """ Handle HTTP PUT requests """
@@ -260,25 +269,25 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
         "Support for searching - the document's contents are searched."
         return self.read()
 
-#    def document_src(self, REQUEST=None, RESPONSE=None):
-#        """Return expanded document source."""
-#
-#        if RESPONSE is not None:
-#            RESPONSE.setHeader('Content-Type', 'text/plain')
-#        if REQUEST is not None and REQUEST.get('raw'):
-#            return self._text
-#        return self.read()
+    def document_src(self, REQUEST=None, RESPONSE=None):
+        """Return expanded document source."""
+
+        if RESPONSE is not None:
+            RESPONSE.setHeader('Content-Type', 'text/plain')
+        if REQUEST is not None and REQUEST.get('raw'):
+            return self._text
+        return self.read()
 
 #    def om_icons(self):
 #        """Return a list of icon URLs to be displayed by an ObjectManager"""
-#        icons = ({'path': 'misc_/Simplates/smpt.gif',
+#        icons = ({'path': 'misc_/Simplates/simplate.png',
 #                  'alt': self.meta_type, 'title': self.meta_type},)
 #        if not self._v_cooked:
 #            self._cook()
 #        if self._v_errors:
 #            icons = icons + ({'path': 'misc_/Simplates/exclamation.gif',
 #                              'alt': 'Error',
-#                              'title': 'This template has an error'},)
+#                              'title': 'This simplate has an error'},)
 #        return icons
 
     def __setstate__(self, state):
@@ -317,9 +326,13 @@ d = ZopeSimplate.__dict__
 #d['source.xml'] = d['source.html'] = Src()
 
 
+
+##
 # Product registration and Add support
+##
+
 manage_addSimplateForm = PageTemplateFile(
-    'www/simplateAdd', globals(), __name__='manage_addSimplateForm')
+    'www/simplateAdd.pt', globals(), __name__='manage_addSimplateForm')
 
 from urllib import quote
 
@@ -357,8 +370,8 @@ def manage_addSimplate(self, id, title=None, text=None,
         REQUEST.RESPONSE.redirect(u+'/manage_main')
     return ''
 
-#from Products.Simplates import misc_
-#misc_['exclamation.gif'] = ImageFile('www/exclamation.gif', globals())
+from Products.Simplate import misc_
+misc_['exclamation.gif'] = ImageFile('www/exclamation.gif', globals())
 
 def initialize(context):
     context.registerClass(
