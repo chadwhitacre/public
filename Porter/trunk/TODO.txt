@@ -1,5 +1,6 @@
 0.2
 =======================
+reformat do_ls for 80-char width
 
 
 0.4
@@ -46,3 +47,5 @@ still getting double-up bug :/
 separate svn-managed porter from content (var/, htdocs/, cgi-bin/)
 named.conf.frag -> named.porter.conf
 inline help
+removing a non-existent domain should get a message
+
