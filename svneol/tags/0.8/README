@@ -20,7 +20,7 @@ Contents of this distribution:
 To install:
 
     % cd ~
-    % svn export http://svn.zetadev.com/public/svneol/trunk svneol
+    % svn export http://svn.zetadev.com/public/svneol/tags/0.8 svneol
     % cd svneol
     % make install
 
