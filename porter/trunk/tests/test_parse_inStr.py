@@ -1,10 +1,10 @@
 import unittest
-from porter.PorterCmd import PorterCmd
+from porter.Porter import Porter
 
 class TestParseInStr(unittest.TestCase):
 
     def setUp(self):
-        self.c = PorterCmd
+        self.c = Porter
 
     def testOneSingleLetterOpt(self):
         inStr = "-l"
