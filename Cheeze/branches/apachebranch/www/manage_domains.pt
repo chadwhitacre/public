@@ -7,32 +7,13 @@
            </style>
 </head>
 
-<body>
-
+<body tal:define="info here/domains_info">
+<div tal:replace="here/orphans_handle" />
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure context/manage_tabs">Tabs</h2>
 <div class="padding">
 
-<p class="form-help"> This page is just a prototype for now. IIRC, you didn't get too
-far with it anyway, eh? </p>
-
-<div tal:define="apache here/apache_db; dns here/dns_file;">
-
-    <div tal:condition="apache">
-    ok gotta handle domains with apache
-    
-        <p>
-            <strong>orphans:</strong>
-            <span tal:content="here/orphans_find" />
-        </p>
-    </div>
-    
-    <div tal:condition="dns">
-    ok gotta handle domains with DNS
-    </div>
-
-</div>
-
+<form action="domain_add" method="post">
 <table id="table">
     <thead>
         <tr>
@@ -44,8 +25,12 @@ far with it anyway, eh? </p>
             <th>Aliases</th>
         </tr>
         <tr class="green">
-            <td><input value="domain name to add" type="text"></td>
-            <td><select><option>none</option><option>ackawi8080</option><option>appenzell8090</option><option>cheddar8100</option></select></td>
+            <td><input name="name" value="domain name to add" onclick="if(this.value=='domain name to add'){this.value=''}" type="text"></td>
+            <td>
+                <select name="zope">
+                    <option tal:repeat="zope info/zopes" tal:content="python:zope[0]" tal:attributes="value python:zope[1]" />
+                </select>
+            </td>
             <td class="action"><input value="Add" type="submit"></td>
 
             <td>&nbsp;</td>
@@ -53,47 +38,25 @@ far with it anyway, eh? </p>
         </tr>
     </thead>
     <tbody>
-        <tr>
-            <td><a href="">caroleeann.com</a></td>
-            <td><select><option>none</option><option selected="selected">ackawi8080</option><option>appenzell8090</option><option>cheddar8100</option></select></td>
-
-            <td class="action"><img src="big_cheeze_delete"></td>
-            <td><a href="">ackawi8080.zetaserver.com</a></td>
-            <td><a href="">carolee.com</a>,
-                <a href="">ann.com</a>
-            </td>
-        </tr>
-        <tr>
-            <td><a href="">carolee.com</a></td>
-
-            <td><select><option>none</option><option selected="selected">ackawi8080</option><option>appenzell8090</option><option>cheddar8100</option></select></td>
-            <td class="action"><img src="big_cheeze_delete"></td>
-            <td><a href="">ackawi8080.zetaserver.com</a></td>
-            <td><a href="">caroleeann.com</a>,
-                <a href="">ann.com</a>
+        <tr tal:repeat="domain info/domains">
+            <td><a href="" tal:content="domain/name"></a></td>
+            <td>
+                <span tal:content="domain/zope" />
             </td>
 
-        </tr>
-        <tr>
-            <td><a href="">ann.com</a></td>
-            <td><select><option>none</option><option selected="selected">ackawi8080</option><option>appenzell8090</option><option>cheddar8100</option></select></td>
-            <td class="action"><img src="big_cheeze_delete"></td>
-            <td><a href="">ackawi8080.zetaserver.com</a></td>
-
-            <td><a href="">caroleeann.com</a>,
-                <a href="">carolee.com</a>
+            <td class="action">
+                <a tal:attributes="href python:here.absolute_url()+'/domain_remove?vhost='+domain['name']" 
+                   onclick="return confirm('Delete this domain?\nNo data will be lost, but the domain will no longer point anywhere.')">
+                    <img style="border:none;" src="image_delete" />
+                </a>
             </td>
-        </tr>
-        <tr>
-            <td><a href="">justparked.com</a></td>
-            <td><select><option>none</option><option>ackawi8080</option><option>appenzell8090</option><option>cheddar8100</option></select></td>
-
-            <td class="action"><img src="big_cheeze_delete"></td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
+            <td><a href="" tal:content="domain/canonical" /></td>
+            <td><span tal:repeat="alias domain/aliases"><a href="" tal:content="alias" /><span tal:condition="python:test(repeat['alias'].index<len(domain['aliases'])-1)">, </span></span>
+            </td>
         </tr>
     </tbody>
 </table>
+</form>
 </div>
 </body>
 </html>

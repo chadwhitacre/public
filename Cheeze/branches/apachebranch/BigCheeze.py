@@ -93,19 +93,16 @@ class BigCheeze(Implicit, Persistent, \
     security.declareProtected('Manage Big Cheeze', 'zope_edit'),
     def zope_edit(self, old_name, new_name, old_port, new_port):
         """ edit a zope instance """
-        old_zope_id = self._zope_id_make(old_name, old_port)
-        new_zope_id = self._zope_id_make(new_name, new_port)
-
-        if old_zope_id != new_zope_id:
+        if old_name != new_name:
             self._zope_rename(old_name, new_name)
         if old_port != new_port:
             self._port_set(old_port, new_port)
         return self.REQUEST.RESPONSE.redirect('manage')
 
     security.declareProtected('Manage Big Cheeze', 'zope_remove'),
-    def zope_remove(self, zope_id):
+    def zope_remove(self, zope):
         """ remove a zope instance """
-        self._zope_delete(zope_id)
+        self._zope_delete(zope)
         return self.REQUEST.RESPONSE.redirect('manage')
 
 
@@ -117,17 +114,16 @@ class BigCheeze(Implicit, Persistent, \
     manage_domains = PageTemplateFile('www/manage_domains.pt',globals())
 
     def domain_add(self):
-        """ add a domain instance """
-        pass
+        """handles adding domains"""
+        if self.apache_db: return ApacheVHostManager._domain_add(self)
 
     def domain_edit(self):
         """ add a domain instance """
         pass
 
     def domain_remove(self):
-        """ add a domain instance """
-        pass
-
+        """handles removing domains"""
+        if self.apache_db: return ApacheVHostManager._domain_remove(self)
 
 
 

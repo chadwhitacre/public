@@ -1,4 +1,7 @@
 import os
+from pprint import pformat
+from utils import *
+
 try:
     import dbm
     unix = 1
@@ -12,57 +15,101 @@ class ApacheVHostManager:
         pass
 
     def test_func(self):
-        return self.orphans_find()
+        return self.domains_info()
 
     def list_ports(self):
         """ return a list of available ports """
         if vhosting:
             avail_ports = [str(x) for x in range(8010,9000,10)]
-            for zope in self.zopes_list():
+            for zope in self.zope_ids_list():
                 if self.port_get(zope) in avail_ports:
                     avail_ports.remove(port)
         else:
             return None
 
+    def orphans_handle(self):
+        orphan_dict ={}
+        for zope in self.orphans_find():
+            zope_canonical_name= zope+'.zetaserver.com'
+            port = zope.split('_')[-1]
+            orphan_dict[zope_canonical_name]=port
+        self.update_vhosts(orphan_dict)
 
     def orphans_find(self):
         orphans =[]
         if self.instance_root:    
-            zopes = self.zopes_list()
-            zope_entries = self.canonical_names_list()
+            zopes = self.zope_ids_list()
+            zope_entries = [z[0] for z in self.canonical_names_list()]
             for zope in zopes:
                 zope_canonical_name= zope+'.zetaserver.com'
                 if not zope_canonical_name in zope_entries:
                     orphans.append(zope)
         return orphans
-            
+
+    def _domain_add(self):            
+        request = self.REQUEST
+        response = request.RESPONSE
+        form = request.form
+        data = {form['name']:form['zope'].split('_')[-1]}
+        self.vhosts_update(data)
+        return response.redirect('manage_domains')
+    
+    def _domain_remove(self):            
+        request = self.REQUEST
+        response = request.RESPONSE
+        form = request.form
+        vhost = form['vhost']
+        self.vhost_delete(vhost)
+        return response.redirect('manage_domains')
 
     def domains_info(self, troubleshoot=0):
-        #"populates the domains pt"
-        #vhosts = self.domains_list()
-        #index_sort(vhosts,0,compare_domains)
-        #info = {}
+        "populates the domains pt"
+        vhosts = self.domains_list()
+        index_sort(vhosts,0,compare_domains)
+        info = {}
+        
+        alias_map= {}
+        for domain, port in vhosts:
+            domain_list = alias_map.get(port,[])
+            domain_list.append(domain)
+            alias_map[port]=domain_list
+        
+        info['zopes'] = zopes = [(z,z.split('_')[-1]) for z in self.zope_ids_list()]
+        
+        zope_map = dict([(zport, zname) for zname, zport in zopes])
+        
+        canon_map = dict([(zport, zname+'.zetaserver.com') for zname, zport in zopes])
+        
+        domains =[]
+        for domain, port in vhosts:
+            aliases = alias_map[port][:]
+            aliases.remove(domain)
+            domain_info = {
+                'name':domain,
+                'port':port,
+                'zope':zope_map[port],
+                'canonical':canon_map[port],
+                'aliases':aliases,
+            }
+            domains.append(domain_info)
+        info['domains']=domains
+            
+        
+        
         #info['vhosts'] = vhosts
-        #server_info = {}
-        #for domain, server in vhosts:
-        #    domain_list = server_info.get(server,[])
-        #    domain_list.append(domain)
-        #    server_info[server]=domain_list
-        #info['servers'] = server_info
-        #if troubleshoot:
-        #    print pformat(info)
-        #    return printed
-        #else:
-        #    return info
         #
-        pass
+        #info['aliases'] = server_info
+        if troubleshoot:
+            return pformat(info)
+        else:
+            return info
         
     def canonical_names_list(self):
         vhosts = self.get_vhosts().items()
         domains = []
         for vhost in vhosts:
             name, port = vhost
-            pattern = '0.zetaserver.com'
+            pattern = '.zetaserver.com'
             if name.count(pattern):
                 domains.append(vhost)
         return domains
@@ -72,7 +119,7 @@ class ApacheVHostManager:
         domains = []
         for vhost in vhosts:
             name, port = vhost
-            pattern = '0.zetaserver.com'
+            pattern = '.zetaserver.com'
             if not name.count(pattern):
                 domains.append(vhost)
         return domains
@@ -129,16 +176,16 @@ class ApacheVHostManager:
             of this product you need to input a value for apache_db under the 
             properties tab'''
         if check_db:
-            if not os.path.exists(self.apache_db):
+            if not os.path.exists(self.apache_db+'.db'):
                 self.recreate_vhosts({})
     
     # just making it so you can do both object_verb and verb_object
     def vhosts_get(self,*args,**kwargs):
-        self.get_vhosts(*args,**kwargs)
+        return self.get_vhosts(*args,**kwargs)
     def vhost_delete(self,*args,**kwargs):
-        self.delete_vhost(*args,**kwargs)
+        return self.delete_vhost(*args,**kwargs)
     def vhosts_update(self,*args,**kwargs):
-        self.update_vhosts(*args,**kwargs)
+        return self.update_vhosts(*args,**kwargs)
     def vhosts_recreate(self,*args,**kwargs):
-        self.recreate_vhosts(*args,**kwargs)
+        return self.recreate_vhosts(*args,**kwargs)
     
