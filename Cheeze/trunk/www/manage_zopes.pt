@@ -33,7 +33,7 @@
             <th style="text-align: left;">Name</th>
             <th>Port</th>
             <th colspan="2">Actions</th>
-            <th tal:condition="here/vhost_db">Canonical Name</th>
+            <th tal:condition="context/vhost_db">Canonical Name</th>
         </tr>
 
         <!-- This is the add form with port number as <select>,
@@ -100,17 +100,17 @@
                        size="3"
                        style="text-align: right;" />
             </td>
-            <td colspan="2" class="action">
+            <td colspan="2 class="action">
                 <input type="submit" value="add" />
             </td>
-            <td tal:condition="here/vhost_db"></td>
+            <td tal:condition="context/vhost_db">&nbsp;</td>
         </form>
         </tr>
 
         <!-- The add form is disabled if we have port_range
              but no availaports, or if we don't have skel_root -->
         <tr class="green" tal:condition="python:port_range and not availaports">
-            <td colspan="4">
+            <td tal:attributes="colspan python:test(context/vhost_db, '5', '4')">
 
                 Zope creation is disabled because there are no more available <a
                 href="manage_doc#port_range">ports</a>.
@@ -132,6 +132,7 @@
                        name="submit"
                        value="filter" />
             </td>
+            <td tal:condition="context/vhost_db">&nbsp;</td>
         </form>
         </tr>
 
@@ -211,7 +212,7 @@
     <tbody tal:condition="not:info/zopes">
 
         <tr>
-            <td colspan="3">
+            <td tal:attributes="colspan python:test(context/vhost_db, '5', '4')">
                 There are no Zope instances in <b tal:content="context/instance_root"
                 /><tal:x condition="context/zopes_filter_get"> that match your filter</tal:x>.
             </td>
