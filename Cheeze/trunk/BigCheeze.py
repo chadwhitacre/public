@@ -130,6 +130,20 @@ class BigCheeze(Implicit, Persistent, \
         """ add a zope instance """
         pass
 
+    def domain_add(self):
+        """ add a domain instance """
+        pass
+
+    def domain_edit(self):
+        """ add a domain instance """
+        pass
+        
+    def domain_remove(self):
+        """ add a domain instance """
+        pass
+
+    
+
 
     ##
     # helper routines
