@@ -13,10 +13,3 @@ class ApacheVHostManager:
                     avail_ports.remove(port)
         else:
             return None
-
-    def get_port(self, zope):
-        """ given a zope instance, return its port number """
-        if vhosting:
-            pass
-        else:
-            return None
