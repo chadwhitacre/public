@@ -155,6 +155,7 @@ class BigCheeze(Implicit, Persistent, \
             # we are ready to rock!!!
 
             # import things
+            raise 'doh!', os.environ
             import copyzopeskel
             import mkzopeinstance
 
