@@ -97,9 +97,9 @@ class BigCheeze(Implicit, Persistent, \
         new_zope_id = self._zope_id_make(new_name, new_port)
 
         if old_zope_id != new_zope_id:
-            self._zope_rename(old_name, new_name)
+            self._zope_id_set(old_zope_id, new_zope_id)
         if old_port != new_port:
-            self._port_set(old_port, new_port)
+            self._port_set(new_zope_id, old_port)
         return self.REQUEST.RESPONSE.redirect('manage')
 
     security.declareProtected('Manage Big Cheeze', 'zope_remove'),

@@ -74,7 +74,6 @@ class ZopeManager:
         kw['INSTANCE_HOME'] = skeltarget \
                             = join(self.instance_root,zope_id)
 
-
         # now make the zope!
         copyzopeskel.copyskel(skelsrc, skeltarget, None, None, **kw)
 
@@ -90,13 +89,46 @@ class ZopeManager:
         #    zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
         #    update_vhosts({zs_name:zope['port']},www=1)
 
-    def _zope_rename(self, old_name, new_name):
+    def _zope_id_set(self, old_id, new_id):
         """ rename a zope instance """
-        pass
 
-    def _set_port(self, zope, port):
-        """ change a zopes port """
-        pass
+        old_path = join(self.instance_root, old_id)
+        new_path = join(self.instance_root, new_id)
+
+        # rename the directory
+        # do this first since it is more failure-prone than file changes below
+        os.rename(old_path, new_path)
+
+        # update a few files
+        bin = join(new_path, 'bin')
+        etc = join(new_path, 'etc')
+
+        paths =  [join(bin, fn) for fn in os.listdir(bin)]
+        paths += [join(etc, fn) for fn in os.listdir(etc)]
+
+        for path in paths:
+            txt = file(path).read()
+            txt = txt.replace(old_path,new_path)
+            file(path, 'w').write(txt)
+
+    def _port_set(self, zope_id, old_port):
+        """ given a new zope_id and the old port number, reset the port number """
+
+        # get the configuration file
+        conf = join(self.instance_root, zope_id, 'etc/zope.conf')
+
+        # get the new port number from the zope_id
+        new_port = self.zope_info_get(zope_id)[1]
+
+        # set the port definitions for zope.conf
+        port_def = '%%define HTTP_PORT %s'
+        old_port_def = port_def % old_port
+        new_port_def = port_def % new_port
+
+        # now do the replacement
+        txt = file(conf).read()
+        txt = txt.replace(old_port_def, new_port_def)
+        file(conf, 'w').write(txt)
 
     def _zope_delete(self, zope):
         """ given an instance name, delete a zope """
