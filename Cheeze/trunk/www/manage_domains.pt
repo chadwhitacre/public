@@ -65,11 +65,8 @@
                                    href python:tmp % (context.absolute_url(),
                                                       domain['name']);"
                        tal:omit-tag="python:test(domain['canonical']=='ORPHANED')"
-                       tal:attributes="href href"
-                       onclick="return confirm('Delete this domain?\n \
-                                                No data will be lost, but the \
-                                                domain will no longer point \
-                                                anywhere.')">
+                       tal:attributes="href href;
+                       onclick python:'''return confirm('Delete domain: %s?\\n No data will be lost, but the domain will no longer point anywhere.');;'''%domain['name']">
                         <img style="border:none;" src="image_delete"
                              alt="delete" title="delete" />
                     </a>
