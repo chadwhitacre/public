@@ -29,11 +29,7 @@ class ZopeManager:
                     import re
                     result = []
                     for zope_id in all_ids:
-
-                        # str_to_search = self._zope_search_str(zope_id)
-                        # not sure we need to do this here
-                        str_to_search = zope_id
-
+                        str_to_search = self._zope_search_str(zope_id)
                         if re.search(regex, str_to_search) is not None:
                                result.append(zope_id)
                 except:
@@ -50,7 +46,10 @@ class ZopeManager:
         return ids
 
     def _zope_search_str(self, zope_id):
-        return 'name:%s\nport:%s' % self.zope_info_get(zope_id)
+        """ return a string to be used in regex filtering """
+        # we are not implementing header: here since we only have two columns
+        # and they are of different types
+        return '%s\n%s' % self.zope_info_get(zope_id)
 
     def zopes_list(self):
         """ return a list of name, port tuples """
@@ -124,7 +123,7 @@ class ZopeManager:
         if port == '':
             port = 80
         kw['HTTP_PORT'] = str(port)
-        kw['FTP_PORT'] = '21' # will want to revisit this later
+        kw['FTP_PORT'] = str(int(port)+1)
 
         # set skeltarget
         zope_id = self._zope_id_make(name,port)
@@ -138,13 +137,6 @@ class ZopeManager:
         # username:password are hardcoded for now
         inituser = join(kw['INSTANCE_HOME'], "inituser")
         mkzopeinstance.write_inituser(inituser, 'admin', 'jesus')
-
-        # if we are vhosting then make those changes too
-        # this will be moved up into BigCheeze
-        #if vhosting:
-        #    # this is rote from previous product
-        #    zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
-        #    _vhosts_update({zs_name:zope['port']},www=1)
 
     def _zope_edit(self):
         form = self.REQUEST.form
