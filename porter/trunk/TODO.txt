@@ -1,14 +1,15 @@
 0.2
 =======================
-ls --info
-write a function to columnize domains ... should be lined up on the first dot from the right
-only work with lowercase domain names
-deal with orphans
-tab complete available servers (from etc/hosts) and ports (from rpc to servers)
-fit codenames back into the mix, somehow?
 we don't actually handle DNS for tesm.edu -- does it matter if we still have a record for them?
+
+
+0.4
+=======================
+deal with orphans -- we have a domain record but there is no server (API may solve this)
+only work with lowercase domain names
+tab complete available servers (from etc/hosts) and ports (from rpc to servers)
 build in fault-tolerance, no more proxy errors! put in a default "parked" page for orphans, from porter's Apache!
-factor out a test case(?)
+be sure we work with weird paths, e.g., coming from cron
 
 
 future
@@ -17,6 +18,8 @@ inline help
 install properly with distutils
 non-interactive mode
 log ourselves
+write a function to columnize domains ... should be lined up on the first dot from the right
+fit codenames back into the mix, somehow?
 
 
 done - 0.2
@@ -36,3 +39,5 @@ use sample db in tests
 write a sort function for domains
 write dns module
 backup data files before writing
+ls --info
+locate and fix double-up bug

@@ -73,15 +73,16 @@
         - jewelryjohn.com
 
 
-    WEBSITE -- A website in Zetaserver is an abstraction, identified by a
-    codename. Instances of this abstraction are uniquely identified by an id of
-    the form:
+    WEBSITE -- A website in our clustered server is an abstraction, a purely
+    logical construct, identified by a codename. Instances of this abstraction
+    are uniquely identified by an id of the form:
 
         codename@server:port
 
     Note that the server and port are sufficient to distinguish the instance as
     far as Apache is concerned, but the codename is necessary in cases where we
-    want to relate this instance to other instances of the website.
+    want to relate this instance to other instances of the website on the human
+    level.
 
     SERVER -- A server is any IP address in /etc/hosts that returns the
     following when called via HTTP on port 80:
@@ -89,9 +90,8 @@
         https://127.0.0.1:80/websites
         https://127.0.0.1:80/open_ports
 
-
-    Should return some data structure. Format yet to be decided (XML or pure
-    python?) Should include: available ports, current websites
+            Should return some data structure. Format yet to be decided (XML or
+            pure python?) Should include: available ports, current websites
 
 
 
@@ -149,8 +149,7 @@
 
         Porter assumes that all domains will share the same SOA, MX records, and
         other configuration. This shared information is expected to be in a zone
-        file at namesrvr:/etc/namedb/porter.zone. A sample zone file is provided
-        with this distribution in the tmp/ directory. The domains themselves are
+        file at namesrvr:/etc/namedb/porter.zone. The domains themselves are
         expected to be registered in namesrvr:/etc/namedb/named.conf. Porter
         manages a named.conf fragment at $PORTER/var/named.conf.frag. It is left
         as an excercise for the implementor to append or otherwise incorporate
@@ -167,10 +166,10 @@
             We want to be sure that the system fails gracefully:
 
                 - We want to be very careful editing named.conf.fragment, since
-                we are dealing with a pure text format.
+                we are dealing with a pure text format. DONE
 
                 - We should keep at least one generation of backups for the two
-                named files, both on namesrvr and prtrsrvr.
+                named files, both on namesrvr and prtrsrvr. DONE
 
                 - Grace should abort if named.conf.frag is empty
 

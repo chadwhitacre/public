@@ -59,14 +59,6 @@ class Porter(cmd.Cmd):
 
     def __init__(self, var, *args, **kw):
 
-        # ui settings
-        self.intro = """
-#-------------------------------------------------------------------#
-#  Porter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
-#-------------------------------------------------------------------#
-        """
-        self.prompt = 'porter> '
-
         # set our data paths -- TODO: make sure these will work nicely from
         #  cron, etc.
         self.var = abspath(var)
@@ -102,95 +94,33 @@ class Porter(cmd.Cmd):
         # and let our superclass have its way too
         cmd.Cmd.__init__(self, *args, **kw)
 
-    def parse_inStr(inStr):
-        """ given a Cmd inStr string, return a tuple containing a list of
-        options and a list of args """
-        # for now we will just ignore opts that we don't understand
-        tokens = inStr.split()
-        opts = []
-        args = []
-        for t in tokens:
-            if t.startswith('--'):
-                # interpret as a word opt
-                opts.append(t[2:])
-            elif t.startswith('-'):
-                # interpret as a sequence of single-letter opts
-                opts.extend(list(t)[1:])
-            else:
-                # interpret as an arg
-                args.append(t)
-        return (opts, args)
-    parse_inStr = staticmethod(parse_inStr)
+        # ui settings
+        self.intro = """
+#-------------------------------------------------------------------#
+#  Porter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
+#-------------------------------------------------------------------#
 
-    def emptyline(self):
-        pass
+You are currently managing %s domains.
+        """ % len(self.domains)
+        self.prompt = 'porter> '
 
-    def do_EOF(self, inStr=''):
-        print >> self.stdout; return True
-    def do_exit(self, *foo):
-        return True
-    do_q = do_quit = do_exit
+
+
 
 
     ##
-    # Read
+    # Completes
     ##
 
-    def complete_ls(self,text, line, begidx, endidx):
+    def complete_domains(self,text, line, begidx, endidx):
         return [d for d in self.domains.keys() if d.startswith(text)]
-
-    def do_ls(self, inStr=''):
-        """ print out a list of the domains we are managing """
-        # columnize is undocumented
-        opts, args = self.parse_inStr(inStr)
-        domains = self.domains.keys()
-        if len(domains) > 0: # otherwise columnize gives us "<empty>"
-
-            if ('r' in opts) or ('raw' in opts):
-                print >> self.stdout, """
-KEY                           VALUE\n%s""" % (self.ruler*60,)
-                raw = dbm.open(self.db_path,'r')
-                for key in dict(raw):
-                    print >> self.stdout, "%s  %s" % (key.ljust(28), raw[key].ljust(28))
-                print >> self.stdout
-                raw.close()
-            else:
-                # massage our list of domains
-                domains.sort()
-                if args:
-                    domains = filter(lambda d: d.startswith(args[0]), domains)
-
-                if ('l' in opts) or ('long' in opts):
-                    header = """
-DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*79,)
-                    print >> self.stdout, header
-                    for domain in domains:
-                        server, portnum = self.domains[domain].split(':')
-                        aliases = self.aliases[self.domains[domain]][:]
-                        aliases.remove(domain)
-
-                        domain  = domain.ljust(28)[:28]
-                        server  = server.ljust(12)[:12]
-                        portnum = str(portnum).rjust(4)
-                        if aliases: alias = aliases.pop(0)[:28]
-                        else:       alias = ''
-
-                        record = "%s  %s  %s  %s" % (domain, server, portnum, alias)
-
-                        print >> self.stdout, record
-                        for alias in aliases:
-                            print >> self.stdout, ' '*53 + alias
-                    print >> self.stdout
-
-                else:
-                    self.columnize(domains, displaywidth=79)
 
 
     ##
     # Create/Update
     ##
 
-    complete_mv = complete_ls
+    complete_mv = complete_domains
 
     def do_mv(self, inStr=''):
         """ alias for mk, but with tab-completion """
@@ -204,7 +134,7 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
         """ given a domain name and a website, map them """
 
         # get our arguments and validate them
-        opts, args = self.parse_inStr(inStr)
+        opts, args = self._parse_inStr(inStr)
         if len(args) < 3:
             print >> self.stdout, "We need a domain name, a server name, " +\
                                   "and a port number."
@@ -223,9 +153,68 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
 
         # and update our indices
         if website in self.aliases:
-            self.aliases[website].append(domain)
+            if domain not in self.aliases[website]:
+                self.aliases[website].append(domain)
         else:
             self.aliases[website] = [domain]
+
+
+    ##
+    # Read
+    ##
+
+    complete_ls = complete_domains
+
+    def do_ls(self, inStr=''):
+        """ print out a list of the domains we are managing """
+        opts, args = self._parse_inStr(inStr)
+        domains = self.domains.keys()
+        if ('i' in opts) or ('info' in opts):
+            print >> self.stdout, "You are currently managing %s domains." % len(self.domains)
+            return
+        if len(domains) > 0: # otherwise columnize gives us "<empty>"
+
+            # TODO: this might be big enough to refactor into dict switch notation
+
+            if ('r' in opts) or ('raw' in opts):
+                print >> self.stdout, """
+KEY                           VALUE\n%s""" % (self.ruler*60,)
+                raw = dbm.open(self.db_path,'r')
+                for key in dict(raw):
+                    print >> self.stdout, "%s  %s" % (key.ljust(28), raw[key].ljust(28))
+                print >> self.stdout
+                raw.close()
+            else:
+                # massage our list of domains
+                domains.sort(self._domain_cmp)
+                if args:
+                    domains = filter(lambda d: d.startswith(args[0]), domains)
+
+                if ('l' in opts) or ('long' in opts):
+                    header = """
+DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*79,)
+                    print >> self.stdout, header
+                    for domain in domains:
+                        server, portnum = self.domains[domain].split(':')
+                        aliases = self.aliases[self.domains[domain]][:]
+                        aliases.remove(domain) # don't list ourselves in aliases
+
+                        domain  = domain.ljust(28)[:28]
+                        server  = server.ljust(12)[:12]
+                        portnum = str(portnum).rjust(4)
+                        if aliases: alias = aliases.pop(0)[:28]
+                        else:       alias = ''
+
+                        record = "%s  %s  %s  %s" % (domain, server, portnum, alias)
+
+                        print >> self.stdout, record
+                        for alias in aliases:
+                            print >> self.stdout, ' '*53 + alias
+                    print >> self.stdout
+
+                else:
+                    # columnize is an undocumented method in cmd.py
+                    self.columnize(domains, displaywidth=79)
 
 
     ##
@@ -236,7 +225,7 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
 
     def do_rm(self, inStr=''):
         """ given one or more domain names, remove it/them from our storage """
-        opts, args = self.parse_inStr(inStr)
+        opts, args = self._parse_inStr(inStr)
         for domain in args:
             if domain in self.domains:
                 del self.domains[domain]
@@ -298,6 +287,39 @@ zone "%s" {
         frag.close()
 
 
+    ##
+    # Helpers
+    ##
+
+    def _parse_inStr(inStr):
+        """ given a Cmd inStr string, return a tuple containing a list of
+        options and a list of args """
+        # for now we will just ignore opts that we don't understand
+        tokens = inStr.split()
+        opts = []
+        args = []
+        for t in tokens:
+            if t.startswith('--'):
+                # interpret as a word opt
+                opts.append(t[2:])
+            elif t.startswith('-'):
+                # interpret as a sequence of single-letter opts
+                opts.extend(list(t)[1:])
+            else:
+                # interpret as an arg
+                args.append(t)
+        return (opts, args)
+    _parse_inStr = staticmethod(_parse_inStr)
+
+
+    def emptyline(self):
+        pass
+
+    def do_EOF(self, inStr=''):
+        print >> self.stdout; return True
+    def do_exit(self, *foo):
+        return True
+    do_q = do_quit = do_exit
     def _domain_cmp(x, y):
         """
 
