@@ -75,7 +75,11 @@ class ApacheVHostManager:
         self._vhosts_update(data)
 
     def _domain_edit(self):
-        raise CheezeError, 'domain editing not yet implemented'
+        form= self.REQUEST.form
+        old_name = form['old_name']
+        new_port = form['new_port']
+        data = {old_name:new_port}
+        self._vhosts_update(data)
 
     def _domain_remove(self):
         request = self.REQUEST

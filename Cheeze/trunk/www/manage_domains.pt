@@ -29,7 +29,7 @@
             <tr>
                 <th>Domain</th>
                 <th>Zope</th>
-                <th>Actions</th>
+                <th colspan="2">Actions</th>
                 <th>Canonical</th>
                 <th>Aliases</th>
             </tr>
@@ -45,7 +45,7 @@
                                 tal:attributes="value python:zope[1];" />
                     </select>
                 </td>
-                <td class="action"><input value="Add" type="submit"></td>
+                <td colspan="2" class="action"><input value="Add" type="submit"></td>
 
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
@@ -53,21 +53,40 @@
         </thead>
         <tbody>
             <tr tal:repeat="domain info/domains">
+                <form action="domain_edit" method="post">
                 <td>
                     <a target="_blank"
                        tal:omit-tag="not:domain/canonical"
                        tal:attributes="href python:'http://'
                                                  + domain['canonical']"
-                       tal:content="domain/name" /></td>
-                <td>
-                    <span tal:content="domain/zope" />
+                       tal:content="domain/name" />
+                       <input name="old_name" type="hidden" tal:attributes="value domain/name" />
                 </td>
-
+                <td>
+                    <select name="new_port">
+                        <option tal:condition="python:test(domain['zope']=='ORPHANED')"
+                                tal:attributes="value domain/port">
+                        *ORPHANED
+                        </option>
+                        <option tal:repeat="zope info/zopes" 
+                                tal:content="python:test(zope[1]==domain['port'],'*'+zope[0],zope[0])"
+                                tal:attributes="value python:zope[1];
+                                                selected python:test(zope[1]==domain['port'])"
+                        />
+                    </select>
+                </td>
+                <td class="action">
+                    <input tal:condition="not:here/production_mode"
+                           type="submit"
+                           value="submit"
+                           class="save"
+                           title="save" />
+                    <span tal:condition="here/production_mode">&mdash;</span>
+                </td>
                 <td class="action">
                     <a tal:define="tmp python:'%s/domain_remove?vhost=%s';
                                    href python:tmp % (context.absolute_url(),
                                                       domain['name']);"
-                       tal:omit-tag="python:test(domain['canonical']=='ORPHANED')"
                        tal:attributes="href href;
                        onclick python:'''return confirm('Delete domain: %s?\\n No data will be lost, but the domain will no longer point anywhere.');;'''%domain['name']">
                         <img style="border:none;" src="image_delete"
@@ -78,7 +97,7 @@
                     <a target="_blank"
                        tal:attributes="href python:'http://'
                                                  + domain['canonical']"
-                       tal:content="domain/canonical" /></td>
+                       tal:content="domain/canonical" />&nbsp;</td>
                 <td>
                     <tal:x condition="domain/aliases"
                            repeat="alias domain/aliases">
@@ -92,6 +111,7 @@
                     </tal:x>
                     <tal:x condition="not:domain/aliases">&nbsp;</tal:x>
                 </td>
+                </form>
             </tr>
         </tbody>
     </table>
