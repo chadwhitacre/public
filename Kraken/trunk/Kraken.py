@@ -6,8 +6,7 @@
 # ----------------------------------------------------------------------------
 
 import os, re, imaplib, smtplib, email
-from os.path import join
-from ConfigParser import SafeConfigParser as ConfigParser
+from os.path import abspath
 from Whale import Whale
 
 class Kraken:
@@ -16,57 +15,48 @@ class Kraken:
     This guy polls an IMAP account. It either re-sends or trashes messages based
     on the From header. Usage:
 
-    >>> from Kraken import Kraken
     >>> k = Kraken()
-    #>>> k.release()
-
-    And here is a test of our re that should really go in the docstring of a
-    factored-out function.
-
-    >>> FROM = 'From: Chad Whitacre <chad.whitacre@zetaweb.com>'
-    >>> pattern = r'From:.* <?(.*@.*\.[A-Za-z]*)>?'
-    >>> from_addr = re.search(pattern, FROM).group(1)
-    >>> print from_addr
-    chad.whitacre@zetaweb.com
+    >>> k.release()
 
     """
+
+    carcasses = []
 
     def __init__(self, lair='.'):
         """ read in config info """
 
-        # all directories are assumed to be mailing lists
-        lists = [o for o in os.listdir(lair)
-                    if os.path.isdir(o) and
-                       not o.startswith('.') and
-                       not o == 'example']
+        # (almost) all directories are assumed to be mailing lists
+        lists = [abspath(o) for o in os.listdir(lair)
+                             if os.path.isdir(o) and
+                                not o.startswith('.') and
+                                not o == 'example']
 
         for l in lists:
-            # create an object representing the list config
+            # create an object representing the list config, and store it away
+            # maybe someday we will grow up and have persistent storage!
+            whale = Whale(l)
+            self.carcasses.append(whale)
 
-
-
-
-
-    def addrs(self, fn):
-        """ given a filename, return a list of email addresses """
-        raw = file(fn).read()
-        lines = [l.strip() for l in raw.split(os.linesep)]
-        return [l for l in lines
-                  if not l.startswith('#') and
-                     not l == '']
-        # maybe eventually validate email addresses
 
 
     def release(self):
-        """ get all mail from our inbox and process """
+        """ loop through all mailing lists and process """
 
-        imap = self.imap
-        smtp = self.smtp
+        for whale in self.carcasses:
+            self.devour(whale)
+
+
+
+    def devour(self, whale):
+        """ given a mailing list, get all mail from our inbox and process it """
+
+        imap = whale.imap
+        smtp = whale.smtp
 
         # open the IMAP connection and get everything in the INBOX
 
         if imap['secure'] == 'True':
-            raise 'NotImplemented', 'secure IMAP is not implemented yet'
+            raise 'NotImplemented', 'sorry, secure IMAP is not implemented yet'
         else:
             M = imaplib.IMAP4(imap['server'], int(imap['port']))
             M.login(imap['username'], imap['password'])
@@ -89,17 +79,17 @@ class Kraken:
 
             for num in msg_nums:
 
-                # get the From header
+                # get the From header and compare it to our membership lists
 
-                typ, raw = M.fetch(num, '(BODY[HEADER.FIELDS (FROM)])')
-                FROM = raw[0][1]
-                pattern = r'From:.* <?(.*@.*\.[A-Za-z]*)>?'
-                from_addr = re.search(pattern, FROM).group(1)
+                if self.from_addr(M,num) not in self.accept_from:
 
+                    # move it to the trash!
+                    M.copy(num, 'Trash')
+                    M.store(num, 'FLAGS.SILENT', '(\Deleted)')
 
-                # and compare it to our membership lists
+                    i_bad += 1
 
-                if from_addr in self.accept_from:
+                else:
 
                     # get the raw email
                     typ, raw = M.fetch(num, '(RFC822)')
@@ -115,7 +105,7 @@ class Kraken:
 
                     # and pass it on!
                     if smtp['secure'] == 'True':
-                       raise 'NotImplemented', 'secure SMTP is not implemented yet'
+                       raise 'NotImplemented', 'sorry, secure SMTP is not implemented yet'
                     else:
                         server = smtplib.SMTP(smtp['server'],smtp['port'])
                         server.login(smtp['username'],smtp['password'])
@@ -128,17 +118,34 @@ class Kraken:
 
                     i_good += 1
 
-                else:
-                    # move it to trash!
-                    M.copy(num, 'Trash')
-                    M.store(num, 'FLAGS.SILENT', '(\Deleted)')
-
-                    i_bad += 1
-
             M.close()
             M.logout()
 
-            print 'approved %s; rejected %s' % (i_good, i_bad)
+            print '%s: approved %s; rejected %s' % (whale.id, i_good, i_bad)
+
+
+    def from_addr(self, M=None, num=None, test_str=None):
+        """
+
+        Given an IMAP connection and a message number, return an email address.
+
+        >>> k = Kraken()
+        >>> k.from_addr(test_str='From: Chad Whitacre <chad.whitacre@zetaweb.com>')
+        'chad.whitacre@zetaweb.com'
+
+        >>> k.from_addr(test_str='From: chad@zetaweb.com')
+        'chad@zetaweb.com'
+
+        """
+        if test_str is None:
+            typ, raw = M.fetch(num, '(BODY[HEADER.FIELDS (FROM)])')
+            FROM = raw[0][1]
+        else:
+            FROM = test_str
+        pattern = r'From:.* <?(.*@.*\.[A-Za-z]*)>?'
+        from_addr = re.search(pattern, FROM).group(1)
+        return from_addr
+
 
 
 def _test():
