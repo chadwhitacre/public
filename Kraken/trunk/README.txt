@@ -39,10 +39,23 @@ Here's how to install Kraken:
 Roadmap
 =================================
 
-0.2 -- present version -- My immediate use case is a 5-10 person members-only
-list, and this is just about the simplest solution for my requirements.
+Even minor version = stable release, odd = development
+
+0.2 -- My initial use case was a 5-10 person members-only list, and this is just
+about the simplest solution for my requirements.
+
+0.3 -- present version -- development version for 0.4
+
+0.4 -- new use case: announcement list (do not accept from send_to)
+
+    - abstract conf from Kraken.py so we can use one Kraken to run multiple lists
+
+    - implement announcement list
+
+    - add list type to kraken.conf
 
 future versions -- who knows? Some random TODO's:
+
 
     - Protect against 'auto-away' messages!!!
 
