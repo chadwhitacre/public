@@ -135,10 +135,12 @@ class ZopeManager:
         if old_port != new_port:
             self._port_set(new_zope_id, old_port)
 
-    def _zope_remove(self, zope):
+    def _zope_remove(self):
+        """ grabs instance name from form posts, deletes it"""
+        zope = self.REQUEST.form['zope']
         if self.production_mode:
             raise CheezeError, 'Cannot delete instances in production mode'
-        """ given an instance name, delete a zope """
+        
         top = join(self.instance_root, zope)
         #raise 'top', top
         for root, dirs, files in os.walk(top, topdown=False):
