@@ -5,12 +5,9 @@
 # this stuff is worth it, you can buy me a beer in return. --Chad Whitacre
 # ----------------------------------------------------------------------------
 
-import os
+import os, re, imaplib, smtplib, email
+from os.path import join
 from ConfigParser import SafeConfigParser as ConfigParser
-import re
-import imaplib
-import smtplib
-import email
 
 class Kraken:
     """
@@ -19,23 +16,33 @@ class Kraken:
     it forwards the message along to the rest of the list. Otherwise it moves
     the message to the trash. Usage:
 
-    >>> from Kraken import Kraken
-    >>> k = Kraken()
-    >>> k.release()
+    >>> FROM = 'From: Chad Whitacre <douglas.wicker@pncyeah.com>'
+    >>> pattern = r'From:.* <?(.*@.*\..*)>?$'
+    >>> from_addr = re.search(pattern, FROM).group(1)
+    >>> print from_addr
+
+    #>>> from Kraken import Kraken
+    #>>> k = Kraken()
+    #>>> k.release()
 
     """
 
-    def __init__(self):
+    def __init__(self, root='.'):
         """ read in config info """
+
+        conf_path = join(root,'conf/kraken.conf')
+        send_path = join(root,'conf/send_to.conf')
+        from_path = join(root,'conf/also_accept_from.conf')
+
         cp = ConfigParser()
-        cp.read('conf/kraken.conf')
+        cp.read(conf_path)
         self.imap = dict(cp.items('imap'))
         self.smtp = dict(cp.items('smtp'))
         self.list_addr = cp.get('default', 'list_addr')
 
-        self.send_to = self.addrs('conf/send_to.conf')
+        self.send_to = self.addrs(send_path)
         self.accept_from = self.send_to + \
-                           self.addrs('conf/also_accept_from.conf')
+                           self.addrs(from_path)
 
 
     def addrs(self, fn):
@@ -84,7 +91,7 @@ class Kraken:
 
                 typ, raw = M.fetch(num, '(BODY[HEADER.FIELDS (FROM)])')
                 FROM = raw[0][1]
-                pattern = r'From: .* <(.*)>'
+                pattern = r'From:.* <?(.*@.*\.[A-Za-z]*)>?'
                 from_addr = re.search(pattern, FROM).group(1)
 
 
