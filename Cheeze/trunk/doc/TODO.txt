@@ -1,20 +1,12 @@
 Steve's todo
 ------------------------------
 
-High Priority (we need this to host sites)
-
-    implement domain edits
-
-    handle edits in apache for domains
-
 
 Medium Priority (needed to make the project solid and polished)
 
     parked pages for domains without instances, using master instance
 
     update all of chad's copious documentation :-)
-
-    shuffle around my funcs according to chad's scheme
 
     confirm security settings
 
