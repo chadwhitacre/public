@@ -23,6 +23,8 @@ install: configure
 # after deleting and recreating the script and man page, install them
 	install -C -o root -g wheel -m 555 zopeme ${prefix}/bin
 	install -C -o root -g wheel -m 444 zopeme.1.gz ${prefix}/man/man1
+# also install the skel in share/zope-skel and share/zeo-skel
+
 
 uninstall:
 # delete the script and man page from their installed locations
