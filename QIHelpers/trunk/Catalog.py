@@ -1,6 +1,5 @@
 from Products.CMFCore.utils import getToolByName
 
-
 def installIndices(portal, indices, out):
     """Add indices to the catalog on install"""
     catalog = getToolByName(portal, 'portal_catalog')
