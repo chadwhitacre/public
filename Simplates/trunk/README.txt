@@ -1,40 +1,46 @@
-This is a very simple wrapper around the stock Zope File product that allows you 
-to do python string formatting on your file body. Our immediate use case is 
-dynamic CSS files: no more DTML CSS files in Plone! Yay!
+========================================
+    INTRO
+========================================
 
-Here's how it works:
+Simplates are like Page Templates that do Python string replacement instead of
+TAL compilation. They are great for dynamic plain-text templating. Here's how it
+works:
 
-  - There is an additional property called 'values' which is a list of paths to 
+  - There is an additional property called 'values' which is a list of paths to
     objects that return dictionaries.
 
-  - Those paths are restrictedTraversed and a dictionary is built from the 
+  - Those paths are restrictedTraversed and a dictionary is built from the
     dictionaries they return.
 
-  - The paths are prioritized top to bottom, so that items returned by calling 
-    the first path override items with the same key returned by subsequent 
+  - The paths are prioritized top to bottom, so that items returned by calling
+    the first path override items with the same key returned by subsequent
     paths.
 
   - The only special character is '%(', which can be escaped thus: '%%('.
 
+
+For more information, see http://simplates.zetaweb.com.
 
 String formatting is documented here:
 
     http://www.python.org/doc/current/lib/typesseq-strings.html
 
 
-INSTALL
----------------------------
-Put it in your Products directory and smoke it.
+
+========================================
+    INSTALL
+========================================
+
+Put it in your Products directory and smoke it. Requires CMFCore.
 
 
-TODO
----------------------------
-FSSimplate for use in Filesystem Directory Views
-PloneSimplate for use in Plone
-Rewrite the ZMI interface in ZPT :p
 
+========================================
+    CREDITS & LEGAL
+========================================
 
-CREDITS
----------------------------
-Steven Brown    steve@zetaweb.com   beren1hand
-Chad Whitacre   chad@zetaweb.com    whit537
+Simplates was written by Steven Brown and Chad Whitacre of Zeta Design &
+Development, based on the Zope Page Templates package released by Zope
+Corporation.
+
+Simplates is licensed under the ZPL 2.1, see LICENSE.txt and COPYRIGHT.txt.

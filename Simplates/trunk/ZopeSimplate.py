@@ -3,8 +3,6 @@
 Zope object encapsulating a Simplate.
 """
 
-#__version__='$Revision: 1.44.44.5 $'[11:-2]
-
 import os, AccessControl, Acquisition, sys
 from types import StringType
 from Globals import DTMLFile, ImageFile, MessageDialog, package_home
@@ -113,8 +111,8 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
                               'simplate_upload',
                               'simplate_changePrefs',
                               )
-                              
-                              
+
+
     def simplate_editAction(self, REQUEST, title, text, content_type, value_paths):
         """Change the title and document."""
         if SUPPORTS_WEBDAV_LOCKS and self.wl_isLocked():

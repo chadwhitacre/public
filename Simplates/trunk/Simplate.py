@@ -1,10 +1,10 @@
 """Simplate module
 
-A simple template that stores a text block and does python string replacement on 
+A simple template that stores a text block and does python string replacement on
 it.
 """
 
-__version__ = '0.2'
+__version__ = '0.2.0'
 
 import sys
 from ExtensionClass import Base
@@ -138,11 +138,11 @@ class Simplate(Base):
             raise 'Whoa!','Hold your horses!'
             paths = paths.split(',')
         paths.reverse()
-        
+
         ##
         # 2. Build a master dictionary from the paths
         ##
-        
+
         for path in paths:
             if path:
                 try:
@@ -159,8 +159,8 @@ class Simplate(Base):
 
         ##
         # 3. Attempt the substitution
-        ## 
-        
+        ##
+
         try:
             self._replace()
         except KeyError: # The value_dict did not supply all the values
@@ -171,7 +171,7 @@ class Simplate(Base):
             self._v_errors.append(error)
 
         self._v_cooked = 1
-        
+
 #    def html(self):
 #        if not hasattr(getattr(self, 'aq_base', self), 'is_html'):
 #            return self.content_type == 'text/html'
