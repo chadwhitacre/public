@@ -1,8 +1,14 @@
 TODO
 
-validate add/edit (make sure paths exist!)
-
 add edit tab that is basically zopes.pt (domains.pt will be in another product!)
+
+    fix delete.gif
+
+    implement rename (will have to change instance_home in 5 files [4 bin scripts + zope.conf])
+
+    implement filter/batch
+
+    link instance name to instance page if Little Cheeze is present
 
 ZopeInstance.py -- obj representing zope instance
 
@@ -13,4 +19,6 @@ Make other product -- Apache DNS Manager
 
 
 DONE
+
+validate add/edit (make sure paths exist!)
 
