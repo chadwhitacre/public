@@ -1,0 +1,11 @@
+
+
+- Update Plone to notice the when the left/right columns are empty
+
+- fix broken filtering
+
+- Make UI for contextual portlets and filtering
+
+- Make default portlets (calendar, related, favorites, events, )
+
+- Make selections ordered

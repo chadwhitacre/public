@@ -1,0 +1,14 @@
+<tal:block tal:repeat="obj here/getPortletData">
+    <div tal:define="oddrow repeat/obj/odd"
+         tal:attributes="class python:test(oddrow, 'portletContent even', 'portletContent odd')">
+        <a href=""
+           tal:attributes="href string:${obj/getURL}/view;
+                           title obj/Description">
+             <span tal:replace="python:test(obj.Title, obj.Title, obj.id)"> Item title </span>
+        </a>
+        <div class="portletDetails"
+             tal:content="python:here.toPortalTime(obj.Date)">July 7, 08:11
+        </div>
+    </div>
+</tal:block>
+
