@@ -12,7 +12,7 @@ class ZopeManager:
 
 
     ##
-    # info providers
+    # info providers - these can be used in mgmt zpt's
     ##
 
     security.declareProtected('Manage Big Cheeze', 'zopes_list',
@@ -37,71 +37,66 @@ class ZopeManager:
 
 
     ##
-    # heavy lifters
+    # heavy lifters - these are only used by BigCheeze wrappers
     ##
 
-    security.declareProtected('Manage Big Cheeze', 'zope_create'),
-    def zope_create(self):
+    def _zope_create(self, name, skel, port):
         """ create a new zope instance """
-        request = self.REQUEST
-        response = request.RESPONSE
-        form = request.form
-        zope = form['zope']
-        if zope['name'] != '':
-            # we are ready to rock!!!
 
-            # initialize kw
-            kw = self._initialize_kw()
+        # initialize kw
+        kw = self._initialize_kw()
 
-            # import things
-            import sys
-            bin = join(kw['ZOPE_HOME'], 'bin')
-            sys.path.append(bin)
-            import copyzopeskel
-            import mkzopeinstance
+        # import things
+        import sys
+        bin = join(kw['ZOPE_HOME'], 'bin')
+        sys.path.append(bin)
+        import copyzopeskel
+        import mkzopeinstance
 
-            # set skelsrc
-            skel = zope['skel']
-            if skel == '|stock|':
-                # default to using stock Zope skeleton source
-                # NB: kw['HTTP_PORT'] will be meaningless!
-                skelsrc = join(kw['ZOPE_HOME'], 'skel')
-            else:
-                skelsrc = join(self.skel_root, skel)
-
-            # set skeltarget
-            kw['INSTANCE_HOME'] = skeltarget \
-                                = join(self.instance_root,
-                                               zope['name'])
-
-            # set port number
-            port = zope['port']
-            if port == '':
-                port = '80'
-            kw['HTTP_PORT'] = port
-            kw['FTP_PORT'] = '21' # will want to revisit this later
-
-            # now make the zope!
-            copyzopeskel.copyskel(skelsrc, skeltarget, None, None, **kw)
-
-            # and finally create the inituser
-            # username:password are hardcoded for now
-            inituser = join(kw['INSTANCE_HOME'], "inituser")
-            mkzopeinstance.write_inituser(inituser, 'admin', 'jesus')
-
-            # if we are vhosting then make those changes too
-            # this will be moved up into BigCheeze
-            #if vhosting:
-            #    # this is rote from previous product
-            #    zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
-            #    update_vhosts({zs_name:zope['port']},www=1)
+        # set skelsrc
+        if skel == '|stock|':
+            # default to using stock Zope skeleton source
+            # NB: kw['HTTP_PORT'] will be meaningless!
+            skelsrc = join(kw['ZOPE_HOME'], 'skel')
         else:
-            raise 'Cheeze Error', 'Please enter the name of the Zope to create'
-        return response.redirect('manage')
+            skelsrc = join(self.skel_root, skel)
 
+        # set skeltarget
+        kw['INSTANCE_HOME'] = skeltarget \
+                            = join(self.instance_root,name)
 
-    security.declareProtected('Manage Big Cheeze', 'zope_delete'),
-    def zope_delete(self, zope):
+        # set port number
+        if port == '':
+            port = '80'
+        else:
+            port = str(port)
+        kw['HTTP_PORT'] = port
+        kw['FTP_PORT'] = '21' # will want to revisit this later
+
+        # now make the zope!
+        copyzopeskel.copyskel(skelsrc, skeltarget, None, None, **kw)
+
+        # and finally create the inituser
+        # username:password are hardcoded for now
+        inituser = join(kw['INSTANCE_HOME'], "inituser")
+        mkzopeinstance.write_inituser(inituser, 'admin', 'jesus')
+
+        # if we are vhosting then make those changes too
+        # this will be moved up into BigCheeze
+        #if vhosting:
+        #    # this is rote from previous product
+        #    zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
+        #    update_vhosts({zs_name:zope['port']},www=1)
+
+    def _zope_rename(self, old_name, new_name):
+        """ rename a zope instance """
+        pass
+
+    def _set_port(self, zope, port):
+        """ change a zopes port """
+        pass
+
+    def _zope_delete(self, zope):
         """ given an instance name, delete a zope """
         top = join(self.instance_root, zope)
         #raise 'top', top
@@ -111,7 +106,6 @@ class ZopeManager:
             for name in dirs:
                 os.rmdir(join(root, name))
         os.rmdir(top)
-        return self.REQUEST.RESPONSE.redirect('manage')
 
 
     ##

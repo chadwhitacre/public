@@ -20,9 +20,9 @@ body,
     vertical-align: top;
     }
 
-#table .total td {
+/*#table .total td {
     font-weight: bold;
-    }
+    }*/
 
 .green  { background: #BDE9C0; }
 .red    { background: #FFDBDB; }
@@ -35,6 +35,28 @@ body,
 
 #table .action {
     text-align: center;
+    vertical-align: middle;
     }
+
+form {
+    margin: 0;
+    display: inline;
+    }
+
+.save {
+    border: none;
+    cursor: pointer;
+
+    width: 14px;
+    padding: 14px 0 0 0;
+    overflow: hidden;
+    background-image: url("image_save");
+    background-repeat: no-repeat;
+    white-space: normal;
+
+
+    height: 0px !important;
+    height /**/:14px;
+}
 
 .padding {padding: 1em;}

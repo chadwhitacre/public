@@ -82,17 +82,29 @@ class BigCheeze(Implicit, Persistent, \
 
     style_zopes = DTMLFile('www/style_zopes.css',globals())
 
+
+    security.declareProtected('Manage Big Cheeze', 'zope_add'),
     def zope_add(self):
         """ add a zope instance """
-        pass
+        form = self.REQUEST.form
+        self._zope_create(**form)
+        return self.REQUEST.RESPONSE.redirect('manage')
 
-    def zope_decommission(self):
-        """ add a zope instance """
-        pass
+    security.declareProtected('Manage Big Cheeze', 'zope_edit'),
+    def zope_edit(self, old_name, new_name, old_port, new_port):
+        """ edit a zope instance """
+        if old_name != new_name:
+            self._zope_rename(old_name, new_name)
+        if old_port != new_port:
+            self._port_set(old_port, new_port)
+        return self.REQUEST.RESPONSE.redirect('manage')
 
-    def zope_remove(self):
-        """ add a zope instance """
-        pass
+    security.declareProtected('Manage Big Cheeze', 'zope_remove'),
+    def zope_remove(self, zope):
+        """ remove a zope instance """
+        self._zope_delete(zope)
+        return self.REQUEST.RESPONSE.redirect('manage')
+
 
 
     ##
@@ -172,14 +184,11 @@ class BigCheeze(Implicit, Persistent, \
     # presentation helpers
     ##
 
-    def style(self):
-        """  """
-        return DTMLFile('www/style.css',globals())
+    style           = DTMLFile('www/style.css',globals())
 
-    def image_delete(self):
-        """  """
-        return ImageFile('www/delete.gif',globals(),)
+    image_delete    = ImageFile('www/delete.png',globals(),)
 
+    image_save      = ImageFile('www/save.png',globals(),)
 
     manage = manage_main = manage_zopes
 
@@ -191,14 +200,11 @@ class BigCheeze(Implicit, Persistent, \
 
 def manage_add(self):
     """  """
-    return PageTemplateFile('www/big_cheeze_add.pt', globals())
+    return PageTemplateFile('www/manage_add.pt', globals())
 
 def big_cheeze_add(self, id, instance_root='', skel_root='', REQUEST=None):
-    """ """
+    """  """
     self._setObject(id, BigCheeze(id, instance_root, skel_root))
-
-    # prolly should check to see if the instance and skel roots exist
-    # and return an error if they don't
 
     if REQUEST is not None:
         return self.manage_main(self, REQUEST, update_menu=1)
@@ -207,7 +213,6 @@ def initialize(context):
     context.registerClass(
         BigCheeze,
         permission='Add Big Cheeze',
-        constructors=(manage_add,
-                      big_cheeze_add),
+        constructors=(manage_add, big_cheeze_add),
         icon='www/big_cheeze.png',
         )

@@ -13,8 +13,6 @@
     tal:replace="structure context/manage_tabs">Tabs</h2>
 <div class="padding">
 
-<p class="form-help">Careful! Create and delete really work. :-)</p>
-
 <p class="form-help">Note that port number is not meaningful for stock skel. It
 will be 8080 no matter what you put in there. Should be working for devel and
 production though. :)</p>
@@ -22,38 +20,38 @@ production though. :)</p>
 <table id="table" tal:define="zopes context/zopes_list">
     <thead>
         <tr>
-            <th colspan="2" style="text-align: left;">Name</th>
-            <th>
-                <tal:x condition="context/vhosting">Port</tal:x>
-                <tal:x condition="not:context/vhosting">&nbsp;</tal:x>
-            </th>
-            <th>Actions</th>
+            <th style="text-align: left;">Name</th>
+            <th>Port</th>
+            <th colspan="2">Actions</th>
         </tr>
 
         <tr class="green">
-        <form action="zope_create" method="post"
+        <form action="zope_add" method="post"
               tal:define="availaskel context/skel_list;
                           skel_root  context/skel_root;">
-            <td><input name="zope.name:record" type="text"/></td>
-            <td><select name="zope.skel:record">
+            <td>
+                <input name="name:required" type="text"/>
+                <select name="skel">
                     <option tal:repeat="skel availaskel"
                             tal:attributes="value skel"
                             tal:content="skel" />
                     <option value="|stock|">stock</option>
                 </select>
             </td>
-            <td><select name="zope.port:record"
+            <td><select name="port:int"
                         tal:condition="context/vhosting">
                     <option tal:repeat="port context/list_ports" tal:content="port" />
                 </select>
                 <input type="text"
-                       name="zope.port:record"
+                       name="port:int:required"
                        value="80"
                        size="3"
                        style="text-align: right;"
                        tal:condition="not:context/vhosting" />
             </td>
-            <td class="action"><input type="submit" value="Create" /></td>
+            <td colspan="2" class="action">
+                <input type="submit" value="create" />
+            </td>
         </form>
         </tr>
 
@@ -61,10 +59,12 @@ production though. :)</p>
     <tbody tal:condition="zopes">
 
         <tr tal:repeat="zope zopes">
-            <td colspan="2">
+        <form action="zope_edit" method="post">
+            <td>
                 <input type="text"
                        name="zope.port:record"
                        value="80"
+                       style="width: 100%;"
                        tal:condition="not:context/vhosting"
                        tal:attributes="value zope" /></td>
             <td>
@@ -77,17 +77,24 @@ production though. :)</p>
                        tal:attributes="value python:context.port_get(zope)" />
             </td>
             <td class="action">
-                <a tal:attributes="href python:'zope_delete?zope=%s' % zope">
-                    <img style="border:none;" src="big_cheeze_delete" />
+                <input type="submit"
+                       value="submit"
+                       class="save"
+                       title="save" />
+            </td>
+            <td class="action">
+                <a tal:attributes="href python:'zope_remove?zope=%s' % zope">
+                    <img style="border:none;" src="image_delete" alt="delete" title="delete" />
                 </a>
             </td>
+        </form>
         </tr>
 
     </tbody>
     <tbody tal:condition="not:zopes">
 
         <tr>
-            <td colspan="4">
+            <td colspan="3">
                 There are no Zope instances in <b tal:content="context/instance_root" />.
             </td>
         </tr>
