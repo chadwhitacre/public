@@ -15,16 +15,20 @@ class PorterCmd(Cmd):
 
     def parseopts(arg):
         """ given a Cmd arg string, return a list of options """
+        # for now we will just ignore opts that we don't understand
         tokens = arg.split()
         opts = []
         for t in tokens:
             if t.startswith('---'):
                 continue
             elif t.startswith('--'):
+                # interpret as a word
                 opts.append(t[2:])
             elif t.startswith('-'):
+                # interpret as a sequence of letters
                 opts.extend(list(t)[1:])
             else:
+                # interpret as a sequence of letters
                 opts.extend(list(t))
         return opts
     parseopts = staticmethod(parseopts)
