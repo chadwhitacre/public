@@ -16,8 +16,9 @@
 .\"
 .Sh SYNOPSIS
 .Nm
-.Ar path
-.Ar port
+.Op Ar --force
+.Ar name
+.Op Ar port
 .\"
 .\"
 .\"
@@ -26,23 +27,32 @@
 .Sh DESCRIPTION
 .Nm
 creates a Zope instance that is configured with ZEO. It assumes that the
-following directories exist:
+following paths exist:
 .Bl -item -offset indent
 .It
 .Pa /usr/local/zope/rc.d/
 .It
-.Pa /usr/local/zope/zope/bin/
+.Pa /usr/local/zope/zope/bin/mkzeoinstance.py
+.It
+.Pa /usr/local/zope/zope/bin/mkzopeinstance.py
 .El
 .Pp
 It creates the ZEO client and server instances at:
 .Bl -item -offset indent
 .It
-.Pa ./ Ns << Ns Ar path Ns >>_<< Ns Ar port Ns >>/client-1
+.Pa ./ Ns << Ns Ar name Ns >> Ns Pa /client-1
 .It
-.Pa ./ Ns << Ns Ar path Ns >>_<< Ns Ar port Ns >>/server
+.Pa ./ Ns << Ns Ar name Ns >> Ns Pa /server
 .El
 .Pp
-Then it customizes the ZEO client and server installations as follows:
+If
+.Pa ./ Ns << Ns Ar name Ns >>
+already exists, it is not overwritten, unless the
+.Ar --force
+argument is given. After the client and server are created, they are customized
+as follows
+.Ns ( Ns Ar port
+defaults to 8080):
 .Bl -bullet -offset indent
 .It
 sets the HTTP port to
@@ -66,10 +76,12 @@ Lastly,
 creates a script at:
 .Bl -item -offset indent
 .It
-.Pa /usr/local/zope/rc.d/ Ns << Ns Ar path Ns >>_<< Ns Ar port Ns >>.sh
+.Pa /usr/local/zope/rc.d/ Ns << Ns Ar name Ns >> Ns Pa .sh
 .El
 .Pp
+
 This script can be used to start, stop, and restart the Zope+ZEO instance.
+
 .\"
 .\"
 .\"
@@ -83,10 +95,22 @@ This program was written with FreeBSD 4.11, Python 2.4, and Zope 2.7.4.
 .\"
 .\"
 .Sh EXAMPLES
-.Bl -item
-.It
-% zopeme foobar 8080
-.El
+.Bd -literal
+% PATH=/usr/local/zope/rc.d
+% cd /usr/local/zope/instances
+% zopeme foo
+.Ns ...
+% zopeme bar_8000 8000
+.Ns ...
+% ls
+bar_8000        foo
+% bar_8000.sh start
+.Ns . daemon process started, pid=12345
+started bar_8000 zeo server
+.Ns . daemon process started, pid=12346
+started bar_8000 zeo client
+%
+.Ed
 .\"
 .\"
 .\"
