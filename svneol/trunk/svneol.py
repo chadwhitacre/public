@@ -9,6 +9,7 @@ from sets import Set
 from ConfigParser import RawConfigParser
 
 
+
 ##
 # Determine the root of our tree.
 ##
@@ -19,8 +20,9 @@ else:   top = '.'
 top = os.path.realpath(top)
 
 
+
 ##
-# Parse the config file into a list of patterns matching text files
+# Parse the config file into a list of patterns that match text files
 ##
 
 config = RawConfigParser()
@@ -36,8 +38,9 @@ else:
     globlist.sort()
 
 
+
 ##
-# Walk the tree and scrub get a list of paths for all the text files.
+# Walk the tree and get a list of paths for all the text files.
 ##
 
 textfiles = Set()
