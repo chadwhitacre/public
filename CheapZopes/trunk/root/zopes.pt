@@ -1,0 +1,49 @@
+<html>
+<head>
+    <title>Zetaserver Prototype</title>
+    <style>@import url("style.css");</style>
+</head>
+
+<body tal:define="info here/zopes_info">
+<h1><a href="index_html">The Zeta</a></h1>
+<h3>
+    <a href="domains">Domains</a> | 
+    Zopes
+
+</h3>
+<form action="zopes_process" method="post">
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Port</th>
+            <th>Actions</th>
+        </tr>
+
+        <tr class="green">
+            <td><input name="zope.name:record" type="text"/></td>
+            <td><select name="zope.port:record">
+                    <option tal:repeat="port info/avail_ports" tal:content="port" />
+                </select></td>
+
+            <td><input type="submit" value="Add" /></td>
+        </tr>
+    </thead>
+    <tbody>
+    
+        <tr tal:repeat="zzope info/zopes">
+            <td tal:content="python:zzope[0]"></td>
+            <td tal:content="python:zzope[1]"></td>
+            
+            <td style="text-align: center;">
+                <a tal:attributes="href python:'delete_vhost?vhostname=%s%s.zetaserver.com'%(zzope[0],zzope[1])">
+                    <img style="border:none;" src="delete.gif" />
+                </a>
+            </td>
+        </tr>
+    
+    </tbody>
+</table>
+</form>
+</body>
+</html>

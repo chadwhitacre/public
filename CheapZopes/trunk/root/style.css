@@ -1,0 +1,149 @@
+body,table {
+    font: 85% Arial;
+    background: white;
+    }
+
+table {
+    border-spacing: 0;
+    }
+
+thead {
+    }
+
+
+th {
+    background: #DDD;
+    }
+
+    
+th, td {
+    margin: 0;
+    padding: 3px 10px;
+    border-bottom: 1px solid #CCC;
+    vertical-align: top;
+    }
+
+.total td {
+    font-weight: bold;
+    }
+
+h2 {
+    clear: both;
+    background: #BDE9C0;
+    border-bottom: 2px solid #00A251;
+    padding: 0.25em 0.5em;
+    margin: 2em 0 1em;
+    }
+
+.cards {
+    float: left;
+    width: 30%;
+    margin: 0 1em 1em 0;
+    padding: 0 1em;
+    line-height: 150%;
+    background: #eee;
+    }
+    
+
+.green {
+    background: #BDE9C0;
+    }
+
+.red {
+    background: #FFDBDB;
+    }
+
+.yellow {
+    background: #FFFFDB;
+    }
+
+.notes {
+    width: 400px;
+    border: 1px solid black;
+    margin: 3em 0 0;
+    padding: 1em;
+    }
+
+.notes p {
+    line-height: 150%;
+    }
+
+.notes li {
+    padding-bottom: 1em;
+    }
+
+.notes h2 {
+    margin: 0;
+    }
+
+select, input {
+    font-size: smaller;
+    }
+
+.actions {
+    text-align: center;
+    }
+
+.note {
+    border: none;
+    background: none;
+    color: red;
+    font-weight: bold;
+    }
+
+/*
+
+Things that someone can buy from/through us:
+
+    BIG PICTURE
+    ----------------------
+    I. websites
+        1) server administration
+        2) software development (includes testing & documentation)
+        3) graphic design
+        4) training & support
+        5) marketing (includes copywriting & SEO)
+
+    II. consulting
+        Zeta Scope Analysis(tm) ;)
+    
+    SPECIFICS (in order of business priority)
+    ----------------------
+    2) software development
+        as a service (time) -- this is our core business
+        as a product -- unanswered questions here
+
+    1) server administration
+        virtual real estate
+            domains/subdomains
+            domain aliases
+            DNS
+    
+        website hosting
+            disk space
+            memory
+            bandwidth
+            security (SSL certs)
+    
+        email hosting
+            email addresses
+            email aliases
+            disk space
+            spam/virus pro
+            IMAP
+            SMTP
+            POP
+
+        ways to manage server admin products/assets:
+                          | client |  zeta  |
+            ---------------------------------
+              centralized |        |        |
+            decentralized |        |        |
+
+
+website
+    cla.clive.The Zeta
+    caroleeann.com
+
+
+*/
