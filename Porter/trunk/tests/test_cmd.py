@@ -331,7 +331,7 @@ zone "www.thedwarf.com" {
     def testDoubleUpBug(self):
         self.c.onecmd("add ugandapartners.org bridei 8010")
         self.c.onecmd("mv ugandapartners.org bridei 8110")
-        self.assertEqual(self.c.aliases['bridei:8010'], ['ugandapartners.org'])
+        self.assertEqual(self.c.aliases['bridei:8010'], [])
 
         self.c.onecmd("mv ugandapartners.org bridei 8010")
         self.assertEqual(self.c.aliases['bridei:8010'], ['ugandapartners.org'])
@@ -339,10 +339,14 @@ zone "www.thedwarf.com" {
     def testDoubleUpBugAgain(self):
         self.c.onecmd("add zetaweb.com bridei 8090")
         self.c.onecmd("add ugandapartners.org bridei 8090")
-        self.assertEqual(self.c.aliases['bridei:8090'], ['zetaweb.com','ugandapartners.org'])
+        self.assertEqual(self.c.aliases['bridei:8090'], ['ugandapartners.org','zetaweb.com'])
 
         self.c.onecmd("mv zetaweb.com bridei 8080")
+        self.assertEqual(self.c.aliases['bridei:8090'], ['ugandapartners.org'])
+
         self.c.onecmd("mv zetaweb.com bridei 8090")
+        self.assertEqual(self.c.aliases['bridei:8090'], ['ugandapartners.org','zetaweb.com'])
+
         self.c.onecmd("mv zetaweb.com bridei 8080")
         self.assertEqual(self.c.aliases['bridei:8090'], ['ugandapartners.org'])
 

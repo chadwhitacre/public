@@ -1,41 +1,6 @@
 0.2
 =======================
 separate svn-managed porter from content
-still getting double-up bug :/
-
-    #-------------------------------------------------------------------#
-    #  Porter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
-    #-------------------------------------------------------------------#
-
-    You are currently managing 2 domains.
-
-    porter> ls -l
-
-    DOMAIN NAME                   SERVER        PORT  ALIASES
-    ===============================================================================
-    ugandapartners.org            bridei        8090  zetaweb.com
-    zetaweb.com                   bridei        8090  ugandapartners.org
-
-    porter> mv zetaweb.com bridei 8080
-    porter> mv zetaweb.com bridei 8090
-    porter> ls -l
-
-    DOMAIN NAME                   SERVER        PORT  ALIASES
-    ===============================================================================
-    ugandapartners.org            bridei        8090  zetaweb.com
-    zetaweb.com                   bridei        8090  ugandapartners.org
-
-    porter> mv zetaweb.com bridei 8080
-    porter> ls -l
-
-    DOMAIN NAME                   SERVER        PORT  ALIASES
-    ===============================================================================
-    ugandapartners.org            bridei        8090  zetaweb.com
-    zetaweb.com                   bridei        8080
-
-    porter>
-    whit537@alpin: cd /usr/local/porter/
-
 
 
 0.4
@@ -79,3 +44,4 @@ backup data files before writing
 ls --info
 locate and fix double-up bug
 fix paths for testing framework
+still getting double-up bug :/
