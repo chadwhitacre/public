@@ -56,7 +56,7 @@
     These definitions are part of Cambridge, and are repeated here for convenience
 
     DOMAIN NAME -- To register a domain name with Porter it must have at least
-    two levels, i.e., sub.example.com or example.com but not example.
+    two levels, i.e., sub.example.com or example.com, but not example.
 
     SERVER -- A server is an IP address which will be serving websites.
 
@@ -91,19 +91,25 @@
 
     Set up Porter
     ----------------------------------------
-    $PKG_HOME -- the directory to which you installed porter
+    $PKG_HOME -- the parent directory of your Porter installation
+    $INSTANCE_HOME -- the directory which contains all of your installation-
+                      specific porter data and config
     prtrsrvr -- example porter server hostname
     namesrvr -- example named server hostname
 
-    1) Install porter.
 
-        TODO: trying to get my head around installation. I'll have to look into
-        distutils ... my thinking at this point is that we would install the
-        python specific bits in site-packages, and then put install-specific
-        stuff (var/, bin/) in /usr/local/porter/.
+    1) Install Porter[1].
 
-        For now just put the package somewhere (e.g., /usr/local/porter), and
-        follow the instructions in /usr/local/porter/bin/porter.
+        a. Get Porter from svn and put it in your Python's site-packages.
+
+        b. Create a directory to house your data and configuration (e.g.,
+        /usr/local/porter). This is $INSTANCE_HOME. Porter requires that
+        $INSTANCE_HOME have a subdirectory var/, otherwise it will not start.
+        You may also choose to maintain your Apache configuration, etc. in
+        $INSTANCE_HOME as well.
+
+        c. Follow the instructions in $PKG_HOME/bin/porter to install the
+        executable.
 
 
     2) Install and configure Apache.
@@ -117,30 +123,9 @@
         other configuration. This shared information is expected to be in a zone
         file at namesrvr:/etc/namedb/porter.zone. The domains themselves are
         expected to be registered in namesrvr:/etc/namedb/named.conf. Porter
-        manages a named.conf fragment at $PKG_HOME/var/named.conf.frag. It is left
+        manages a named.conf fragment at $PKG_HOME/var/named.porter.conf. It is left
         as an excercise for the implementor to append or otherwise incorporate
         this fragment into named.conf.
-
-            In our reference implementation we will be hosting named on a box
-            other than prtrsrvr. Therefore we need to setup a transfer of the
-            named.conf file by giving the named server a user on prtrsrvr with
-            read access to named.conf.frag.
-
-            We will also be maintaining a porter.zone file in var/ which will be
-            incorporated into named along with the conf fragment.
-
-            We want to be sure that the system fails gracefully:
-
-                - We want to be very careful editing named.conf.fragment, since
-                we are dealing with a pure text format. DONE
-
-                - We should keep at least one generation of backups for the two
-                named files, both on namesrvr and prtrsrvr. DONE
-
-                - Grace should abort if named.conf.frag is empty
-
-                - Ideally the named.conf update should be transactional with the
-                porter.zone update.
 
 
     Set up a website
@@ -151,7 +136,7 @@
 
     4) Install a website.
 
-    5) Tell prtrsrvr about websrvr[1]:
+    5) Tell prtrsrvr about websrvr[2]:
 
         prtrsrvr# vi /etc/hosts
         127.0.0.1   websrvr
@@ -195,7 +180,9 @@
     NOTES
 ========================================
 
-[1] In a future version of porter, the plan is to constrain the server hostnames
+[1] I'll look at using distutils in future versions.
+
+[2] In a future version of porter, the plan is to constrain the server hostnames
 available in step 6 to those hosts named in /etc/hosts that provide a certain API,
 and to constrain the available port numbers to those that $server tells us about
 via the API.
