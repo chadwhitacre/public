@@ -17,7 +17,7 @@
 will be 8080 no matter what you put in there. Should be working for devel and
 production though. :)</p>
 
-<table id="table" tal:define="zopes context/zope_ids_list">
+<table id="table" tal:define="zope_ids context/zope_ids_list">
     <thead>
         <tr>
             <th style="text-align: left;">Name</th>
@@ -25,6 +25,8 @@ production though. :)</p>
             <th colspan="2">Actions</th>
         </tr>
 
+
+        <!-- This is the add form -->
         <tr class="green">
         <form action="zope_add" method="post"
               tal:define="availaskel context/skel_list;
@@ -56,25 +58,30 @@ production though. :)</p>
         </tr>
 
     </thead>
-    <tbody tal:condition="zopes">
+    <tbody tal:condition="zope_ids">
 
-        <tr tal:repeat="zope_id zopes">
+        <!-- Now loop through all our zopes and make a form for each -->
+        <tr tal:repeat="zope_id zope_ids">
         <form action="zope_edit" method="post"
               tal:define="info python:context.zope_info_get(zope_id)">
             <td>
                 <input type="text"
-                       name="zope.port:record"
+                       name="new_name:required"
                        value="80"
                        style="width: 100%;"
                        tal:condition="not:context/vhosting"
                        tal:attributes="value python:info[0]" /></td>
+                <input type="hidden" name="old_name"
+                       tal:attributes="value python:info[0]" />
             <td>
                 <input type="text"
-                       name="zope.port:record"
+                       name="new_port:int:required"
                        value="80"
                        size="3"
                        style="text-align: right;"
                        tal:condition="not:context/vhosting"
+                       tal:attributes="value python:info[1]" />
+                <input type="hidden" name="old_port"
                        tal:attributes="value python:info[1]" />
             </td>
             <td class="action">
@@ -92,7 +99,7 @@ production though. :)</p>
         </tr>
 
     </tbody>
-    <tbody tal:condition="not:zopes">
+    <tbody tal:condition="not:zope_ids">
 
         <tr>
             <td colspan="3">
