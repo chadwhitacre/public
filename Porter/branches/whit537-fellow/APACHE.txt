@@ -1,0 +1,58 @@
+========================================
+    APACHE CONFIGURATION
+========================================
+
+Porter expects that httpd will do the actual routing of http requests to the
+appropriate backend server. The two interface via a dbm file at
+$PKG_HOME/var/rewrite.db, which maps domain name to server:port. The intention
+is that this file be used in a dbm RewriteMap. For details on dbm RewriteMaps
+see Apache's documentation:
+
+    Apache 1.3 -- http://httpd.apache.org/docs/mod/mod_rewrite.html#RewriteMap
+
+    Apache 2.0 -- http://httpd.apache.org/docs-2.0/mod/mod_rewrite.html#rewritemap
+
+Apache 2 supports four dbm types -- sdbm, ndbm, gdbm, and db. The default is
+sdbm, which doesn't have a Python library afaict. We are using Python's dbm
+module, which produces ndbm-compatible files. However, I couldn't get Apache
+2.0.52 to compile --with-ndbm. I therefore dropped back to Apache 1.3.33 because
+ndbm is in fact the only available type in 1.3.
+
+The specific RewriteRule will need to be tailored to the backend server, but
+here's the basic idea:
+
+    <VirtualHost *>
+        ServerAlias *
+        RewriteMap  PorterMap dbm:$PKG_HOME/var/rewrite.db
+        RewriteRule ^/(.*) http://${PorterMap:%{HTTP_HOST}}/$1 [L,P]
+    </VirtualHost>
+
+
+
+========================================
+    ERRORS
+========================================
+
+There are three error conditions that can arise:
+
+    1) We don't know about the domain at all. This is handled by the first vhost
+    and a "parked" page.
+
+    2) The backend server is down. To handle this we have three options:
+
+        a. Maintain a custom "proxy error" page on this server that is at least
+        not as ugly. LIKELY BEST OPTION
+
+        b. Make porter smart enough to remove or withhold domains with downed
+        servers (would mean proactively monitoring the servers). Porter needs to
+        be dumb, imo. If we start making it smart then we need to look into
+        Pound.
+
+        c. Somehow handle it on the server end, so that there is a fallback or
+        something.
+
+    3) The hostname of the proxy server is wrong in porter. So if we are trying
+    to point example.com to notthere:8080 then we will get a Proxy Error,
+    Reason: Host not found (after a timeout period). This will eventually be
+    mitigated by constraining addable domains/ports in porter, but for now we
+    will just have to be careful. ;-)
