@@ -101,29 +101,36 @@ class EOLToolkit:
         """
 
         textfiles = Set()
-        i = 0; sys.stdout.write('locating text files ...')
+        if raw: i = 0; sys.stdout.write('locating text files ...')
         globs = self._confglobs()
 
         for path, dirs, foo in os.walk(top):
             for pattern in globs:
                 fullpattern = '%s/%s' % (path, pattern)
                 for textfile in glob(fullpattern):
-                    # indicate progress
-                    i += 1
-                    if i % 50 == 0:
-                        sys.stdout.write('.')
-                        sys.stdout.flush()
+                    if raw:
+                        # indicate progress
+                        i += 1
+                        if i % 50 == 0:
+                            sys.stdout.write('.')
+                            sys.stdout.flush()
                     textfiles.add(textfile)
 
             # skip svn directories
             if '.svn' in dirs: dirs.remove('.svn')
 
         textfiles = tuple(textfiles)
-        print ' %s found' % len(textfiles)
 
-        if raw: return textfiles
-
-        for textfile in textfiles: print textfile
+        if raw:
+            print ' %s found' % len(textfiles)
+            return textfiles
+        else:
+            for textfile in textfiles:
+                try:
+                    print textfile
+                except IOError:
+                    # play nice with less(1)
+                    pass
 
 
 

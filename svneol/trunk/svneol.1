@@ -16,7 +16,7 @@
 .\"
 .Sh SYNOPSIS
 .Nm
-.Ar command
+.Ar subcommand
 .Op Ar path
 .\"
 .\"
@@ -41,45 +41,62 @@ is a
 program that makes the job easier for a whole tree of files.
 
 .Nm
-has two subcommands:
-.Bl -hang
-.It Nm confgen
-Walk the tree rooted at
+walks the tree rooted at
 .Ar path
-and gather all of the file extensions represented in the tree. Filenames without
-an extension are included in this list as they stand. Then we output a file
-fragment that can be the basis for the auto-props section of an
-.Xr svn 1
-configuration file.
+(which defaults to the current working directory) and does one of three things,
+depending on
+.Ar subcommand :
+.Bl -hang -offset indent
+.\"
+.\"
 .It Nm clean
-Walk the tree rooted at
-.Ar path
-and clean up the line endings in all text files. The definition of a text file
+cleans up the line endings in all text files
+.\"
+.\"
+.It Nm confgen
+prints a minimal
+.Xr svn 1
+configuration file with all file extensions and filenames without an extension
+in an auto-props section, setting 'svn:eol-style' to 'native'.
+.\"
+.\"
+.It Nm find
+prints the paths of all text files
+.El
+.Pp
+
+For
+.Nm clean
+and
+.Nm find ,
+the definition of a text file
 is taken from the current user's
 .Xr svn 1
 configuration file, which is assumed to be at:
+.\"
+.\"
 .Bd -literal -offset indent
 .Pa ~/.subversion/config
 .Ed
 .Pp
 
-Text files are those with filenames matching any glob in the [auto-props]
+Text files are those with filenames matching any
+.Xr glob 1
+in the [auto-props]
 section for which the 'svn:eol-style' property is set. All Windows newlines in
 these files are converted to Unix newlines. We don't deal with legacy Macintosh
 newlines, since
 .Xr svn 1
 only runs on versions of Mac OS that use the Unix convention.
-.El
-.Pp
 
-The tree at
+Note that
 .Ar path
-(which defaults to the current working directory) does not have to be an
+does not have to be an
 .Xr svn 1
 working copy. In fact,
 .Nm svneol Ns 's
-primary use case is preparing a large, non-versioned tree to be imported into a
-Subversion repository.
+primary use case is preparing a large, non-versioned tree for initial import
+into a Subversion repository.
 .\"
 .\"
 .\"
@@ -115,6 +132,8 @@ Subversion 1.1.0
 % cd ~/FooProject/
 % svneol confgen > ~/.subversion/config
 % vi ~/.subversion/config # manually remove extensions for binary files
+% svneol find | less
+\&... # assuage any paranoia that binary files will be broken
 % svneol clean
 locating text files ...................... 952 found
 scrubbing newlines ..................... 945 files cleaned
@@ -127,6 +146,8 @@ scrubbing newlines ..................... 945 files cleaned
 .\"
 .Sh SEE ALSO
 .Xr dos2unix 1 ,
+.Xr glob 1 ,
+.Xr python 1 ,
 .Xr svn 1
 .\"
 .\"
