@@ -1,17 +1,23 @@
-<html>
-<head>
-    <title>Zetaserver Prototype</title>
-    <style>@import url("style.css");</style>
-</head>
+<h1 tal:replace="structure context/manage_page_header">Header</h1>
 
-<body tal:define="info context/zopes_info">
-<h1><a href="index_html">The Zeta</a></h1>
-<h3>
-    <a href="domains">Domains</a> | 
-    Zopes
+<h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
+    tal:replace="structure context/manage_tabs">Tabs</h2>
 
-</h3>
-<form action="zopes_process" method="post">
+<p class="form-help"> A Big Cheeze allows you to manage a number of Zope
+instances TTW. Cheeze stands for 'cheap Zope'. You usually only need one Big
+Cheeze per server (you may want more than one if you have multiple Zope versions
+on your server). If your client Zope instances have Little Cheeze objects in
+them then they can provide their Big Cheeze with some extra info.</p>
+
+<p>The 'instance root' is the filesystem path to the directory where your
+instances do/will reside. The 'skel root' is the filesystem path to the
+directory where your Zope skel reside (skel are templates for new Zope
+instances).</p>
+
+<style>@import ("big_cheeze_style");</style>
+
+<form action="zopes_process" method="post"
+      tal:define="info context/zopes_info">
 <table>
     <thead>
         <tr>
@@ -30,20 +36,20 @@
         </tr>
     </thead>
     <tbody>
-    
+
         <tr tal:repeat="zzope info/zopes">
             <td tal:content="python:zzope[0]"></td>
             <td tal:content="python:zzope[1]"></td>
-            
+
             <td style="text-align: center;">
                 <a tal:attributes="href python:'delete_vhost?vhostname=%s%s.zetaserver.com'%(zzope[0],zzope[1])">
                     <img style="border:none;" src="delete.gif" />
                 </a>
             </td>
         </tr>
-    
+
     </tbody>
 </table>
 </form>
-</body>
-</html>
+
+<h1 tal:replace="structure here/manage_page_footer">Footer</h1>
