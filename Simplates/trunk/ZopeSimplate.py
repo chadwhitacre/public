@@ -371,7 +371,8 @@ def manage_addSimplate(self, id, title=None, text=None,
         REQUEST.RESPONSE.redirect(u+'/manage_main')
     return ''
 
-from Products.Simplates import misc_
+#from Products.Simplates import misc_
+misc_ = {}
 misc_['exclamation.gif'] = ImageFile('www/exclamation.gif', globals())
 # not sure why this isn't working :/
 
