@@ -12,7 +12,11 @@
     tal:replace="structure context/manage_tabs">Tabs</h2>
 <div class="padding">
 
-<div class="form-help">Careful! Create and delete really work. :-)</div>
+<p class="form-help">Careful! Create and delete really work. :-)</p>
+
+<p class="form-help">Note that port number is not meaningul for stock skel. It
+will be 8080 no matter what you put in there. Should be working for devel and
+production though. :)</p>
 
 <table id="table" tal:define="zopes context/list_zopes">
     <thead>
