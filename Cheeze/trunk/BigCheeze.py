@@ -150,7 +150,7 @@ class BigCheeze(Implicit, Persistent, RoleManager, Item):
 ##
 
 manage_addBigCheezeForm = PageTemplateFile(
-    'www/BigCheezeAdd.pt', globals(), __name__='manage_addBigCheezeForm')
+    'www/big_cheeze_add.pt', globals(), __name__='manage_addBigCheezeForm')
 
 def manage_addBigCheeze(self, id, title=None, text=None,
                            REQUEST=None, submit=None):
@@ -162,7 +162,7 @@ def initialize(context):
         permission='Add Big Cheeze',
         constructors=(manage_addBigCheezeForm,
                       manage_addBigCheeze),
-        icon='www/cheeze.png',
+        icon='www/big_cheeze.png',
         )
     #context.registerHelp()
     #context.registerHelpTitle('Zope Help')
