@@ -168,8 +168,3 @@
 ========================================
 
 [1] I'll look at using distutils in future versions.
-
-[2] In a future version of Porter, the plan is to constrain the server hostnames
-available in step 6 to those hosts named in /etc/hosts that provide a certain
-API, and to constrain the available port numbers to those that each server tells
-us about via the API.

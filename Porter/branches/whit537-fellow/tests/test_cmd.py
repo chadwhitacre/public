@@ -16,6 +16,7 @@ class TestCRUD(unittest.TestCase):
         # ...set,...
         os.mkdir('var')
         self.porter = Porter(stdout=self.out)
+        self.porter._available_websites = self._test_websites
 
         # ... go!
 
@@ -31,6 +32,20 @@ class TestCRUD(unittest.TestCase):
                     os.remove(join(test_dir, datafile))
                 os.rmdir(test_dir)
 
+    def _test_websites(self):
+        servers  = { 'working'  : (4,'live')
+                   , 'no_8000'  : (0,'no 8000')
+                   , 'no_ping'  : (0,'no ping')
+                   , 'no_fellow': (0,'no fellow')
+                    }
+        websites = { 'flanderous@working:8010'  : 8010
+                   , 'foo@working:8020'         : 8020
+                   , 'bar@working:8120'         : 8120
+                   , 'baz@working:8440'         : 8440
+                     }
+        return (servers, websites)
+
+
     def testListWhenEmpty(self):
         self.porter.onecmd("ls")
         self.assertEqual(self.out.getvalue(), '')
@@ -40,9 +55,8 @@ class TestCRUD(unittest.TestCase):
 
     def testBadInput(self):
         self.porter.onecmd("add test")
-        self.assertEqual(self.out.getvalue(), "We need a domain name, a " +\
-                                              "server name, and a port " +\
-                                              "number.\n")
+        self.assertEqual(self.out.getvalue(), "We need a domain name and " +\
+                                              "a website id.\n")
         self.assertEqual(os.listdir(self.porter.var), ['rewrite.db'])
         # didn't write, so still just one file
 
@@ -60,7 +74,7 @@ class TestCRUD(unittest.TestCase):
         # to be really thorough we should reload the backup and make sure it works
 
     def testExtraInputIsIgnored(self):
-        self.porter.onecmd("add example.com server port Frank Sinatra sings the blues")
+        self.porter.onecmd("add example.com server:port Frank Sinatra sings the blues")
         self.assertEqual(self.porter.domains, {"example.com":"server:port"})
 
     def testAddMultipleItems(self):
