@@ -59,7 +59,7 @@ class Porter(cmd.Cmd):
 
     def __init__(self, var, *args, **kw):
 
-        # set our data paths 
+        # set our data paths
         if not isabs(var):
             var = join(sys.path[0], var)
         self.var = var
@@ -145,18 +145,23 @@ You are currently managing %s domains.
             return
         # not worth validating port number since it will come from "dropdown" anyway
         # not worth validating server since it will come from "dropdown" anyway
-        website = ':'.join((server,port))
+
+        old_website = self.domains.get(domain)
+        new_website = ':'.join((server,port))
 
         # update our data
-        self.domains[domain] = website
+        self.domains[domain] = new_website
         self._write_to_disk()
 
-        # and update our indices
-        if website in self.aliases:
-            if domain not in self.aliases[website]:
-                self.aliases[website].append(domain)
+        # and update our index of aliases
+        if old_website is not None:
+            self.aliases[old_website].remove(domain)
+        if new_website in self.aliases:
+            if domain not in self.aliases[new_website]:
+                self.aliases[new_website].append(domain)
         else:
-            self.aliases[website] = [domain]
+            self.aliases[new_website] = [domain]
+        self.aliases[new_website].sort(self._domain_cmp)
 
 
     ##
