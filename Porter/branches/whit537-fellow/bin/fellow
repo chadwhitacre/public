@@ -1,0 +1,107 @@
+#!/usr/local/bin/python2.4
+"""
+
+This is our first Fellow implementation. A Fellow is an http server that returns
+a data type that is meaningful to Porter. Eventually this should probably use
+XML-RPC or Unix sockets or something besides unencrypted http.
+
+Porter expects to receive a mapping of website identifiers to port numbers. It
+will use the site IDs for tab completion when adding or changing domain name
+mappings, and will then use the port numbers for the dbm.
+
+This implementation of Fellow is going to make some assumptions that will allow
+us to use it for various different environments:
+
+    1) All websites are defined as items within a single directory on the
+    filesystem. Conceptually these could be files or directories, but
+    practically will probably be directories.
+
+    2) The names of the website files or directories are of the form
+    'codename_port', e.g., 'abondance_8020'. The complete token is the website
+    name, since more than one instance of a website could be served from the
+    same server. The port number is the last element after splitting on '_', or
+    8080 there is no '_'.
+
+    3) The server's hostname in /etc/resolv.conf is the hostname in the Porter
+    server's /etc/hosts. So if the domain in resolv.conf is foo.example.com, the
+    hostname is foo.
+
+    4) It is not Fellow's responsibility to assign and constrain port numbers to
+    websites. (We will start off doing that manually)
+
+The website ID is of the form codename@hostname:port, e.g. abondance@bridei:8010.
+
+"""
+
+__version__ = "0.1"
+
+print "Fellow started..."
+
+import BaseHTTPServer, os, re
+from base64 import b64encode
+from cPickle import dumps
+digits = [str(i) for i in range(10)]
+
+class Fellow(BaseHTTPServer.BaseHTTPRequestHandler):
+    """ replies to GET requests with our data type """
+
+    server_version = 'Fellow/0.2'
+
+    def do_GET(self):
+        if self.path == '/':
+            self.send_response(200)
+            self.send_header('Content-type','text/plain')
+            self.end_headers()
+            self.send_data()
+        else:
+            self.send_response(404)
+
+    def send_data(self):
+        """ marshall our data structure and write it to wfile """
+
+        # We do in fact want to do this for every request, since our process is
+        # long-running and we always want to use current data. Don't worry,
+        # requests are infrequent.
+
+        # hostname -- we just use whatever they got to us on
+        hostname = self.headers['Host'].split(':')[0]
+
+        sites = os.listdir('/usr/local/zope/instances/') # change if necessary
+        websites = {}
+        for sitename in sites:
+
+            siteparts = sitename.split('_')
+
+            # codename
+            if len(siteparts) > 1:
+                codename = '_'.join(siteparts[:-1])
+            else:
+                codename = sitename
+
+            # port number
+            portnum = siteparts[-1]
+            if portnum == sitename:
+                # default
+                self.log_message("defaulting to port 8080 for %s" % sitename)
+                portnum = 8080
+            elif False in [x in digits for x in portnum]:
+                # bad data
+                self.log_message("bad portnum for %s (%s); using 8080" % (sitename, portnum))
+                portnum = 8080
+            else:
+                portnum = int(portnum)
+
+            site_id = '%s@%s:%s' % (codename, hostname, portnum)
+            websites[site_id] = portnum
+
+        self.websites = b64encode(dumps(websites))
+
+        print >> self.wfile, self.websites
+
+
+if __name__ == '__main__':
+    server_class = BaseHTTPServer.HTTPServer
+    handler_class = Fellow
+    server_address = ('', 8000)
+    httpd = server_class(server_address, handler_class)
+    httpd.serve_forever()
