@@ -336,6 +336,16 @@ zone "www.thedwarf.com" {
         self.c.onecmd("mv ugandapartners.org bridei 8010")
         self.assertEqual(self.c.aliases['bridei:8010'], ['ugandapartners.org'])
 
+    def testDoubleUpBugAgain(self):
+        self.c.onecmd("add zetaweb.com bridei 8090")
+        self.c.onecmd("add ugandapartners.org bridei 8090")
+        self.assertEqual(self.c.aliases['bridei:8090'], ['zetaweb.com','ugandapartners.org'])
+
+        self.c.onecmd("mv zetaweb.com bridei 8080")
+        self.c.onecmd("mv zetaweb.com bridei 8090")
+        self.c.onecmd("mv zetaweb.com bridei 8080")
+        self.assertEqual(self.c.aliases['bridei:8090'], ['ugandapartners.org'])
+
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
