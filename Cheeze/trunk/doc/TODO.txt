@@ -1,5 +1,16 @@
 TODO
 
+finish Domains tab for tonight
+
+move all websites into their own zope on gilbert
+
+refactor tesm and gdenet
+
+proceed
+
+
+
+
 dns would stick a domain name in our dns server and map the domain's ip to our
 jail's
 

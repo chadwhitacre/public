@@ -9,6 +9,14 @@
     padding: 2px 4px;
     }
 
+#motto a {
+    background: black ! important;
+    color: #ccc ! important;
+    font: 12px courier new ! important;
+    text-decoration: none ! important;
+    cursor: text ! important;
+    }
+
 h1 {
     font-size: 160%;
     background: #BDE9C0;
@@ -65,4 +73,10 @@ li {
     padding: 0 0.5em;
     background: white;
     color: #999;
+    }
+
+.not-yet,
+.not-yet p,
+.not-yet a {
+    color: #CCC ! important;
     }
