@@ -1,0 +1,14 @@
+June 28, 2004
+
+This is a *technology preview* , not a finished product.
+You are hereby granted permission for testing and evaluation purposes
+only. You may not use it for customer deployments, paid projects or
+for public solutions, not even for your company intranet. You can not
+modify the software and use it even if you contribute the code back. 
+The product *will* be released under the GPL or LGPL license when it's
+ready. If you have any questions about this statement and license, 
+please contact Plone Solutions.
+
+Plone Solutions
+http://www.plonesolutions.com
+
