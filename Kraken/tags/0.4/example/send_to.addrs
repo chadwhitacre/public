@@ -1,0 +1,9 @@
+# This file defines the addresses that our Kraken will send to. The format of
+# this file is one email address per line. Leading and trailing whitespace is
+# ignored, as are blank lines.
+
+foo@example.com
+
+    # This line is a comment.
+
+  bar@example.org
