@@ -69,9 +69,12 @@ class ZopeManager:
     # heavy lifters - these are only used by BigCheeze wrappers
     ##
 
-    def _zope_create(self, name, skel, port):
+    def _zope_create(self):
         """ create a new zope instance """
-
+        form = self.REQUEST.form
+        name = form['name']
+        skel = form['skel']
+        port = form['port']
         # initialize kw
         kw = self._initialize_kw()
 
@@ -215,6 +218,19 @@ class ZopeManager:
                 "SOFTWARE_HOME" : softwarehome,
                 "ZOPE_HOME"     : zopehome,
                 }
+                
+                
+    def _instance_ports_get(self):
+        """get the port of this zope instance so it can be excluded from lists of 
+        available ports"""
+        ports = []
+        for server in self.Control_Panel.getServers():
+            name, port = server
+            if port.count('Port:'):
+                port = int(port.replace('Port:',''))
+                ports.append(port)
+        return ports
+            
 
     def _ports_list(self, port_range = None):
         """ list all possible ports, if applicable """
@@ -224,42 +240,25 @@ class ZopeManager:
 
         port_range = port_range.strip()
 
-        if port_range == '':
-            return False
-        else:
-            if port_range.startswith('(') and port_range.endswith(')'):
-                # guessing we have a tuple
-                type_func = tuple
-            elif port_range.startswith('[') and port_range.endswith(']'):
-                # guessing we have a list
-                type_func = list
-            else:
-                raise CheezeError, "port_range must be either a tuple or a list"
-
-            port_range = type_func(port_range[1:-1].split(','))
+        ###
+        ## the tuple format seems unnecesary here. how bout just a comma 
+        ## separated list
+        ###
+        
+        if port_range:
+        
             try:
-                port_range = type_func([int(i) for i in port_range if i != ''])
+                parts = [int(n) for n in port_range.split(',')]
             except ValueError:
                 raise CheezeError, "port_range must contain only integers"
-
-            # ok, we passed the test!
-
-            port_range_type = type(port_range)
-
-            if port_range_type == type([]):
-                if False in [p > 0 for p in port_range]:
-                    raise CheezeError, "if port_range is a list, it may only " \
-                                     + "contain positive integers"
-                else:
-                    return port_range
-            elif port_range_type == type(()):
-                if not(1 < len(port_range) <= 3):
-                    raise CheezeError, "if port_range is a tuple, " \
-                                     + "it must have 2 or 3 items"
-                elif False in [p > 0 for p in port_range[:2]]:
-                    raise CheezeError, "if port_range is a tuple, " \
-                                     + "its first two items must be " \
-                                     + "positive integers"
-                else:
-                    return range(*port_range)
-
+        
+            if len(parts) not in [2,3]:
+                raise CheezeError, "port_range needs a comma separated list of length 2 or 3"
+                
+            ports = range(*parts)
+            for port in self._instance_ports_get():
+                if port in ports:
+                    ports.remove(port)
+            return ports
+        else:
+            return False

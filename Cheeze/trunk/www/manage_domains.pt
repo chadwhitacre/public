@@ -52,6 +52,7 @@
             <tr tal:repeat="domain info/domains">
                 <td>
                     <a target="_blank"
+                       tal:omit-tag="not:domain/canonical"
                        tal:attributes="href python:'http://'
                                                  + domain['canonical']"
                        tal:content="domain/name" /></td>
@@ -63,6 +64,7 @@
                     <a tal:define="tmp python:'%s/domain_remove?vhost=%s';
                                    href python:tmp % (context.absolute_url(),
                                                       domain['name']);"
+                       tal:omit-tag="python:test(domain['canonical']=='ORPHANED')"
                        tal:attributes="href href"
                        onclick="return confirm('Delete this domain?\n \
                                                 No data will be lost, but the \

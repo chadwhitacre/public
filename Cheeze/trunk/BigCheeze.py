@@ -89,8 +89,7 @@ class BigCheeze(Implicit, Persistent, \
     security.declareProtected('Manage Big Cheeze', 'zope_add'),
     def zope_add(self):
         """ add a zope instance """
-        form = self.REQUEST.form
-        self._zope_create(**form)
+        if self.instance_root: ZopeManager._zope_create(self)
         return self.REQUEST.RESPONSE.redirect('manage')
 
     security.declareProtected('Manage Big Cheeze', 'zope_edit'),
