@@ -1,0 +1,21 @@
+CheapZopeManager will handle several tasks:
+
+    - creation of new zope instances
+
+    - registering instances with apache
+
+
+
+    - registering domains with dns
+
+
+
+    - centralized error management
+
+    - per site bandwith, storage, and memory usage
+
+
+
+
+    - serving up data for zeta client apps, such as an app that would browse and
+    download instances for local dev purposes
