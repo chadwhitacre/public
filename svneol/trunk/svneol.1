@@ -50,12 +50,9 @@ configuration file, which is assumed to be at:
 .Pa ~/.subversion/config
 .Ed
 .Pp
-Text files are those with filenames matching any glob in the
-[auto-props] section for which the svn:eol-style property is set.
-These files are opened, and all instances of
-(Windows newline) are replaced with
-.Sq \en
-(Unix newline).
+Text files are those with filenames matching any glob in the [auto-props]
+section for which the svn:eol-style property is set. All Windows and legacy
+Macintosh newlines in these files are converted to Unix newlines.
 
 Note that the tree does not have to be an
 .Xr svn 1
@@ -66,7 +63,25 @@ working copy in order to be processed successfully.
 .\"
 .\"
 .Sh IMPLEMENTATION NOTES
-This program was written with FreeBSD 4.11, Python 2.4, and Subversion 1.1.0.
+This program is known to work with the following software:
+.Pp
+.Bl -dash -offset indent -compact
+.It
+FreeBSD 4.11
+.It
+Python 2.4
+.It
+Subversion 1.1.0
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh FILES
+.Bd -literal
+.Pa ~/.subversion/config
+.Ed
 .\"
 .\"
 .\"
@@ -74,8 +89,12 @@ This program was written with FreeBSD 4.11, Python 2.4, and Subversion 1.1.0.
 .\"
 .Sh EXAMPLES
 .Bd -literal
-% cd ~/project-wc/
+% cd ~/FooProject/
+% svn st
+\&...
 % svneol
+\&...
+% svn st
 \&...
 %
 .Ed
