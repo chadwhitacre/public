@@ -61,11 +61,8 @@ class BigCheeze(Implicit, Persistent, \
         {'id'   :'port_range',   'type' :'string','value':'','mode': 'w',},
                 )
 
-    def __init__(self, id, instance_root='', skel_root=''):
+    def __init__(self, id):
         self.id = str(id)
-        self._set_instance_root(str(instance_root))
-        self._set_skel_root(str(skel_root))
-
 
 
     ##
@@ -143,10 +140,12 @@ class BigCheeze(Implicit, Persistent, \
 
     def _setPropValue(self, id, value):
         """ intercept from PropertyManager so we can do validation """
-        if id == 'instance_root':
+        if   id == 'instance_root':
             self._set_instance_root(value)
         elif id == 'skel_root':
             self._set_skel_root(value)
+        elif id == 'vhost_db':
+            self._set_vhost_db(value)
         elif id == 'port_range':
             self._set_port_range(value)
         else:
@@ -189,6 +188,18 @@ class BigCheeze(Implicit, Persistent, \
         else:
             self._ports_list(port_range) # smoke it!
             PropertyManager._setPropValue(self, 'port_range', port_range)
+
+    def _set_vhost_db(self, vhost_db):
+        """ validate and set the vhost db"""
+        from whichdb import whichdb
+        if vhost_db == '':
+            PropertyManager._setPropValue(self, 'vhost_db', '')
+        elif whichdb(vhost_db) is None or whichdb(vhost_db) == '':
+            raise CheezeError, "vhost_db must point to a valid dbm file"
+        else:
+            clean_path = self._scrub_path(vhost_db)
+            PropertyManager._setPropValue(self, 'vhost_db', clean_path)
+
 
     def _scrub_path(self, p):
         """ given a valid path, return a clean path """

@@ -1,6 +1,7 @@
 import os
 from pprint import pformat
 from utils import *
+from CheezeError import CheezeError
 
 try:
     import dbm
@@ -57,7 +58,7 @@ class ApacheVHostManager:
         return response.redirect('manage_domains')
 
     def domains_info(self, troubleshoot=0):
-        "populates the domains pt"
+        """ populates the domains pt """
         vhosts = self.domains_list()
         index_sort(vhosts,0,compare_domains)
         info = {}
