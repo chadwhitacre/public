@@ -1,36 +1,43 @@
 Steve's todo
 ------------------------------
+Very High Priority (we need this in order to dev sites?)
 
-1. on zope instance create, create canonical address and file it in the apache dbm
-
-2. handle edits in apache for zopes
-
-
-3. implement domain edits
-
-4. handle edits in apache for domains
-
-5. smarter error messages (which domain did you click?)
-
-6. parked pages for domains without instances, using master instance
-
-7. update all of chad's copious documentation :-)
-
-8. shuffle around my funcs according to chad's scheme
-
-9. confirm security settings
-
-10. instance delete/decommission setting
-
-11. need to check for running instances
-
-12. stop and restart instances when we edit them
+    on zope instance create, create canonical address and file it in the apache dbm
+    
+    handle edits in apache for zopes
 
 
+High Priority (we need this to host sites)
+
+    smarter error messages (which domain did you click?)
+    
+    instance delete/decommission setting
+
+    need to check for running instances
+
+    raise error if trying to edit a running instance
+    
+
+Medium Priority (needed to make the project solid and polished)
 
 
-
-
+    implement domain edits
+    
+    handle edits in apache for domains
+    
+    parked pages for domains without instances, using master instance
+    
+    update all of chad's copious documentation :-)
+    
+    shuffle around my funcs according to chad's scheme
+    
+    confirm security settings
+    
+    stop and restart instances when we edit them
+    
+    
+    
+    
 
 
 
