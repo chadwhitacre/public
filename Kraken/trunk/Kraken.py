@@ -142,9 +142,13 @@ class Kraken:
             FROM = raw[0][1]
         else:
             FROM = test_str
-        pattern = r'From:.* <?(.*@.*\.[A-Za-z]*)>?'
-        from_addr = re.search(pattern, FROM).group(1)
-        return from_addr
+        try:
+            pattern = r'[Ff]rom:.* <?(.*@.*\.[A-Za-z]*)>?'
+            from_addr = re.search(pattern, FROM).group(1)
+            return from_addr
+        except:
+            print FROM
+            return 'error with this one, continue'
 
 
 
