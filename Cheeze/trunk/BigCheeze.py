@@ -35,7 +35,7 @@ class BigCheeze(Implicit, Persistent, \
     title = 'Centralized instance management'
     meta_type= 'Big Cheeze'
 
-    instance_root = join(os.environ['INSTANCE_HOME'], '../')
+    instance_root = ''
     skel_root = ''
     apache_db = ''
     dns_file = ''
@@ -130,7 +130,7 @@ class BigCheeze(Implicit, Persistent, \
     def _set_instance_root(self, instance_root):
         """ validate and set the instance root """
         if instance_root == '':
-            raise 'Cheeze Error', "You must enter an instance root"
+            PropertyManager._setPropValue(self, 'instance_root', '')
         elif not os.path.exists(instance_root):
             raise 'Cheeze Error', "Proposed instance root '%s' " \
                                 + "does not exist" % instance_root
