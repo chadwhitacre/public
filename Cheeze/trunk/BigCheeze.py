@@ -227,13 +227,11 @@ class BigCheeze(Implicit, Persistent, \
 # Product addition and registration
 ##
 
-def manage_add(self):
-    """  """
-    return PageTemplateFile('www/manage_add.pt', globals())
+manage_add = PageTemplateFile('www/manage_add.pt', globals())
 
-def big_cheeze_add(self, id, instance_root='', skel_root='', REQUEST=None):
+def manage_addBigCheeze(self, id, REQUEST=None):
     """  """
-    self._setObject(id, BigCheeze(id, instance_root, skel_root))
+    self._setObject(id, BigCheeze(id))
 
     if REQUEST is not None:
         return self.manage_main(self, REQUEST, update_menu=1)
@@ -242,6 +240,6 @@ def initialize(context):
     context.registerClass(
         BigCheeze,
         permission='Add Big Cheeze',
-        constructors=(manage_add, big_cheeze_add),
+        constructors=(manage_add, manage_addBigCheeze),
         icon='www/big_cheeze.png',
         )
