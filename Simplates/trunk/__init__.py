@@ -1,7 +1,6 @@
 from Products.CMFCore.DirectoryView import registerDirectory
-import ZopeSimplate
-
 registerDirectory('skins', globals())
+
 
 # Placeholder for Zope Product data
 misc_ = {}
