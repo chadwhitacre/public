@@ -9,7 +9,7 @@
 
 ###### change this value ######
 
-LAIR = '/home/whit537/Kraken'
+LAIR = '/path/to/Kraken'
 
 # This is here so that we work properly when called from cron. It can't be in
 # conf/kraken.conf because we need it to get there! Catch-22! If you know the
