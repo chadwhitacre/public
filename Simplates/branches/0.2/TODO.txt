@@ -1,0 +1,13 @@
+unit testing
+remove CMFCore dependency
+PloneSimplate for use in Plone
+Rewrite the ZMI interface in ZPT :p
+make error message text/html instead of text/plain
+test WebDAV/FTP support
+write documentation (as Zope help)
+implement smart content-type discovery
+
+
+done
+========================================
+FSSimplate for use in Filesystem Directory Views
