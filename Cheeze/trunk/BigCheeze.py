@@ -28,6 +28,7 @@ from DNSManager import DNSManager
 
 
 from pprint import pformat as Ipformat
+from utils import *
 
 class BigCheeze(Implicit, Persistent, \
                 PropertyManager, Item, \
@@ -97,10 +98,40 @@ class BigCheeze(Implicit, Persistent, \
 
     manage_zopes = PageTemplateFile('www/manage_zopes.pt',globals())
     
+    security.declareProtected('Manage Big Cheeze', 'zope_add'),
+    def zope_add(self):
+        """ add a zope instance """
+        if self.instance_root:  
+            self._zope_create()
+        if self.vhost_db:      
+            self.db_orphans_handle()
+        return self.REQUEST.RESPONSE.redirect('manage')
+
+    security.declareProtected('Manage Big Cheeze', 'zope_edit'),
+    def zope_edit(self):
+        """ edit a zope instance """
+        if self.production_mode:
+            raise CheezeError, 'Cannot edit instances in production mode'
+        if self.instance_root:  
+            self._zope_edit()
+        if self.vhost_db:
+            self.db_orphans_handle()
+        return self.REQUEST.RESPONSE.redirect('manage')
+
+    security.declareProtected('Manage Big Cheeze', 'zope_remove'),
+    def zope_remove(self, zope_id):
+        """ remove a zope instance """
+        if self.instance_root:
+            self._zope_delete(zope_id)
+        if self.vhost_db:
+            self.db_orphans_handle()
+        return self.REQUEST.RESPONSE.redirect('manage')
+    
     def zope_info(self):
         info = {}
         zopes = []
         orphans=0
+        info['vhosts']=self.vhosts_get()
         for zope_id in self.zope_ids_list():
             name, port = self.zope_info_get(zope_id)
             zope_info = {
@@ -113,39 +144,28 @@ class BigCheeze(Implicit, Persistent, \
         info['zopes'] = zopes
         return info
 
-    security.declareProtected('Manage Big Cheeze', 'zope_add'),
-    def zope_add(self):
-        """ add a zope instance """
-        if self.instance_root: ZopeManager._zope_create(self)
-        return self.REQUEST.RESPONSE.redirect('manage')
-
-    security.declareProtected('Manage Big Cheeze', 'zope_edit'),
-    def zope_edit(self, old_name, new_name, old_port, new_port):
-        """ edit a zope instance """
-        if self.production_mode:
-            raise CheezeError, 'Cannot edit instances in production mode'
-        old_zope_id = self._zope_id_make(old_name, old_port)
-        new_zope_id = self._zope_id_make(new_name, new_port)
-
-        if old_zope_id != new_zope_id:
-            self._zope_id_set(old_zope_id, new_zope_id)
-        if old_port != new_port:
-            self._port_set(new_zope_id, old_port)
-        return self.REQUEST.RESPONSE.redirect('manage')
-
-    security.declareProtected('Manage Big Cheeze', 'zope_remove'),
-    def zope_remove(self, zope_id):
-        """ remove a zope instance """
-        self._zope_delete(zope_id)
-        return self.REQUEST.RESPONSE.redirect('manage')
-
 
     ##
     # Domain mgmt
     ##
 
     manage_domains = PageTemplateFile('www/manage_domains.pt',globals())
-    def domains_info(self, troubleshoot=0):
+    
+    def domain_add(self):
+        """handles adding domains"""
+        if self.vhost_db:
+            self._domain_add()
+
+    def domain_edit(self):
+        """ add a domain instance """
+        pass
+
+    def domain_remove(self):
+        """handles removing domains"""
+        if self.vhost_db: 
+            self._domain_remove()
+        
+    def domains_info(self):
         """ populates the domains pt """
         vhosts = self.domains_list()
         index_sort(vhosts,0,compare_domains)
@@ -186,29 +206,7 @@ class BigCheeze(Implicit, Persistent, \
                 }
             domains.append(domain_info)
         info['domains']=domains
-
-
-
-        #info['vhosts'] = vhosts
-        #
-        #info['aliases'] = server_info
-        if troubleshoot:
-            return pformat(info)
-        else:
-            return info
-            
-    def domain_add(self):
-        """handles adding domains"""
-        if self.vhost_db: return ApacheVHostManager._domain_add(self)
-
-    def domain_edit(self):
-        """ add a domain instance """
-        pass
-
-    def domain_remove(self):
-        """handles removing domains"""
-        if self.vhost_db: return ApacheVHostManager._domain_remove(self)
-
+        return info
 
 
 
