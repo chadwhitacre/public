@@ -1,0 +1,24 @@
+0.2
+=======================
+
+
+future
+=======================
+install properly with distutils
+non-interactive mode
+log ourselves
+write a function to columnize domains ... should be lined up on the first dot from the right
+be sure we work with weird paths, e.g., coming from cron
+binder> test (?)
+
+
+done - 0.2
+=======================
+tease named mgmt out into a separate program called "Binder"
+    so that we can have domains in DNS that don't point anywhere w/in zetaserver
+    in other words, we negate the benefit of our "parked page" by dictating that all domains be explicitly registered in Porter
+    also, separating the two would solve the TESM dilemma
+um, dude, we don't want 'www.' in named.conf!
+in fact, we don't want anything besides second-level domains in there.
+    i.e., we want example.com, but not sub1.example.com
+we may not even want to make www implicit in rewrite
