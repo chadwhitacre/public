@@ -264,11 +264,14 @@ class ZopeManager:
         """get the port of this zope instance so it can be excluded from lists of
         available ports"""
         ports = []
-        for server in self.Control_Panel.getServers():
-            name, port = server
-            if port.count('Port:'):
-                port = int(port.replace('Port:',''))
-                ports.append(port)
+        try:
+            for server in self.Control_Panel.getServers():
+                name, port = server
+                if port.count('Port:'):
+                    port = int(port.replace('Port:',''))
+                    ports.append(port)
+        except:
+            ports.append(8080)
         return ports
 
 
