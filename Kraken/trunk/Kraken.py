@@ -11,8 +11,8 @@ class Kraken:
     the message to the trash. Usage:
 
     >>> from Kraken import Kraken
-    >>> mc = Kraken()
-    >>> mc.release()
+    >>> k = Kraken()
+    >>> k.release()
 
     The beauty of using IMAP for mailing list/discussion mgmt is the plugability
     and the flexibility. I can login w/ Thunderbird or a TTW client and manage
@@ -39,12 +39,38 @@ class Kraken:
     port     = 143
 
     accept_from = ('whit537@gmail.com',
+                   'chad@zetaweb.com',
                    'jesslloydwhit@gmail.com',
+
+                   'bill@maya.com',
+                   'hope_lucas@yahoo.com',
+
+                   'vburens@hotmail.com',
+                   'lburens@athletics.pitt.edu',
+
+                   'douglas.wicker@pnc.com',
+
+                   'tpangburn@hvhs.org',
+                   'skunkhollow@comcast.net',
                    )
 
     send_to     = ('whit537@gmail.com',
-                   'chad@zetaweb.com',
+                   'jesslloydwhit@gmail.com',
+
+                   'bill@maya.com',
+                   'hope_lucas@yahoo.com',
+
+                   'vburens@hotmail.com',
+                   'lburens@athletics.pitt.edu',
+
+                   'douglas.wicker@pnc.com',
+
+                   'tpangburn@hvhs.org',
+                   'skunkhollow@comcast.net',
                    )
+
+    # use this for testing
+    #send_to     = ('whit537@gmail.com','chad@zetaweb.com')
 
     def __init__(self):
         pass
@@ -83,7 +109,10 @@ class Kraken:
                     msg = email.message_from_string(raw)
 
                     # tweak the headers
-                    msg.replace_header('Reply-To', 'homegroup@whit537.org')
+                    try:
+                        msg.replace_header('Reply-To', 'homegroup@whit537.org')
+                    except KeyError:
+                        msg.__setitem__('Reply-To', 'homegroup@whit537.org')
                     msg.add_header('X-Released-By','THE KRAKEN!!!!!!!!1')
 
                     # and pass it on!
