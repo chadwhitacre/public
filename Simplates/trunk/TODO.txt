@@ -3,3 +3,4 @@ write FSSimplate.py
 test WebDAV/FTP support
 write documentation (as Zope help)
 implement smart content-type discovery
+obj should re-cook when its value suppliers are younger than itself

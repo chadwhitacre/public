@@ -2,7 +2,7 @@
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure here/manage_tabs">Tabs</h2>
 
-<form action="manage_docustomize" method="post">
+<form action="manage_doCustomize" method="post">
     <table cellspacing="2">
         <tr>
             <th align="left" valign="top" class="form-label">id</th>

@@ -106,7 +106,7 @@ class Simplate(Base):
             return self._text
 
         return ('%s\n %s\n-->\n%s' % (self._error_start,
-                                      '\n '.join(['\n '.join(err) for err in self._v_errors]),
+                                      '\n '.join(self._v_errors),
                                       self._text))
 
     def _replace(self):
