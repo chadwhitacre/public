@@ -374,6 +374,10 @@ def manage_addSimplate(self, id, title=None, text=None,
         REQUEST.RESPONSE.redirect(u+'/manage_main')
     return ''
 
+from Products.Simplates import misc_
+misc_ = {}
+misc_['exclamation.gif'] = ImageFile('www/exclamation.gif', globals())
+
 def initialize(context):
     context.registerClass(
         ZopeSimplate,
@@ -384,4 +388,3 @@ def initialize(context):
         )
     context.registerHelp()
     context.registerHelpTitle('Zope Help')
-    registerIcon(ZopeSimplate, 'www/exclamation.gif', globals())
