@@ -1,0 +1,30 @@
+(c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+This program is beerware. If you like it, buy me a beer someday.
+No warranty is expressed or implied.
+
+Contents:
+
+    Makefile    installation instructions
+
+    README      this file
+
+    sanity.1    man page
+
+    sanity.conf.5
+                man page
+
+    sanity.py   script itself
+
+
+To install:
+
+    % cd ~
+    % svn export http://svn.zetadev.com/public/sanity/trunk sanity
+    % cd sanity
+    % make install
+
+
+To uninstall:
+
+    % cd ~/sanity
+    % make uninstall
