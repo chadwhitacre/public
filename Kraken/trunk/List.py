@@ -37,7 +37,7 @@ class Whale:
             self.accept_from = self.send_to + \
                                self.addrs(from_path)
 
-        elif lt == 'announcement':
+        elif lt == 'announcement list':
             # only those explicitly named can post
             self.send_to = self.addrs(send_path)
             self.accept_from = self.addrs(from_path)

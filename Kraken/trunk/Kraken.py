@@ -8,26 +8,26 @@
 import os, re, imaplib, smtplib, email
 from os.path import join
 from ConfigParser import SafeConfigParser as ConfigParser
+from Whale import Whale
 
 class Kraken:
     """
 
-    This guy polls an IMAP account. If a new message is from a list member, then
-    it forwards the message along to the rest of the list. Otherwise it moves
-    the message to the trash. Usage:
+    This guy polls an IMAP account. It either re-sends or trashes messages based
+    on the From header. Usage:
 
     >>> from Kraken import Kraken
     >>> k = Kraken()
     #>>> k.release()
 
     And here is a test of our re that should really go in the docstring of a
-    factored-out function
+    factored-out function.
 
-    >>> FROM = 'From: Chad Whitacre <douglas.wicker@pncyeah.com>'
+    >>> FROM = 'From: Chad Whitacre <chad.whitacre@zetaweb.com>'
     >>> pattern = r'From:.* <?(.*@.*\.[A-Za-z]*)>?'
     >>> from_addr = re.search(pattern, FROM).group(1)
     >>> print from_addr
-    douglas.wicker@pncyeah.com
+    chad.whitacre@zetaweb.com
 
     """
 
