@@ -27,3 +27,24 @@ zopes
     see if each zope is actually running? Then start, stop, restart ...
 
 LittleCheeze.py -- obj to park in client Zopes to feed info to Big Cheeze
+
+
+
+Notes:
+
+  - "decommission" (take out of vhosting) will act as a protection against
+  accidental deletion once it is in place.
+
+  - We may want to make delete impossible on production servers. (i.e., have
+  two 'modes' for Big Cheeze -- production, dev)
+
+  - You can have multiple Big Cheezes pointing to different instance
+  roots. Heck, you can even point them at same root :)
+
+  - No tests, and interface is out of sync
+
+  - list_zopes and list_skel are dumb! They just list the directories in
+  instance_root and skel_root, regardless of whether those directories will
+  actually function as zopes or skel.
+
+  - I've been using "skel" as the plural of "skel" prolly dumb but it's late ;)

@@ -3,86 +3,105 @@
     <meta http-equiv="content-type" content="text/html;charset=iso-8859-1" />
     <title>Zope</title>
     <style>@import url("/manage_page_style.css");
-           @import url("big_cheeze_style");</style>
+           @import url("style");
+           @import url("style_doc");
+           </style>
 </head>
 
 <body>
 
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure context/manage_tabs">Tabs</h2>
+
 <div class="padding">
 
-<h3>Steve,</h3>
+<div id="doc">
 
-<p>Ok man, here's what I did: I mercilessly refactored ZetaServerAdmin into a
-Product, which is now called Cheeze and which is in the public repo. "Cheeze"
-stands for "Cheap Zopes". :)</p>
+    <h1>Cheeze</h1>
 
-<p>I decided to keep the vhosting and instance mgmt functionality a little more
-distinct than we have been. Doing this means we can use Cheeze on our local
-machines, cause we need cheap zopes for dev at least as much as for production.
-I didn't remove any of your vhosting work, but it only shows up if we are on
-unix (haven't actually fully tested this yet).</p>
 
-<p>So here's how to set up a Cheeze server (dev or production):</p>
+    <a name="toc"></a>
+    <h2>Table of Contents</h2>
 
-<ol>
-  <li>Install Zope</li>
-
-  <li>Create a folder structure for instances. Here is my recommendation:
     <ul>
-       <li>zopes/</li>
-       <li>zopes/instances</li>
-       <li>zopes/skel</li>
+        <li><a href="#intro">Intro</a></li>
+        <li><a href="#zopes">Zopes</a></li>
+        <li><a href="#domains">Domains</a></li>
     </ul>
-  </li>
 
-  <li>Use stock mkzopeinstance.py to create a "master" instance in zopes/</li>
+    <a name="intro"></a>
+    <h2>Intro</h2>
+    <div class="toc">[ <a href="#toc">toc</a> ]</div>
 
-  <li>Manually tweak master/etc/zope.conf, etc. to your liking (I am using port
-  8000 for master, 80 for dev instances). Also svn co Cheeze into Products (no
-  dependencies)</li>
+    <p>Cheap Zope instances are the foundation of efficient Zope hosting, both
+    for development and production environments. Cheeze makes cheap Zopes a
+    reality by providing TTW Zope instance management tools. 'Cheeze' stands for
+    'Cheap Zope'.</p>
 
-  <li>Optionally, add a custom skel or two to skel/.</li>
+    <p>Using a Big Cheeze object, you can manage the following TTW:</p>
 
-  <li>In master/ZMI, add a Big Cheeze, and set the instance_root and skel_root to
-     the directories you created above.</li>
-
-  <li>Now try creating and deleting zopes. :) th (you will need to start them
-  manually to confirm that they are indeed working)</li>
-
-  <li>Also note "domains" and "documentation" tabs.</li>
-</ol>
-
-<h3>Notes:</h3>
-
-<ul>
-  <li>Create/delete is working :)</li>
-
-  <li>"decommission" (take out of vhosting) will act as a protection against
-  accidental deletion once it is in place.</li>
-
-  <li>We may want to make delete impossible on production servers. (i.e., have
-  two 'modes' for Big Cheeze -- production, dev)</li>
-
-  <li>You can have multiple Big Cheezes pointing to different instance
-  roots. Heck, you can even point them at same root :)</li>
-
-  <li>No tests, and interface is out of sync</li>
-
-  <li>zopes_list and skel_list are dumb! They just list the directories in
-  instance_root and skel_root, regardless of whether those directories will
-  actually function as zopes or skel.</li>
-
-  <li>I've been using "skel" as the plural of "skel" prolly dumb but it's late ;)</li>
-
-</ul>
+    <ul>
+        <li>Zope instances</li>
+        <li>DNS</li>
+        <li>virtual hosting with Apache</li>
+    </ul>
 
 
-<p>SEE ALSO: TODO.txt (on fs)</p>
+    <a name="zopes"></a>
+    <h2>Zopes</h2>
+    <div class="toc">[ <a href="#toc">toc</a> ]</div>
+
+    <p>There are two kinds of forms on the <a href="manage_zopes">Zopes</a>
+    tab: a form for adding new Zopes, and multiple forms for editing them.
+    There are a couple gotchas wrt port numbers.</p>
+
+    <div class="screenshot">
+        <span class="screenshot-label">Screenshot: Zopes table</span>
+        <img src="image_zopes"
+             alt="screenshot of zopes form" />
+    </div>
+
+    <h3>Add form</h3> <p>The green row is for adding new Zope instances; all
+    fields are required. Name is not validated, but you will get an error if you
+    use characters that are not legal for your filesystem. The dropdown shows
+    the available skel on your system. (A skel is a Zope instance template). If
+    you have not set the 'skel_root' property, or you set it to an empty
+    directory, then this dropdown will not appear. Port must be an integer.</p>
 
 
+    <h3>Edit forms</h3>
 
+    <p>Each other row is a form for editing the name and port number for your
+    existing Zope instances. Name and port are validated as for the 'add' form.
+    Use the 'disk' icon <span style="whitespace: nowrap">( <img src="image_save"
+    alt="disk icon" title="save" /> )</span> to save your new values. Use the
+    'trash' icon <span style="whitespace: nowrap;">( <img src="image_delete"
+    alt="disk icon" title="save" /> )</span> to delete the Zope instance. It
+    will be completely deleted from your filesystem.</p>
+
+    <p><b>Note:</b> It is up to you to turn off your Zope instance before you
+    edit or delete it here. This is a UI shortcoming that is too expensive to
+    fix at the moment.</p>
+
+
+    <h3>Regarding Port Numbers</h3>
+
+    <p>Note that in both kinds of forms 'Port' is only meaningful if that
+    instance's zope.conf is configured properly. NB: the zope.conf in the skel
+    that comes with Zope ('zope stock' in the list) is <b>not</b> configured
+    properly. If you use that skel then the real port number for the instance
+    will be 8080 no matter what you enter in the form. If that is the only
+    skel available, then the 'Port' column is not shown. This is another UI
+    shortcoming that is too expensive to fix at the moment.</p>
+
+
+    <a name="domains"></a>
+    <h2>Domains</h2>
+    <div class="toc">[ <a href="#toc">toc</a> ]</div>
+
+    <p>[Domain doc will go here.]</p>
+
+</div>
 </div>
 </body>
 </html>

@@ -1,0 +1,42 @@
+#doc {
+    width: 500px;
+    }
+
+h1 { font-size: 160%; }
+h2 { font-size: 120%; margin: 2em 0 0; }
+h3 { font-size: 8.5pt; margin: 2em 0 0;}
+
+p, li {
+    line-height: 150%;
+    font-size: 9pt;
+    }
+
+p {
+    margin: 0 0 1em 1em;
+    padding: 0;
+    }
+
+.toc {
+    margin: 0 0 1em;
+    font-size: 9pt;
+    }
+
+.screenshot {
+    text-align: center;
+    border: 1px solid #999;
+    position: relative;
+    padding: 1em;
+    margin: 0 0 0 1em;
+    }
+
+.screenshot-label {
+    position: absolute;
+    top: -0.6em;
+    left: 1em;
+    height; 1em;
+    font-size: 8pt;
+    font-weight: bold;
+    padding: 0 0.5em;
+    background: white;
+    color: #999;
+    }

@@ -13,9 +13,7 @@
     tal:replace="structure context/manage_tabs">Tabs</h2>
 <div class="padding">
 
-<p class="form-help">Note that port number is not meaningful for stock skel. It
-will be 8080 no matter what you put in there. Should be working for devel and
-production though. :)</p>
+<p>Need help? Please read the <a href="manage_doc">documentation</a>.</p>
 
 <table id="table" tal:define="zope_ids context/zope_ids_list">
     <thead>
@@ -33,12 +31,19 @@ production though. :)</p>
                           skel_root  context/skel_root;">
             <td>
                 <input name="name:required" type="text"/>
-                <select name="skel">
+                <select name="skel:required"
+                        tal:condition="availaskel">
+                    <option value="">which skel?</option>
                     <option tal:repeat="skel availaskel"
-                            tal:attributes="value skel"
+                            tal:attributes="value skel;
+                                            selected python:test(
+                                              skel=='default','selected','');
+                                           "
                             tal:content="skel" />
                     <option value="|stock|">zope stock</option>
                 </select>
+                <input type="hidden" name="skel" value="|stock|"
+                       tal:condition="not:availaskel" />
             </td>
             <td><select name="port:int"
                         tal:condition="context/vhosting">
