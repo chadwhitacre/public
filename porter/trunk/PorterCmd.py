@@ -15,13 +15,14 @@ class PorterCmd(Cmd):
         #  a one-to-one mapping of domains to websites
         self.db_path = db_path
         db = dbm.open(self.db_path, 'c')
-        self.domains = dict(db)
+        domains = dict(db)
         db.close()
 
         # filter out www's for our users, they are just for apache
-        for domain in self.domains:
-            if domain.startswith('www.'):
-                del self.domains[domain]
+        self.domains = {}
+        for domain in domains:
+            if not domain.startswith('www.'):
+                self.domains[domain] = domains[domain]
 
         # we also keep an index around
         #  a one-to-many mapping of websites to domains
@@ -76,41 +77,54 @@ class PorterCmd(Cmd):
         domains = self.domains.keys()
         if len(domains) > 0: # otherwise columnize gives us "<empty>"
 
-            # massage our list of domains
-            domains.sort()
-            if args:
-                domains = filter(lambda d: d.startswith(args[0]), domains)
-
-            if ('l' in opts) or ('long' in opts):
-                header = """
-DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*79,)
-                print >> self.stdout, header
-                for domain in domains:
-                    server, portnum = self.domains[domain].split(':')
-                    aliases = self.aliases[self.domains[domain]][:]
-                    aliases.remove(domain)
-
-                    domain  = domain.ljust(28)[:28]
-                    server  = server.ljust(12)[:12]
-                    portnum = str(portnum).rjust(4)
-                    if aliases: alias = aliases.pop(0)[:28]
-                    else:       alias = ''
-
-                    record = "%s  %s  %s  %s" % (domain, server, portnum, alias)
-
-                    print >> self.stdout, record
-                    for alias in aliases:
-                        print >> self.stdout, ' '*53 + alias
+            if ('r' in opts) or ('raw' in opts):
+                print >> self.stdout, """
+KEY                           VALUE\n%s""" % (self.ruler*60,)
+                raw = dbm.open(self.db_path,'r')
+                for key in dict(raw):
+                    print >> self.stdout, "%s  %s" % (key.ljust(28), raw[key].ljust(28))
                 print >> self.stdout
-
+                raw.close()
             else:
-                self.columnize(domains, displaywidth=79)
+                # massage our list of domains
+                domains.sort()
+                if args:
+                    domains = filter(lambda d: d.startswith(args[0]), domains)
+
+                if ('l' in opts) or ('long' in opts):
+                    header = """
+DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*79,)
+                    print >> self.stdout, header
+                    for domain in domains:
+                        server, portnum = self.domains[domain].split(':')
+                        aliases = self.aliases[self.domains[domain]][:]
+                        aliases.remove(domain)
+
+                        domain  = domain.ljust(28)[:28]
+                        server  = server.ljust(12)[:12]
+                        portnum = str(portnum).rjust(4)
+                        if aliases: alias = aliases.pop(0)[:28]
+                        else:       alias = ''
+
+                        record = "%s  %s  %s  %s" % (domain, server, portnum, alias)
+
+                        print >> self.stdout, record
+                        for alias in aliases:
+                            print >> self.stdout, ' '*53 + alias
+                    print >> self.stdout
+
+                else:
+                    self.columnize(domains, displaywidth=79)
 
 
     complete_mv = complete_ls
 
     def do_mv(self, inStr=''):
         """ alias for mk, but with tab-completion """
+        self.do_mk(inStr)
+
+    def do_add(self, inStr=''):
+        """ pure alias for mk """
         self.do_mk(inStr)
 
     def do_mk(self, inStr=''):
