@@ -1,6 +1,0 @@
-Ok, we want to add ordering support to the catalog. Strategy is to have a little
-script that populates a column in catalog metadata
-
-Archetypes/OrderedBaseFolder.py
-CMFPlone/PloneFolder.py
-OFS/OrderSupport.py
