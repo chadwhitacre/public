@@ -19,7 +19,7 @@
 <div class="padding" >
 <tal:definer tal:define="info here/zope_info">
 
-    
+
 <p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
 <table id="table"
        tal:define="availaskel   context/skel_list;
@@ -108,7 +108,7 @@
         </tr>
 
         <!-- The add form is disabled if we have port_range
-             but no availaports -->
+             but no availaports, or if we don't have skel_root -->
         <tr class="green" tal:condition="python:port_range and not availaports">
             <td colspan="4">
 
@@ -116,6 +116,23 @@
                 href="manage_doc#port_range">ports</a>.
 
             </td>
+        </tr>
+
+        <!-- this is a form to set the regex filter -->
+        <tr class="yellow">
+        <form action="zopes_filter_set" method="post">
+            <td colspan="2">
+                <input type="text"
+                       name="regex"
+                       tal:attributes="value context/zopes_filter_get"
+                       style="width: 100%" />
+            </td>
+            <td colspan="2" class="action">
+                <input type="submit"
+                       name="submit"
+                       value="filter" />
+            </td>
+        </form>
         </tr>
 
 
@@ -148,7 +165,7 @@
                                                                  'selected','');
                                             value port" />
                 </select>
- 
+
                 <!-- show an <input> if we don't have port_range -->
                 <input type="text"
                        name="new_port:int:required"
@@ -195,7 +212,8 @@
 
         <tr>
             <td colspan="3">
-                There are no Zope instances in <b tal:content="context/instance_root" />.
+                There are no Zope instances in <b tal:content="context/instance_root"
+                /><tal:x condition="context/zopes_filter_get"> that match your filter</tal:x>.
             </td>
         </tr>
 

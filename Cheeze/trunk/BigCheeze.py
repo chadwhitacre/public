@@ -43,8 +43,8 @@ class BigCheeze(Implicit, Persistent, \
 
     instance_root = skel_root = vhost_db = dns_file = port_range = port_list=''
     production_mode=0
-    
-    vhosting = 0
+
+    vhosting = 0 # do we still need this?
 
     BigCheeze_manage_options = (
         {'label':'Zopes',           'action':'manage_zopes',    },
@@ -76,8 +76,8 @@ class BigCheeze(Implicit, Persistent, \
     ##
     def pformat(self,object):
         return Ipformat(object)
-    
-    
+
+
     ##
     # documentation
     ##
@@ -101,13 +101,13 @@ class BigCheeze(Implicit, Persistent, \
             return 1
         else:
             return 0
-    
+
     def managesVhosting(self):
         if self.vhost_db:
             return 1
         else:
             return 0
-    
+
     def mode(self):
         managesInstances = self.managesInstances()
         managesVhosting = self.managesVhosting()
@@ -129,19 +129,20 @@ class BigCheeze(Implicit, Persistent, \
         }
         return friendlies[self.mode()]
 
+
     ##
     # Zope mgmt
     ##
 
     manage_zopes = PageTemplateFile('www/manage_zopes.pt',globals())
-        
+
     security.declareProtected('Manage Big Cheeze', 'zope_add'),
     def zope_add(self):
         """ add a zope instance """
         mode = self.mode()
-        if mode in [1,3]:  
+        if mode in [1,3]:
             ZopeManager._zope_add(self)
-            if mode==3:      
+            if mode==3:
                 self.fs_db_sync()
         elif mode==2:
             ApacheVHostManager._zope_add(self)
@@ -153,27 +154,27 @@ class BigCheeze(Implicit, Persistent, \
         if self.production_mode:
             raise CheezeError, 'Cannot edit instances in production mode'
         mode = self.mode()
-        if mode in [1,3]:  
+        if mode in [1,3]:
             ZopeManager._zope_edit(self)
-            if mode==3:      
+            if mode==3:
                 self.fs_db_sync()
         elif mode==2:
             ApacheVHostManager._zope_edit(self)
-        
+
         return self.REQUEST.RESPONSE.redirect('manage')
 
     security.declareProtected('Manage Big Cheeze', 'zope_remove'),
     def zope_remove(self):
         """ remove a zope instance """
         mode = self.mode()
-        if mode in [1,3]:  
+        if mode in [1,3]:
             ZopeManager._zope_remove(self)
-            if mode==3:      
+            if mode==3:
                 self.fs_db_sync()
         elif mode==2:
             ApacheVHostManager._zope_remove(self)
         return self.REQUEST.RESPONSE.redirect('manage')
-    
+
     def zope_info(self):
         '''just passes stuff over to manage_zopes'''
         info = {}
@@ -188,10 +189,27 @@ class BigCheeze(Implicit, Persistent, \
                 'canonical':zope_id+'.zetaserver.com',
             }
             zopes.append(zope_info)
-        
+
         #if mode==2: zopes = []
         info['zopes'] = zopes
         return info
+
+    def zopes_filter_set(self, regex):
+        """ takes a regex filter and sets it in a cookie """
+        r = self.REQUEST.RESPONSE
+        r.setCookie('zopes_filter', regex,
+                    expires='Wed, 19 Feb 2020 14:28:00 GMT')
+        r.redirect('manage_zopes')
+
+    def zopes_filter_get(self):
+        """ returns a regex from a form or a cookie """
+        form = self.REQUEST.form.get('regex','')
+        cookie = self.REQUEST.cookies.get('zopes_filter','')
+        if form != '':
+            return form
+        else:
+            return cookie
+
 
 
     ##
@@ -199,7 +217,7 @@ class BigCheeze(Implicit, Persistent, \
     ##
 
     manage_domains = PageTemplateFile('www/manage_domains.pt',globals())
-    
+
     def domain_add(self):
         """handles adding domains"""
         self._domain_add()
@@ -214,7 +232,7 @@ class BigCheeze(Implicit, Persistent, \
         """handles removing domains"""
         self._domain_remove()
         return self.REQUEST.RESPONSE.redirect('manage_domains')
-        
+
     def domains_info(self):
         """ populates the domains pt """
         vhosts = self.domains_list()
@@ -247,7 +265,7 @@ class BigCheeze(Implicit, Persistent, \
                     'canonical':canon_map[port],
                     'aliases':aliases,
                 }
-                
+
             except KeyError:
                 domain_info = {
                     'name':domain,
@@ -263,7 +281,7 @@ class BigCheeze(Implicit, Persistent, \
 
 
     ##
-    # helper routines
+    # helpers
     ##
 
     def _setPropValue(self, id, value):

@@ -19,24 +19,47 @@ class ZopeManager:
                                                    )
 
     def zope_ids_list(self):
-        """ return a list of available zope instances """
+        """ return a list of available zopes, optionally constrained by regex """
+        regex = self.zopes_filter_get()
         mode = self.mode()
         if mode in [1,3]:
-            ids = os.listdir(self.instance_root)
+            all_ids = result = os.listdir(self.instance_root)
+            if regex != '':
+                try:
+                    import re
+                    result = []
+                    for zope_id in all_ids:
+
+                        # str_to_search = self._zope_search_str(zope_id)
+                        # not sure we need to do this here
+                        str_to_search = zope_id
+
+                        if re.search(regex, str_to_search) is not None:
+                               result.append(zope_id)
+                except:
+                    import sys
+                    self.zopes_filter_set("regex < %s > has an " % regex \
+                                        + "error: %s" % sys.exc_info()[1])
+            ids = result
         elif mode==2:
             pattern = '.zetaserver.com'
-            ids = [dname.replace(pattern,'') for dname, port in self.canonical_names_list() if dname.count(pattern)]
+            ids = [dname.replace(pattern,'') \
+                   for dname, port in self.canonical_names_list() \
+                   if dname.count(pattern)]
         ids.sort()
         return ids
+
+    def _zope_search_str(self, zope_id):
+        return 'name:%s\nport:%s' % self.zope_info_get(zope_id)
 
     def zopes_list(self):
         """ return a list of name, port tuples """
         return [zope_info_get(z) for z in self.zope_ids_list()]
 
-    def zope_info_get(self, zope):
-        """ given a zope instance, return (name, port number) """
-        port = zope.split('_')[-1]
-        name = ''.join(zope.split('_')[0:-1])
+    def zope_info_get(self, zope_id):
+        """ given a zope_id, return (name, port number) """
+        port = zope_id.split('_')[-1]
+        name = ''.join(zope_id.split('_')[0:-1])
         return (name, port)
 
     def skel_list(self):
@@ -129,7 +152,7 @@ class ZopeManager:
         new_name = form['new_name']
         old_port = form['old_port']
         new_port = form['new_port']
-        
+
         old_zope_id = self._zope_id_make(old_name, old_port)
         new_zope_id = self._zope_id_make(new_name, new_port)
         if old_zope_id != new_zope_id:
@@ -139,11 +162,11 @@ class ZopeManager:
 
     def _zope_remove(self):
         """ grabs instance name from form posts, deletes it"""
-        zope = self.REQUEST.form['zope']
+        zope_id = self.REQUEST.form['zope_id']
         if self.production_mode:
             raise CheezeError, 'Cannot delete instances in production mode'
-        
-        top = join(self.instance_root, zope)
+
+        top = join(self.instance_root, zope_id)
         #raise 'top', top
         for root, dirs, files in os.walk(top, topdown=False):
             for name in files:
@@ -240,10 +263,10 @@ class ZopeManager:
                 "SOFTWARE_HOME" : softwarehome,
                 "ZOPE_HOME"     : zopehome,
                 }
-                
-                
+
+
     def _instance_ports_get(self):
-        """get the port of this zope instance so it can be excluded from lists of 
+        """get the port of this zope instance so it can be excluded from lists of
         available ports"""
         ports = []
         for server in self.Control_Panel.getServers():
@@ -252,7 +275,7 @@ class ZopeManager:
                 port = int(port.replace('Port:',''))
                 ports.append(port)
         return ports
-            
+
 
     def test_func(self):
         '''teehee'''
@@ -272,26 +295,26 @@ class ZopeManager:
         port_list = port_list.strip()
 
         ###
-        ## the tuple format seems unnecesary here. how bout just a comma 
+        ## the tuple format seems unnecesary here. how bout just a comma
         ## separated list
         ###
         ports = []
         if port_range:
-        
+
             try:
                 parts = [int(n) for n in port_range.split(',') if n]
             except ValueError:
                 raise CheezeError, "port_range must contain only integers"
-        
+
             if len(parts) not in [2,3]:
                 raise CheezeError, "port_range needs a comma separated list of length 2 or 3"
-                
+
             ports.extend(range(*parts))
-            
+
         if port_list:
             parts = [int(n) for n in port_list.split(',') if n]
             ports.extend(parts)
-            
+
         for port in self._instance_ports_get():
                 if port in ports:
                     ports.remove(port)
