@@ -41,7 +41,7 @@ class BigCheeze(Implicit, Persistent, \
     title = 'Cheap Zopes :-)'
     meta_type= 'Big Cheeze'
 
-    instance_root = skel_root = vhost_db = dns_file = port_range = ''
+    instance_root = skel_root = vhost_db = dns_file = port_range = port_list=''
     production_mode=0
     
     vhosting = 0
@@ -65,6 +65,7 @@ class BigCheeze(Implicit, Persistent, \
         {'id'   :'vhost_db',     'type' :'string','value':'','mode': 'w',},
         {'id'   :'dns_file',     'type' :'string','value':'','mode': 'w',},
         {'id'   :'port_range',   'type' :'string','value':'','mode': 'w',},
+        {'id'   :'port_list',    'type' :'string','value':'','mode': 'w',},
                 )
 
     def __init__(self, id):
@@ -131,7 +132,6 @@ class BigCheeze(Implicit, Persistent, \
         info = {}
         zopes = []
         orphans=0
-        info['vhosts']=self.vhosts_get()
         for zope_id in self.zope_ids_list():
             name, port = self.zope_info_get(zope_id)
             zope_info = {

@@ -248,33 +248,46 @@ class ZopeManager:
         return ports
             
 
-    def _ports_list(self, port_range = None):
+    def test_func(self):
+        '''teehee'''
+        output = self._ports_list()
+        return self.pformat(output)
+
+
+    def _ports_list(self, port_range = None, port_list = None):
         """ list all possible ports, if applicable """
 
         if port_range is None:
             port_range = self.port_range
-
         port_range = port_range.strip()
+
+        if port_list is None:
+            port_list = self.port_list
+        port_list = port_list.strip()
 
         ###
         ## the tuple format seems unnecesary here. how bout just a comma 
         ## separated list
         ###
-        
+        ports = []
         if port_range:
         
             try:
-                parts = [int(n) for n in port_range.split(',')]
+                parts = [int(n) for n in port_range.split(',') if n]
             except ValueError:
                 raise CheezeError, "port_range must contain only integers"
         
             if len(parts) not in [2,3]:
                 raise CheezeError, "port_range needs a comma separated list of length 2 or 3"
                 
-            ports = range(*parts)
-            for port in self._instance_ports_get():
+            ports.extend(range(*parts))
+            
+        if port_list:
+            parts = [int(n) for n in port_list.split(',') if n]
+            ports.extend(parts)
+            
+        for port in self._instance_ports_get():
                 if port in ports:
                     ports.remove(port)
-            return ports
-        else:
-            return False
+        ports.sort()
+        return ports

@@ -14,9 +14,6 @@
 <div class="padding" tal:condition="context/instance_root">
 
 <p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
-<hr/>
-<pre tal:content="python: here.pformat(info)" />
-<hr/>
 <table id="table"
        tal:define="zope_ids     context/zope_ids_list;
                    availaskel   context/skel_list;
@@ -64,7 +61,7 @@
             <td colspan="2" class="action">
                 <input type="submit" value="add" />
             </td>
-            <td></td>
+            <td tal:condition="here/vhost_db"></td>
         </form>
         </tr>
 
@@ -100,7 +97,7 @@
             <td colspan="2" class="action">
                 <input type="submit" value="add" />
             </td>
-            <td></td>
+            <td tal:condition="here/vhost_db"></td>
         </form>
         </tr>
 

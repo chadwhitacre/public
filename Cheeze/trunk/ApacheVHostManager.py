@@ -19,11 +19,6 @@ class ApacheVHostManager:
     #
     ##
 
-    def test_func(self):
-        '''teehee'''
-        output = self.db_orphans_find()
-        return self.pformat(output)
-
     def db_orphans_handle(self):
         orphans, leftovers = self.db_orphans_find()
         orphan_dict ={}
