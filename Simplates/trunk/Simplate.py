@@ -134,6 +134,9 @@ class Simplate(Base):
 
         self._value_dict = {}
         paths = list(self.value_paths)
+        if type(paths) == type(''):
+            raise 'Whoa!','Hold your horses!'
+            paths = paths.split(',')
         paths.reverse()
         
         ##

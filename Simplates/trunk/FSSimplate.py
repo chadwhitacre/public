@@ -3,7 +3,7 @@
 
 from string import split, replace
 from os import stat
-import re, sys
+import re, sys, os
 
 import Globals, Acquisition
 from DateTime import DateTime
@@ -19,7 +19,8 @@ from Products.CMFCore.CMFCorePermissions import ViewManagementScreens
 from Products.CMFCore.CMFCorePermissions import View
 from Products.CMFCore.CMFCorePermissions import FTPAccess
 from Products.CMFCore.FSObject import FSObject
-from Products.CMFCore.utils import _setCacheHeaders, registerIcon
+from Products.CMFCore.FSMetadata import FSMetadata, CMFConfigParser
+from Products.CMFCore.utils import _setCacheHeaders, registerIcon, expandpath
 
 from OFS.Cache import Cacheable
 
@@ -58,7 +59,7 @@ class FSSimplate(FSObject, Script, Simplate):
     def _createZODBClone(self):
         """Create a ZODB (editable) equivalent of this object."""
         obj = ZopeSimplate(self.getId(), self._text, self.content_type)
-        obj.expand = 0
+#        obj.expand = 0
         obj.write(self.read())
         return obj
 
@@ -73,15 +74,31 @@ class FSSimplate(FSObject, Script, Simplate):
         finally: 
             file.close()
         if reparse:
-#            if xml_detect_re.match(data):
-#                # Smells like xml
-#                self.content_type = 'text/xml'
-#            else:
             try:
                 del self.content_type
             except (AttributeError, KeyError):
                 pass
             self.write(data)
+        self._readMetadata()
+ 
+    def _readMetadata(self):
+        # re-read .metadata file if it exists
+        e_fp = expandpath(self._filepath) + '.metadata'
+        if os.path.exists(e_fp):
+            
+            # XXX I can't get this to work with FSMetdata
+            # so I will do it manually >:(
+            
+            metadata = file(e_fp)
+            for line in metadata:
+                try:
+                    k, v = line.replace('\n','').split('=')
+                    if k.strip() == 'value_paths':
+                        value_paths = [p.strip() for p in v.split(',')]
+                except:
+                    pass
+                
+            self.value_paths = value_paths
 
     security.declarePrivate('read')
     def read(self):
@@ -89,9 +106,10 @@ class FSSimplate(FSObject, Script, Simplate):
         self._updateFromFS()
         return FSSimplate.inheritedAttribute('read')(self)
 
+
     ### The following is mainly taken from ZopeSimplate.py ###
 
-    expand = 0
+#    expand = 0
 
     func_defaults = None
     func_code = ZopeSimplate.func_code
