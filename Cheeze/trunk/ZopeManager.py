@@ -17,8 +17,6 @@ class ZopeManager:
 
     security.declareProtected('Manage Big Cheeze', 'list_zopes',
                                                    'list_skel',
-                                                   'list_ports',
-                                                   'get_port',
                                                    )
 
     def list_zopes(self):
@@ -31,6 +29,10 @@ class ZopeManager:
             return None
         else:
             return os.listdir(self.skel_root)
+
+    def get_port(self, zope):
+        """ given a zope instance, return its port number """
+        return None
 
 
     ##
@@ -111,7 +113,7 @@ class ZopeManager:
 
 
     ##
-    # helper routines
+    # helpers
     ##
 
     def _initialize_kw(self):
