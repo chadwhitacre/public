@@ -1,13 +1,26 @@
 also account for www
 only store server:port in the actual db
-prepoulate available servers and ports (tab completion)
+write dns module
+
+deal with orphans
+
+validate input
 non-interactive mode
-ls -l
 install properly with distutils
 factor out db path to config
+tab complete available servers (from etc/hosts) and ports (from rpc to servers)
+fit codenames back into the mix
+help
+license
 
 
 1) boot jail
 2) dns
 3) mod_rewrite
 4) profit
+
+
+done
+=======================
+ls -l
+convert websites to aliases
