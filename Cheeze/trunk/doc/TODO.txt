@@ -3,8 +3,6 @@ Steve's todo
 
 High Priority (we need this to host sites)
 
-    smarter error messages (which domain did you click?)
-
     implement domain edits
 
     handle edits in apache for domains

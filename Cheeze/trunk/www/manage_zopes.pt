@@ -173,9 +173,8 @@
             </td>
             <td class="action">
                 <a tal:condition="not:here/production_mode"
-                    tal:attributes="href python:'zope_remove?zope_id=%s' % zope['id']"
-                   onclick="return confirm('Delete this Zope?\n \
-                                            All of your data will be lost.')">
+                    tal:attributes="href python:'zope_remove?zope_id=%s' % zope['id'];
+                                    onclick python:'''return confirm('Delete zope instance: %s?\\n All data in this instance will be lost.');;'''%zope['id']">
                     <img style="border:none;" src="image_delete"
                          alt="delete" title="delete"/>
                 </a>
