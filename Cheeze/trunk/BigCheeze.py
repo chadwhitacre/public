@@ -7,7 +7,7 @@ try:
 except:
     # we are not on unix :/
     vhosting = 0
-from Products.ZetaUtils import compare_domains, pformat, index_sort
+#from Products.ZetaUtils import compare_domains, pformat, index_sort
 from AccessControl import ClassSecurityInfo
 
 from Acquisition import Implicit
