@@ -5,5 +5,5 @@ registerDirectory('root', globals())
 
 def initialize(context):
     # Import lazily, and defer initialization to the module
-    import Cheese
-    Cheese.initialize(context)
+    import BigCheeze
+    BigCheeze.initialize(context)

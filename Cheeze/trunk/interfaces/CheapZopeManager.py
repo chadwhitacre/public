@@ -1,6 +1,6 @@
 from Interface import Base
 
-class ITheZetaServer(Base):
+class IBigCheeze(Base):
     """ Basically, a Zope instance manager """
 
     ##

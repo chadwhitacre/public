@@ -1,4 +1,4 @@
-import os,dbm,pprint
+import os, dbm, pprint
 from config import *
 
 def bounce_apache():

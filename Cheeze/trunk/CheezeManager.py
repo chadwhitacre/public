@@ -1,24 +1,30 @@
-from Products.CheapZopes.interfaces import ICheapZopes
-from Products.CheapZopes.vh_utils import update_vhosts, \
-                                            recreate_vhosts, \
-                                            get_vhosts
+from Products.Cheeze.interfaces.BigCheeze import IBigCheeze
+try:
+    from Products.Cheeze.vh_utils import update_vhosts, \
+                                         recreate_vhosts, \
+                                         get_vhosts
+except:
+    pass
 from Products.ZetaUtils import compare_domains, pformat, index_sort
-from AccessControl import ModuleSecurityInfo
+from AccessControl import ClassSecurityInfo
 
 from Acquisition import Implicit
 from Globals import Persistent
 from AccessControl.Role import RoleManager
 from OFS.SimpleItem import Item
 
-class Cheese(Implicit, Persistent, RoleManager, Item):
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
-    __implements__ = ICheese
+
+class BigCheeze(Implicit, Persistent, RoleManager, Item):
+
+    __implements__ = IBigCheeze
 
     security = ClassSecurityInfo()
 
     id = 'Cheese'
     title = 'Centrally manage many zope instances'
-    meta_type= 'Cheap Zope Manager'
+    meta_type= 'Big Cheeze'
     
     _properties=(
         {'id'   :'instance_root',
@@ -138,12 +144,24 @@ class Cheese(Implicit, Persistent, RoleManager, Item):
             update_vhosts({zs_name:zope['port']},www=1)
         return response.redirect('zopes')
 
+
+##
+# Product addition and registration
+##
+
+manage_addBigCheezeForm = PageTemplateFile(
+    'www/BigCheezeAdd.pt', globals(), __name__='manage_addBigCheezeForm')
+
+def manage_addBigCheeze(self, id, title=None, text=None,
+                           REQUEST=None, submit=None):
+    pass
+
 def initialize(context):
     context.registerClass(
-        Cheese,
-        permission='Add Cheeze Manager',
-        constructors=(manage_addCheeseForm,
-                      manage_addCheese),
+        BigCheeze,
+        permission='Add Big Cheeze',
+        constructors=(manage_addBigCheezeForm,
+                      manage_addBigCheeze),
         icon='www/cheeze.png',
         )
     #context.registerHelp()
