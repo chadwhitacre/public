@@ -16,6 +16,19 @@ gmane!). Will it scale? Why not?
 Install
 =================================
 
+Prerequisites:
+
+    1. An IMAP account with these three mailboxes: INBOX, Archive, Trash
+
+    2. An SMTP account
+
+    3. Python (only tested with 2.3.4)
+
+    4. The runner script is *nix style (no .bat file yet)
+
+    5. cron if you want to run it cronishly
+
+
 Here's how to install Kraken:
 
     1. Checkout or export the Kraken package from:
@@ -41,6 +54,20 @@ Here's how to install Kraken:
 
 
 
+List Types
+=================================
+
+Kraken currently implements two types of lists:
+
+    - private discussion -- all addresses in send_to.addrs may post, plus
+      those addresses explicitly named in accept_from.addrs
+
+    - announcement list -- only addresses specifically named in the
+      accept_from.addrs may post to the list
+
+
+
+
 Roadmap
 =================================
 
@@ -53,26 +80,36 @@ about the simplest solution for my requirements.
 
 0.4 -- new use case: announcement list (do not accept from send_to)
 
-    - abstract conf from Kraken.py so we can use one Kraken to run multiple lists
-
-    - implement announcement list
-
-    - add list type to kraken.conf
+    - use SSL/TSL
 
 future versions -- who knows? Some random TODO's:
 
-
     - Protect against 'auto-away' messages!!!
 
-    - use SSL/TSL
+    - expose Reply-To to policy
 
     - consider batch processing server interactions instead of hitting the
       server once per message
+
+    - consider persistent storage for Whales/users
 
     - better logging
 
     - TTW and/or email user mgmt
 
+
+
+
+History
+=================================
+
+0.4 - abstracted conf from Kraken.py so we can use one Kraken to run multiple lists
+
+    - added list type to kraken.conf
+
+    - implemented announcement list
+
+0.2 - did initial implementation
 
 
 
