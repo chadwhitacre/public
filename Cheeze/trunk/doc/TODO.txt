@@ -1,11 +1,22 @@
 TODO
 
+dns would stick a domain name in our dns server and map the domain's ip to our
+jail's
+
+apache takes the domain request and maps it to a certain zope instance via
+ports
+
+
 add edit tab that is basically zopes.pt (domains.pt will be in another product!)
+
+    general design diff between zope and us: paradigm in which you can delete
+    multiple obj at once, or the one in which you can delete one at once
 
     we need to do work on the forms. it may not work to have it in a table row
     :(  cause we need to get username:password somehow, as well as skel and
     port. forms also need validation (password, confirm; constrain Zope names
-    to acceptable Zope ids, etc.)
+    to acceptable Zope ids, etc.) -- thinking about putting inituser in skel,
+    and continuing to use Zope error handling for validation.
 
     implement rename (only have to change instance_home in 5 files [4 bin/
     scripts + zope.conf])
@@ -17,11 +28,8 @@ add edit tab that is basically zopes.pt (domains.pt will be in another product!)
     How cool would it be to query the zope socket or lock or pid or whatever to
     see if each zope is actually running? Then start, stop, restart ...
 
-ZopeInstance.py -- obj representing zope instance
-
 LittleCheeze.py -- obj to park in client Zopes to feed info to Big Cheeze
 
-Make other product -- Apache DNS Manager
 
 
 
