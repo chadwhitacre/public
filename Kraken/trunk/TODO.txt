@@ -28,10 +28,11 @@ consider persistent storage for Whales/users
 ========================================
 queueing?
 threading?
+digest version?
 SecureMailHost-like spam protections?
 
 
-2.0
+1.2-2.0
 ========================================
 TTW
     - discussion board
