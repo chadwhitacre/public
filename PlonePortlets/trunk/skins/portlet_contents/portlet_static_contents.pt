@@ -1,2 +1,0 @@
-<div class="portletContent odd" tal:content="structure here/getPortletData">
-</div>
