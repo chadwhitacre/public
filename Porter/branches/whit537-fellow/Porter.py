@@ -95,53 +95,68 @@ Commands available:
             """
 
     ##
-    # Completes
+    # Complete helpers
     ##
 
-    def _complete_domains(self, text, line, begidx, endidx):
+    def _complete_domains(self, text):
         return [d for d in self.domains.keys() if d.startswith(text)]
 
-    def _complete_websites(self, text, line, begidx, endidx):
-        return [s for s in self.websites.keys() if s.startswith(text)]
+    def _complete_servers(self, text):
+        return [s for s in self.servers.keys() if s.startswith(text)]
 
-    # this is the one that actually gets called
-    def complete_smart(self, text, line, begidx, endidx):
-        # determine position of argument, and return appropriate completion
-        return self._complete_domains(text, line, begidx, endidx)
+    def _complete_websites(self, text):
+        return [w for w in self.websites.keys() if w.startswith(text)]
+
 
 
     ##
     # Create/Update
     ##
 
-    complete_mv = complete_smart
+
+    # mv is an alias for mk, but with tab completion for domains (first position)
+
+    def complete_mv(self, text, line, begidx, endidx):
+        """ complete domains in the first position, websites in the second """
+        position = len(line[:begidx].split())
+        if position == 1:
+            return self._complete_domains(text)
+        elif position == 2:
+            return self._complete_websites(text)
 
     def do_mv(self, inStr=''):
-        """ alias for mk, but with tab-completion """
+        """ alias for mk, but with different tab-completion """
         self.do_mk(inStr)
 
-    def do_add(self, inStr=''):
-        """ pure alias for mk """
-        self.do_mk(inStr)
+
+
+    def complete_mk(self, text, line, begidx, endidx):
+        """ complete websites in the second position """
+        position = len(line[:begidx].split())
+        if position == 2:
+            return self._complete_websites(text)
 
     def do_mk(self, inStr=''):
         """ given a domain name and a website, map them """
 
         # get our arguments and validate them
         opts, args = self._parse_inStr(inStr)
-        if len(args) < 3:
-            print >> self.stdout, "We need a domain name, a server name, " +\
-                                  "and a port number."
+        if len(args) < 2:
+            print >> self.stdout, "We need a domain name and a website id."
             return
-        domain, server, port = args[:3]
+        domain, site_id = args[:2]
         if domain.startswith('www.'):
             print >> self.stdout, "Please do not include 'www' on domains."
             return
-        # not worth validating port number since it will come from "dropdown" anyway
-        # not worth validating server since it will come from "dropdown" anyway
+        if len(domain.split('.')) < 2:
+            print >> self.stdout, "This does not look like a full domain name."
+            return
+        if site_id not in self.websites:
+            print >> self.stdout, "The website '%s' is not available." % site_id
+            return
 
         old_website = self.domains.get(domain)
-        new_website = ':'.join((server,port))
+        new_website = site_id.split('@')[1]
 
         # update our data
         self.domains[domain] = new_website
@@ -158,11 +173,49 @@ Commands available:
         self.aliases[new_website].sort(self._domain_cmp)
 
 
+    # add is an alias for mk
+
+    def complete_add(self, text, line, begidx, endidx):
+        """ alias for complete_mk """
+        return self.complete_mk(text, line, begidx, endidx)
+
+    def do_add(self, inStr=''):
+        """ alias for mk """
+        self.do_mk(inStr)
+
+
+
+
     ##
     # Read
     ##
 
-    complete_ls = _complete_domains
+    def complete_ls(self, text, line, begidx, endidx):
+        """ do completion based on opt[0] """
+        opts, args_ignored = self._parse_inStr(line)
+
+        default = self._complete_domains
+
+        options = { 'd'         : self._complete_domains
+                  , 'domains'   : self._complete_domains
+                  , 'l'         : self._complete_domains
+                  , 'long'      : self._complete_domains
+                  , 's'         : self._complete_servers
+                  , 'servers'   : self._complete_servers
+                  , 'w'         : self._complete_websites
+                  , 'websites'  : self._complete_websites
+                   }
+
+        if opts:
+            complete_func = options.get(opts[0], default)
+        else:
+            complete_func = default
+
+        if complete_func is not None:
+            return complete_func(text)
+        else:
+            return None
+
 
     def do_ls(self, inStr=''):
         """ list various things we are managing """
@@ -228,40 +281,47 @@ DOMAIN NAME               WEBSITE                   ALIASES
             """ show exactly what is in our dbm """
             print >> self.stdout, """
 KEY                           VALUE\n%s""" % (self.ruler*60,)
-            raw = dbm.open(self.db_path,'r')
-            for key in dict(raw):
+            raw_dbm = dbm.open(self.db_path,'r')
+            raw = dict(raw_dbm)
+            raw_dbm.close()
+
+            raw_keys = raw.keys(); raw_keys.sort(self._domain_cmp)
+            for key in raw_keys:
                 print >> self.stdout, "%s  %s" % (key.ljust(28),
                                                   raw[key].ljust(28))
             print >> self.stdout # newline
-            raw.close()
 
-        def list_servers(ignored):
+        def list_servers(args):
             """ show what servers we know about """
             header = """
-SERVER                          # WEBSITES      STATUS
+SERVER                    # WEBSITES                STATUS
 %s""" % (self.ruler*79,)
             print >> self.stdout, header
             servers = self.servers.keys()
             if servers:
+                if args:
+                    servers = [s for s in servers if s.startswith(args[0])]
                 servers.sort()
                 for server in servers:
 
                     numsites, status = self.servers[server]
 
                     # format our fields
-                    server   = server.ljust(30)[:30]
-                    numsites = str(numsites).rjust(12)[:12]
-                    status   = status.ljust(15)[:15]
+                    server   = server.ljust(24)[:24]
+                    numsites = str(numsites).rjust(6)[:6]
+                    status   = status.ljust(24)[:24]
 
                     # build and output our record
-                    record = "%s  %s  %s" % (server, numsites, status)
+                    record = "%s  %s%s  %s" % (server, numsites, ' '*18, status)
                     print >> self.stdout, record
                 print >> self.stdout # newline
 
-        def list_websites(ignored):
+        def list_websites(args):
             """ show what websites we know about """
             websites = self.websites.keys()
             if websites:
+                if args:
+                    websites = [w for w in websites if w.startswith(args[0])]
                 websites.sort()
                 self.columnize(websites, displaywidth=79)
 
@@ -299,7 +359,7 @@ SERVER                          # WEBSITES      STATUS
     # Delete
     ##
 
-    complete_rm = complete_ls
+    complete_rm = _complete_domains
 
     def do_rm(self, inStr=''):
         """ given one or more domain names, remove it/them from our storage """
@@ -488,15 +548,15 @@ SERVER                          # WEBSITES      STATUS
                 continue
             elif not line.count(' ') > 0 and \
                  not line.count('\t') > 0:
-                raise PorterError, "Couldn't parse this line in your " \
-                                 + "etc/hosts file: %s" % line
+                print >> self.stdout, "Couldn't parse this line in your " \
+                                    + "etc/hosts file: %s" % line
             else:
                 # line is parseable
                 try:
                     ip, domains = [foo.strip() for foo in line.split(None,1)]
                 except:
-                    raise PorterError, "Couldn't parse this line in your " \
-                                     + "etc/hosts file: %s" % line
+                    print >> self.stdout, "Couldn't parse this line in your " \
+                                        + "etc/hosts file: %s" % line
                 hostnames.extend([d.strip() for d in domains.split(' ') \
                                              if d != ''])
 
@@ -508,7 +568,7 @@ SERVER                          # WEBSITES      STATUS
         sys.stdout.write("Polling %s hosts for websites ... " % len(hostnames))
         i = 1; good_servers = 0
 
-        for hostname in hostnames[:1]:
+        for hostname in hostnames:
             # loop through candidate hostnames, fail silently if we can't
             #  connect or if the host is serving something other than Fellow/0.2
             #  on port 8000
@@ -549,7 +609,6 @@ SERVER                          # WEBSITES      STATUS
                 j = 0
                 for site in new_sites:
                     if websites.get(site) is not None:
-                        #raise PorterError, "duplicate website id"
                         print 'dupe'
                     else:
                         websites[site] = new_sites[site]
@@ -558,5 +617,5 @@ SERVER                          # WEBSITES      STATUS
 
         print "We found %s websites on %s servers." % (len(websites), good_servers)
 
-        return servers, websites
+        return (servers, websites)
     _available_websites = staticmethod(_available_websites)

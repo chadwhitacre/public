@@ -1,26 +1,25 @@
 0.4
 =======================
-should we wrap Binder and Porter into one package, Cambridge?
-    Fellow won't be on the same server, so we at least want that in a separate package
-ls arg should affect all ls modes
-it would be nice to be able to do ping from within porter
-^C should cancel the command if there is one, or exit the program otherwise
-only work with lowercase domain names
-tab complete available servers (from etc/hosts) and ports (from rpc to servers)
+tests!
+help & docs!
 build in fault-tolerance, no more proxy errors!
-figure out how to deal with SSL, since we need it for svn
-fit codenames back into the mix, somehow?
-ls -h shows report on /etc/hosts
+consider using ignore list so we can use etc/hosts for other things too
 
 
 future
 =======================
+should we wrap Binder and Porter into one package, Cambridge?
+    Fellow won't be on the same server, so we at least want that in a separate package
+only work with lowercase domain names
+^C should cancel the command if there is one, or exit the program otherwise
+figure out how to deal with SSL, since we need it for svn
 install properly with distutils
 non-interactive mode
 log ourselves
 write a function to columnize domains ... should be lined up on the first dot from the right
 be sure we work with weird paths, e.g., coming from cron
 porter> test (?)
+beef up stats
 
 
 done - 0.2
@@ -63,3 +62,13 @@ tease named mgmt out into a separate program called "Binder"
     update tests
     update program itself
 deal with orphans -- we have a domain record but there is no server (API may solve this)
+
+done - 0.4
+=======================
+ls -s shows report on /etc/hosts
+fit codenames back into the mix, somehow?
+refactor ls into dict switch notation
+it would be nice to be able to do ping from within porter
+refactor add/rm to work with Fellow
+tab complete available servers (from etc/hosts) and ports (from rpc to servers)
+ls arg should affect all ls modes
