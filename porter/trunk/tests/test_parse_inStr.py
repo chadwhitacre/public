@@ -11,31 +11,31 @@ class TestParseInStr(unittest.TestCase):
 
     def testOneSingleLetterOpt(self):
         inStr = "-l"
-        opts, args = self.c.parse_inStr(inStr)
+        opts, args = self.c._parse_inStr(inStr)
         self.assertEqual(opts, ['l'])
         self.assertEqual(args, [])
 
     def testTwoSingleLettersOpts(self):
         inStr = "-la"
-        opts, args = self.c.parse_inStr(inStr)
+        opts, args = self.c._parse_inStr(inStr)
         self.assertEqual(opts, ['l','a'])
         self.assertEqual(args, [])
 
     def testOneSingleLetterOptAndAWordOpt(self):
         inStr = "-l --long"
-        opts, args = self.c.parse_inStr(inStr)
+        opts, args = self.c._parse_inStr(inStr)
         self.assertEqual(opts, ['l','long'])
         self.assertEqual(args, [])
 
     def testOneSingleLetterOptAndAWordArg(self):
         inStr = "-l long"
-        opts, args = self.c.parse_inStr(inStr)
+        opts, args = self.c._parse_inStr(inStr)
         self.assertEqual(opts, ['l'])
         self.assertEqual(args, ['long'])
 
     def testAWordArgAndOneSingleLetterOpt(self):
         inStr = "long -l"
-        opts, args = self.c.parse_inStr(inStr)
+        opts, args = self.c._parse_inStr(inStr)
         self.assertEqual(opts, ['l'])
         self.assertEqual(args, ['long'])
 
