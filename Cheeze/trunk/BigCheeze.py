@@ -66,41 +66,21 @@ class BigCheeze(Implicit, Persistent, \
         self._set_skel_root(str(skel_root))
 
 
+
     ##
-    # Presentation routines
+    # documentation
     ##
 
-    def manage_zopes(self):
-        """  """
-        return PageTemplateFile('www/manage_zopes.pt',globals())
-
-    def manage_domains(self):
-        """  """
-        return PageTemplateFile('www/manage_domains.pt',globals())
-
-    def manage_doc(self):
-        """  """
-        return PageTemplateFile('www/manage_doc.pt',globals())
-
-    def style(self):
-        """  """
-        return DTMLFile('www/style.css',globals())
-
-    def style_zopes(self):
-        """  """
-        return DTMLFile('www/style_zopes.css',globals())
-
-    def image_delete(self):
-        """  """
-        return ImageFile('www/delete.gif',globals(),)
-
-
-    manage = manage_main = manage_edit
+    manage_doc = PageTemplateFile('www/manage_doc.pt',globals())
 
 
     ##
-    # wrapper functions for heavy lifting in *Manager classes
+    # Zope mgmt
     ##
+
+    manage_zopes = PageTemplateFile('www/manage_zopes.pt',globals())
+
+    style_zopes = DTMLFile('www/style_zopes.css',globals())
 
     def zope_add(self):
         """ add a zope instance """
@@ -113,6 +93,13 @@ class BigCheeze(Implicit, Persistent, \
     def zope_remove(self):
         """ add a zope instance """
         pass
+
+
+    ##
+    # Domain mgmt
+    ##
+
+    manage_domains = PageTemplateFile('www/manage_domains.pt',globals())
 
     def domain_add(self):
         """ add a domain instance """
@@ -181,14 +168,32 @@ class BigCheeze(Implicit, Persistent, \
         return p
 
 
+    ##
+    # presentation helpers
+    ##
+
+    def style(self):
+        """  """
+        return DTMLFile('www/style.css',globals())
+
+    def image_delete(self):
+        """  """
+        return ImageFile('www/delete.gif',globals(),)
+
+
+    manage = manage_main = manage_zopes
+
+
+
 ##
 # Product addition and registration
 ##
 
-manage_addBigCheezeForm = PageTemplateFile(
-    'www/big_cheeze_add.pt', globals(), __name__='manage_addBigCheezeForm')
+def manage_add(self):
+    """  """
+    return PageTemplateFile('www/big_cheeze_add.pt', globals())
 
-def manage_addBigCheeze(self, id, instance_root='', skel_root='', REQUEST=None):
+def big_cheeze_add(self, id, instance_root='', skel_root='', REQUEST=None):
     """ """
     self._setObject(id, BigCheeze(id, instance_root, skel_root))
 
@@ -198,14 +203,11 @@ def manage_addBigCheeze(self, id, instance_root='', skel_root='', REQUEST=None):
     if REQUEST is not None:
         return self.manage_main(self, REQUEST, update_menu=1)
 
-
-
-
 def initialize(context):
     context.registerClass(
         BigCheeze,
         permission='Add Big Cheeze',
-        constructors=(manage_addBigCheezeForm,
-                      manage_addBigCheeze),
+        constructors=(manage_add,
+                      big_cheeze_add),
         icon='www/big_cheeze.png',
         )
