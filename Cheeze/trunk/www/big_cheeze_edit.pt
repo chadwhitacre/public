@@ -11,9 +11,6 @@
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure context/manage_tabs">Tabs</h2>
 <div class="padding">
-<p class="form-help"> Form help </p>
-
-
 
 <table id="table" tal:define="zopes context/list_zopes">
     <thead>
@@ -31,29 +28,23 @@
               tal:define="availaskel context/list_skel;
                           skel_root  context/skel_root;">
             <td><input name="zope.name:record" type="text"/></td>
-            <td><select name="zope.skel:record"
-                        tal:condition="availaskel">
+            <td><select name="zope.skel:record">
                     <option tal:repeat="skel availaskel"
                             tal:attributes="value skel"
                             tal:content="skel" />
+                    <option value="|stock|">stock</option>
                 </select>
-                <tal:x condition="python:skel_root == ''">
-                    <input type="hidden" name="zope.skel:record" value="" />
-                    &nbsp;
-                </tal:x>
-                <tal:x condition="python:skel_root and not availaskel">
-                    <input type="hidden" name="zope.skel:record" value="" />
-                    (No skel available)
-                </tal:x>
             </td>
             <td><select name="zope.port:record"
                         tal:condition="context/vhosting">
                     <option tal:repeat="port context/list_ports" tal:content="port" />
                 </select>
-                <tal:x condition="not:context/vhosting">
-                    <input type="hidden" name="zope.port:record" value="" />
-                    &nbsp;
-                </tal:x>
+                <input type="text"
+                       name="zope.port:record"
+                       value="80"
+                       size="2"
+                       style="text-align: right;"
+                       tal:condition="not:context/vhosting" />
             </td>
             <td class="action"><input type="submit" value="Create" /></td>
         </form>
