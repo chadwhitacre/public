@@ -46,8 +46,8 @@ class Binder(cmd.Cmd):
         self.dat_path = join(self.var, 'binder.dat')
         self.output_path = OUTPUT_PATH
 
-        # read in our data from storage
-        self.domains = self._read_from_disk()
+        # read our data from storage into self.domains
+        self._read_from_disk()
 
         # should we do some integrity checking here? i.e., make sure that all
         # domains are only two parts long? check for dupes?
@@ -206,7 +206,7 @@ Commands available:
     ##
 
     def _read_from_disk(self):
-        """ read data from our data file, and return it"""
+        """ read data from our data file, and store it in an attr """
 
         if isfile(self.dat_path):
             dat_file = file(self.dat_path,'r')
@@ -216,7 +216,7 @@ Commands available:
             # no data yet
             domains = []
 
-        return domains
+        self.domains = domains[:]
 
 
     def _write_to_disk(self):
