@@ -50,8 +50,7 @@ class Simplate(Base):
 
     def simplate_render(self, source=0, extra_context={}):
         """Render the Simplate"""
-        if not self._v_cooked:
-            self._cook()
+        self._cook() # we want to cook every time
 
         __traceback_supplement__ = (SimplateTracebackSupplement, self)
 
