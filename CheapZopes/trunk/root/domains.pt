@@ -23,7 +23,7 @@
         <tr class="green">
             <td><input type="text" /></td>
             <td><select>
-                    <option tal:repeat="zzope here/zopes_list" tal:content="python:''.join(zzope)" />
+                    <option tal:repeat="zzope context/zopes_list" tal:content="python:''.join(zzope)" />
                 </select></td>
             <td class="actions"><input type="submit" value="Add" /></td>
             <td>&nbsp;</td>
