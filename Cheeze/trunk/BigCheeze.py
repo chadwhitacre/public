@@ -39,7 +39,7 @@ class BigCheeze(Implicit, Persistent, \
     BigCheeze_manage_options = (
         {'label':'Zopes', 'action':'big_cheeze_edit',},
         {'label':'Domains', 'action':'big_cheeze_domains',},
-        {'label':'Documenttion', 'action':'big_cheeze_doc',},
+        {'label':'Documentation', 'action':'big_cheeze_doc',},
         )
 
 
