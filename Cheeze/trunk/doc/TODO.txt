@@ -1,0 +1,9 @@
+validate add/edit (make sure paths exist!)
+
+add edit tab that is basically zopes.pt (domains.pt will be in another product!)
+
+ZopeInstance.py -- obj representing zope instance
+
+LittleCheeze.py -- obj to park in client Zopes to feed info to Big Cheeze
+
+Make other product -- Apache DNS Manager

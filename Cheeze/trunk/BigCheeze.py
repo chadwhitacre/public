@@ -4,6 +4,7 @@ try:
                                          recreate_vhosts, \
                                          get_vhosts
 except:
+    # we are not on unix :/
     pass
 from Products.ZetaUtils import compare_domains, pformat, index_sort
 from AccessControl import ClassSecurityInfo
