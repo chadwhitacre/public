@@ -1,15 +1,30 @@
+import os, dbm
 from cmd import Cmd
 
 class PorterCmd(Cmd):
 
-    def __init__(self, *args, **kw):
+    def __init__(self, db_path, *args, **kw):
         self.intro = 'here we go ...'
         self.prompt = 'porter> '
 
-        # we keep two indices
-        self.domains  = {} # one-to-one mapping of domains to websites
-        self.websites = {} # one-to-many mapping of websites to domains
+        # on startup, read in our data
+        #  a one-to-one mapping of domains to websites
+        self.db_path = db_path
+        db = dbm.open(self.db_path, 'c')
+        self.domains = dict(db)
+        db.close()
 
+        # we also keep an index around
+        #  a one-to-many mapping of websites to domains
+        self.websites = {}
+        for domain in self.domains:
+            website = self.domains[domain]
+            if website in self.websites:
+                self.websites[website].append(domain)
+            else:
+                self.websites[website] = [domain]
+
+        # and let our superclass have its way too
         Cmd.__init__(self, *args, **kw)
 
     def parse_inStr(inStr):
@@ -40,7 +55,7 @@ class PorterCmd(Cmd):
         """ print out a list of the domains we are managing """
         # columnize is undocumented
         items = self.domains.keys()
-        if len(items) > 0:
+        if len(items) > 0: # otherwise columnize gives us "<empty>"
             items.sort()
             self.columnize(items, displaywidth=79)
 
@@ -48,12 +63,19 @@ class PorterCmd(Cmd):
     def do_edit(self, inStr=''): self.do_map(inStr) # alias
     def do_map(self, inStr=''):
         """ given a domain name and a website, map them """
+
+        # get our arguments
         opts, args = self.parse_inStr(inStr)
         if len(args) < 2:
             print >> self.stdout, "We need a domain name and a website id."
             return
         domain, website = args[:2]
+
+        # update our data
         self.domains[domain] = website
+        self.update_db()
+
+        # and update our indices
         if website in self.websites:
             self.websites[website].append(domain)
         else:
@@ -61,15 +83,24 @@ class PorterCmd(Cmd):
 
     def do_rm(self, inStr=''): self.do_remove(inStr) # alias
     def do_remove(self, inStr=''):
-        """ given one or more domain names, remove it/them from our indices """
+        """ given one or more domain names, remove it/them from our storage """
         opts, args = self.parse_inStr(inStr)
         for domain in args:
             if domain in self.domains:
-                self.domains.pop(domain)
+                del self.domains[domain]
             for w in self.websites:
                 if domain in self.websites[w]:
                     self.websites[w].remove(domain)
+        self.update_db()
 
+    def update_db(self):
+        """ store our data to file """
+        db = dbm.open(self.db_path, 'n')
+        for domain in self.domains:
+            db[domain] = self.domains[domain]
+        db.close()
+
+"""
     ##
     # vhost mgmt
     ##
@@ -128,4 +159,4 @@ class PorterCmd(Cmd):
             if not os.path.exists(self.vhost_db+'.db'):
                 self._vhosts_recreate({})
 
-
+"""

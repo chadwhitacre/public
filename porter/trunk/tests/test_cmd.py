@@ -1,13 +1,17 @@
-import unittest
+import unittest, os, pdb
 from StringIO import StringIO
 from porter.PorterCmd import PorterCmd
-import pdb
 
 class TestCRUD(unittest.TestCase):
 
     def setUp(self):
         self.out = StringIO()
-        self.c = PorterCmd(stdout=self.out)
+        try: os.remove('test_db.db')
+        except: pass
+        self.c = PorterCmd('test_db', stdout=self.out)
+
+    def tearDown(self):
+        os.remove('test_db.db')
 
     def testListWhenEmpty(self):
         self.c.onecmd("ls")
