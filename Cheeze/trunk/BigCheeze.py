@@ -155,7 +155,8 @@ class BigCheeze(Implicit, Persistent, \
             # we are ready to rock!!!
 
             # import things
-            raise 'doh!', os.environ
+            bin = join(kw['ZOPE_HOME'], 'bin')
+            os.environ['PATH'].append(bin)
             import copyzopeskel
             import mkzopeinstance
 
