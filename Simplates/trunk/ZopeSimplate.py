@@ -26,6 +26,8 @@ from Simplate import Simplate
 #from Expressions import SecureModuleImporter
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
+from Products.CMFCore.utils import registerIcon
+
 try:
     from webdav.Lockable import ResourceLockedError
     from webdav.WriteLockInterface import WriteLockInterface
@@ -372,11 +374,6 @@ def manage_addSimplate(self, id, title=None, text=None,
         REQUEST.RESPONSE.redirect(u+'/manage_main')
     return ''
 
-#from Products.Simplates import misc_
-misc_ = {}
-misc_['exclamation.gif'] = ImageFile('www/exclamation.gif', globals())
-# not sure why this isn't working :/
-
 def initialize(context):
     context.registerClass(
         ZopeSimplate,
@@ -387,4 +384,4 @@ def initialize(context):
         )
     context.registerHelp()
     context.registerHelpTitle('Zope Help')
-
+    registerIcon(ZopeSimplate, 'www/exclamation.gif', globals())
