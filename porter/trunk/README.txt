@@ -12,7 +12,8 @@
 
         - SSH/SFTP/SCP -- We should try to reserve these for admin use only.
 
-        - possibly FTP -- Let's avoid this if we can.
+        - possibly FTP -- Let's avoid this if we can. (although mod_proxy
+        apparently can handle ftp as well)
 
     The only red flag at this point is our "uploaders" which are currently HTTP
     based. I had thought of using SFTP/HTTP for these, but maybe we should try
@@ -53,8 +54,8 @@
 
         site@server:port
 
-    Server -- A server is any IP address that returns the following when called
-    via HTTP on port 80:
+    Server -- A server is any IP address in /etc/hosts that returns the
+    following when called via HTTP on port 80:
 
         https://127.0.0.1:80/websites
         https://127.0.0.1:80/open_ports
@@ -76,3 +77,6 @@
         - Python 2.4
 
         - Apache 2.0.52
+
+NOTE: Be sure to keep a couple IP address open for future dev and staging of
+porter! How about we reserve 85-87 for this purpose.

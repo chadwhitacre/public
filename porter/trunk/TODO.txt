@@ -1,7 +1,7 @@
 tab completion
 non-interactive mode
 ls -l
-
+install properly with distutils
 
 
 1) boot jail
