@@ -1,3 +1,7 @@
+import os
+from os.path import join
+from ConfigParser import SafeConfigParser as ConfigParser
+
 class Whale:
     """
 
@@ -12,6 +16,12 @@ class Whale:
 
     See the example/ Whale included in the default Kraken package for details.
 
+    >>> import os
+    >>> path = os.path.abspath('example')
+    >>> w = Whale(path)
+    >>> w.imap['username']
+    'mylist@example.com'
+
     """
 
     def __init__(self, nest):
@@ -20,6 +30,9 @@ class Whale:
         conf_path = join(nest,'whale.conf')
         send_path = join(nest,'send_to.addrs')
         from_path = join(nest,'accept_from.addrs')
+
+        self.id   = os.path.split(nest)
+        self.nest = nest
 
         cp = ConfigParser()
         cp.read(conf_path)
@@ -41,3 +54,23 @@ class Whale:
             # only those explicitly named can post
             self.send_to = self.addrs(send_path)
             self.accept_from = self.addrs(from_path)
+
+
+    def addrs(self, fn):
+        """ given a filename, return a list of email addresses """
+        raw = file(fn).read()
+        lines = [l.strip() for l in raw.split(os.linesep)]
+        return [l for l in lines
+                  if not l.startswith('#') and
+                     not l == '']
+        # maybe eventually validate email addresses
+
+
+
+
+def _test():
+    import doctest, Whale
+    return doctest.testmod(Whale)
+
+if __name__ == "__main__":
+    _test()
