@@ -76,24 +76,25 @@ class EOLToolkit:
         """
 
         filepaths = self.find(top, raw=1)
-        win = re.compile(r'\r\n') # not worrying about mac for now
+        win = re.compile(r'\r\n')
+        mac = re.compile(r'\r')
         j = 0; sys.stdout.write('scrubbing newlines ...')
 
         for path in filepaths:
+            # do the replacements
             textfile = file(path, 'r+')
             tmp = textfile.read()
-            dirty = len(win.findall(tmp))
-            if dirty > 0:
-                # indicate progress
+            tmp, k = win.subn('\n', tmp)
+            tmp, l = mac.subn('\n', tmp)
+            textfile.seek(0); textfile.truncate()
+            textfile.write(tmp); textfile.close()
+
+            # indicate progress
+            if k + l > 0:
                 j += 1
                 if j % 50 == 0:
                     sys.stdout.write('.')
                     sys.stdout.flush()
-
-                # progress
-                tmp = win.sub('\n', tmp)
-                textfile.seek(0); textfile.truncate(); textfile.write(tmp)
-            textfile.close()
 
         print ' %s files cleaned' % j
 

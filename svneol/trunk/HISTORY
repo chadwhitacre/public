@@ -1,0 +1,9 @@
+2005-04-01
+
+    added Mac ('\r') replacement after all since FCKeditor.Plone somehow had a
+    Mac newline in it; started this file
+
+
+2005-04-01
+
+    tagged 0.8
