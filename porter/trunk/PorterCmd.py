@@ -4,7 +4,11 @@ from cmd import Cmd
 class PorterCmd(Cmd):
 
     def __init__(self, db_path, *args, **kw):
-        self.intro = 'here we go ...'
+        self.intro = """
+#-------------------------------------------------------------------#
+#  Porter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
+#-------------------------------------------------------------------#
+        """
         self.prompt = 'porter> '
 
         # on startup, read in our data
@@ -14,15 +18,20 @@ class PorterCmd(Cmd):
         self.domains = dict(db)
         db.close()
 
+        # filter out www's for our users, they are just for apache
+        for domain in self.domains:
+            if domain.startswith('www.'):
+                del self.domains[domain]
+
         # we also keep an index around
         #  a one-to-many mapping of websites to domains
-        self.websites = {}
+        self.aliases = {}
         for domain in self.domains:
             website = self.domains[domain]
-            if website in self.websites:
-                self.websites[website].append(domain)
+            if website in self.aliases:
+                self.aliases[website].append(domain)
             else:
-                self.websites[website] = [domain]
+                self.aliases[website] = [domain]
 
         # and let our superclass have its way too
         Cmd.__init__(self, *args, **kw)
@@ -50,113 +59,100 @@ class PorterCmd(Cmd):
     def emptyline(self):
         pass
 
-    def do_ls(self, inStr=''): self.do_list(inStr) # alias
-    def do_list(self, inStr=''):
+
+    def do_ls(self, inStr=''):
         """ print out a list of the domains we are managing """
         # columnize is undocumented
-        items = self.domains.keys()
-        if len(items) > 0: # otherwise columnize gives us "<empty>"
-            items.sort()
-            self.columnize(items, displaywidth=79)
+        opts, args = self.parse_inStr(inStr)
+        domains = self.domains.keys()
+        if len(domains) > 0: # otherwise columnize gives us "<empty>"
 
-    def do_add(self, inStr=''): self.do_map(inStr) # alias
-    def do_edit(self, inStr=''): self.do_map(inStr) # alias
-    def do_map(self, inStr=''):
+            # massage our list of domains
+            domains.sort()
+            if args:
+                domains = filter(lambda d: d.startswith(args[0]), domains)
+
+            if ('l' in opts) or ('long' in opts):
+                header = """
+DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*79,)
+                print >> self.stdout, header
+                for domain in domains:
+                    server, portnum = self.domains[domain].split(':')
+                    aliases = self.aliases[self.domains[domain]][:]
+                    aliases.remove(domain)
+
+                    domain  = domain.ljust(28)[:28]
+                    server  = server.ljust(12)[:12]
+                    portnum = str(portnum).rjust(4)
+                    if aliases: alias = aliases.pop(0)[:28]
+                    else:       alias = ''
+
+                    record = "%s  %s  %s  %s" % (domain, server, portnum, alias)
+
+                    print >> self.stdout, record
+                    for alias in aliases:
+                        print >> self.stdout, ' '*53 + alias
+                print >> self.stdout
+
+            else:
+                self.columnize(domains, displaywidth=79)
+
+    def complete_ls(self,text, line, begidx, endidx):
+        return [d for d in self.domains.keys() if d.startswith(text)]
+
+
+    def do_map(self, inStr=''): self.do_add(inStr) # alias
+    def do_add(self, inStr=''):
         """ given a domain name and a website, map them """
 
-        # get our arguments
+        # get our arguments and validate them
         opts, args = self.parse_inStr(inStr)
-        if len(args) < 2:
-            print >> self.stdout, "We need a domain name and a website id."
+        if len(args) < 3:
+            print >> self.stdout, "We need a domain name, a server name, " +\
+                                  "and a port number."
             return
-        domain, website = args[:2]
+        domain, server, port = args[:3]
+        if domain.startswith('www.'):
+            print >> self.stdout, "Please do not include 'www' on domains."
+            return
+        # not worth validating port number since it will come from "dropdown" anyway
+        # not worth validating server since it will come from "dropdown" anyway
+        website = ':'.join((server,port))
 
         # update our data
         self.domains[domain] = website
         self.update_db()
 
         # and update our indices
-        if website in self.websites:
-            self.websites[website].append(domain)
+        if website in self.aliases:
+            self.aliases[website].append(domain)
         else:
-            self.websites[website] = [domain]
+            self.aliases[website] = [domain]
 
-    def do_rm(self, inStr=''): self.do_remove(inStr) # alias
-    def do_remove(self, inStr=''):
+
+    def do_rm(self, inStr=''):
         """ given one or more domain names, remove it/them from our storage """
         opts, args = self.parse_inStr(inStr)
         for domain in args:
             if domain in self.domains:
                 del self.domains[domain]
-            for w in self.websites:
-                if domain in self.websites[w]:
-                    self.websites[w].remove(domain)
+            for website in self.aliases:
+                if domain in self.aliases[website]:
+                    self.aliases[website].remove(domain)
         self.update_db()
 
+    complete_rm = complete_ls
+
+    def do_EOF(self, inStr=''):
+        print >> self.stdout; return True
+
     def update_db(self):
-        """ store our data to file """
+        """ given that our data is clean, store it to file """
         db = dbm.open(self.db_path, 'n')
         for domain in self.domains:
-            db[domain] = self.domains[domain]
+            if domain.startswith('www.'):
+                db[domain] = self.domains[domain]
+            else:
+                db[domain] = self.domains[domain]
+                db[domain] = 'www.' + self.domains[domain]
         db.close()
-
-"""
-    ##
-    # vhost mgmt
-    ##
-
-    def _vhosts_get(self,www=0):
-        self._confirm_db()
-        data = dbm.open(self.vhost_db,'r')
-        output = {}
-        for vhost in data.keys():
-            server = data[vhost]
-            if (vhost[:4]=='www.' and www) or vhost[:4]<>'www.':
-                output[vhost]=server
-        data.close()
-        return output
-
-    def _vhost_delete(self,vhost,www=1):
-        self._confirm_db()
-        _vhosts_dict = self._vhosts_get(www)
-        del(_vhosts_dict[vhost])
-        if _vhosts_dict.has_key('www.'+vhost):
-            del(_vhosts_dict['www.'+vhost])
-        self._vhosts_recreate(_vhosts_dict)
-
-    def _vhosts_update(self,_vhosts_dict,www=1):
-        self._confirm_db()
-        data = dbm.open(self.vhost_db,'w')
-        for vhost,server in _vhosts_dict.items():
-            data[vhost]=server
-            if www:
-               wwwvhost = 'www.'+vhost
-               data[wwwvhost]=server
-        data.close()
-        return 'updated'
-
-    def _vhosts_recreate(self,_vhosts_dict,www=1):
-        self._confirm_db(check_db=0)
-        data = dbm.open(self.vhost_db,'n')
-        for vhost,server in _vhosts_dict.items():
-            data[vhost]=server
-            if vhost[:4]<>'www.' and www:
-                wwwvhost = 'www.'+vhost
-                data[wwwvhost]=server
-        data.close()
-        return 'recreated'
-
-    def _confirm_db(self, check_attr=1, check_db=1, check_dbm_compat=1):
-        if check_dbm_compat and not unix:
-            raise ImportError, '''Apache management requires support for the
-            dbm file format which is currently only available on *nix versions
-            of python.'''
-        if check_attr and not self.vhost_db:
-            raise ValueError, '''In order to access the apache related functions
-            of this product you need to input a value for vhost_db under the
-            properties tab'''
-        if check_db:
-            if not os.path.exists(self.vhost_db+'.db'):
-                self._vhosts_recreate({})
-
-"""

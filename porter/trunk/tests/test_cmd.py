@@ -19,26 +19,27 @@ class TestCRUD(unittest.TestCase):
 
     def testBadInput(self):
         self.c.onecmd("add test")
-        self.assertEqual(self.out.getvalue(), "We need a domain name and a" +\
-                                              " website id.\n")
+        self.assertEqual(self.out.getvalue(), "We need a domain name, a " +\
+                                              "server name, and a port " +\
+                                              "number.\n")
 
     def testAddOneItem(self):
-        self.c.onecmd("add zetaweb.com abondance@alpin:8010")
+        self.c.onecmd("add zetaweb.com alpin 8010")
         self.c.onecmd("ls")
-        self.assertEqual(self.c.domains, {'zetaweb.com':'abondance@alpin:8010'})
-        self.assertEqual(self.c.websites, {'abondance@alpin:8010':['zetaweb.com']})
+        self.assertEqual(self.c.domains, {'zetaweb.com':'alpin:8010'})
+        self.assertEqual(self.c.aliases, {'alpin:8010':['zetaweb.com']})
         self.assertEqual(self.out.getvalue(), 'zetaweb.com\n')
 
     def testExtraInputIsIgnored(self):
-        self.c.onecmd("add test test Frank Sinatra sings the blues")
-        self.assertEqual(self.c.domains, {"test":"test"})
+        self.c.onecmd("add domain server port Frank Sinatra sings the blues")
+        self.assertEqual(self.c.domains, {"domain":"server:port"})
 
     def testAddMultipleItems(self):
-        self.c.onecmd("add zetaweb.com abondance@alpin:8010")
-        self.c.onecmd("map thedwarf.com caithness@duder:8020")
-        self.c.onecmd("edit malcontents.org caithness@duder:8020")
-        self.c.onecmd("map christyanity.com caithness@duder:8020")
-        self.c.onecmd("add tesm.edu asiago@underbird:8310")
+        self.c.onecmd("add zetaweb.com alpin 8010")
+        self.c.onecmd("map thedwarf.com duder 8020")
+        self.c.onecmd("add malcontents.org duder 8020")
+        self.c.onecmd("map christyanity.com duder 8020")
+        self.c.onecmd("add tesm.edu underbird 8310")
 
         domains = self.c.domains.keys(); domains.sort()
         self.assertEqual(domains, ['christyanity.com'
@@ -48,75 +49,67 @@ class TestCRUD(unittest.TestCase):
                                   ,'zetaweb.com'
                                    ])
 
-        websites = self.c.websites.keys(); websites.sort()
-        self.assertEqual(websites, ['abondance@alpin:8010'
-                                   ,'asiago@underbird:8310'
-                                   ,'caithness@duder:8020'
-                                     ])
+        aliases = self.c.aliases.keys(); aliases.sort()
+        self.assertEqual(aliases, ['alpin:8010'
+                                  ,'duder:8020'
+                                  ,'underbird:8310'
+                                   ])
 
-        multi_domains = self.c.websites['caithness@duder:8020']
+        multi_domains = self.c.aliases['duder:8020']
         multi_domains.sort()
         self.assertEqual(multi_domains, ['christyanity.com'
                                         ,'malcontents.org'
                                         ,'thedwarf.com'
                                          ])
 
-        single_domain = self.c.websites['abondance@alpin:8010']
+        single_domain = self.c.aliases['alpin:8010']
         self.assertEqual(single_domain, ['zetaweb.com'])
 
-        single_domain = self.c.websites['asiago@underbird:8310']
+        single_domain = self.c.aliases['underbird:8310']
         self.assertEqual(single_domain, ['tesm.edu'])
 
     def testList(self):
-        self.c.onecmd("add zetaweb.com abondance@alpin:8010")
-        self.c.onecmd("map thedwarf.com caithness@duder:8020")
-        self.c.onecmd("edit malcontents.org caithness@duder:8020")
-        self.c.onecmd("map christyanity.com caithness@duder:8020")
-        self.c.onecmd("add tesm.edu asiago@underbird:8310")
-        self.c.onecmd("add zoobaz.info dummy")
-        self.c.onecmd("add latebutlaughing.com dummy")
+        self.c.onecmd("add zetaweb.com alpin 8010")
+        self.c.onecmd("map thedwarf.com duder 8020")
+        self.c.onecmd("add malcontents.org duder 8020")
+        self.c.onecmd("map christyanity.com duder 8020")
+        self.c.onecmd("add tesm.edu underbird 8310")
+        self.c.onecmd("add zoobaz.info dummy 80")
+        self.c.onecmd("add latebutlaughing.com dummy 80")
 
         expected = """\
 christyanity.com     malcontents.org  thedwarf.com  zoobaz.info
 latebutlaughing.com  tesm.edu         zetaweb.com \n"""
 
-        self.c.onecmd("list")
-        self.assertEqual(self.out.getvalue(), expected)
-
-        # clear out our output
-        self.out = StringIO()
-        self.c.stdout = self.out
-
-        # test our alias
         self.c.onecmd("ls")
         self.assertEqual(self.out.getvalue(), expected)
 
     def testRemove(self):
-        self.c.onecmd("add zetaweb.com abondance@alpin:8010")
-        self.c.onecmd("map thedwarf.com caithness@duder:8020")
-        self.c.onecmd("edit malcontents.org caithness@duder:8020")
-        self.c.onecmd("map christyanity.com caithness@duder:8020")
-        self.c.onecmd("add tesm.edu asiago@underbird:8310")
-        self.c.onecmd("add zoobaz.info dummy")
-        self.c.onecmd("add latebutlaughing.com dummy")
+        self.c.onecmd("add zetaweb.com alpin 8010")
+        self.c.onecmd("map thedwarf.com duder 8020")
+        self.c.onecmd("add malcontents.org duder 8020")
+        self.c.onecmd("map christyanity.com duder 8020")
+        self.c.onecmd("add tesm.edu underbird 8310")
+        self.c.onecmd("add zoobaz.info dummy 80")
+        self.c.onecmd("add latebutlaughing.com dummy 80")
 
-        self.c.onecmd("remove zetaweb.com")
+        self.c.onecmd("rm zetaweb.com")
         self.assertEqual(len(self.c.domains), 6)
         self.assert_('zetaweb.com' not in self.c.domains)
         domains = []
-        for w in self.c.websites:
-            domains += self.c.websites[w]
+        for w in self.c.aliases:
+            domains += self.c.aliases[w]
         self.assertEqual(len(domains), 6)
         self.assert_('zetaweb.com' not in domains)
 
-        self.c.onecmd("remove thedwarf.com malcontents.org christyanity.com")
+        self.c.onecmd("rm thedwarf.com malcontents.org christyanity.com")
         self.assertEqual(len(self.c.domains), 3)
         self.assert_('thedwarf.com' not in self.c.domains)
         self.assert_('malcontents.org' not in self.c.domains)
         self.assert_('christyanity.com' not in self.c.domains)
         domains = []
-        for w in self.c.websites:
-            domains += self.c.websites[w]
+        for w in self.c.aliases:
+            domains += self.c.aliases[w]
         self.assertEqual(len(domains), 3)
         self.assert_('thedwarf.com' not in domains)
         self.assert_('malcontents.org' not in domains)
@@ -126,8 +119,8 @@ latebutlaughing.com  tesm.edu         zetaweb.com \n"""
         self.assertEqual(len(self.c.domains), 2)
         self.assert_('latebutlaughing.com' not in self.c.domains)
         domains = []
-        for w in self.c.websites:
-            domains += self.c.websites[w]
+        for w in self.c.aliases:
+            domains += self.c.aliases[w]
         self.assertEqual(len(domains), 2)
         self.assert_('latebutlaughing.com' not in domains)
 
