@@ -1,6 +1,7 @@
 #there are a few funcs stolen from ZetaUtils because it has bloated dependencies
 
 def index_sort(slist,index,sorter):
+    sorter = sorter
     slist.sort(lambda x,y:sorter(x[index],y[index]))
     
 def compare_domains(a,b):
