@@ -58,7 +58,7 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
         + SimpleItem.manage_options \
         + Cacheable.manage_options
 
-    _properties=({'id':'title', 'type': 'string', 'mode': 'wd'},
+    _properties=({'id':'title', 'type': 'string', 'mode': 'w'},
                  {'id':'content_type', 'type':'string', 'mode': 'w'},
                  #{'id':'expand', 'type':'boolean', 'mode': 'w'},
                  {'id':'value_paths', 'type':'lines', 'mode': 'w'},

@@ -1,0 +1,5 @@
+make error message text/html instead of text/plain
+write FSSimplate.py
+test WebDAV/FTP support
+write documentation (as Zope help)
+implement smart content-type discovery

@@ -14,8 +14,8 @@ class Simplate(Base):
 
     content_type = 'text/plain'
     value_paths = []
-    _v_errors = ()
-    _v_warnings = ()
+    _v_errors = []
+    _v_warnings = []
     _v_cooked = 0
     id = '(unknown)'
     _text = ''
@@ -77,7 +77,6 @@ class Simplate(Base):
 
 
     def simplate_errors(self):
-        reurn ['doober doo',]
         self._cook_check()
         err = self._v_errors
         if err:
@@ -106,49 +105,9 @@ class Simplate(Base):
         if not self._v_errors:
             return self._text
 
-#        return ('%s\n %s\n-->\n%s' % (self._error_start,
-#                                      '\n '.join(self._v_errors),
-#                                      self._text))
-
-    def _build_value_dict(self):
-
-        ##
-        # 1. Get the list of paths
-        ##
-
-        self._value_dict = {}
-        paths = list(self.value_paths)
-        paths.reverse()
-        
-        ##
-        # 2. Build a master dictionary from the paths
-        ##
-        
-        for path in paths:
-            if path:
-                value_obj = self.restrictedTraverse(path)
-                value = value_obj()
-                if type(value) == type({}):
-                    self._value_dict.update(value)
-                else:
-                    warning = "Simplate value script '%s' " % value_obj.id + \
-                              "does not return a dictionary."
-                    self._v_warnings = ["String replacement warning", warning]
-
-        ##
-        # 3. Attempt the substitution
-        ## 
-        
-        # Does the value_dict supply all the values?
-        raise 'dude', 'man'
-        try:
-            self._replace()
-        except KeyError:
-            self._v_errors = ["Replacement failed", "%s: %s" % sys.exc_info()[:2]]
-        except:
-            self._v_errors = ["Compilation failed",
-                              "%s: %s" % sys.exc_info()[:2]]
-
+        return ('%s\n %s\n-->\n%s' % (self._error_start,
+                                      '\n '.join(['\n '.join(err) for err in self._v_errors]),
+                                      self._text))
 
     def _replace(self):
         # First, do some escapes. Then do replacement if we have anything to replace with.
@@ -164,31 +123,49 @@ class Simplate(Base):
             self._cook()
 
     def _cook(self):
-        """Compile the value dictionary.
+        """Cook the simplate, testing all the while."""
 
-        Cooking must not fail due to compilation errors in templates.
-        """
-#        source_file = self.simplate_source_file()
-#        if self.html():
-#            gen = TALGenerator(getEngine(), xml=0, source_file=source_file)
-#            parser = HTMLTALParser(gen)
-#        else:
-#            gen = TALGenerator(getEngine(), source_file=source_file)
-#            parser = TALParser(gen)
-#
-#        self._v_errors = ()
-#        try:
-#            parser.parseString(self._text)
-#            self._v_program, self._v_macros = parser.getCode()
-#        except:
-#            self._v_errors = ["Compilation failed",
-#                              "%s: %s" % sys.exc_info()[:2]]
-#        self._v_warnings = parser.getWarnings()
+        self._v_errors = []
+        self._v_warnings = []
 
-        self._v_errors = ()
-        self._build_value_dict()
+        ##
+        # 1. Get the list of paths
+        ##
 
-#        self._v_warnings = parser.getWarnings()
+        self._value_dict = {}
+        paths = list(self.value_paths)
+        paths.reverse()
+        
+        ##
+        # 2. Build a master dictionary from the paths
+        ##
+        
+        for path in paths:
+            if path:
+                try:
+                    value_obj = self.restrictedTraverse(path)
+                    value = value_obj()
+                    if type(value) == type({}):
+                        self._value_dict.update(value)
+                    else:
+                        warning = "'%s' does not return a dictionary."
+                        self._v_warnings.append(warning % value_obj.id)
+                except 'NotFound':
+                    error = "MISSING OBJECT -- %s: %s" % sys.exc_info()[:2]
+                    self._v_errors.append(error)
+
+        ##
+        # 3. Attempt the substitution
+        ## 
+        
+        try:
+            self._replace()
+        except KeyError: # The value_dict did not supply all the values
+            error = "REPLACEMENT FAILURE -- No object supplies the value %s" % sys.exc_info()[1]
+            self._v_errors.append(error)
+        except:
+            error = "COMPILATION FAILURE -- %s: %s" % sys.exc_info()[:2]
+            self._v_errors.append(error)
 
         self._v_cooked = 1
         

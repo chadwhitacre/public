@@ -51,7 +51,7 @@
         <td align="left" valign="middle" class="form-label">Errors</td>
         <td align="left" valign="middle" style="background-color: #FFDDDD"
             colspan="3">
-        <pre tal:content="python:'\n'.join(errors)">errors</pre>
+        <pre tal:content="python:'\n'.join(errors)" />
         </td>
     </tr>
 
@@ -60,15 +60,16 @@
         <td align="left" valign="middle" class="form-label">Warnings</td>
         <td align="left" valign="middle" style="background-color: #FFEEDD"
             colspan="3">
-        <pre tal:content="python:'\n'.join(warnings)">warnings</pre>
+        <pre tal:content="python:'\n'.join(warnings)" />
         </td>
     </tr>
 
     <!-- Values -->
     <tr>
-        <td align="left" valign="top" class="form-label">Values</td>
+        <td align="left" valign="top" class="form-label">Value suppliers</td>
         <td align="left" valign="top" colspan="4">
-            <textarea name="value_paths:lines" wrap="off" style="width: 100%;" rows="4"
+            <textarea name="value_paths:lines" wrap="off" 
+                      style="width: 100%;" rows="4"
                       tal:content="python:'\n'.join(value_paths)" />
         </td>
     </tr>
@@ -78,7 +79,8 @@
         <td align="left" valign="top" colspan="4"
             tal:define="width request/dtpref_cols | string:100%;
                         rel_width python:str(width).endswith('%')">
-            <textarea name="text:text" wrap="off" style="width: 100%;" rows="20"
+            <textarea name="text:text" wrap="off"
+                      style="width: 100%;" rows="20"
                       tal:condition="rel_width"
                       tal:attributes="style string:width: $width;;;
                                       rows request/dtpref_rows | default"
