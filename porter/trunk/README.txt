@@ -130,8 +130,8 @@
         python specific bits in site-packages, and then put install-specific
         stuff (var/, bin/) in /usr/local/porter/.
 
-        For now just put the package somewhere (anywhere), and follow the
-        instructions in bin/porter
+        For now just put the package somewhere (e.g., /usr/local/porter), and
+        follow the instructions in /usr/local/porterbin/porter.
 
 
     2) Install and configure Apache.
