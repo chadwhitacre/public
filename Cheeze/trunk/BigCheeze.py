@@ -203,7 +203,7 @@ class BigCheeze(Implicit, Persistent, \
     def domain_add(self):
         """handles adding domains"""
         self._domain_add()
-        
+        return self.REQUEST.RESPONSE.redirect('manage_domains')
 
     def domain_edit(self):
         """ add a domain instance """
@@ -228,10 +228,7 @@ class BigCheeze(Implicit, Persistent, \
             alias_map[port]=domain_list
         #ok so if we have an instance_root, then we wanna sync up with the filesystem
         #otherwise, we just store it in there and count on humans to make sure it actually works
-        if self.instance_root:
-            zopes = [(z,z.split('_')[-1]) for z in self.zope_ids_list()]
-        else:
-            zopes=[]
+        zopes = [(z,z.split('_')[-1]) for z in self.zope_ids_list()]
         info['zopes'] = zopes
 
         zope_map = dict([(zport, zname) for zname, zport in zopes])
