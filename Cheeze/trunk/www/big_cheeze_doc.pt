@@ -70,7 +70,7 @@ unix (haven't actually fully tested this yet).</p>
 
   <li>No tests, and interface is out of sync</li>
 
-  <li>list_zopes and list_skel are dumb! They just list the directories in
+  <li>zopes_list and skel_list are dumb! They just list the directories in
   instance_root and skel_root, regardless of whether those directories will
   actually function as zopes or skel.</li>
 

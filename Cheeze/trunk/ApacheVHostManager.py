@@ -8,8 +8,8 @@ class ApacheVHostManager:
         """ return a list of available ports """
         if vhosting:
             avail_ports = [str(x) for x in range(8010,9000,10)]
-            for zope in self.list_zopes():
-                if self.get_port(zope) in avail_ports:
+            for zope in self.zopes_list():
+                if self.port_get(zope) in avail_ports:
                     avail_ports.remove(port)
         else:
             return None

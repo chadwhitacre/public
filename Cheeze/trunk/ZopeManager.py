@@ -15,22 +15,23 @@ class ZopeManager:
     # info providers
     ##
 
-    security.declareProtected('Manage Big Cheeze', 'list_zopes',
-                                                   'list_skel',
+    security.declareProtected('Manage Big Cheeze', 'zopes_list',
+                                                   'skel_list',
+                                                   'port_get',
                                                    )
 
-    def list_zopes(self):
+    def zopes_list(self):
         """ return a list of available zope instances """
         return os.listdir(self.instance_root)
 
-    def list_skel(self):
+    def skel_list(self):
         """ return a list of available zope skel """
         if self.skel_root == '':
             return None
         else:
             return os.listdir(self.skel_root)
 
-    def get_port(self, zope):
+    def port_get(self, zope):
         """ given a zope instance, return its port number """
         return None
 
@@ -89,10 +90,11 @@ class ZopeManager:
             mkzopeinstance.write_inituser(inituser, 'admin', 'jesus')
 
             # if we are vhosting then make those changes too
-            if vhosting:
-                # this is rote from previous product
-                zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
-                update_vhosts({zs_name:zope['port']},www=1)
+            # this will be moved up into BigCheeze
+            #if vhosting:
+            #    # this is rote from previous product
+            #    zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
+            #    update_vhosts({zs_name:zope['port']},www=1)
         else:
             raise 'Cheeze Error', 'Please enter the name of the Zope to create'
         return response.redirect('manage')
