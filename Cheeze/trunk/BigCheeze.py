@@ -70,9 +70,9 @@ class BigCheeze(Implicit, Persistent, \
     # Presentation routines
     ##
 
-    def manage_edit(self):
+    def manage_zopes(self):
         """  """
-        return PageTemplateFile('www/big_cheeze_edit.pt',globals())
+        return PageTemplateFile('www/manage_zopes.pt',globals())
 
     def manage_domains(self):
         """  """
@@ -95,14 +95,7 @@ class BigCheeze(Implicit, Persistent, \
         return ImageFile('www/delete.gif',globals(),)
 
 
-
-    big_cheeze_edit._owner = big_cheeze_domains._owner \
-                           = manage_doc._owner \
-                           = style_big_cheeze._owner \
-                           = style_zopes.owner \
-                           = image_delete._owner \
-                           = None
-    manage = manage_main = manage_edit_big_cheeze
+    manage = manage_main = manage_edit
 
 
     ##
@@ -128,12 +121,12 @@ class BigCheeze(Implicit, Persistent, \
     def domain_edit(self):
         """ add a domain instance """
         pass
-        
+
     def domain_remove(self):
         """ add a domain instance """
         pass
 
-    
+
 
 
     ##
