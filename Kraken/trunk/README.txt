@@ -18,7 +18,7 @@ Install
 
 Prerequisites:
 
-    1. An IMAP account with these three mailboxes: INBOX, Archive, Trash
+    1. An IMAP account with these three mailboxes: INBOX, Archive, Limbo
 
     2. An SMTP account
 
@@ -103,7 +103,9 @@ future versions -- who knows? Some random TODO's:
 History
 =================================
 
-0.4 - abstracted conf from Kraken.py so we can use one Kraken to run multiple lists
+0.4 - switched from Trash to Limbo
+
+    - abstracted conf from Kraken.py so we can use one Kraken to run multiple lists
 
     - added list type to kraken.conf
 
