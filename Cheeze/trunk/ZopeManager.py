@@ -22,10 +22,12 @@ class ZopeManager:
         """ return a list of available zope instances """
         mode = self.mode()
         if mode in [1,3]:
-            return os.listdir(self.instance_root)
+            ids = os.listdir(self.instance_root)
         elif mode==2:
             pattern = '.zetaserver.com'
-            return [dname.replace(pattern,'') for dname, port in self.canonical_names_list() if dname.count(pattern)]
+            ids = [dname.replace(pattern,'') for dname, port in self.canonical_names_list() if dname.count(pattern)]
+        ids.sort()
+        return ids
 
     def zopes_list(self):
         """ return a list of name, port tuples """
