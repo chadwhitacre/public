@@ -81,7 +81,7 @@ class Kraken:
 
                 # get the From header and compare it to our membership lists
 
-                if self.from_addr(M,num) not in self.accept_from:
+                if self.from_addr(M,num) not in whale.accept_from:
 
                     # move it to the trash!
                     M.copy(num, 'Trash')
@@ -98,9 +98,9 @@ class Kraken:
 
                     # tweak the headers
                     try:
-                        msg.replace_header('Reply-To', self.list_addr)
+                        msg.replace_header('Reply-To', whale.list_addr)
                     except KeyError:
-                        msg.__setitem__('Reply-To', self.list_addr)
+                        msg.__setitem__('Reply-To', whale.list_addr)
                     msg.add_header('X-Released-By','THE KRAKEN!!!!!!!!1')
 
                     # and pass it on!
@@ -109,7 +109,7 @@ class Kraken:
                     else:
                         server = smtplib.SMTP(smtp['server'],smtp['port'])
                         server.login(smtp['username'],smtp['password'])
-                        server.sendmail(self.list_addr,self.send_to,msg.__str__())
+                        server.sendmail(whale.list_addr,whale.send_to,msg.__str__())
                         server.quit()
 
                     # and move to archive
