@@ -22,16 +22,15 @@ from webdav.common import rfc1123_date
 from OFS.Image import File
 from OFS.content_types import guess_content_type
 
-from CMFCore.utils import _dtmldir
-from CMFCore.CMFCorePermissions import ViewManagementScreens, View, FTPAccess
-from CMFCore.FSObject import FSObject
-from CMFCore.DirectoryView import registerFileExtension, registerMetaType, expandpath
+from Products.CMFCore.utils import _dtmldir
+from Products.CMFCore.CMFCorePermissions import ViewManagementScreens, View, FTPAccess
+from Products.CMFCore.FSObject import FSObject
+from Products.CMFCore.DirectoryView import registerFileExtension, registerMetaType, expandpath
 
 from OFS.Cache import Cacheable
 
 class FSSimplate(FSObject):
-    """FSSimplates act like images but are not directly
-    modifiable from the management interface."""
+    """Simplate wrapper"""
     # Note that OFS.Image.File is not a base class because it is mutable.
 
     meta_type = 'Filesystem Simplate'

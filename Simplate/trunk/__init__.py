@@ -1,12 +1,9 @@
-from AccessControl.Permissions import add_documents_images_and_files
-import Simplate
-import OFS
+from Products.CMFCore.DirectoryView import registerDirectory
+import ZopeSimplate
+
+registerDirectory('skins', globals())
 
 def initialize(context):
-
-    context.registerClass(
-        Simplate.Simplate,
-        permission=add_documents_images_and_files,
-        constructors=(('simplateAdd',Simplate.manage_addSimplateForm),
-                      Simplate.manage_addSimplate),
-        )
+    # Import lazily, and defer initialization to the module
+    import ZopeSimplate
+    ZopeSimplate.initialize(context)
