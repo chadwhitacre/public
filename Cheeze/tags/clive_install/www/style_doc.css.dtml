@@ -1,0 +1,82 @@
+#doc {
+    width: 500px;
+    }
+
+#motto {
+    background: black;
+    color: #ccc;
+    font: 12px courier new;
+    padding: 2px 4px;
+    }
+
+#motto a {
+    background: black ! important;
+    color: #ccc ! important;
+    font: 12px courier new ! important;
+    text-decoration: none ! important;
+    cursor: text ! important;
+    }
+
+h1 {
+    font-size: 160%;
+    background: #BDE9C0;
+    border-bottom: 2px solid #00A251;
+    padding: 0.25em 0.5em;
+    }
+h2 {
+    font-size: 120%;
+    margin: 2em 0 0.5em;
+    background: #FFFFDB;
+    border-bottom: 2px solid #A2A21B;
+    padding: 0.25em 0.5em;
+    clear: none;
+    }
+h3 {
+    font-size: 8.5pt;
+    margin: 2em 0 0;
+    }
+
+p, li {
+    font: 9pt/150% Arial;
+    }
+
+p {
+    margin: 0 0 1em 1em;
+    padding: 0;
+    }
+
+li {
+    margin-bottom: 0.5em;
+    }
+
+.toc_jump {
+    margin: 0 0 1em;
+    font-size: 9pt;
+    float: right;
+    }
+
+.screenshot {
+    text-align: center;
+    border: 1px solid #999;
+    position: relative;
+    padding: 1em;
+    margin: 0 0 0 1em;
+    }
+
+.screenshot-label {
+    position: absolute;
+    top: -0.6em;
+    left: 1em;
+    height; 1em;
+    font-size: 8pt;
+    font-weight: bold;
+    padding: 0 0.5em;
+    background: white;
+    color: #999;
+    }
+
+.not-yet,
+.not-yet p,
+.not-yet a {
+    color: #CCC ! important;
+    }
