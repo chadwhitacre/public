@@ -1,8 +1,9 @@
 from PorterCmd import PorterCmd
+import sys
 
-def interact():
+def main():
     c = PorterCmd()
-    c.cmdloop('here we go...')
+    c.cmdloop()
 
 if __name__ == '__main__':
-    interact()
+    main()

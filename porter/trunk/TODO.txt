@@ -1,0 +1,3 @@
+tab completion
+non-interactive mode
+mimic the columns we get from shell ls
