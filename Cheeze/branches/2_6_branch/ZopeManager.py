@@ -92,7 +92,7 @@ class ZopeManager:
                     all_ports.append(include)
             return all_ports
         else:
-            return False
+            return 0
 
     ##
     # heavy lifters - these are only used by BigCheeze wrappers
@@ -163,7 +163,7 @@ class ZopeManager:
 
         top = join(self.instance_root, zope_id)
         #raise 'top', top
-        for root, dirs, files in os.walk(top, topdown=False):
+        for root, dirs, files in os.walk(top, topdown=0):
             for name in files:
                 os.remove(join(root, name))
             for name in dirs:
