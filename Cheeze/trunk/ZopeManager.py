@@ -21,8 +21,12 @@ class ZopeManager:
     def zope_ids_list(self):
         """ return a list of available zopes, optionally constrained by regex """
         regex = self.zopes_filter_get()
-        mode = self.mode()
-        if mode in [1,3]:
+        if self.managing_domains():
+            pattern = '.zetaserver.com'
+            ids = [dname.replace(pattern,'') \
+                   for dname, port in self.canonical_names_list() \
+                   if dname.count(pattern)]
+        else:
             all_ids = result = os.listdir(self.instance_root)
             if regex != '':
                 try:
@@ -37,17 +41,12 @@ class ZopeManager:
                     self.zopes_filter_set("regex < %s > has an " % regex \
                                         + "error: %s" % sys.exc_info()[1])
             ids = result
-        elif mode==2:
-            pattern = '.zetaserver.com'
-            ids = [dname.replace(pattern,'') \
-                   for dname, port in self.canonical_names_list() \
-                   if dname.count(pattern)]
         ids.sort()
         return ids
 
     def _zope_search_str(self, zope_id):
         """ return a string to be used in regex filtering """
-        # we are not implementing header: here since we only have two columns
+        # we are not implementing 'header:' here since we only have two columns
         # and they are of different types
         return '%s\n%s' % self.zope_info_get(zope_id)
 
@@ -71,7 +70,7 @@ class ZopeManager:
     def ports_list_available(self, include = None):
         """ return a list of available ports,
             including an optional arbitrary port """
-        mode = self.mode()
+        mode = self._mode
         if include is not None:
             try:
                 include = int(include)

@@ -1,74 +1,77 @@
-try:
-    from Products.Cheeze.vh_utils import _vhosts_update, \
-                                         _vhosts_recreate, \
-                                         _vhosts_get
-    vhosting = 1
-except:
-    # we are not on unix :/
-    vhosting = 0
-#from Products.ZetaUtils import compare_domains, pformat, index_sort
-from AccessControl import ClassSecurityInfo
-
+# Zope classes we are going to subclass
 from Acquisition import Implicit
 from Globals import Persistent
-from AccessControl.Role import RoleManager
 from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import Item
 
-from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from Globals import DTMLFile, ImageFile
-import os
-from os.path import join
-
-
-from CheezeError import CheezeError
+# Our classes we are going to subclass
 from ZopeManager import ZopeManager
 from ApacheVHostManager import ApacheVHostManager
 from DNSManager import DNSManager
+from LocalDNSManager import LocalDNSManager
 
+# different kinds of files
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from Globals import DTMLFile, ImageFile
 
+# for security declarations
+from AccessControl import ClassSecurityInfo
+
+# error classes
+from CheezeError import CheezeError
+
+# utils
+import os
+from os.path import join
 from pprint import pformat as Ipformat
 from utils import *
 
+
+
 class BigCheeze(Implicit, Persistent, \
                 PropertyManager, Item, \
-                ZopeManager, DNSManager,  ApacheVHostManager):
+                ZopeManager, DNSManager,  ApacheVHostManager, LocalDNSManager):
 
 
     security = ClassSecurityInfo()
 
+    # initialize instance metadata
     id = 'Cheeze'
     title = 'Cheap Zopes :-)'
     meta_type= 'Big Cheeze'
 
-    instance_root = skel_root = vhost_db = dns_file = port_range = port_list=''
-    production_mode=0
+    # initialize mode-relevant attrs
+    instance_root = vhost_db = etc_hosts = ''
 
-    vhosting = 0 # do we still need this?
+    # initialize secondary attrs
+    ip_list = port_list = []
+    dns_file = skel_root = port_range = ''
+    ips_constrain = production_mode = 0
 
-    BigCheeze_manage_options = (
-        {'label':'Zopes',           'action':'manage_zopes',    },
-        {'label':'Domains',         'action':'manage_domains',  },
-        {'label':'Documentation',   'action':'manage_doc',      },
-                                )
+    # initialize management tabs
 
-    manage_options = BigCheeze_manage_options \
+    global_tabs = ({'label':'Documentation','action':'manage_doc',    },
+                   {'label':'chmod',        'action':'manage_chmod',  },)
+    manage_options = global_tabs \
                    + PropertyManager.manage_options \
-                   + RoleManager.manage_options \
                    + Item.manage_options
 
+    # initialize properties
     _properties=(
-        {'id'   :'title',        'type' :'string','value':'','mode': 'w',},
-        {'id'   :'production_mode',        'type' :'boolean','value':0,'mode': 'w',},
-        {'id'   :'instance_root','type' :'string','value':'','mode': 'w',},
-        {'id'   :'skel_root',    'type' :'string','value':'','mode': 'w',},
-        {'id'   :'vhost_db',     'type' :'string','value':'','mode': 'w',},
-        {'id'   :'dns_file',     'type' :'string','value':'','mode': 'w',},
-        {'id'   :'port_range',   'type' :'string','value':'','mode': 'w',},
-        {'id'   :'port_list',    'type' :'string','value':'','mode': 'w',},
+        {'id'   :'title',           'type' :'string','value':'','mode': 'w',},
+        {'id'   :'production_mode','type' :'boolean','value':0, 'mode': 'w',},
+        {'id'   :'etc_hosts',       'type' :'string','value':'','mode': 'w',},
+        {'id'   :'ip_list',         'type' :'lines', 'value':'','mode': 'w',},
+        {'id'   :'vhost_db',        'type' :'string','value':'','mode': 'w',},
+        {'id'   :'dns_file',        'type' :'string','value':'','mode': 'w',},
+        {'id'   :'instance_root',   'type' :'string','value':'','mode': 'w',},
+        {'id'   :'skel_root',       'type' :'string','value':'','mode': 'w',},
+        {'id'   :'port_range',      'type' :'string','value':'','mode': 'w',},
+        {'id'   :'port_list',       'type' :'lines', 'value':'','mode': 'w',},
                 )
 
     def __init__(self, id):
+        """ we are keeping instance creation simple, config after creation """
         self.id = str(id)
 
     ##
@@ -77,12 +80,12 @@ class BigCheeze(Implicit, Persistent, \
     def pformat(self,object):
         return Ipformat(object)
 
+    dependencies = DTMLFile('doc/dependencies.txt',globals())
+
 
     ##
     # documentation
     ##
-
-    dependencies = DTMLFile('doc/dependencies.txt',globals())
 
     manage_doc = PageTemplateFile('www/manage_doc.pt',globals())
 
@@ -92,124 +95,43 @@ class BigCheeze(Implicit, Persistent, \
         """  """
         return 'Cheap Zopes :-)'
 
-    ##
-    # A couple of functions to help us figure out how to act
-    ##
-
-    def managesInstances(self):
-        if self.instance_root:
-            return 1
-        else:
-            return 0
-
-    def managesVhosting(self):
-        if self.vhost_db:
-            return 1
-        else:
-            return 0
-
-    def mode(self):
-        managesInstances = self.managesInstances()
-        managesVhosting = self.managesVhosting()
-        if not(managesInstances or managesVhosting):
-            return 0
-        elif managesInstances and not managesVhosting:
-            return 1
-        elif not managesInstances and managesVhosting:
-            return 2
-        elif managesInstances and managesVhosting:
-            return 3
-
-    def friendly_mode(self):
-        friendlies={
-        0:'''Just installed''',
-        1:'''Manages zope instances''',
-        2:'''Manages vhosting db''',
-        3:'''Manages zope instances and vhosting db'''
-        }
-        return friendlies[self.mode()]
-
 
     ##
-    # Zope mgmt
+    # Host mgmt
     ##
 
-    manage_zopes = PageTemplateFile('www/manage_zopes.pt',globals())
+    manage_hosts = PageTemplateFile('www/manage_hosts.pt',globals())
 
-    security.declareProtected('Manage Big Cheeze', 'zope_add'),
-    def zope_add(self):
-        """ add a zope instance """
-        mode = self.mode()
-        if mode in [1,3]:
-            ZopeManager._zope_add(self)
-            if mode==3:
-                self.fs_db_sync()
-        elif mode==2:
-            ApacheVHostManager._zope_add(self)
-        return self.REQUEST.RESPONSE.redirect('manage')
+    def host_add(self,domain,ip):
+        """ add a record to the hosts file """
+        self._mapping_set(domain,ip)
+        self._hosts_write()
+        return self.REQUEST.RESPONSE.redirect('manage_hosts')
 
-    security.declareProtected('Manage Big Cheeze', 'zope_edit'),
-    def zope_edit(self):
-        """ edit a zope instance """
-        if self.production_mode:
-            raise CheezeError, 'Cannot edit instances in production mode'
-        mode = self.mode()
-        if mode in [1,3]:
-            ZopeManager._zope_edit(self)
-            if mode==3:
-                self.fs_db_sync()
-        elif mode==2:
-            ApacheVHostManager._zope_edit(self)
+    def host_edit(self,domain,ip):
+        """ edit the hosts file """
+        self._mapping_set(domain,ip)
+        self._hosts_write()
+        return self.REQUEST.RESPONSE.redirect('manage_hosts')
 
-        return self.REQUEST.RESPONSE.redirect('manage')
-
-    security.declareProtected('Manage Big Cheeze', 'zope_remove'),
-    def zope_remove(self):
-        """ remove a zope instance """
-        mode = self.mode()
-        if mode in [1,3]:
-            ZopeManager._zope_remove(self)
-            if mode==3:
-                self.fs_db_sync()
-        elif mode==2:
-            ApacheVHostManager._zope_remove(self)
-        return self.REQUEST.RESPONSE.redirect('manage')
-
-    def zope_info(self):
-        '''just passes stuff over to manage_zopes'''
-        info = {}
-        zopes = []
-        mode = self.mode()
-        for zope_id in self.zope_ids_list():
-            name, port = self.zope_info_get(zope_id)
-            zope_info = {
-                'name':name,
-                'port':port,
-                'id':zope_id,
-                'canonical':zope_id+'.zetaserver.com',
-            }
-            zopes.append(zope_info)
-
-        #if mode==2: zopes = []
-        info['zopes'] = zopes
-        return info
-
-    def zopes_filter_set(self, regex):
+    def hosts_filter_set(self, regex):
         """ takes a regex filter and sets it in a cookie """
         r = self.REQUEST.RESPONSE
-        r.setCookie('zopes_filter', regex,
+        r.setCookie('hosts_filter', regex.strip(),
                     expires='Wed, 19 Feb 2020 14:28:00 GMT')
-        r.redirect('manage_zopes')
+        r.redirect('manage_hosts')
 
-    def zopes_filter_get(self):
+    def hosts_filter_get(self):
         """ returns a regex from a form or a cookie """
         form = self.REQUEST.form.get('regex','')
-        cookie = self.REQUEST.cookies.get('zopes_filter','')
+        cookie = self.REQUEST.cookies.get('hosts_filter','')
         if form != '':
-            return form
+            regex = form.strip()
         else:
-            return cookie
-
+            regex = cookie
+        if regex == '':
+            regex = self.regex_default
+        return regex
 
 
     ##
@@ -251,7 +173,7 @@ class BigCheeze(Implicit, Persistent, \
 
         zope_map = dict([(zport, zname) for zname, zport in zopes])
 
-        canon_map = dict([(zport, zname+'.zetaserver.com') for zname, zport in zopes])
+        canon_map = dict([(zport, zname+'.zetahost.com') for zname, zport in zopes])
 
         domains =[]
         for domain, port in vhosts:
@@ -281,23 +203,167 @@ class BigCheeze(Implicit, Persistent, \
 
 
     ##
-    # helpers
+    # Zope mgmt
     ##
+
+    manage_zopes = PageTemplateFile('www/manage_zopes.pt',globals())
+
+    security.declareProtected('Manage Big Cheeze', 'zope_add'),
+    def zope_add(self):
+        """ add a zope instance """
+        mode = self._mode
+        if mode in [1,3]:
+            ZopeManager._zope_add(self)
+            if mode==3:
+                self.fs_db_sync()
+        elif mode==2:
+            ApacheVHostManager._zope_add(self)
+        return self.REQUEST.RESPONSE.redirect('manage')
+
+    security.declareProtected('Manage Big Cheeze', 'zope_edit'),
+    def zope_edit(self):
+        """ edit a zope instance """
+        if self.production_mode:
+            raise CheezeError, 'Cannot edit instances in production mode'
+        mode = self._mode
+        if mode in [1,3]:
+            ZopeManager._zope_edit(self)
+            if mode==3:
+                self.fs_db_sync()
+        elif mode==2:
+            ApacheVHostManager._zope_edit(self)
+
+        return self.REQUEST.RESPONSE.redirect('manage')
+
+    security.declareProtected('Manage Big Cheeze', 'zope_remove'),
+    def zope_remove(self):
+        """ remove a zope instance """
+        mode = self._mode
+        if mode in [1,3]:
+            ZopeManager._zope_remove(self)
+            if mode==3:
+                self.fs_db_sync()
+        elif mode==2:
+            ApacheVHostManager._zope_remove(self)
+        return self.REQUEST.RESPONSE.redirect('manage')
+
+    def zope_info(self):
+        '''just passes stuff over to manage_zopes'''
+        info = {}
+        zopes = []
+        mode = self._mode
+        for zope_id in self.zope_ids_list():
+            name, port = self.zope_info_get(zope_id)
+            zope_info = {
+                'name':name,
+                'port':port,
+                'id':zope_id,
+                'canonical':zope_id+'.zetahost.com',
+            }
+            zopes.append(zope_info)
+
+        #if mode==2: zopes = []
+        info['zopes'] = zopes
+        return info
+
+    def zopes_filter_set(self, regex):
+        """ takes a regex filter and sets it in a cookie """
+        r = self.REQUEST.RESPONSE
+        r.setCookie('zopes_filter', regex,
+                    expires='Wed, 19 Feb 2020 14:28:00 GMT')
+        r.redirect('manage_zopes')
+
+    def zopes_filter_get(self):
+        """ returns a regex from a form or a cookie """
+        form = self.REQUEST.form.get('regex','')
+        cookie = self.REQUEST.cookies.get('zopes_filter','')
+        if form != '':
+            return form
+        else:
+            return cookie
+
+
+    ##
+    # Property mgmt
+    ##
+
+    manage_chmod = PageTemplateFile('www/manage_chmod.pt',globals())
+
+    # manage_chmod is not being used yet, but eventually it will replace
+    # manage_propertiesForm, and we will no longer use CMF prop mgmt.
+    # This is because we want more control over prop mgmt UI.
 
     def _setPropValue(self, id, value):
         """ intercept from PropertyManager so we can do validation """
-        if   id == 'instance_root':
-            self._set_instance_root(value)
-        elif id == 'skel_root':
-            self._set_skel_root(value)
-        elif id == 'vhost_db':
-            self._set_vhost_db(value)
+
+        if type(value) == type(''):
+            value = value.strip()
+
+
+        # mode-relevant props
+
+        # hosts
+        if id == 'etc_hosts' and value != self.etc_hosts:
+            self._etc_hosts_set(value)
+            self._mode_set()
+
+        # domains
+        elif id == 'vhost_db' and value != self.vhost_db:
+            self._vhost_db_set(value)
+            self._mode_set()
+
+        # zopes
+        elif id == 'instance_root' and value != self.instance_root:
+            self._instance_root_set(value)
+            self._mode_set()
+
+
+        # secondary props
+
+        elif id == 'skel_root' and value != self.skel_root:
+            self._skel_root_set(value)
+            self._mode_set()
         elif id == 'port_range':
             self._set_port_range(value)
         else:
             PropertyManager._setPropValue(self, id, value)
 
-    def _set_instance_root(self, instance_root):
+
+    # mode-relevant prop setters
+
+    def _etc_hosts_set(self, etc_hosts):
+        """ validate and set the etc/hosts path """
+        if etc_hosts == '':
+            PropertyManager._setPropValue(self, 'etc_hosts', '')
+        elif not os.path.exists(etc_hosts):
+            raise CheezeError, "Proposed hosts path " \
+                             + "'%s' does not exist" % etc_hosts
+        elif not os.path.isfile(etc_hosts):
+            raise CheezeError, "Proposed hosts path " \
+                             + "'%s' " % etc_hosts \
+                             + "does not point to a file"
+        elif os.path.split(etc_hosts)[1] != 'hosts':
+            raise CheezeError, "Proposed hosts file " \
+                             + "'%s' " % os.path.split(etc_hosts)[1] \
+                             + "is not named 'hosts'"
+        else:
+            clean_path = self._scrub_path(etc_hosts)
+            PropertyManager._setPropValue(self,
+                                          'etc_hosts',
+                                          clean_path)
+
+    def _vhost_db_set(self, vhost_db):
+        """ validate and set the vhost db"""
+        from whichdb import whichdb
+        if vhost_db == '':
+            PropertyManager._setPropValue(self, 'vhost_db', '')
+        elif whichdb(vhost_db) is None or whichdb(vhost_db) == '':
+            raise CheezeError, "vhost_db must point to a valid dbm file"
+        else:
+            clean_path = self._scrub_path(vhost_db)
+            PropertyManager._setPropValue(self, 'vhost_db', clean_path)
+
+    def _instance_root_set(self, instance_root):
         """ validate and set the instance root """
         if instance_root == '':
             PropertyManager._setPropValue(self, 'instance_root', '')
@@ -314,7 +380,11 @@ class BigCheeze(Implicit, Persistent, \
                                           'instance_root',
                                           clean_path)
 
-    def _set_skel_root(self, skel_root):
+
+
+    # secondary props
+
+    def _skel_root_set(self, skel_root):
         """ validate and set the skel root """
         if skel_root == '':
             PropertyManager._setPropValue(self, 'skel_root', '')
@@ -329,29 +399,105 @@ class BigCheeze(Implicit, Persistent, \
             PropertyManager._setPropValue(self, 'skel_root', clean_path)
 
     def _set_port_range(self, port_range):
+        """ validate and set the port range """
         if port_range == '':
             PropertyManager._setPropValue(self, 'port_range', '')
         else:
             self._ports_list(port_range) # smoke it!
             PropertyManager._setPropValue(self, 'port_range', port_range)
 
-    def _set_vhost_db(self, vhost_db):
-        """ validate and set the vhost db"""
-        from whichdb import whichdb
-        if vhost_db == '':
-            PropertyManager._setPropValue(self, 'vhost_db', '')
-        elif whichdb(vhost_db) is None or whichdb(vhost_db) == '':
-            raise CheezeError, "vhost_db must point to a valid dbm file"
-        else:
-            clean_path = self._scrub_path(vhost_db)
-            PropertyManager._setPropValue(self, 'vhost_db', clean_path)
 
+
+    # props helper
 
     def _scrub_path(self, p):
         """ given a valid path, return a clean path """
         p = os.path.normpath(p)
         p = os.path.normcase(p)
         return p
+
+
+
+    ##
+    # Mode mgmt
+    ##
+
+    _mode = 0
+
+    security.declareProtected('Manage Cheezen','managing_host',
+                                               'managing_domains',
+                                               'managing_zopes',)
+
+    def managing_hosts(self):
+        return self._mode in [1,3,5,7]
+
+    def managing_domains(self):
+        return self._mode in [2,3,6,7]
+
+    def managing_zopes(self):
+        return self._mode in [4,5,6,7]
+
+    def _mode_set(self):
+        """ set the mode of the Cheeze instance, based on its props """
+
+        managesHosts = self.etc_hosts
+        managesDomains = self.vhost_db
+        managesZopes   = self.instance_root
+
+        # set the mode
+
+        if not(managesHosts or managesDomains or managesZopes):
+            self._mode = 0
+        elif managesHosts and not (managesDomains or managesZopes):
+            self._mode = 1
+        elif not managesHosts and managesDomains and not managesZopes:
+            self._mode = 2
+        elif managesHosts and managesDomains and not managesZopes:
+            self._mode = 3
+        elif not (managesHosts or managesDomains) and managesZopes:
+            self._mode = 4
+        elif managesHosts and not managesDomains and managesZopes:
+            self._mode = 5
+        elif not managesHosts and managesDomains and managesZopes:
+            self._mode = 6
+        elif managesHosts and managesDomains and managesZopes:
+            self._mode = 7
+
+
+        # and update the management tabs
+
+        mode = self._mode
+
+        hosts_tab   = {'label':'Hosts',  'action':'manage_hosts',}
+        if self.managing_hosts() and self.managing_domains():
+            hosts_tab['label'] = 'Servers'
+        elif self.managing_hosts() and not self.managing_domains():
+            hosts_tab['label'] = 'Local DNS'
+        domains_tab = {'label':'Domains','action':'manage_domains',}
+        zopes_tab   = {'label':'Zopes',  'action':'manage_zopes',  }
+
+        tabs = list(self.manage_options)
+
+        # first take out all the ones we don't want
+
+        for tab in tabs:
+            if (tab['action'] == hosts_tab['action']) and not self.managing_hosts():
+                tabs.remove(hosts_tab)
+            elif (tab == domains_tab) and not self.managing_domains():
+                tabs.remove(domains_tab)
+            elif (tab == zopes_tab) and not self.managing_zopes():
+                tabs.remove(zopes_tab)
+
+        # and then add the ones we do want back on the front
+
+        if self.managing_hosts() and hosts_tab not in tabs:
+            tabs.insert(0, hosts_tab)
+        if self.managing_domains() and domains_tab not in tabs:
+            tabs.insert(0, domains_tab)
+        if self.managing_zopes() and zopes_tab not in tabs:
+            tabs.insert(0, zopes_tab)
+
+        self.manage_options = tuple(tabs)
 
 
     ##
@@ -364,10 +510,13 @@ class BigCheeze(Implicit, Persistent, \
 
     image_save      = ImageFile('www/save.png',globals(),)
 
+    image_star      = ImageFile('www/star.png',globals(),)
+
     image_zopes     = ImageFile('www/zopes.png',globals(),)
 
-    manage = manage_main = manage_zopes
+    #manage = manage_main = manage_workspace
 
+    regex_default = 'regex filter goes here'
 
 
 ##
