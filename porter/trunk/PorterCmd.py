@@ -2,15 +2,15 @@ from cmd import Cmd
 
 class PorterCmd(Cmd):
 
-    def __init__(self, **kw):
+    def __init__(self, *args, **kw):
         self.intro = 'here we go ...'
         self.prompt = 'porter> '
 
-        # we keep two indexes
+        # we keep two indices
         self.domains  = {} # one-to-one mapping of domains to websites
         self.websites = {} # one-to-many mapping of websites to domains
 
-        Cmd.__init__(self, **kw)
+        Cmd.__init__(self, *args, **kw)
 
     def parse_inStr(inStr):
         """ given a Cmd inStr string, return a tuple containing a list of
