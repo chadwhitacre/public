@@ -115,6 +115,9 @@ Commands available:
                                   "and a port number."
             return
         domain, server, port = args[:3]
+        if len(domain.split('.')) < 2:
+            print >> self.stdout, "'%s' does not look like a complete domain." % domain
+            return
         if domain.startswith('www.'):
             print >> self.stdout, "Please do not include 'www' on domains."
             return
@@ -250,6 +253,8 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
         #  write to disk
         domains = {}
         for domain in rawdata:
+            if len(domain.split('.')) < 2:
+                continue 
             if not domain.startswith('www.'):
                 domains[domain] = rawdata[domain]
 
