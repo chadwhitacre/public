@@ -12,7 +12,7 @@ from ExtensionClass import Base
 class Simplate(Base):
     "Simplate using python string replacement"
 
-    content_type = 'text/plain'
+    content_type = 'text/css'
     value_paths = []
     _v_errors = []
     _v_warnings = []
