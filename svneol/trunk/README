@@ -2,15 +2,17 @@
 This program is beerware. If you like it, buy me a beer someday.
 No warranty is expressed or implied.
 
-svneol -- clean up line endings for Subversion
+svneol is a toolkit that simplifies the task of cleaning up line endings on a
+large tree of files. The primary use case is preparing a large, non-versioned
+tree to be imported into a Subversion repository.
 
-Contents:
+Contents of this distribution:
 
-    Makefile    installation instructions
+    Makefile    full installation instructions
 
     README      this file
 
-    svneol.1    man page
+    svneol.1    manual page
 
     svneol.py   script itself
 
@@ -18,7 +20,7 @@ Contents:
 To install:
 
     % cd ~
-    % svn export http://svn.zetadev.com/public/svneol/trunk/ svneol
+    % svn export http://svn.zetadev.com/public/svneol/trunk svneol
     % cd svneol
     % make install
 
