@@ -175,7 +175,7 @@ class BigCheeze(Implicit, Persistent, \
             return None
 
     def get_port(self, zope):
-        """ given a zope instance return its port number """
+        """ given a zope instance, return its port number """
         if vhosting:
             pass
         else:
@@ -186,17 +186,91 @@ class BigCheeze(Implicit, Persistent, \
     # zope instance managment routines
     ##
 
-    security.declareProtected('zopes_process','Manage Big Cheeze'),
+    security.declareProtected('Manage Big Cheeze', 'create_zope'),
     def create_zope(self):
         """ create a new zope instance """
         request = self.REQUEST
         response = request.RESPONSE
         form = request.form
         zope = form['zope']
-        if zope['name']:
-            zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
-            update_vhosts({zs_name:zope['port']},www=1)
+        if zope['name'] != '':
+            # we are ready to rock!!!
+
+            # import things
+            import copyzopeskel
+            import mkzopeinstance
+
+            # prepare kw
+            kw = self._prepare_kw()
+
+            # set skelsrc
+            skel = zope['skel']
+            if skel == '':
+                # default to using stock Zope skeleton source
+                skelsrc = os.path.join(kw['ZOPE_HOME'], "skel")
+            else:
+                skelsrc = os.path.join(self.skel_root, skel)
+
+            # set skeltarget
+
+            kw['INSTANCE_HOME'] = skeltarget \
+                                = os.path.join(self.instance_root,
+                                               zope['name'])
+
+            # now make the zope!
+            copyzopeskel.copyskel(skelsrc, skeltarget, None, None, **kw)
+
+            # and finally create the inituser
+            # username:password are hardcoded for now
+            inituser = os.path.join(kw['INSTANCE_HOME'], "inituser")
+            mkzopeinstance.write_inituser(inituser, 'admin', 'jesus')
+
+            # if we are vhosting then make those changes to
+            if vhosting:
+                zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
+                update_vhosts({zs_name:zope['port']},www=1)
+        else:
+            raise 'Cheeze Error', 'Please enter the name of the Zope to create'
         return response.redirect('manage')
+
+
+    def _prepare_kw(self):
+        """ return kw for use in copyzopeskel """
+        import sys
+
+        ### BEGIN COPY FROM mkzopeinstance.py ###
+
+        # we need to distinguish between python.exe and pythonw.exe under
+        # Windows in order to make Zope run using python.exe when run in a
+        # console window and pythonw.exe when run as a service, so we do a bit
+        # of sniffing here.
+        psplit = os.path.split(sys.executable)
+        exedir = os.path.join(*psplit[:-1])
+        pythonexe = os.path.join(exedir, 'python.exe')
+        pythonwexe = os.path.join(exedir, 'pythonw.exe')
+
+        if ( os.path.isfile(pythonwexe) and os.path.isfile(pythonexe) and
+             (sys.executable in [pythonwexe, pythonexe]) ):
+            # we're using a Windows build with both python.exe and pythonw.exe
+            # in the same directory
+            PYTHON = pythonexe
+            PYTHONW = pythonwexe
+        else:
+            # we're on UNIX or we have a nonstandard Windows setup
+            PYTHON = PYTHONW = sys.executable
+
+        ### END COPY FROM mkzopeinstance.py ###
+
+        softwarehome = os.environ.get('SOFTWARE_HOME', '')
+        zopehome     = os.environ.get('ZOPE_HOME', '')
+        #configfile   = os.path.join(instancehome, 'etc', 'zope.conf')
+
+        return {"PYTHON"        : PYTHON,
+                "PYTHONW"       : PYTHONW,
+                "SOFTWARE_HOME" : softwarehome,
+                "ZOPE_HOME"     : zopehome,
+                }
+
 
 #    security.declareProtected('zopes_process','Manage Big Cheeze'),
 #    def zopes_process(self):
