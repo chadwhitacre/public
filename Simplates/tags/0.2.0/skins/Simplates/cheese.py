@@ -1,1 +1,0 @@
-return {'yummy':'cheddar','gross':'limburger'}
