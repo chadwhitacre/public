@@ -83,11 +83,8 @@ configuration file, which is assumed to be at:
 Text files are those with filenames matching any
 .Xr glob 1
 in the [auto-props]
-section for which the 'svn:eol-style' property is set. All Windows newlines in
-these files are converted to Unix newlines. We don't deal with legacy Macintosh
-newlines, since
-.Xr svn 1
-only runs on versions of Mac OS that use the Unix convention.
+section for which the 'svn:eol-style' property is set. All Windows and legacy
+Macintosh newlines in these files are converted to Unix newlines.
 
 Note that
 .Ar path
