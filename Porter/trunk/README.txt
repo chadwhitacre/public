@@ -45,7 +45,7 @@
     understanding what Porter is about, but given that Cambridge's namesake is
     Cambridge University, the second definition is the most apt.
 
-    TODO: For more on Cambridge, see http://www.zetaweb.com/software
+    TODO: For more on Cambridge, see http://cambridge.zetaweb.com/
 
 
 
@@ -95,7 +95,7 @@
     $INSTANCE_HOME -- the directory which contains all of your installation-
                       specific porter data and config
     prtrsrvr -- example porter server hostname
-    namesrvr -- example named server hostname
+    namesrvr -- example named server hostname (stands for 2 actual nameservers)
 
 
     1) Install Porter[1].
@@ -111,6 +111,8 @@
         c. Follow the instructions in $PKG_HOME/bin/porter to install the
         executable.
 
+        d. Porter expects to be able to write files to /home/gremlin.
+
 
     2) Install and configure Apache.
 
@@ -121,11 +123,15 @@
 
         Porter assumes that all domains will share the same SOA, MX records, and
         other configuration. This shared information is expected to be in a zone
-        file at namesrvr:/etc/namedb/porter.zone. The domains themselves are
-        expected to be registered in namesrvr:/etc/namedb/named.conf. Porter
-        manages a named.conf fragment at $PKG_HOME/var/named.porter.conf. It is left
-        as an excercise for the implementor to append or otherwise incorporate
-        this fragment into named.conf.
+        file at namesrvr:/etc/namedb/porter.zone. Whenever a domain mapping is
+        changed in Porter, the program outputs two named.conf fragments:
+
+            /home/gremlin/named.porter.master.conf
+
+            /home/gremlin/named.porter.slave.conf
+
+        These files are expected to be picked up, transferred to the master and
+        slave name servers respectively, and included in /etc/namedb/named.conf.
 
 
     Set up a website
@@ -163,7 +169,7 @@
     would also add www.sub1.example.com. Directly adding a www subdomain in
     Porter is an error.
 
-    TODO: Further usage documentation is provided inline.
+    Further usage documentation is provided inline.
 
 
 
