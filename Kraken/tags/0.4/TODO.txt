@@ -1,0 +1,40 @@
+0.6
+========================================
+unit tests!
+new list type: tracker
+    accept from anyone
+    send to a few
+    auto-reply to incoming messages (stored in an IMAP folder; reply msgs have magic names/subjects)
+secure imap/smtp
+protect against 'auto-away' messages!!!
+expose Reply-To to policy?
+batch process server interactions instead of hitting the server once per message
+better logging -- use python's logging pkg
+implement aliases, e.g. list-admin which are dumped to a special folder
+when moving messages out of the inbox into limbo (etc.) mark them as unread
+
+
+
+
+0.8
+========================================
+TTW and/or email user mgmt
+consider persistent storage for Whales/users
+
+
+
+
+1.0
+========================================
+queueing?
+threading?
+SecureMailHost-like spam protections?
+
+
+2.0
+========================================
+TTW
+    - discussion board
+    - task manager
+    - issue tracker
+shared imap for multiple managers/users?
