@@ -1,0 +1,57 @@
+<!doctype html public "-//w3c//dtd xhtml 1.0 transitional//en"
+"http://www.w3.org/tr/xhtml1/dtd/xhtml1-transitional.dtd">
+
+<html i18n:domain="plone">
+
+<!-- wysiwyg default widget -->
+<div metal:define-macro="wysiwygEditorBox">
+
+<tal:block tal:define="useFCK python: here.portal_membership.getAuthenticatedMember().getProperty('wysiwyg_editor')=='FCK Editor';
+                       wysiwyg python: useFCK;">
+
+
+
+  <tal:block tal:condition="python: useFCK"
+             tal:define="parent_url python:here.aq_parent.absolute_url();
+                         cleaninput0 python:inputvalue.replace('\x5C','\x5C\x5C');
+                         cleaninput1 python:cleaninput0.replace('\x27','\x5C\x27');
+                         cleaninput2 python:cleaninput1.replace('\r',' ');
+                         cleaninput python:cleaninput2.replace('\n',' ')">
+
+   <script type="text/javascript" src="" tal:attributes="src string:${portal_url}/fckeditor.js">
+   </script>
+
+   <script type="text/javascript" tal:content="structure string: 
+&lt;!--
+var oFCKeditor=new FCKeditor('${inputname}'); 
+oFCKeditor.BasePath='${request/URLPATH2}/'; 
+oFCKeditor.Value='${cleaninput}';
+oFCKeditor.ToolbarSet='SmallZopeCmf';
+oFCKeditor.Width=650; 
+oFCKeditor.Height=200;
+oFCKeditor.Create(); 
+--&gt;
+">
+     The FCK Editor Script
+   </script>
+
+</tal:block>
+
+
+
+<tal:block condition="not: wysiwyg">
+<textarea cols="60"
+            rows="8"
+            tabindex=""
+            name="#"
+            tal:content="inputvalue"
+            tal:attributes="name inputname;
+                            id inputname;
+                            onfocus onfocus|nothing;
+                            onblur onblur|nothing;
+                            tabindex tabindex|nothing;" id="#"></textarea>
+</tal:block>
+</tal:block>
+</div>
+
+</html>
