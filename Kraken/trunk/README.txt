@@ -71,32 +71,15 @@ Kraken currently implements two types of lists:
 Roadmap
 =================================
 
-Even minor version = stable release, odd = development
+See Zeta's release management process for details. The plan here is to keep this
+product w/in Zeta until at least 0.6. We will only have one production instance.
 
 0.2 -- My initial use case was a 5-10 person members-only list, and this is just
 about the simplest solution for my requirements.
 
-0.3 -- present version -- development version for 0.4
-
 0.4 -- new use case: announcement list (do not accept from send_to)
 
-    - use SSL/TLS
-
-future versions -- who knows? Some random TODO's:
-
-    - Protect against 'auto-away' messages!!!
-
-    - expose Reply-To to policy
-
-    - consider batch processing server interactions instead of hitting the
-      server once per message
-
-    - consider persistent storage for Whales/users
-
-    - better logging
-
-    - TTW and/or email user mgmt
-
+0.6 -- see TODO.txt
 
 
 
@@ -127,7 +110,7 @@ whit537 on irc.freenode.net
 License
 =================================
 
-Borrowed from Poul-Henning Kamp 'cause it looks like fun:
+Borrowed from Poul-Henning Kamp[1] 'cause it looks like fun:
 
 # ----------------------------------------------------------------------------
 # "THE BEER-WARE LICENSE":
@@ -136,4 +119,5 @@ Borrowed from Poul-Henning Kamp 'cause it looks like fun:
 # this stuff is worth it, you can buy me a beer in return. --Chad Whitacre
 # ----------------------------------------------------------------------------
 
-http://people.freebsd.org/~phk/
+
+[1] http://people.freebsd.org/~phk/

@@ -43,7 +43,10 @@ class Whale:
 
         cp = ConfigParser()
         cp.read(conf_path)
-        self.imap = dict(cp.items('imap'))
+        try:
+            self.imap = dict(cp.items('imap'))
+        except:
+            raise 'curious', conf_path
         self.smtp = dict(cp.items('smtp'))
         self.list_addr = cp.get('default', 'list_addr')
         lt = self.list_type = cp.get('default', 'list_type')

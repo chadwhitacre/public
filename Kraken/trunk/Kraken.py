@@ -5,8 +5,8 @@
 # this stuff is worth it, you can buy me a beer in return. --Chad Whitacre
 # ----------------------------------------------------------------------------
 
-import os, re, imaplib, smtplib, email
-from os.path import abspath
+import sys, os, re, imaplib, smtplib, email
+from os.path import abspath, join
 from Whale import Whale
 
 class Kraken:
@@ -22,20 +22,21 @@ class Kraken:
 
     carcasses = []
 
-    def __init__(self, lair='.'):
-        """ read in config info """
+    def __init__(self):
+        """ initialize w/ mailing list definitions """
 
-        # (almost) all directories are assumed to be mailing lists
-        lists = [abspath(o) for o in os.listdir(lair)
-                             if os.path.isdir(o) and
-                                not o.startswith('.') and
-                                not o == 'example']
+        # Almost all directories w/in the Kraken root directory are assumed to
+        # be mailing lists definitions. Whale objects are created from these
+        # definitions and are stored in an attribute.
 
-        for l in lists:
-            # create an object representing the list config, and store it away
-            # maybe someday we will grow up and have persistent storage!
-            whale = Whale(l)
-            self.carcasses.append(whale)
+        lair = sys.path[0]
+        lists = []
+
+        for d in os.listdir(lair):
+            laird = join(lair,d)
+            if os.path.isdir(laird):
+                if not d.startswith('.') and not d in ['example','tests']:
+                    self.carcasses.append(Whale(laird))
 
 
 
