@@ -100,7 +100,8 @@ class Simplate(Base):
         self._cook()
 
     def read(self):
-        self._cook_check()
+        #self._cook_check()
+        self._cook()
         if not self._v_errors:
             return self._text
 
