@@ -17,7 +17,7 @@
 .Sh SYNOPSIS
 .Nm
 .Ar path
-.Ar port-number
+.Ar port
 .\"
 .\"
 .\"
@@ -37,9 +37,9 @@ following directories exist:
 It creates the ZEO client and server instances at:
 .Bl -item -offset indent
 .It
-.Pa ./ Ns << Ns Ar path Ns >>_<< Ns Ar port-number Ns >>/client-1
+.Pa ./ Ns << Ns Ar path Ns >>_<< Ns Ar port Ns >>/client-1
 .It
-.Pa ./ Ns << Ns Ar path Ns >>_<< Ns Ar port-number Ns >>/server
+.Pa ./ Ns << Ns Ar path Ns >>_<< Ns Ar port Ns >>/server
 .El
 .Pp
 Then it customizes the ZEO client and server installations as follows:
@@ -66,7 +66,7 @@ Lastly,
 creates a script at:
 .Bl -item -offset indent
 .It
-.Pa /usr/local/zope/rc.d/ Ns << Ns Ar path Ns >>_<< Ns Ar port-number Ns >>.sh
+.Pa /usr/local/zope/rc.d/ Ns << Ns Ar path Ns >>_<< Ns Ar port Ns >>.sh
 .El
 .Pp
 This script can be used to start, stop, and restart the Zope+ZEO instance.
