@@ -22,6 +22,7 @@ class ZopeManager:
         """ return a list of available zopes, optionally constrained by regex """
         regex = self.zopes_filter_get()
         mode = self.mode()
+        
         if mode in [1,3]:
             all_ids = result = os.listdir(self.instance_root)
             if regex != '':
@@ -42,6 +43,8 @@ class ZopeManager:
             ids = [dname.replace(pattern,'') \
                    for dname, port in self.canonical_names_list() \
                    if dname.count(pattern)]
+        elif mode==0:
+            ids=[]
         ids.sort()
         return ids
 
