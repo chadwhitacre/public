@@ -103,7 +103,7 @@ class BigCheeze(Implicit, Persistent, \
             return 0
     
     def managesVhosting(self):
-        if self.managesVhosting():
+        if self.vhost_db:
             return 1
         else:
             return 0
