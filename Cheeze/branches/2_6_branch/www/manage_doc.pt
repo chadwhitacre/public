@@ -11,7 +11,7 @@
 <body>
 
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
-    tal:replace="structure context/manage_tabs">Tabs</h2>
+    tal:replace="structure here/manage_tabs">Tabs</h2>
 
 <div class="padding">
 

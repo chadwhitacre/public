@@ -10,10 +10,10 @@
 <body>
 
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
-    tal:replace="structure context/manage_tabs">Tabs</h2>
+    tal:replace="structure here/manage_tabs">Tabs</h2>
 <p>
-        <strong>Mode <span tal:content="context/mode" />:</strong>
-        <span tal:content="context/friendly_mode"/>
+        <strong>Mode <span tal:content="here/mode" />:</strong>
+        <span tal:content="here/friendly_mode"/>
 </p>
 
 <div class="padding" >
@@ -22,10 +22,10 @@
 
 <p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
 <table id="table"
-       tal:define="availaskel   context/skel_list;
-                   port_range   python:context.port_range != '';
-                   availaports  context/ports_list_available;
-                   skel_root    context/skel_root;
+       tal:define="availaskel   here/skel_list;
+                   port_range   python:here.port_range != '';
+                   availaports  here/ports_list_available;
+                   skel_root    here/skel_root;
                    ">
     <thead>
 
@@ -33,7 +33,7 @@
             <th style="text-align: left;">Name</th>
             <th>Port</th>
             <th colspan="2">Actions</th>
-            <th tal:condition="context/vhost_db">Canonical Name</th>
+            <th tal:condition="here/vhost_db">Canonical Name</th>
         </tr>
 
         <!-- This is the add form with port number as <select>,
@@ -67,7 +67,7 @@
             <td colspan="2" class="action">
                 <input type="submit" value="add" />
             </td>
-            <td tal:condition="context/vhost_db"></td>
+            <td tal:condition="here/vhost_db"></td>
         </form>
         </tr>
 
@@ -103,14 +103,14 @@
             <td colspan="2" class="action">
                 <input type="submit" value="add" />
             </td>
-            <td tal:condition="context/vhost_db">&nbsp;</td>
+            <td tal:condition="here/vhost_db">&nbsp;</td>
         </form>
         </tr>
 
         <!-- The add form is disabled if we have port_range
              but no availaports, or if we don't have skel_root -->
         <tr class="green" tal:condition="python:port_range and not availaports">
-            <td tal:attributes="colspan python:test(context.vhost_db, '5', '4')">
+            <td tal:attributes="colspan python:test(here.vhost_db, '5', '4')">
 
                 Zope creation is disabled because there are no more available <a
                 href="manage_doc#port_range">ports</a>.
@@ -124,7 +124,7 @@
             <td colspan="2">
                 <input type="text"
                        name="regex"
-                       tal:attributes="value context/zopes_filter_get"
+                       tal:attributes="value here/zopes_filter_get"
                        style="width: 100%" />
             </td>
             <td colspan="2" class="action">
@@ -132,7 +132,7 @@
                        name="submit"
                        value="filter" />
             </td>
-            <td tal:condition="context/vhost_db">&nbsp;</td>
+            <td tal:condition="here/vhost_db">&nbsp;</td>
         </form>
         </tr>
 
@@ -144,7 +144,7 @@
         <!-- Now loop through all our zopes and make a form for each -->
         <tr tal:repeat="zope info/zopes">
         <form action="zope_edit" method="post"
-              tal:define="availaports python: context.ports_list_available(zope['port']);">
+              tal:define="availaports python: here.ports_list_available(zope['port']);">
             <td>
                 <input type="text"
                        name="new_name:required"
@@ -183,7 +183,7 @@
                 <input type="hidden" name="old_port"
                        tal:attributes="value python:zope['port']" />
                 </div>
-                <div tal:condition="context/production_mode" tal:content="python:zope['port']" />
+                <div tal:condition="here/production_mode" tal:content="python:zope['port']" />
             </td>
             <td class="action">
                 <input tal:condition="not:here/production_mode"
@@ -191,7 +191,7 @@
                        value="submit"
                        class="save"
                        title="save" />
-                <span tal:condition="context/production_mode">&mdash;</span>
+                <span tal:condition="here/production_mode">&mdash;</span>
             </td>
             <td class="action">
                 <a tal:condition="not:here/production_mode"
@@ -200,10 +200,10 @@
                     <img style="border:none;" src="image_delete"
                          alt="delete" title="delete"/>
                 </a>
-                <span tal:condition="context/production_mode">&mdash;</span>
+                <span tal:condition="here/production_mode">&mdash;</span>
             </td>
         </form>
-        <td tal:condition="context/vhost_db">
+        <td tal:condition="here/vhost_db">
             <a tal:attributes="href string:http://${zope/canonical}" tal:content="zope/canonical"/>
         </td>
         </tr>
@@ -212,9 +212,9 @@
     <tbody tal:condition="not:info/zopes">
 
         <tr>
-            <td tal:attributes="colspan python:test(context.vhost_db, '5', '4')">
-                There are no Zope instances in <b tal:content="context/instance_root"
-                /><tal:x condition="context/zopes_filter_get"> that match your filter</tal:x>.
+            <td tal:attributes="colspan python:test(here.vhost_db, '5', '4')">
+                There are no Zope instances in <b tal:content="here/instance_root"
+                /><tal:x condition="here/zopes_filter_get"> that match your filter</tal:x>.
             </td>
         </tr>
 
