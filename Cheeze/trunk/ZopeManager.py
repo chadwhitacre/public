@@ -33,7 +33,7 @@ class ZopeManager:
 
     def port_get(self, zope):
         """ given a zope instance, return its port number """
-        return None
+        return 'DUDE'
 
 
     ##

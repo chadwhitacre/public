@@ -3,7 +3,8 @@
     <meta http-equiv="content-type" content="text/html;charset=iso-8859-1" />
     <title>Zope</title>
     <style>@import url("/manage_page_style.css");
-           @import url("big_cheeze_style");</style>
+           @import url("style_big_cheeze");
+           @import url("style_zopes");</style>
 </head>
 
 <body>
@@ -48,7 +49,7 @@ production though. :)</p>
                 <input type="text"
                        name="zope.port:record"
                        value="80"
-                       size="2"
+                       size="3"
                        style="text-align: right;"
                        tal:condition="not:context/vhosting" />
             </td>
@@ -60,11 +61,20 @@ production though. :)</p>
     <tbody tal:condition="zopes">
 
         <tr tal:repeat="zope zopes">
-            <td colspan="2" tal:content="python:zope"></td>
+            <td colspan="2">
+                <input type="text"
+                       name="zope.port:record"
+                       value="80"
+                       tal:condition="not:context/vhosting"
+                       tal:attributes="value zope" /></td>
             <td>
-                <tal:x content="python:context.port_get(zzope)"
-                       condition="context/vhosting" />
-                <tal:x condition="not:context/vhosting">&nbsp;</tal:x>
+                <input type="text"
+                       name="zope.port:record"
+                       value="80"
+                       size="3"
+                       style="text-align: right;"
+                       tal:condition="not:context/vhosting"
+                       tal:attributes="value python:context.port_get(zope)" />
             </td>
             <td class="action">
                 <a tal:attributes="href python:'zope_delete?zope=%s' % zope">
