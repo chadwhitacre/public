@@ -26,6 +26,9 @@ from ZopeManager import ZopeManager
 from ApacheVHostManager import ApacheVHostManager
 from DNSManager import DNSManager
 
+
+from pprint import pformat as Ipformat
+
 class BigCheeze(Implicit, Persistent, \
                 PropertyManager, Item, \
                 ZopeManager, DNSManager, ApacheVHostManager):
@@ -38,7 +41,8 @@ class BigCheeze(Implicit, Persistent, \
     meta_type= 'Big Cheeze'
 
     instance_root = skel_root = vhost_db = dns_file = port_range = ''
-
+    production_mode=0
+    
     vhosting = 0
 
     BigCheeze_manage_options = (
@@ -54,6 +58,7 @@ class BigCheeze(Implicit, Persistent, \
 
     _properties=(
         {'id'   :'title',        'type' :'string','value':'','mode': 'w',},
+        {'id'   :'production_mode',        'type' :'boolean','value':0,'mode': 'w',},
         {'id'   :'instance_root','type' :'string','value':'','mode': 'w',},
         {'id'   :'skel_root',    'type' :'string','value':'','mode': 'w',},
         {'id'   :'vhost_db',     'type' :'string','value':'','mode': 'w',},
@@ -64,7 +69,13 @@ class BigCheeze(Implicit, Persistent, \
     def __init__(self, id):
         self.id = str(id)
 
-
+    ##
+    #   temp
+    ##
+    def pformat(self,object):
+        return Ipformat(object)
+    
+    
     ##
     # documentation
     ##
@@ -85,6 +96,22 @@ class BigCheeze(Implicit, Persistent, \
     ##
 
     manage_zopes = PageTemplateFile('www/manage_zopes.pt',globals())
+    
+    def zope_info(self):
+        info = {}
+        zopes = []
+        orphans=0
+        for zope_id in self.zope_ids_list():
+            name, port = self.zope_info_get(zope_id)
+            zope_info = {
+                'name':name,
+                'port':port,
+                'id':zope_id,
+                'canonical':zope_id+'.zetaserver.com',
+            }
+            zopes.append(zope_info)
+        info['zopes'] = zopes
+        return info
 
     security.declareProtected('Manage Big Cheeze', 'zope_add'),
     def zope_add(self):
@@ -95,6 +122,8 @@ class BigCheeze(Implicit, Persistent, \
     security.declareProtected('Manage Big Cheeze', 'zope_edit'),
     def zope_edit(self, old_name, new_name, old_port, new_port):
         """ edit a zope instance """
+        if self.production_mode:
+            raise CheezeError, 'Cannot edit instances in production mode'
         old_zope_id = self._zope_id_make(old_name, old_port)
         new_zope_id = self._zope_id_make(new_name, new_port)
 
@@ -111,13 +140,63 @@ class BigCheeze(Implicit, Persistent, \
         return self.REQUEST.RESPONSE.redirect('manage')
 
 
-
     ##
     # Domain mgmt
     ##
 
     manage_domains = PageTemplateFile('www/manage_domains.pt',globals())
+    def domains_info(self, troubleshoot=0):
+        """ populates the domains pt """
+        vhosts = self.domains_list()
+        index_sort(vhosts,0,compare_domains)
+        info = {}
 
+        alias_map= {}
+        for domain, port in vhosts:
+            domain_list = alias_map.get(port,[])
+            domain_list.append(domain)
+            alias_map[port]=domain_list
+
+        info['zopes'] = zopes = [(z,z.split('_')[-1]) for z in self.zope_ids_list()]
+
+        zope_map = dict([(zport, zname) for zname, zport in zopes])
+
+        canon_map = dict([(zport, zname+'.zetaserver.com') for zname, zport in zopes])
+
+        domains =[]
+        for domain, port in vhosts:
+            try:
+                aliases = alias_map[port][:]
+                aliases.remove(domain)
+                domain_info = {
+                    'name':domain,
+                    'port':port,
+                    'zope':zope_map[port],
+                    'canonical':canon_map[port],
+                    'aliases':aliases,
+                }
+                
+            except KeyError:
+                domain_info = {
+                    'name':domain,
+                    'port':port,
+                    'zope':'ORPHANED',
+                    'canonical':'',
+                    'aliases':[],
+                }
+            domains.append(domain_info)
+        info['domains']=domains
+
+
+
+        #info['vhosts'] = vhosts
+        #
+        #info['aliases'] = server_info
+        if troubleshoot:
+            return pformat(info)
+        else:
+            return info
+            
     def domain_add(self):
         """handles adding domains"""
         if self.vhost_db: return ApacheVHostManager._domain_add(self)

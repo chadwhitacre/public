@@ -12,8 +12,6 @@ High Priority (we need this to host sites)
 
     smarter error messages (which domain did you click?)
 
-    production version disables instance edit and delete
-
     implement domain edits
 
     handle edits in apache for domains

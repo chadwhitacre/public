@@ -57,58 +57,6 @@ class ApacheVHostManager:
         self.vhost_delete(vhost)
         return response.redirect('manage_domains')
 
-    def domains_info(self, troubleshoot=0):
-        """ populates the domains pt """
-        vhosts = self.domains_list()
-        index_sort(vhosts,0,compare_domains)
-        info = {}
-
-        alias_map= {}
-        for domain, port in vhosts:
-            domain_list = alias_map.get(port,[])
-            domain_list.append(domain)
-            alias_map[port]=domain_list
-
-        info['zopes'] = zopes = [(z,z.split('_')[-1]) for z in self.zope_ids_list()]
-
-        zope_map = dict([(zport, zname) for zname, zport in zopes])
-
-        canon_map = dict([(zport, zname+'.zetaserver.com') for zname, zport in zopes])
-
-        domains =[]
-        for domain, port in vhosts:
-            try:
-                aliases = alias_map[port][:]
-                aliases.remove(domain)
-                domain_info = {
-                    'name':domain,
-                    'port':port,
-                    'zope':zope_map[port],
-                    'canonical':canon_map[port],
-                    'aliases':aliases,
-                }
-                
-            except KeyError:
-                domain_info = {
-                    'name':domain,
-                    'port':port,
-                    'zope':'ORPHANED',
-                    'canonical':'',
-                    'aliases':[],
-                }
-            domains.append(domain_info)
-        info['domains']=domains
-
-
-
-        #info['vhosts'] = vhosts
-        #
-        #info['aliases'] = server_info
-        if troubleshoot:
-            return pformat(info)
-        else:
-            return info
-
     def canonical_names_list(self):
         vhosts = self.get_vhosts().items()
         domains = []
