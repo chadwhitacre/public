@@ -154,14 +154,14 @@ class BigCheeze(Implicit, Persistent, \
         if zope['name'] != '':
             # we are ready to rock!!!
 
+            # initialize kw
+            kw = self._initialize_kw()
+
             # import things
             bin = join(kw['ZOPE_HOME'], 'bin')
             os.environ['PATH'].append(bin)
             import copyzopeskel
             import mkzopeinstance
-
-            # initialize kw
-            kw = self._initialize_kw()
 
             # set skelsrc
             skel = zope['skel']
