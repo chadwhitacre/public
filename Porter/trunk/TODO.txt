@@ -1,7 +1,6 @@
 0.2
 =======================
-we don't actually handle DNS for tesm.edu -- does it matter if we still have a record for them?
-get VirtualHostMonster working
+separate svn-managed porter from content
 still getting double-up bug :/
 
     #-------------------------------------------------------------------#
@@ -27,8 +26,6 @@ still getting double-up bug :/
     zetaweb.com                   bridei        8090  ugandapartners.org
 
     porter> mv zetaweb.com bridei 8080
-    porter> ls- l
-    <empty>
     porter> ls -l
 
     DOMAIN NAME                   SERVER        PORT  ALIASES
@@ -39,72 +36,6 @@ still getting double-up bug :/
     porter>
     whit537@alpin: cd /usr/local/porter/
 
-
-
-issue: there needs to be a VirtualHostMonster in the Zope in order to use it
-through porter. That means that we need to be able to hit a new Zope at least
-once ttw in order to configure VHM. The problem with that is that we had hoped
-to close off all ports except 80. Possible solutions:
-
-    1) leave ports besides 80 open so we can hit them directly
-
-    2) route all direct zope traffic through porter on 8080
-
-    3) add a switching feature (to porter? to ipfw?) so that we can temporarily
-    open up holes to zopes when we need to
-
-    #1 and #2 have the same net effect but #2 would take more work. #3 is the
-    real solution, so prolly #1 + #3.
-
-    4) never create a new zope on Zetaserver!! only add zopes on zetaserver
-    which we have created elsewhere (i.e., josemaria), and have then tar'd and
-    are rolling out there. I LIKE THIS ONE because it emphasizes the
-    "production" nature of zetaserver. We do use it for staging though (think
-    edp today :-/ ), so maybe some combo.
-
-    5) customize the zope skel on zope farm servers to include a Data.fs which
-    is pre-configured with a VHM. We really don't want to stray far from stock
-    Zope setup at all though.
-
-The other issue with that is that we definitely want to be able to get to the
-root of our Zopes ttw, which means that each zope needs a domain name. That's ok
-though, it just means that when we start pulling a list of servers from
-/etc/hosts that we need to stick a record in named.conf.frag for each one, i.e.,
-bridei.zetaserver.com. Except that bridei represents many zopes (that's the
-whole point). Right so what that means is that subdomains of zetaserver.com
-should be proxied w/o VirtualHostMonster, i.e., should hit directly.
-
-    example.com -> server:port/VHM/example.com/etc
-    server_port.zetaserver.com -> server:port/etc
-    server.zetaserver.com -> server:8000 # not sure we want to actually expose this publically
-
-But here's the thing, all of our servers have public IP addresses, so even when
-they are accessed through porter they are being proxied through the public
-Internet. If we really wanted them to be private then we would have to do NAT.
-Now, we definitely want to be able to ssh directly to all of our servers. What
-is it that we want? We want the jails to be accessed directly only via ssh. We
-want all http to go through porter. Why? Again, three reasons:
-
-    1) instant routing
-
-    2) centralized caching
-
-    3) centralized logging
-
-We basically want zetaserver to act like a single http server, although there
-are a number of backend servers.
-
-Now, I don't think firewalling is going to work, since that is NIC level and by
-using mod_proxy (which is what is behind mod_rewrite's proxying) we are in fact
-still connecting through TCP. However, if there aren't actually any domains
-pointing to the backend IP addresses then you would have to know the IP to
-connect to that machine. Now, IF someone connected directly to a backend server
-by IP address, what would they find? Assuming we've turned off everything we
-don't need (named, sendmail, inetd) They would find, say, a number of zope
-servers running on various ports, and ssh. Accessing these zope servers directly
-by ip:port is almost exactly like accessing them through porter
-
-Zetaserver is a distributed http server architecture.
 
 
 0.4
