@@ -4,7 +4,7 @@
     <style>@import url("style.css");</style>
 </head>
 
-<body tal:define="info here/zopes_info">
+<body tal:define="info context/zopes_info">
 <h1><a href="index_html">The Zeta</a></h1>
 <h3>
     <a href="domains">Domains</a> | 

@@ -10,13 +10,13 @@ from Globals import Persistent
 from AccessControl.Role import RoleManager
 from OFS.SimpleItem import Item
 
-class CheapZopeManager(Implicit, Persistent, RoleManager, Item):
+class Cheese(Implicit, Persistent, RoleManager, Item):
 
-    __implements__ = ICheapZopeManager
+    __implements__ = ICheese
 
     security = ClassSecurityInfo()
 
-    id = 'CheapZopeManager'
+    id = 'Cheese'
     title = 'Centrally manage many zope instances'
     meta_type= 'Cheap Zope Manager'
     
@@ -137,3 +137,14 @@ class CheapZopeManager(Implicit, Persistent, RoleManager, Item):
             zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
             update_vhosts({zs_name:zope['port']},www=1)
         return response.redirect('zopes')
+
+def initialize(context):
+    context.registerClass(
+        Cheese,
+        permission='Add Cheeze Manager',
+        constructors=(manage_addCheeseForm,
+                      manage_addCheese),
+        icon='www/cheeze.png',
+        )
+    #context.registerHelp()
+    #context.registerHelpTitle('Zope Help')
