@@ -1,10 +1,29 @@
 0.2
 =======================
-porter> named # manually flush current settings to named frags
+
 
 
 0.4
 =======================
+ls arg should affect all ls modes
+^C should cancel the command if there is one, or exit the program otherwise
+porter> named # manually flush current settings to named frags
+
+    flush -- Force a write of our data to disk. This is useful if the named
+             files become corrupt and need to be recreated. Note that this
+             won't help if the db is corrupt, since that is our primary data
+             store. In that case, running this command would actually make
+             things worse by propagating the bad data out to the named.conf
+             fragments.
+
+    def do_flush(self, inStr=''):
+        """ force a write of our data to disk """
+        self._write_to_disk()
+        print >> self.stdout, "Data has been written to disk."
+
+    I decided not to implement because it makes me think that storage to disk
+    should really be transactional with the program. I.e., only write to disk on
+    clean exit. also made the help page too long. :^/
 deal with orphans -- we have a domain record but there is no server (API may solve this)
 only work with lowercase domain names
 tab complete available servers (from etc/hosts) and ports (from rpc to servers)

@@ -114,19 +114,21 @@ Commands available:
 
     ls -- list available domains
           OPTIONS: -l/--long, -i/--info, -r/--raw
-          ARGS: With the -l option or with no options, ls takes an optional
+          ARGS: With no options or with the -l option, ls takes an optional
                 argument. If you pass in this argument, Porter only lists
                 domains that begin with that value. So for example, 'ls zeta'
                 would list zetaweb.com and zetaserver.com, but not
                 sub1.zetaweb.com nor zogurt.org.
+          Domains can be tab-completed.
 
     mk -- register a domain with Porter
           ARGS: domain server port, e.g.: example.com srvrname 8080
-          ALIASES: add, mv. mv adds tab-completion for domain names
+          ALIASES: add, mv
+          Domains can be tab-completed with mv.
 
     rm -- unregister a domain
           ARGS: one or more space-separated domain names, e.g.: foo.example.net
-          domain names can be tab completed
+          Domains can be tab-completed.
             """
 
     ##
