@@ -278,17 +278,18 @@ class ZopeSimplate(Script, Simplate, Historical, Cacheable,
             return self._text
         return self.read()
 
-#    def om_icons(self):
-#        """Return a list of icon URLs to be displayed by an ObjectManager"""
-#        icons = ({'path': 'misc_/Simplates/simplate.png',
-#                  'alt': self.meta_type, 'title': self.meta_type},)
-#        if not self._v_cooked:
-#            self._cook()
-#        if self._v_errors:
-#            icons = icons + ({'path': 'misc_/Simplates/exclamation.gif',
-#                              'alt': 'Error',
-#                              'title': 'This simplate has an error'},)
-#        return icons
+    def om_icons(self):
+        """Return a list of icon URLs to be displayed by an ObjectManager"""
+        icons = ({'path': 'misc_/Simplates/simplate.png',
+                  'alt': self.meta_type,
+                  'title': self.meta_type},)
+        if not self._v_cooked:
+            self._cook()
+        if self._v_errors:
+            icons = icons + ({'path': 'misc_/Simplates/exclamation.gif',
+                              'alt': 'Error',
+                              'title': 'This simplate has an error'},)
+        return icons
 
     def __setstate__(self, state):
         # This is here for backward compatibility. :-(
@@ -370,8 +371,9 @@ def manage_addSimplate(self, id, title=None, text=None,
         REQUEST.RESPONSE.redirect(u+'/manage_main')
     return ''
 
-from Products.Simplate import misc_
+from Products.Simplates import misc_
 misc_['exclamation.gif'] = ImageFile('www/exclamation.gif', globals())
+# not sure why this isn't working :/
 
 def initialize(context):
     context.registerClass(

@@ -58,12 +58,7 @@ class Simplate(Base):
         if self._v_errors:
             raise SimplateRuntimeError, 'Simplate %s has errors.' % self.id
 
-        # First, do some escapes. Then do replacement if we have anything to replace with.
-        unprocessed = self._text.replace('%','%%').replace('%%(','%(').replace('%%%(','%%(')
-        if self._value_dict:
-            return unprocessed % self._value_dict
-        else:
-            return unprocessed
+        return self._replace()
 
 #        output = self.StringIO()
 #        c = self.simplate_getContext()
@@ -80,9 +75,10 @@ class Simplate(Base):
             kwargs['args'] = args
         return self.simplate_render(extra_context={'options': kwargs})
 
+
     def simplate_errors(self):
-        if not self._v_cooked:
-            self._cook()
+        reurn ['doober doo',]
+        self._cook_check()
         err = self._v_errors
         if err:
             return err
@@ -93,8 +89,7 @@ class Simplate(Base):
 #            return ('Macro expansion failed', '%s: %s' % sys.exc_info()[:2])
 
     def simplate_warnings(self):
-        if not self._v_cooked:
-            self._cook()
+        self._cook_check()
         return self._v_warnings
 
     def simplate_source_file(self):
@@ -111,15 +106,24 @@ class Simplate(Base):
         if not self._v_errors:
             return self._text
 
-        return ('%s\n %s\n-->\n%s' % (self._error_start,
-                                      '\n '.join(self._v_errors),
-                                      self._text))
+#        return ('%s\n %s\n-->\n%s' % (self._error_start,
+#                                      '\n '.join(self._v_errors),
+#                                      self._text))
 
     def _build_value_dict(self):
-        self._value_dict = {}
 
+        ##
+        # 1. Get the list of paths
+        ##
+
+        self._value_dict = {}
         paths = list(self.value_paths)
         paths.reverse()
+        
+        ##
+        # 2. Build a master dictionary from the paths
+        ##
+        
         for path in paths:
             if path:
                 value_obj = self.restrictedTraverse(path)
@@ -130,6 +134,30 @@ class Simplate(Base):
                     warning = "Simplate value script '%s' " % value_obj.id + \
                               "does not return a dictionary."
                     self._v_warnings = ["String replacement warning", warning]
+
+        ##
+        # 3. Attempt the substitution
+        ## 
+        
+        # Does the value_dict supply all the values?
+        raise 'dude', 'man'
+        try:
+            self._replace()
+        except KeyError:
+            self._v_errors = ["Replacement failed", "%s: %s" % sys.exc_info()[:2]]
+        except:
+            self._v_errors = ["Compilation failed",
+                              "%s: %s" % sys.exc_info()[:2]]
+
+
+    def _replace(self):
+        # First, do some escapes. Then do replacement if we have anything to replace with.
+        unprocessed = self._text.replace('%','%%').replace('%%(','%(').replace('%%%(','%%(')
+        if self._value_dict:
+            return unprocessed % self._value_dict
+        else:
+            return unprocessed
+
 
     def _cook_check(self):
         if not self._v_cooked:
@@ -158,11 +186,8 @@ class Simplate(Base):
 #        self._v_warnings = parser.getWarnings()
 
         self._v_errors = ()
-        try:
-            self._build_value_dict()
-        except:
-            self._v_errors = ["Compilation failed",
-                              "%s: %s" % sys.exc_info()[:2]]
+        self._build_value_dict()
+
 #        self._v_warnings = parser.getWarnings()
 
         self._v_cooked = 1
