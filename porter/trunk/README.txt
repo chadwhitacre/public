@@ -241,9 +241,11 @@ a final period.
 
     Apache 2.0 -- http://httpd.apache.org/docs-2.0/mod/mod_rewrite.html#rewritemap
 
-Note that Apache 2 supports multiple dbm types. You want to use ndbm. This is
-the only available type in 1.3, but the default in 2.0 is sdbm. I developed with
-Apache 1.3.33 because I couldn't get Apache 2.0.52 to compile --with-ndbm.
+Apache 2 supports four dbm types -- sdbm, ndbm, gdbm, and db. The default is
+sdbm, which doesn't have a Python library afaict. We are using Python's dbm
+module, which produces ndbm-compatible files. However, I couldn't get Apache
+2.0.52 to compile --with-ndbm. I therefore dropped back to Apache 1.3.33 because
+ndbm is in fact the only available type in 1.3.
 
 [3] In a future version of porter, the plan is to constrain the server hostnames
 available in step 6 to those hosts named in /etc/hosts that provide a certain API,
