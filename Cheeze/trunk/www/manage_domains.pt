@@ -16,7 +16,22 @@
 <p class="form-help"> This page is just a prototype for now. IIRC, you didn't get too
 far with it anyway, eh? </p>
 
+<div tal:define="apache here/apache_db; dns here/dns_file;">
 
+    <div tal:condition="apache">
+    ok gotta handle domains with apache
+    
+        <p>
+            <strong>orphans:</strong>
+            <span tal:content="here/orphans_find" />
+        </p>
+    </div>
+    
+    <div tal:condition="dns">
+    ok gotta handle domains with DNS
+    </div>
+
+</div>
 
 <table id="table">
     <thead>
@@ -79,7 +94,6 @@ far with it anyway, eh? </p>
         </tr>
     </tbody>
 </table>
-
 </div>
 </body>
 </html>
