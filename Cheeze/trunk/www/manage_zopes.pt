@@ -35,7 +35,7 @@ production though. :)</p>
                     <option tal:repeat="skel availaskel"
                             tal:attributes="value skel"
                             tal:content="skel" />
-                    <option value="|stock|">stock</option>
+                    <option value="|stock|">zope stock</option>
                 </select>
             </td>
             <td><select name="port:int"
