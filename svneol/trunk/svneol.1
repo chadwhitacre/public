@@ -1,4 +1,4 @@
-.Dd March 31, 2005
+.Dd April 1, 2005
 .Os
 .Dt SVNEOL 1 LOCAL
 .\"
@@ -8,7 +8,7 @@
 .\"
 .Sh NAME
 .Nm svneol
-.Nd clean up line endings for Subversion
+.Nd line endings toolkit for Subversion
 .\"
 .\"
 .\"
@@ -16,6 +16,7 @@
 .\"
 .Sh SYNOPSIS
 .Nm
+.Ar command
 .Op Ar path
 .\"
 .\"
@@ -32,20 +33,29 @@ fails. The file can still be forced into the repository, but then you have
 broken data in your repo.
 
 The solution is to clean up the newlines in your text files before trying to
-commit them.
+commit them. This can be done for single files with a utility such as
+.Xr dos2unix 1 .
 .Nm
 is a
 .Xr python 1
-script that makes this easier by intelligently operating on an entire tree at
-once.
+program that makes the job easier for a whole tree of files.
 
-Specifically,
 .Nm
-walks the tree rooted at
+has two subcommands:
+.Bl -hang
+.It Nm confgen
+Walk the tree rooted at
 .Ar path
-(which defaults to the current working directory) and cleans up the line endings
-in all text files. The definition of a text file is taken from the current
-user's
+and gather all of the file extensions represented in the tree. Filenames without
+an extension are included in this list as they stand. Then we output a file
+fragment that can be the basis for the auto-props section of an
+.Xr svn 1
+configuration file.
+.It Nm clean
+Walk the tree rooted at
+.Ar path
+and clean up the line endings in all text files. The definition of a text file
+is taken from the current user's
 .Xr svn 1
 configuration file, which is assumed to be at:
 .Bd -literal -offset indent
@@ -59,10 +69,17 @@ these files are converted to Unix newlines. We don't deal with legacy Macintosh
 newlines, since
 .Xr svn 1
 only runs on versions of Mac OS that use the Unix convention.
+.El
+.Pp
 
-Note that the tree does not have to be an
+The tree at
+.Ar path
+(which defaults to the current working directory) does not have to be an
 .Xr svn 1
-working copy in order to be processed successfully.
+working copy. In fact,
+.Nm svneol Ns 's
+primary use case is preparing a large, non-versioned tree to be imported into a
+Subversion repository.
 .\"
 .\"
 .\"
@@ -96,7 +113,9 @@ Subversion 1.1.0
 .Sh EXAMPLES
 .Bd -literal
 % cd ~/FooProject/
-% svneol
+% svneol confgen > ~/.subversion/config
+% vi ~/.subversion/config # manually remove extensions for binary files
+% svneol clean
 locating text files ...................... 952 found
 scrubbing newlines ..................... 945 files cleaned
 %
