@@ -3,7 +3,7 @@
     <meta http-equiv="content-type" content="text/html;charset=iso-8859-1" />
     <title>Zope</title>
     <style>@import url("/manage_page_style.css");
-           @import url("style_big_cheeze");
+           @import url("style");
            @import url("style_zopes");</style>
 </head>
 
