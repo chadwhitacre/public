@@ -15,9 +15,7 @@ class TestCRUD(unittest.TestCase):
 
         # ...set,...
         os.mkdir('var')
-        os.mkdir('gremlin')
         self.porter = Porter(stdout=self.out)
-        self.porter.gremlin = abspath('gremlin')
 
         # ... go!
 
@@ -26,7 +24,7 @@ class TestCRUD(unittest.TestCase):
 
     def cleanUp(self):
         # clean up our filesystem
-        for directory in ('var','gremlin'):
+        for directory in ('var',):
             if isdir(directory):
                 test_dir = abspath(directory)
                 for datafile in os.listdir(test_dir):
