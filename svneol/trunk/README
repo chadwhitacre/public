@@ -1,0 +1,29 @@
+(c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+This program is beerware. If you like it, buy me a beer someday.
+No warranty is expressed or implied.
+
+zopeme -- create a ZEO-configured Zope instance
+
+Contents:
+
+    Makefile    installation instructions
+
+    README      this file
+
+    zopeme.1    man page
+
+    zopeme.py   script itself
+
+
+To install:
+
+    % cd ~
+    % svn export http://svn.zetadev.com/public/zopeme/trunk/ zopeme
+    % cd zopeme
+    % make install
+
+
+To uninstall:
+
+    % cd ~/zopeme
+    % make uninstall
