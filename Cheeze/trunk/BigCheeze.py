@@ -93,16 +93,19 @@ class BigCheeze(Implicit, Persistent, \
     security.declareProtected('Manage Big Cheeze', 'zope_edit'),
     def zope_edit(self, old_name, new_name, old_port, new_port):
         """ edit a zope instance """
-        if old_name != new_name:
+        old_zope_id = self._zope_id_make(old_name, old_port)
+        new_zope_id = self._zope_id_make(new_name, new_port)
+
+        if old_zope_id != new_zope_id:
             self._zope_rename(old_name, new_name)
         if old_port != new_port:
             self._port_set(old_port, new_port)
         return self.REQUEST.RESPONSE.redirect('manage')
 
     security.declareProtected('Manage Big Cheeze', 'zope_remove'),
-    def zope_remove(self, zope):
+    def zope_remove(self, zope_id):
         """ remove a zope instance """
-        self._zope_delete(zope)
+        self._zope_delete(zope_id)
         return self.REQUEST.RESPONSE.redirect('manage')
 
 

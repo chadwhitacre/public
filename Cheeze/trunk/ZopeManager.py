@@ -20,7 +20,7 @@ class ZopeManager:
                                                    'port_get',
                                                    )
 
-    def zopes_list(self):
+    def zope_ids_list(self):
         """ return a list of available zope instances """
         return os.listdir(self.instance_root)
 
@@ -31,17 +31,11 @@ class ZopeManager:
         else:
             return os.listdir(self.skel_root)
 
-    def port_get(self, zope):
-        """ given a zope instance, return its port number """
-        import re
-
-        # get path to zope.conf
-        conf_path = join(self.instance_root, zope, 'etc/zope.conf')
-        conf_file = file(conf_path).read()
-
-        search = re.search('%define HTTP_PORT (.*)',conf_file)
-
-        return search.group(1)
+    def zope_info_get(self, zope):
+        """ given a zope instance, return (name, port number) """
+        port = zope.split('_')[-1]
+        name = ''.join(zope.split('_')[0:-1])
+        return (name, port)
 
 
     ##
@@ -69,17 +63,17 @@ class ZopeManager:
         else:
             skelsrc = join(self.skel_root, skel)
 
-        # set skeltarget
-        kw['INSTANCE_HOME'] = skeltarget \
-                            = join(self.instance_root,name)
-
         # set port number
         if port == '':
-            port = '80'
-        else:
-            port = str(port)
-        kw['HTTP_PORT'] = port
+            port = 80
+        kw['HTTP_PORT'] = str(port)
         kw['FTP_PORT'] = '21' # will want to revisit this later
+
+        # set skeltarget
+        zope_id = self._zope_id_make(name,port)
+        kw['INSTANCE_HOME'] = skeltarget \
+                            = join(self.instance_root,zope_id)
+
 
         # now make the zope!
         copyzopeskel.copyskel(skelsrc, skeltarget, None, None, **kw)
@@ -119,6 +113,9 @@ class ZopeManager:
     ##
     # helpers
     ##
+
+    def _zope_id_make(self, name, port):
+        return '_'.join((str(name), str(port)))
 
     def _initialize_kw(self):
         """ return initial kw for use in copyzopeskel """
