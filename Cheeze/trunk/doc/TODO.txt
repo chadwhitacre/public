@@ -2,13 +2,20 @@ TODO
 
 add edit tab that is basically zopes.pt (domains.pt will be in another product!)
 
-    fix delete.gif
+    we need to do work on the forms. it may not work to have it in a table row
+    :(  cause we need to get username:password somehow, as well as skel and
+    port. forms also need validation (password, confirm; constrain Zope names
+    to acceptable Zope ids, etc.)
 
-    implement rename (will have to change instance_home in 5 files [4 bin scripts + zope.conf])
+    implement rename (only have to change instance_home in 5 files [4 bin/
+    scripts + zope.conf])
 
     implement filter/batch
 
     link instance name to instance page if Little Cheeze is present
+
+    How cool would it be to query the zope socket or lock or pid or whatever to
+    see if each zope is actually running? Then start, stop, restart ...
 
 ZopeInstance.py -- obj representing zope instance
 
@@ -26,3 +33,4 @@ get skel working
 
 get replacements working
 
+fix delete.gif

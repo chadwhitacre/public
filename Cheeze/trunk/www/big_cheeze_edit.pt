@@ -70,7 +70,7 @@
                 <tal:x condition="not:context/vhosting">&nbsp;</tal:x>
             </td>
             <td class="action">
-                <a tal:attributes="href python:'delete_vhost?vhostname=%s%s.zetaserver.com'%(zope,zope)">
+                <a tal:attributes="href python:'delete_zope?zope=%s' % zope">
                     <img style="border:none;" src="big_cheeze_delete" />
                 </a>
             </td>
@@ -81,7 +81,7 @@
 
         <tr>
             <td colspan="4">
-                There are no Zope instances in the instance root.
+                There are no Zope instances in <b tal:content="context/instance_root" />.
             </td>
         </tr>
 
