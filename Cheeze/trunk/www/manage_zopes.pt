@@ -11,223 +11,212 @@
 
 <h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
     tal:replace="structure context/manage_tabs">Tabs</h2>
-<p>
-        <strong>Mode <span tal:content="context/mode" />:</strong>
-        <span tal:content="context/friendly_mode"/>
-</p>
 
-<div class="padding" >
-<tal:definer tal:define="info here/zope_info">
+<div class="padding">
+
+    <p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
+
+    <tal:mode_check condition="context/managing_zopes">
+    <table id="table"
+           tal:define="availaskel   context/skel_list;
+                       port_range   python:context.port_range != '';
+                       availaports  context/ports_list_available;
+                       skel_root    context/skel_root;
+                       info         context/zope_info;">
+        <thead>
+
+            <tr>
+                <th style="text-align: left;">Name</th>
+                <th>Port</th>
+                <th colspan="2">Actions</th>
+                <th tal:condition="context/vhost_db">Canonical Name</th>
+            </tr>
+
+            <!-- This is the add form with port number as <select>,
+                 shown if we have port_range and availaports -->
+            <tr class="green"
+                tal:condition="python:port_range and availaports">
+            <form action="zope_add" method="post">
+                <td>
+                    <input name="name:required" type="text"
+                           value="name of new zope"
+                           onclick="if(this.value=='name of new zope')
+                                     { this.value='' }" />
+                    <select name="skel:required"
+                            tal:condition="availaskel">
+                        <option value="">which skel?</option>
+                        <option tal:repeat="skel availaskel"
+                                tal:attributes="value skel;
+                                                selected python:test(
+                                                  skel=='default','selected','');"
+                                tal:content="skel" />
+                        <option value="|stock|">zope stock</option>
+                    </select>
+                    <input type="hidden" name="skel" value="|stock|"
+                           tal:condition="not:availaskel" />
+                </td>
+                <td class="port"><select name="port:int"
+                            tal:condition="availaports">
+                        <option tal:repeat="port availaports" tal:content="port" />
+                    </select>
+                </td>
+                <td colspan="2" class="action">
+                    <input type="submit" value="add" />
+                </td>
+                <td tal:condition="context/vhost_db"></td>
+            </form>
+            </tr>
+
+            <!-- This is the add form with port number as <input>,
+                 shown if we do not have port_range at all -->
+            <tr class="green"
+                tal:condition="python:not port_range">
+            <form action="zope_add" method="post">
+                <td>
+                    <input name="name:required" type="text"
+                           value="name of new zope"
+                           onclick="if(this.value=='name of new zope')
+                                     { this.value='' }" />
+                    <select name="skel:required"
+                            tal:condition="availaskel">
+                        <option value="">which skel?</option>
+                        <option tal:repeat="skel availaskel"
+                                tal:attributes="value skel;
+                                                selected python:test(
+                                                  skel=='default','selected','');"
+                                tal:content="skel" />
+                        <option value="|stock|">zope stock</option>
+                    </select>
+                    <input type="hidden" name="skel" value="|stock|"
+                           tal:condition="not:availaskel" />
+                </td>
+                <td class="port"><input type="text"
+                           name="port:int:required"
+                           value="80"
+                           size="3"
+                           style="text-align: right;" />
+                </td>
+                <td colspan="2" class="action">
+                    <input type="submit" value="add" />
+                </td>
+                <td tal:condition="context/vhost_db">&nbsp;</td>
+            </form>
+            </tr>
+
+            <!-- The add form is disabled if we have port_range
+                 but no availaports, or if we don't have skel_root -->
+            <tr class="green" tal:condition="python:port_range and not availaports">
+                <td tal:attributes="colspan python:test(context.vhost_db, '5', '4')">
+
+                    Zope creation is disabled because there are no more available <a
+                    href="manage_doc#port_range">ports</a>.
+
+                </td>
+            </tr>
+
+            <!-- this is a form to set the regex filter -->
+            <tr class="yellow">
+            <form action="zopes_filter_set" method="post">
+                <td colspan="2">
+                    <input type="text"
+                           name="regex"
+                           tal:attributes="value context/zopes_filter_get"
+                           style="width: 100%" />
+                </td>
+                <td colspan="2" class="action">
+                    <input type="submit"
+                           name="submit"
+                           value="filter" />
+                </td>
+                <td tal:condition="context/vhost_db">&nbsp;</td>
+            </form>
+            </tr>
 
 
-<p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
-<table id="table"
-       tal:define="availaskel   context/skel_list;
-                   port_range   python:context.port_range != '';
-                   availaports  context/ports_list_available;
-                   skel_root    context/skel_root;
-                   ">
-    <thead>
 
-        <tr>
-            <th style="text-align: left;">Name</th>
-            <th>Port</th>
-            <th colspan="2">Actions</th>
-            <th tal:condition="context/vhost_db">Canonical Name</th>
-        </tr>
+        </thead>
+        <tbody tal:condition="info/zopes">
 
-        <!-- This is the add form with port number as <select>,
-             shown if we have port_range and availaports -->
-        <tr class="green"
-            tal:condition="python:port_range and availaports">
-        <form action="zope_add" method="post">
-            <td>
-                <input name="name:required" type="text"
-                       value="name of new zope"
-                       onclick="if(this.value=='name of new zope')
-                                 { this.value='' }" />
-                <select name="skel:required"
-                        tal:condition="availaskel">
-                    <option value="">which skel?</option>
-                    <option tal:repeat="skel availaskel"
-                            tal:attributes="value skel;
-                                            selected python:test(
-                                              skel=='default','selected','');"
-                            tal:content="skel" />
-                    <option value="|stock|">zope stock</option>
-                </select>
-                <input type="hidden" name="skel" value="|stock|"
-                       tal:condition="not:availaskel" />
+            <!-- Now loop through all our zopes and make a form for each -->
+            <tr tal:repeat="zope info/zopes">
+            <form action="zope_edit" method="post"
+                  tal:define="availaports python: context.ports_list_available(zope['port']);">
+                <td>
+                    <input type="text"
+                           name="new_name:required"
+                           value="80"
+                           style="width: 100%;"
+                           tal:attributes="value python:zope['name']" />
+                    <input type="hidden" name="old_name"
+                           tal:attributes="value python:zope['name']" />
+                </td>
+                <td class="port">
+                    <div tal:condition="not:here/production_mode">
+                    <!-- show a <select> if we have port_range and availaports -->
+                    <select name="new_port:int"
+                            tal:condition="python:port_range and len(availaports) > 1">
+                        <option tal:repeat="port availaports"
+                                tal:content="python:test(port == int(zope['port']),
+                                                         '*%s' % port, port)"
+                                tal:attributes="selected python:test(port == int(zope['port']),
+                                                                     'selected','');
+                                                value port" />
+                    </select>
+
+                    <!-- show an <input> if we don't have port_range -->
+                    <input type="text"
+                           name="new_port:int:required"
+                           value="80"
+                           size="3"
+                           tal:condition="not:port_range"
+                           tal:attributes="value python:zope['port']" />
+
+                    <!-- show text only if we have port_range but no availaports -->
+                    <div style="text-align: right;"
+                         tal:replace="python:zope['port']"
+                         tal:condition="python:port_range and len(availaports) == 1" />
+
+                    <input type="hidden" name="old_port"
+                           tal:attributes="value python:zope['port']" />
+                    </div>
+                    <div tal:condition="context/production_mode" tal:content="python:zope['port']" />
+                </td>
+                <td class="action">
+                    <input tal:condition="not:here/production_mode"
+                           type="submit"
+                           value="submit"
+                           class="save"
+                           title="save" />
+                    <span tal:condition="context/production_mode">&mdash;</span>
+                </td>
+                <td class="action">
+                    <a tal:condition="not:here/production_mode"
+                        tal:attributes="href python:'zope_remove?zope_id=%s' % zope['id'];
+                                        onclick python:'''return confirm('Delete zope instance: %s?\\n All data in this instance will be lost.');;'''%zope['id']">
+                        <img style="border:none;" src="image_delete"
+                             alt="delete" title="delete"/>
+                    </a>
+                    <span tal:condition="context/production_mode">&mdash;</span>
+                </td>
+            </form>
+            <td tal:condition="context/vhost_db">
+                <a tal:attributes="href string:http://${zope/canonical}" tal:content="zope/canonical"/>
             </td>
-            <td class="port"><select name="port:int"
-                        tal:condition="availaports">
-                    <option tal:repeat="port availaports" tal:content="port" />
-                </select>
-            </td>
-            <td colspan="2" class="action">
-                <input type="submit" value="add" />
-            </td>
-            <td tal:condition="context/vhost_db"></td>
-        </form>
-        </tr>
+            </tr>
 
-        <!-- This is the add form with port number as <input>,
-             shown if we do not have port_range at all -->
-        <tr class="green"
-            tal:condition="python:not port_range">
-        <form action="zope_add" method="post">
-            <td>
-                <input name="name:required" type="text"
-                       value="name of new zope"
-                       onclick="if(this.value=='name of new zope')
-                                 { this.value='' }" />
-                <select name="skel:required"
-                        tal:condition="availaskel">
-                    <option value="">which skel?</option>
-                    <option tal:repeat="skel availaskel"
-                            tal:attributes="value skel;
-                                            selected python:test(
-                                              skel=='default','selected','');"
-                            tal:content="skel" />
-                    <option value="|stock|">zope stock</option>
-                </select>
-                <input type="hidden" name="skel" value="|stock|"
-                       tal:condition="not:availaskel" />
-            </td>
-            <td class="port"><input type="text"
-                       name="port:int:required"
-                       value="80"
-                       size="3"
-                       style="text-align: right;" />
-            </td>
-            <td colspan="2" class="action">
-                <input type="submit" value="add" />
-            </td>
-            <td tal:condition="context/vhost_db">&nbsp;</td>
-        </form>
-        </tr>
+        </tbody>
+        <tbody tal:condition="not:info/zopes">
 
-        <!-- The add form is disabled if we have port_range
-             but no availaports, or if we don't have skel_root -->
-        <tr class="green" tal:condition="python:port_range and not availaports">
-            <td tal:attributes="colspan python:test(context.vhost_db, '5', '4')">
+            <tr>
+                <td tal:attributes="colspan python:test(context.vhost_db, '5', '4')">
+                    There are no Zope instances in <b tal:content="context/instance_root"
+                    /><tal:x condition="context/zopes_filter_get"> that match your filter</tal:x>.
+                </td>
+            </tr>
 
-                Zope creation is disabled because there are no more available <a
-                href="manage_doc#port_range">ports</a>.
-
-            </td>
-        </tr>
-
-        <!-- this is a form to set the regex filter -->
-        <tr class="yellow">
-        <form action="zopes_filter_set" method="post">
-            <td colspan="2">
-                <input type="text"
-                       name="regex"
-                       tal:attributes="value context/zopes_filter_get"
-                       style="width: 100%" />
-            </td>
-            <td colspan="2" class="action">
-                <input type="submit"
-                       name="submit"
-                       value="filter" />
-            </td>
-            <td tal:condition="context/vhost_db">&nbsp;</td>
-        </form>
-        </tr>
-
-
-
-    </thead>
-    <tbody tal:condition="info/zopes">
-
-        <!-- Now loop through all our zopes and make a form for each -->
-        <tr tal:repeat="zope info/zopes">
-        <form action="zope_edit" method="post"
-              tal:define="availaports python: context.ports_list_available(zope['port']);">
-            <td>
-                <input type="text"
-                       name="new_name:required"
-                       value="80"
-                       style="width: 100%;"
-                       tal:attributes="value python:zope['name']" />
-                <input type="hidden" name="old_name"
-                       tal:attributes="value python:zope['name']" />
-            </td>
-            <td class="port">
-                <div tal:condition="not:here/production_mode">
-                <!-- show a <select> if we have port_range and availaports -->
-                <select name="new_port:int"
-                        tal:condition="python:port_range and len(availaports) > 1">
-                    <option tal:repeat="port availaports"
-                            tal:content="python:test(port == int(zope['port']),
-                                                     '*%s' % port, port)"
-                            tal:attributes="selected python:test(port == int(zope['port']),
-                                                                 'selected','');
-                                            value port" />
-                </select>
-
-                <!-- show an <input> if we don't have port_range -->
-                <input type="text"
-                       name="new_port:int:required"
-                       value="80"
-                       size="3"
-                       tal:condition="not:port_range"
-                       tal:attributes="value python:zope['port']" />
-
-                <!-- show text only if we have port_range but no availaports -->
-                <div style="text-align: right;"
-                     tal:replace="python:zope['port']"
-                     tal:condition="python:port_range and len(availaports) == 1" />
-
-                <input type="hidden" name="old_port"
-                       tal:attributes="value python:zope['port']" />
-                </div>
-                <div tal:condition="context/production_mode" tal:content="python:zope['port']" />
-            </td>
-            <td class="action">
-                <input tal:condition="not:here/production_mode"
-                       type="submit"
-                       value="submit"
-                       class="save"
-                       title="save" />
-                <span tal:condition="context/production_mode">&mdash;</span>
-            </td>
-            <td class="action">
-                <a tal:condition="not:here/production_mode"
-                    tal:attributes="href python:'zope_remove?zope_id=%s' % zope['id'];
-                                    onclick python:'''return confirm('Delete zope instance: %s?\\n All data in this instance will be lost.');;'''%zope['id']">
-                    <img style="border:none;" src="image_delete"
-                         alt="delete" title="delete"/>
-                </a>
-                <span tal:condition="context/production_mode">&mdash;</span>
-            </td>
-        </form>
-        <td tal:condition="context/vhost_db">
-            <a tal:attributes="href string:http://${zope/canonical}" tal:content="zope/canonical"/>
-        </td>
-        </tr>
-
-    </tbody>
-    <tbody tal:condition="not:info/zopes">
-
-        <tr>
-            <td tal:attributes="colspan python:test(context.vhost_db, '5', '4')">
-                There are no Zope instances in <b tal:content="context/instance_root"
-                /><tal:x condition="context/zopes_filter_get"> that match your filter</tal:x>.
-            </td>
-        </tr>
-
-    </tbody>
-</table>
-</tal:definer>
-</div>
-<div class="padding" tal:condition="python:0">
-
-    <p class="form-help">This page is blank because you do not have the
-    <b>instance_root</b> property set. For more info, <a
-    href="manage_doc#instance_root">RTFM</a>. :-)</p>
-
+        </tbody>
+    </table>
+    </tal:mode_check>
 </div>
 </body>
 </html>

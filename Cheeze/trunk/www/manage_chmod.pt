@@ -1,0 +1,70 @@
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html;charset=iso-8859-1" />
+    <title>Zope</title>
+    <style>@import url("/manage_page_style.css");
+           @import url("style");
+           @import url("style_zopes");</style>
+</head>
+
+<body>
+
+<h2 tal:define="manage_tabs_message options/manage_tabs_message | nothing"
+    tal:replace="structure context/manage_tabs">Tabs</h2>
+
+<div class="padding" >
+
+    <p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
+
+    <pre>
+Zetaserver is composed of servers and zopes. A server is a physical or virtual
+machine running Zope in a certain configuration (instances and skel are
+optional):
+
+    Zope software           installed in arbitrary location
+    [zopes_root]/           e.g., /usr/local/zope
+    [zopes_root]/instances  location of zopes on this server
+    [zopes_root]/master     master zope running Cheeze, must be on :8000
+    [zopes_root]/skel       templates for creating new Zopes
+
+A zope is a Zope instance running on one of those servers.
+
+
+
+
+The mode of a Cheeze obj is derived from the configuration of its properties.
+There are four basic modes:
+
+    Mode    prop            manages     additional props
+    --------------------------------------------------------------------
+    Mode 0  n/a             n/a         n/a
+    Mode 1  etc_hosts       servers     ip_list
+    Mode 2  vhost_db        domains     port_range, port_list, dns_file
+    Mode 4  instance_root   zopes       skel_root
+
+In Mode 0, the Cheeze object is not used for management, but instead passively
+reports info about the Zope instance, to be used by Cheeze managers higher up
+the chain.
+
+Main properties go on chmod tab. Tabs don't show up unless props are set. All
+secondary properties go on the tabs themselves.
+
+Modes are cumulative, so there are eight total modes:
+
+    Mode    manages
+    --------------------------------------------------------------------
+    Mode 0  -
+    Mode 1  servers
+    Mode 2  domains
+    Mode 3  servers and domains
+    Mode 4  zopes
+    Mode 5  servers and zopes
+    Mode 6  domains and zopes
+    Mode 7  servers, domains, and zopes
+
+This function returns the current mode of a Cheeze instance.
+    </pre>
+
+</div>
+</body>
+</html>
