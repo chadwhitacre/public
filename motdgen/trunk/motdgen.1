@@ -1,0 +1,115 @@
+.Dd March 10, 2005
+.Os
+.Dt MOTDGEN 1 LOCAL
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh NAME
+.Nm motdgen
+.Nd generate a motd
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SYNOPSIS
+.Nm motdgen
+.Ar fqdn
+.Ar description
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh DESCRIPTION
+.Nm
+is a
+.Xr python 1
+script that generates a custom-formatted motd. It requires
+.Xr figlet 6
+<http://www.figlet.org/>. Options are as follows:
+.Bl -tag -offset indent
+.It Ar fqdn
+This is the fully-qualified domain name of the host for which the motd is being
+generated.
+.It Ar description
+All remaining tokens on the command line are taken together as the host's
+description.
+.El
+.Pp
+Figlet is invoked using a width of 78 characters, smushed kerning, and the
+default font.
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh IMPLEMENTATION NOTES
+This program was written with Python 2.3.4 and Figlet v2.2.1.
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh EXAMPLES
+This input:
+.Bd -ragged -offset indent
+% motdgen foo.example.com I serve something-or-other.
+.Ed
+.Pp
+Will produce this output:
+.Bl -item -compact
+.It
+
+.It
+w  e  l  c  o  m  e     t  o  .  .  .
+.It
+   ___
+.It
+ /\&'___\e
+.It
+/\\ \\__/  ___     ___
+.It
+\\ \\ ,__\\/ __`\\  / __`\e
+.It
+ \\ \\ \\_/\\ \\_\\ \\/\\ \\_\\ \e
+.It
+  \\ \\_\\\\ \\____/\\ \\____/
+.It
+   \\/_/ \\/___/  \\/___/
+.It
+
+.It
+
+.It
+
+.It
+                             f  o  o  .  e  x  a  m  p  l  e  .  c  o  m
+.It
+
+.It
+I serve something-or-other.
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SEE ALSO
+.Xr figlet 6
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh AUTHORS
+.Bl -item -compact
+.It
+(c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+.It
+This program is beerware. If you like it, buy me a beer someday.
+.It
+No warranty is expressed or implied.
+.El
