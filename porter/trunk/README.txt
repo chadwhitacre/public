@@ -119,7 +119,7 @@
 
     Set up porter
     ----------------------------------------
-    $PORTER -- the directory to which you installed porter
+    $PKG_HOME -- the directory to which you installed porter
     prtrsrvr -- example porter server hostname
     namesrvr -- example named server hostname
 
@@ -138,12 +138,12 @@
 
         Porter expects that httpd will do the actual routing of http requests
         to the appropriate backend server. The two interface via a dbm file at
-        $PORTER/var/rewrite.db, which maps domain name to server:port. The
+        $PKG_HOME/var/rewrite.db, which maps domain name to server:port. The
         intention is that this file be used in a dbm RewriteMap[2], e.g.:
 
             <VirtualHost *>
                 RewriteEngine On
-                RewriteMap  PorterMap dbm:$PORTER/var/rewrite.db
+                RewriteMap  PorterMap dbm:$PKG_HOME/var/rewrite.db
                 RewriteRule ^/(.*) http://${PorterMap:%{HTTP_HOST}}/$1 [L,P]
             </VirtualHost>
 
@@ -154,7 +154,7 @@
         other configuration. This shared information is expected to be in a zone
         file at namesrvr:/etc/namedb/porter.zone. The domains themselves are
         expected to be registered in namesrvr:/etc/namedb/named.conf. Porter
-        manages a named.conf fragment at $PORTER/var/named.conf.frag. It is left
+        manages a named.conf fragment at $PKG_HOME/var/named.conf.frag. It is left
         as an excercise for the implementor to append or otherwise incorporate
         this fragment into named.conf.
 
