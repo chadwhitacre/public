@@ -120,6 +120,8 @@ class ZopeManager:
         #    update_vhosts({zs_name:zope['port']},www=1)
 
     def _zope_delete(self, zope):
+        if self.production_mode:
+            raise CheezeError, 'Cannot delete instances in production mode'
         """ given an instance name, delete a zope """
         top = join(self.instance_root, zope)
         #raise 'top', top
