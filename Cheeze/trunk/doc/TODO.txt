@@ -22,3 +22,7 @@ DONE
 
 validate add/edit (make sure paths exist!)
 
+get skel working
+
+get replacements working
+

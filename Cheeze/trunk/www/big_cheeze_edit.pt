@@ -33,7 +33,6 @@
             <td><input name="zope.name:record" type="text"/></td>
             <td><select name="zope.skel:record"
                         tal:condition="availaskel">
-                    <option value="">CHOOSE A SKEL</option>
                     <option tal:repeat="skel availaskel"
                             tal:attributes="value skel"
                             tal:content="skel" />
@@ -42,9 +41,10 @@
                     <input type="hidden" name="zope.skel:record" value="" />
                     &nbsp;
                 </tal:x>
-                <tal:x condition="python:skel_root and not availaskel">(No skel available)</tal:x>
+                <tal:x condition="python:skel_root and not availaskel">
                     <input type="hidden" name="zope.skel:record" value="" />
-                    &nbsp;
+                    (No skel available)
+                </tal:x>
             </td>
             <td><select name="zope.port:record"
                         tal:condition="context/vhosting">
@@ -71,7 +71,7 @@
             </td>
             <td class="action">
                 <a tal:attributes="href python:'delete_vhost?vhostname=%s%s.zetaserver.com'%(zope,zope)">
-                    <img style="border:none;" src="delete.gif" />
+                    <img style="border:none;" src="big_cheeze_delete" />
                 </a>
             </td>
         </tr>
