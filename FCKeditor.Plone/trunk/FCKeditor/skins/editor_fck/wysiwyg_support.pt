@@ -20,15 +20,16 @@
    <script type="text/javascript" src="" tal:attributes="src string:${portal_url}/fckeditor.js">
    </script>
 
-   <script type="text/javascript" tal:content="structure string: 
+   <script type="text/javascript" tal:content="structure string:
 &lt;!--
-var oFCKeditor=new FCKeditor('${inputname}'); 
-oFCKeditor.BasePath='${request/URLPATH2}/'; 
+var oFCKeditor=new FCKeditor('${inputname}');
+oFCKeditor.Config['CustomConfigurationsPath'] = '/fckcustom.js'
+oFCKeditor.BasePath='${request/URLPATH2}/';
 oFCKeditor.Value='${cleaninput}';
-oFCKeditor.ToolbarSet='ZopeCmf'; 
-oFCKeditor.Width=780; 
+oFCKeditor.ToolbarSet='ZopeCmf';
+oFCKeditor.Width=780;
 oFCKeditor.Height=600;
-oFCKeditor.Create(); 
+oFCKeditor.Create();
 --&gt;
 ">
      The FCK Editor Script
@@ -58,8 +59,8 @@ oFCKeditor.Create();
  <tal:block tal:define="wysiwyg python: here.portal_membership.getAuthenticatedMember().getProperty('wysiwyg_editor')!='None'">
 
   <tal:block condition="wysiwyg">
-        <input type="hidden" 
-               name="text_format" 
+        <input type="hidden"
+               name="text_format"
                value="html" id="Hidden1"/>
   </tal:block>
 
@@ -68,8 +69,8 @@ oFCKeditor.Create();
       <div class="label">
          <span i18n:translate="label_format">Format</span>
          <div id="format_help"
-              i18n:translate="help_format" 
-              class="help" 
+              i18n:translate="help_format"
+              class="help"
               style="visibility:hidden">
            Select which format you want to type the contents of this
            document in. If you are unsure of which format to use, just
@@ -79,43 +80,43 @@ oFCKeditor.Create();
       </div>
       <div class="field"
            tal:define="tabindex tabindex/next;
-                       text_format python:request.get('text_format', getattr(here,'text_format','structured-text'))">    
-        <input class="noborder" 
-               type="radio" 
+                       text_format python:request.get('text_format', getattr(here,'text_format','structured-text'))">
+        <input class="noborder"
+               type="radio"
                name="text_format"
-               value="structured-text" 
+               value="structured-text"
                tabindex=""
                id="cb_structuredtext"
-               onfocus="formtooltip('format_help',1)" 
-               onblur="formtooltip('format_help',0)" 
+               onfocus="formtooltip('format_help',1)"
+               onblur="formtooltip('format_help',0)"
                tal:attributes="checked python:test(text_format=='structured-text', 1, '');
-                               tabindex tabindex;" 
+                               tabindex tabindex;"
                />
         <label for="cb_structuredtext" i18n:translate="structured_text">Structured Text</label> <br />
 
-        <input class="noborder" 
-               type="radio" 
-               name="text_format" 
-               value="html" 
+        <input class="noborder"
+               type="radio"
+               name="text_format"
+               value="html"
                tabindex=""
                id="cb_html"
                tal:attributes="checked python:test(text_format=='html', 1, '');
-                               tabindex tabindex;" 
-               onfocus="formtooltip('format_help',1)" 
-               onblur="formtooltip('format_help',0)" 
-               />    
+                               tabindex tabindex;"
+               onfocus="formtooltip('format_help',1)"
+               onblur="formtooltip('format_help',0)"
+               />
         <label for="cb_html" i18n:translate="html">HTML</label> <br />
 
-        <input class="noborder" 
-               type="radio" 
+        <input class="noborder"
+               type="radio"
                name="text_format"
-               value="plain" 
+               value="plain"
                tabindex=""
                id="cb_plain"
                tal:attributes="checked python:test(text_format=='plain', 1, '');
-                               tabindex tabindex;" 
-               onfocus="formtooltip('format_help',1)" 
-               onblur="formtooltip('format_help',0)" 
+                               tabindex tabindex;"
+               onfocus="formtooltip('format_help',1)"
+               onblur="formtooltip('format_help',0)"
                />
         <label for="cb_plain" i18n:translate="plain_text">Plain Text</label>
       </div>

@@ -21,15 +21,16 @@
    <script type="text/javascript" src="" tal:attributes="src string:${portal_url}/fckeditor.js">
    </script>
 
-   <script type="text/javascript" tal:content="structure string: 
+   <script type="text/javascript" tal:content="structure string:
 &lt;!--
-var oFCKeditor=new FCKeditor('${inputname}'); 
-oFCKeditor.BasePath='${request/URLPATH2}/'; 
+var oFCKeditor=new FCKeditor('${inputname}');
+oFCKeditor.Config['CustomConfigurationsPath'] = '/fckcustom.js'
+oFCKeditor.BasePath='${request/URLPATH2}/';
 oFCKeditor.Value='${cleaninput}';
 oFCKeditor.ToolbarSet='SmallZopeCmf';
-oFCKeditor.Width=650; 
+oFCKeditor.Width=650;
 oFCKeditor.Height=200;
-oFCKeditor.Create(); 
+oFCKeditor.Create();
 --&gt;
 ">
      The FCK Editor Script
