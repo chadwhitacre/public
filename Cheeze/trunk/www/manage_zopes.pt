@@ -13,7 +13,7 @@
     tal:replace="structure context/manage_tabs">Tabs</h2>
 <div class="padding">
 
-<p>Need help? Please read the <a href="manage_doc">documentation</a>.</p>
+<p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
 
 <table id="table" tal:define="zope_ids context/zope_ids_list">
     <thead>
@@ -57,7 +57,7 @@
                        tal:condition="not:context/vhosting" />
             </td>
             <td colspan="2" class="action">
-                <input type="submit" value="create" />
+                <input type="submit" value="add" />
             </td>
         </form>
         </tr>

@@ -17,26 +17,33 @@
 
 <div id="doc">
 
-    <h1>Cheeze</h1>
+    <h1>Cheeze Documentation</h1>
+    <div id="motto">
+        >>> Cheeze.explain()<br />
+        'Cheap Zopes :-)'<br />
+        >>> <blink>_</blink>
+    </div>
 
-
-    <a name="toc"></a>
+    <a name="toc_jump"></a>
     <h2>Table of Contents</h2>
 
     <ul>
         <li><a href="#intro">Intro</a></li>
         <li><a href="#zopes">Zopes</a></li>
         <li><a href="#domains">Domains</a></li>
+        <li><a href="#config">Configuration</a></li>
     </ul>
 
     <a name="intro"></a>
-    <h2>Intro</h2>
-    <div class="toc">[ <a href="#toc">toc</a> ]</div>
+    <h2>
+        <span class="toc_jump">[ <a href="#toc_jump">toc</a> ]</span>
+        Intro
+    </h2>
 
     <p>Cheap Zope instances are the foundation of efficient Zope hosting, both
     for development and production environments. Cheeze makes cheap Zopes a
-    reality by providing TTW Zope instance management tools. 'Cheeze' stands for
-    'Cheap Zope'.</p>
+    reality by providing TTW tools for making Zopes and paving roads to
+    them.</p>
 
     <p>Using a Big Cheeze object, you can manage the following TTW:</p>
 
@@ -48,12 +55,13 @@
 
 
     <a name="zopes"></a>
-    <h2>Zopes</h2>
-    <div class="toc">[ <a href="#toc">toc</a> ]</div>
-
+    <h2>
+        <span class="toc_jump">[ <a href="#toc_jump">toc</a> ]</span>
+        Zopes
+    </h2>
     <p>There are two kinds of forms on the <a href="manage_zopes">Zopes</a>
     tab: a form for adding new Zopes, and multiple forms for editing them.
-    There are a couple gotchas wrt port numbers.</p>
+    There are a couple gotchas with regard to port numbers.</p>
 
     <div class="screenshot">
         <span class="screenshot-label">Screenshot: Zopes table</span>
@@ -96,10 +104,85 @@
 
 
     <a name="domains"></a>
-    <h2>Domains</h2>
-    <div class="toc">[ <a href="#toc">toc</a> ]</div>
+    <h2>
+        <span class="toc_jump">[ <a href="#toc_jump">toc</a> ]</span>
+        Domains
+    </h2>
 
-    <p>[Domain doc will go here.]</p>
+    <p>The <a href="manage_domains">Domains</a> tab allows you to do the
+    following:</p>
+
+    <ul>
+
+        <li>All domains entered on this page are entered in the server's
+        DNS. It is assumed that the DNS file you point to in properties is
+        being propagated out to the Net.</li>
+
+        <li>You can map domain names to Zopes.</li>
+
+        <li>Domains that point at the same Zope are considered aliases; these
+        are noted on this page for convenience.</li>
+
+        <li>Delete always removes the domain from both DNS and Apache</li>
+
+        <li>Domains that don't point to a Zope are "parked"</li>
+
+    </ul>
+
+
+    <a name="config"></a>
+    <h2>
+        <span class="toc_jump">[ <a href="#toc_jump">toc</a> ]</span>
+        Configuration
+    </h2>
+
+    <p>Big Cheeze objects have four properties, which are all optional.
+    Functionality is gracefully degraded if a given property is left blank. This
+    allows Cheeze to be used in a variety of hosting situations.</p>
+
+    <p> Additionally, it is possible to configure the module as a whole to use
+    either a predefined set of port numbers or arbitrary integers.</p>
+
+
+    <h3>instance_root</h3>
+
+    <p>This is the path to the directory where your instances are housed. If it
+    is present, then the Zopes tab will have create/delete functionality. It is
+    up to you to make sure that the directory only contains Zope instances.</p>
+
+
+    <h3>skel_root</h3>
+
+    <p>This is the path to the directory where your skel reside. If present, and
+    the directory is not empty, then the add form on the Zopes tab will
+    include a skel dropdown and a 'Port' column. It is up to you to make
+    sure that the directory only contains Zope skel.</p>
+
+
+    <h3>vhost_db</h3>
+
+    <p>This is the path to your Apache vhost dbm. If this property points to a
+    valid dbm file, then you will be able to use the Domains tab, and the 'Port'
+    column on the Zopes tab will display select boxes. If not present, then the
+    Zopes tab will show text boxes in the 'Port' column. If neither this
+    property nor <b>dns_file</b> are present, then the Domains tab will be
+    blank.</p>
+
+
+    <h3>dns_file</h3>
+
+    <p>This is the path to your DNS file. If present, then changes on the
+    Domains tab will propogate to this file. If neither this property nor
+    <b>vhost_db</b> are present, then the Domains tab will be blank.</p>
+
+
+    <h3>port_numbers.py</h3>
+
+    <p>There is a script called port_numbers.py included in the package which
+    provides a 'CONSTRAIN_PORT_NUMBERS' constant, and a function called
+    '_ports_list_acceptable' that is intended to return a list of acceptable
+    ports to be used if CONSTRAIN_PORT_NUMBERS is true. If this value is false
+    then you will be able to enter any integer for port numbers.</p>
 
 </div>
 </div>

@@ -26,6 +26,12 @@ zopes
     How cool would it be to query the zope socket or lock or pid or whatever to
     see if each zope is actually running? Then start, stop, restart ...
 
+domains
+
+    figure out what is going on here
+
+    hide tab if there is no
+
 LittleCheeze.py -- obj to park in client Zopes to feed info to Big Cheeze
 
 
