@@ -21,6 +21,9 @@ Medium Priority (needed to make the project solid and polished)
     interfaces/
 
 
+Low Priority (version 2)
+
+    Little Cheeze -- object to feed info from slave instances to master
 
 
 
