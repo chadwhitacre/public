@@ -1,6 +1,7 @@
 0.2
 =======================
 we don't actually handle DNS for tesm.edu -- does it matter if we still have a record for them?
+be sure we work with weird paths, e.g., coming from cron
 
 
 0.4
@@ -9,7 +10,7 @@ deal with orphans -- we have a domain record but there is no server (API may sol
 only work with lowercase domain names
 tab complete available servers (from etc/hosts) and ports (from rpc to servers)
 build in fault-tolerance, no more proxy errors! put in a default "parked" page for orphans, from porter's Apache!
-be sure we work with weird paths, e.g., coming from cron
+figure out how to deal with SSL, since we need it for svn
 
 
 future
