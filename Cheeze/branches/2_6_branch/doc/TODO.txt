@@ -1,0 +1,107 @@
+Steve's todo
+------------------------------
+
+
+Medium Priority (needed to make the project solid and polished)
+
+    parked pages for domains without instances, using master instance
+
+    update all of chad's copious documentation :-)
+
+    confirm security settings
+
+    stop and restart instances TTW
+
+    stop and restart instances when we edit them
+
+    instance delete/decommission settingv
+
+    tests/
+
+    interfaces/
+
+
+Low Priority (version 2)
+
+    Little Cheeze -- object to feed info from slave instances to master
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TODO
+
+finish Domains tab for tonight
+
+move all websites into their own zope on gilbert
+
+refactor tesm and gdenet
+
+proceed
+
+
+
+
+dns would stick a domain name in our dns server and map the domain's ip to our
+jail's
+
+apache takes the domain request and maps it to a certain zope instance via
+ports
+
+zopes
+
+    implement ackawi8080 as instance name
+
+    implement zope_edit
+
+    grey out port when |stock| is skelected
+
+    put inituser in skel?
+
+    implement edit (to rename we have to change instance_home in 4 bin/ scripts
+    + zope.conf)
+
+    implement filter/batch
+
+    link instance name to instance page if Little Cheeze is present
+
+    How cool would it be to query the zope socket or lock or pid or whatever to
+    see if each zope is actually running? Then start, stop, restart ...
+
+domains
+
+    figure out what is going on here
+
+    hide tab if there is no
+
+LittleCheeze.py -- obj to park in client Zopes to feed info to Big Cheeze
+
+
+
+Notes:
+
+  - "decommission" (take out of vhosting) will act as a protection against
+  accidental deletion once it is in place.
+
+  - We may want to make delete impossible on production servers. (i.e., have
+  two 'modes' for Big Cheeze -- production, dev)
+
+  - You can have multiple Big Cheezes pointing to different instance
+  roots. Heck, you can even point them at same root :)
+
+  - No tests, and interface is out of sync
+
+  - list_zopes and list_skel are dumb! They just list the directories in
+  instance_root and skel_root, regardless of whether those directories will
+  actually function as zopes or skel.
+
+  - I've been using "skel" as the plural of "skel" prolly dumb but it's late ;)
