@@ -1,0 +1,10 @@
+# cd /usr/local/lib/python2.4/site-packages
+# sudo svn co https://svn.zetadev.com/repos/public/porter/trunk porter
+# cd /usr/local/bin
+# vi porter
+
+#!/bin/sh
+/usr/local/lib/python2.4/site-packages/porter/porter.py
+
+# sudo chmod 755 porter
+# sudo porter

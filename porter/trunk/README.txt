@@ -64,6 +64,24 @@
     python?) Should include: available ports, current websites
 
 
+========================================
+    USAGE
+========================================
+
+    1) install Apache on a jail (clive)
+
+    2) setup mod_rewrite there (just add those two lines to conf)
+
+    3) install Zope or whatever on another jail (george:8080)
+
+    4) clive> vim /etc/hosts
+       192.168.1.x  george
+
+    5) clive> porter
+       porter> add example.com george 8080
+
+    6) http://example.com/ should hit clive and give you george
+
 
 
 ========================================
