@@ -13,7 +13,6 @@ figure out how to deal with SSL, since we need it for svn
 
 future
 =======================
-inline help
 install properly with distutils
 non-interactive mode
 log ourselves
@@ -46,3 +45,4 @@ fix paths for testing framework
 still getting double-up bug :/
 separate svn-managed porter from content (var/, htdocs/, cgi-bin/)
 named.conf.frag -> named.porter.conf
+inline help

@@ -101,12 +101,38 @@ class Porter(cmd.Cmd):
 #  Porter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
 #-------------------------------------------------------------------#
 
-You are currently managing %s domains.
+You are currently managing %s domains. Type ? for help.
         """ % len(self.domains)
         self.prompt = 'porter> '
 
+    ##
+    # Help
+    ##
 
+    def do_help(self, bar=""):
 
+        if bar:
+            cmd.Cmd.do_help(self, bar)
+
+        else:
+            print >> self.stdout, """\
+
+Porter is a piece of software for managing the interface between the public
+Internet and a server cluster set up according to the Cambridge distributed http
+server architecture. For more on Cambridge ... um, talk to Chad. ;^)
+
+Commands available:
+
+    ls -- list available domains.
+          OPTIONS: -l/--long, -i/-info, -r/--raw
+
+    mk -- register a domain with Porter.
+          ARGS: domain server port, e.g.: example.com srvrname 8080
+          ALIASES: add, mv. mv adds tab-completion for domain names
+
+    rm -- unregister a domain, includes tab completion of domains
+          ARGS: domain1 domain2 domain3 (i.e., handles multiple domains)
+            """
 
     ##
     # Completes
