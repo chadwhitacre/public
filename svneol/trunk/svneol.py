@@ -8,12 +8,12 @@ from glob import glob
 from sets import Set
 from ConfigParser import RawConfigParser
 
-__version__ = '0.9'
-
 
 class EOLToolkit:
     """toolkit for cleaning up line endings in a tree
     """
+
+    __version__ = '0.9'
 
     def __init__(self):
         pass
@@ -28,6 +28,8 @@ class EOLToolkit:
         """
 
         config = RawConfigParser()
+        config.optionxform = lambda x: x # stock parser is case-insensitive
+
         config.read(os.path.expanduser('~/.subversion/config'))
         if not config.has_section('auto-props'):
             print 'your subversion config file has no auto-props section'
