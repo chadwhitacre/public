@@ -1,3 +1,10 @@
+# ----------------------------------------------------------------------------
+# "THE BEER-WARE LICENSE":
+# <chad@zetaweb.com> wrote this file. As long as you retain this notice you
+# can do whatever you want with this stuff. If we meet some day, and you think
+# this stuff is worth it, you can buy me a beer in return. --Chad Whitacre
+# ----------------------------------------------------------------------------
+
 import os
 from ConfigParser import SafeConfigParser as ConfigParser
 import re
@@ -15,23 +22,6 @@ class Kraken:
     >>> from Kraken import Kraken
     >>> k = Kraken()
     >>> k.release()
-
-    The beauty of using IMAP for mailing list/discussion mgmt is the plugability
-    and the flexibility. I can login w/ Thunderbird or a TTW client and manage
-    the archives and sift through the trash. Will it scale? I expect so.
-
-    TODO
-
-        - Protect against 'auto-away' messages!!!
-
-        - consider batch processing server interactions instead of hitting the
-          server once per message
-
-        - better logging
-
-        - TTW user mgmt
-
-        - use SSL/TSL
 
     """
 
