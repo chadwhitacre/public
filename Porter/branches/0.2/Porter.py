@@ -39,7 +39,7 @@ class Porter(cmd.Cmd):
 
         self.intro = """
 #------------------------------------------------------------------------#
-#  Porter v0.1 (c)2004-%s Zeta Design & Development <www.zetaweb.com>  #
+#  Porter v0.2 (c)2004-%s Zeta Design & Development <www.zetaweb.com>  #
 #------------------------------------------------------------------------#
 
 You are currently managing %s %s. Type ? for help.
