@@ -16,7 +16,7 @@ Contents:
 To install:
 
     % cd ~
-    % svn export https://svn.zetadev.com/private/utils/jrc/trunk/ jrc
+    % svn export http://svn.zetadev.com/public/jrc/trunk/ jrc
     % cd jrc
     % make install
 
