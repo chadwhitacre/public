@@ -1,18 +1,106 @@
+CHEEZE
+
+    'Cheeze' stands for 'Cheap Zope'.
+
+
 INTRO
 
-Cheap Zope instances are the foundation of efficient Zope hosting, both for
-development and production environments. Cheeze makes cheap Zopes a reality by
-providing TTW Zope instance management tools. 'Cheeze' stands for 'Cheap
-Zope'.
+    Cheap Zope instances are the foundation of efficient Zope hosting, both for
+    development and production environments. Cheeze makes cheap zopes a reality
+    by providing TTW Zope instance management tools. Using Cheeze, you can
+    create, update, and delete (crud) zopes across multiple servers, and you can
+    pave roads to your zopes using mod_rewrite and etc/hosts -- all from within
+    the ZMI. Furthermore, functionality degrades gracefully based on your
+    configuration. Cheeze is therefore very flexible, and can be used to set up
+    a variety of Zope hosting environments.
 
-Using a Big Cheeze object, you can manage the following TTW:
 
-    - Zope instances
 
-    - DNS
+DESIGN
 
-    - virtual hosting with Apache
+    - three levels of abstraction: servers, zopes, and websites
 
+    - master/slave configuration
+
+    - master level:
+
+        - services: firewall, DNS, caching, https, rewriting (mapping domain
+        name to IP:port)
+
+        - tools: ipfw, BIND, etc/hosts, Apache (mod_rewrite, mod_proxy, mod_ssl)
+        Squid, Squirm, IIS?
+
+    - At the master level, there are many tools available to provide the needed
+    services. The Cheeze user interface should be unchanged or at least
+    consistent for different back-end tools.
+
+    - slave level: individual Zope instances, vhosting w/in zopes
+
+        - services: http, cheeze
+
+        - tools: ZServer, Cheeze
+
+
+
+ROADMAP
+
+    Version 0.6
+
+        - crud zopes for local server
+
+        - manage DNS using etc/hosts
+
+        - manage rewrites using mod_rewrite
+
+
+
+    Version 0.8
+
+        - dynamic population of Servers tab
+
+
+
+    Version 1.0
+
+        - manage DNS using BIND
+
+
+
+    Version 1.2
+
+        - crud zopes for remote servers via RPC
+
+
+
+    Future Versions
+
+        - ldap
+
+        - manage https using mod_ssl
+
+        - manage caching using mod_proxy
+
+        - manage rewrites using Squirm
+
+        - manage caching using Squid
+
+        - IIS for backend?
+
+
+
+
+
+GLOSSARY
+
+    server (pl. servers)
+
+    zope (pl. zopes)
+
+    Zope (pl. Zopes)
+
+    skel (pl. skel)
+
+    Cheeze (pl. Cheezen)
 
 
 INSTALLATION
