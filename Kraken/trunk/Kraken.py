@@ -16,34 +16,35 @@ class Kraken:
     it forwards the message along to the rest of the list. Otherwise it moves
     the message to the trash. Usage:
 
+    >>> from Kraken import Kraken
+    >>> k = Kraken()
+    #>>> k.release()
+
+    And here is a test of our re that should really go in the docstring of a
+    factored-out function
+
     >>> FROM = 'From: Chad Whitacre <douglas.wicker@pncyeah.com>'
-    >>> pattern = r'From:.* <?(.*@.*\..*)>?$'
+    >>> pattern = r'From:.* <?(.*@.*\.[A-Za-z]*)>?'
     >>> from_addr = re.search(pattern, FROM).group(1)
     >>> print from_addr
     douglas.wicker@pncyeah.com
 
-    #>>> from Kraken import Kraken
-    #>>> k = Kraken()
-    #>>> k.release()
-
     """
 
-    def __init__(self, root='.'):
+    def __init__(self, lair='.'):
         """ read in config info """
 
-        conf_path = join(root,'conf/kraken.conf')
-        send_path = join(root,'conf/send_to.conf')
-        from_path = join(root,'conf/also_accept_from.conf')
+        # all directories are assumed to be mailing lists
+        lists = [o for o in os.listdir(lair)
+                    if os.path.isdir(o) and
+                       not o.startswith('.') and
+                       not o == 'example']
 
-        cp = ConfigParser()
-        cp.read(conf_path)
-        self.imap = dict(cp.items('imap'))
-        self.smtp = dict(cp.items('smtp'))
-        self.list_addr = cp.get('default', 'list_addr')
+        for l in lists:
+            # create an object representing the list config
 
-        self.send_to = self.addrs(send_path)
-        self.accept_from = self.send_to + \
-                           self.addrs(from_path)
+
+
 
 
     def addrs(self, fn):
@@ -84,7 +85,7 @@ class Kraken:
 
         else:
 
-            i_good = i_bad = 0
+            i_good = i_bad = 0 # track what we do for the 'log' message
 
             for num in msg_nums:
 
