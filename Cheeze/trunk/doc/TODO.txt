@@ -6,20 +6,18 @@ jail's
 apache takes the domain request and maps it to a certain zope instance via
 ports
 
+zopes
 
-add edit tab that is basically zopes.pt (domains.pt will be in another product!)
+    manage_zopes/style_zopes
 
-    general design diff between zope and us: paradigm in which you can delete
-    multiple obj at once, or the one in which you can delete one at once
+    refactor <<HTTP_PORT>>
 
-    we need to do work on the forms. it may not work to have it in a table row
-    :(  cause we need to get username:password somehow, as well as skel and
-    port. forms also need validation (password, confirm; constrain Zope names
-    to acceptable Zope ids, etc.) -- thinking about putting inituser in skel,
-    and continuing to use Zope error handling for validation.
+    implement port_get
 
-    implement rename (only have to change instance_home in 5 files [4 bin/
-    scripts + zope.conf])
+    put inituser in skel?
+
+    implement edit (to rename we have to change instance_home in 4 bin/ scripts
+    + zope.conf)
 
     implement filter/batch
 
@@ -29,16 +27,3 @@ add edit tab that is basically zopes.pt (domains.pt will be in another product!)
     see if each zope is actually running? Then start, stop, restart ...
 
 LittleCheeze.py -- obj to park in client Zopes to feed info to Big Cheeze
-
-
-
-
-DONE
-
-validate add/edit (make sure paths exist!)
-
-get skel working
-
-get replacements working
-
-fix delete.gif
