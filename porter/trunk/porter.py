@@ -5,7 +5,7 @@ from Porter import Porter, PorterError
 from ConfigParser import RawConfigParser
 
 def main():
-    c = Porter(rewrite_db_path="var/rewrite")
+    c = Porter(var="var")
     try:
         c.cmdloop()
     except KeyboardInterrupt:
