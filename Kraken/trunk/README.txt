@@ -20,14 +20,18 @@ Here's how to install Kraken:
 
     1. checkout or export the Kraken module from zeta svn
 
-    2. in the conf/ directory, cp the example files and remove the .example
+    2. in the conf/ directory, cp the example files, removing the .example
        extension
 
     3. customize the conf files (instructions in-line)
 
-    4. use release_the_kraken.py to, well, release the Kraken ;-)
+    4. cp release_the_kraken.py.example to release_the_kraken.py
 
-    5. when your setup is working, add release_the_kraken.py to your crontab
+    5. set the Kraken lair in release_the_kraken.py
+
+    6. use release_the_kraken.py to, well, release the Kraken ;-)
+
+    7. when your setup is working, add release_the_kraken.py to your crontab
 
 
 
