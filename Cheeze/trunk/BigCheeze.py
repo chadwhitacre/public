@@ -11,39 +11,48 @@ from AccessControl import ClassSecurityInfo
 from Acquisition import Implicit
 from Globals import Persistent
 from AccessControl.Role import RoleManager
+from OFS.PropertyManager import PropertyManager
 from OFS.SimpleItem import Item
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
 
-class BigCheeze(Implicit, Persistent, RoleManager, Item):
+class BigCheeze(Implicit, Persistent, \
+                RoleManager, PropertyManager, Item,):
 
     __implements__ = IBigCheeze
 
     security = ClassSecurityInfo()
 
-    id = 'Cheese'
-    title = 'Centrally manage many zope instances'
+    id = 'Cheeze'
+    title = 'Centralized instance management'
     meta_type= 'Big Cheeze'
     
+    manage_options = (
+        {'label':'Edit', 'action':'big_cheeze_edit_form',
+         'help': ('Cheeze', 'Big_Cheeze_Edit.stx')},
+        ) + PropertyManager.manage_options \
+        + RoleManager.manage_options \
+        + Item.manage_options
+
     _properties=(
         {'id'   :'instance_root',
          'type' :'string',
          'value':'',
+         'mode': 'w',
          },
         {'id'   :'skel_root',
          'type' :'string',
          'value':'',
+         'mode': 'w',
          },
                 )
 
-    def __init__(self, **kw):
-        if kw:
-            self.__dict__.update(**kw)
-        if not self.__dict__.has_key('instance_root'):
-            self.__dict__['instance_root'] = self.instance_root
-        if not self.__dict__.has_key('skel_root'):
-            self.__dict__['skel_root'] = self.skel_root
+    def __init__(self, id, instance_root='', skel_root=''):
+        self.id = str(id)
+        self.instance_root = str(instance_root)
+        self.skel_root = str(skel_root)
+        
 
     ##
     # vhost wrappers
@@ -152,9 +161,18 @@ class BigCheeze(Implicit, Persistent, RoleManager, Item):
 manage_addBigCheezeForm = PageTemplateFile(
     'www/big_cheeze_add.pt', globals(), __name__='manage_addBigCheezeForm')
 
-def manage_addBigCheeze(self, id, title=None, text=None,
-                           REQUEST=None, submit=None):
-    pass
+def manage_addBigCheeze(self, id, instance_root='', skel_root='', REQUEST=None):
+    """ """
+    self._setObject(id, BigCheeze(id, instance_root, skel_root))
+
+    # prolly should check to see if the instance and skel roots exist
+    # and return an error if they don't
+
+    if REQUEST is not None:
+        return self.manage_main(self, REQUEST, update_menu=1)
+    
+    
+    
 
 def initialize(context):
     context.registerClass(
