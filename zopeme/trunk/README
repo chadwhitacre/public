@@ -2,6 +2,8 @@
 This program is beerware. If you like it, buy me a beer someday.
 No warranty is expressed or implied.
 
+zopeme -- create a ZEO-configured Zope instance
+
 Contents:
 
     Makefile    installation instructions
