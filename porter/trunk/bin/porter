@@ -1,0 +1,5 @@
+#!/bin/sh
+# change the path below to point to your porter installation
+#  then put this file somewhere on your path (e.g. /usr/local/bin)
+#  and chmod 755 both bin/porter and porter/start.py
+<</usr/local/lib/python2.4/site-packages>>/porter/start.py
