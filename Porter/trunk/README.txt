@@ -45,7 +45,7 @@
     understanding what Porter is about, but given that Cambridge's namesake is
     Cambridge University, the second definition is the most apt.
 
-    TODO: For more on Cambridge, see http://cambridge.zetaweb.com/
+    TODO: For more on Cambridge, see http://cambridge.zetaweb.com/ <- doesn't exist yet
 
 
 
@@ -77,8 +77,6 @@
 
         - Apache 1.3.33
 
-        - BIND 8.3.7-REL
-
         - FreeBSD 4.10-RELEASE
 
     Your mileage with others will vary.
@@ -95,12 +93,11 @@
     $INSTANCE_HOME -- the directory which contains all of your installation-
                       specific porter data and config
     prtrsrvr -- example porter server hostname
-    namesrvr -- example named server hostname (stands for 2 actual nameservers)
 
 
     1) Install Porter[1].
 
-        a. Get Porter from svn and put it in your Python's site-packages.
+        a. Get Porter and put it in your Python's site-packages.
 
         b. Create a directory to house your data and configuration (e.g.,
         /usr/local/porter). This is $INSTANCE_HOME. Porter requires that
@@ -111,27 +108,10 @@
         c. Follow the instructions in $PKG_HOME/bin/porter to install the
         executable.
 
-        d. Porter expects to be able to write files to /home/gremlin.
-
 
     2) Install and configure Apache.
 
         See APACHE.txt.
-
-
-    3) Install and configure BIND.
-
-        Porter assumes that all domains will share the same SOA, MX records, and
-        other configuration. This shared information is expected to be in a zone
-        file at namesrvr:/etc/namedb/porter.zone. Whenever a domain mapping is
-        changed in Porter, the program outputs two named.conf fragments:
-
-            /home/gremlin/named.porter.master.conf
-
-            /home/gremlin/named.porter.slave.conf
-
-        These files are expected to be picked up, transferred to the master and
-        slave name servers respectively, and included in /etc/namedb/named.conf.
 
 
     Set up a website
@@ -151,23 +131,23 @@
     Configure a domain
     ----------------------------------------
 
-    5) Register a domain at the registrar of your choice, and set your DNS
-    servers to namesrvr.
+    5) Register a domain at the registrar of your choice, and point your DNS
+    servers to prtrsrvr.
 
     6) Register your domain name with Porter:
 
         prtrsrvr# sudo porter
         porter> add example.com websrvr 8080
 
-    7) Once DNS propagates, http://example.com/ should hit prtrsrvr (thanks to
-    our named mgmt), which should give you your website from websrvr (thanks to
-    our httpd mgmt).
+    7) Once DNS propagates, your website should be proxied from websrvr through
+    Apache on prtrsrvr.
 
     Note that Porter automatically configures an additional www subdomain for
     each domain you register with it. So when you add example.com,
     www.example.com is added as well. If you added sub1.example.com, Porter
-    would also add www.sub1.example.com. Directly adding a www subdomain in
-    Porter is an error.
+    would also add www.sub1.example.com. We assume that the www subdomain should
+    always point to the same domain, and therefore directly adding a www
+    subdomain in Porter is an error.
 
     Further usage documentation is provided inline.
 

@@ -2,9 +2,10 @@
 =======================
 
 
-
 0.4
 =======================
+should we wrap Binder and Porter into one package, Cambridge?
+    Fellow won't be on the same server, so we at least want that in a separate package
 ls arg should affect all ls modes
 ^C should cancel the command if there is one, or exit the program otherwise
 porter> named # manually flush current settings to named frags
@@ -73,3 +74,11 @@ grace -> gremlin
 output slave and master named.conf files
 named frags go to /home/gremlin
 don't keep backups of named.conf files
+tease named mgmt out into a separate program called "Binder"
+    so that we can have domains in DNS that don't point anywhere w/in zetaserver
+    in other words, we negate the benefit of our "parked page" by dictating that all domains be explicitly registered in Porter
+    also, separating the two would solve the TESM dilemma
+tease named mgmt out into a separate program called "Binder"
+    update README
+    update tests
+    update program itself

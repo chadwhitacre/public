@@ -1,40 +1,14 @@
 """
 
-Porter is our Cmd app that manages rewrite.db and our named.conf files:
-
-    rewrite.db -- {'domain':'server:port'}
-
-    named.porter.master.conf -- fragment to be included in named.conf, records
-    are of the form:
-
-        zone "example.com" {
-                type master;
-                file "porter.zone";
-        };
-
-    named.porter.slave.conf -- fragment to be included in named.conf, records
-    are of the form:
-
-        zone "example.com" {
-                type slave;
-                file "porter.zone";
-        };
-
-    The good news here is that all we need to replace is example.com. So it
-    really shouldn't be too much overhead to just generate each entire file
-    fragment every time we store to disk. And the rest of the record can be
-    hard-coded, so we run very little chance of screwing this up. ;^)
-
-On program initialization, we read data in from rewrite.db into an internal
-data structure, and we generate an index that we use to present aliases for
-convenience. Then whenever we do one of [mk, rm] we want to save these changes
-to the db and regenerate our named.conf fragments.
+Porter is our Cmd app that manages rewrite.db. On program initialization, we
+read data in from rewrite.db into an internal data structure, and we generate an
+index that we use to present aliases for convenience. Then whenever we do one of
+[mk, rm] we want to save our changes to the db.
 
 """
 
-import os, dbm, cmd, shutil, sys
-from os.path import join, abspath, isfile, isabs
-from StringIO import StringIO
+import cmd, datetime, dbm, os, shutil, sys
+from os.path import join
 
 class PorterError(RuntimeError):
     """ error class for porter """
@@ -49,49 +23,27 @@ class Porter(cmd.Cmd):
         INSTANCE_HOME = os.environ.get('INSTANCE_HOME', PKG_HOME)
         self.var = join(INSTANCE_HOME, 'var')
         self.db_path = join(self.var, "rewrite")
-        self.gremlin = '/home/gremlin'
 
-        # read in data from our db, which is a one-to-one mapping of domains
-        #  to websites (website == server:port)
-        db = dbm.open(self.db_path, 'c')
-        domains = dict(db)
-        db.close()
+        # read our data from storage into self.domains
+        #  we also populate the index self.aliases in this method
+        self._read_from_disk()
 
-        # should we do some integrity checking here? i.e., make sure that all
-        # domains have a www counterpart? check for dupes?
-
-        # filter out www's for our users, we will add them back in when we
-        #  write to disk
-        self.domains = {}
-        for domain in domains:
-            if not domain.startswith('www.'):
-                self.domains[domain] = domains[domain]
-
-        # we also keep an index around
-        #  a one-to-many mapping of websites to domains
-        self.aliases = {}
-        for domain in self.domains:
-            website = self.domains[domain]
-            if website in self.aliases:
-                self.aliases[website].append(domain)
-            else:
-                self.aliases[website] = [domain]
-
-        # and let our superclass have its way too
+        # let our superclass have its way too
         cmd.Cmd.__init__(self, *args, **kw)
 
         # ui settings
+        year = datetime.date.today().year
         num = len(self.domains)
         if num == 1: word = 'domain'
         if num <> 1: word = 'domains'
 
         self.intro = """
-#-------------------------------------------------------------------#
-#  Porter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
-#-------------------------------------------------------------------#
+#------------------------------------------------------------------------#
+#  Porter v0.1 (c)2004-%s Zeta Design & Development <www.zetaweb.com>  #
+#------------------------------------------------------------------------#
 
 You are currently managing %s %s. Type ? for help.
-        """ % (num, word)
+        """ % (year, num, word)
         self.prompt = 'porter> '
 
     ##
@@ -282,26 +234,50 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
     # Store
     ##
 
+    def _read_from_disk(self):
+        """ read data in from storage and store it and an index in attrs"""
+
+        # read in data from our db, which is a one-to-one mapping of domains
+        #  to websites (website == server:port)
+        db = dbm.open(self.db_path, 'c') # 'c' means create it if not there
+        rawdata = dict(db)
+        db.close()
+
+        # should we do some integrity checking here? i.e., make sure that all
+        # domains have a www counterpart? check for dupes?
+
+        # filter out www's for our users, we will add them back in when we
+        #  write to disk
+        domains = {}
+        for domain in rawdata:
+            if not domain.startswith('www.'):
+                domains[domain] = rawdata[domain]
+
+        # we also keep an index around
+        #  a one-to-many mapping of websites to domains
+        aliases = {}
+        for domain in domains:
+            website = domains[domain]
+            if website in aliases:
+                aliases[website].append(domain)
+            else:
+                aliases[website] = [domain]
+
+        self.domains = domains.copy()
+        self.aliases = aliases.copy()
+
+
     def _write_to_disk(self):
         """ given that our data is clean, store it to disk """
 
         # create a local copy of self.domains, adding www's back in
-        #  we create separate record structs so that we can sort the one that
-        #  goes to named.porter.conf, thus making testing easier
-        db_records = {}; named_records = []
+        db_records = {}
         for domain in self.domains:
             website = self.domains[domain]
             db_records[domain] = website
             db_records['www.' + domain] = website
-        named_records = db_records.keys()
-        named_records.sort(self._domain_cmp)
 
-
-        ##
-        # db
-        ##
-
-        # first back up the current file
+        # back up the current file
         shutil.copyfile(self.db_path + '.db', self.db_path + '.db.old')
 
         # now write the new one
@@ -309,37 +285,6 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
         for domain in db_records:
             db[domain] = db_records[domain]
         db.close()
-
-
-        ##
-        # named
-        ##
-
-        # generate our 2 named.conf fragments
-        for named_type in ('master','slave'):
-            #  generate the text before actually writing, just to be safe
-            tmp = StringIO()
-            print >> tmp, "\n// begin records generated by porter\n"
-            record="""\
-zone "%s" {
-        type %s;
-        file "porter.zone";
-};\n"""
-            for domain in named_records:
-                print >> tmp, record % (domain, named_type)
-            print >> tmp, "\n// end records generated by porter"
-            named_conf_frag = tmp.getvalue()
-            tmp.close()
-
-            # we could do some integrity checking in here if we wanted to
-            #print named_porter_conf
-
-            # now write it to disk
-            frag_name = "named.porter.%s.conf" % named_type
-            frag_path = join(self.gremlin, frag_name)
-            frag = file(frag_path,'w+')
-            frag.write(named_conf_frag)
-            frag.close()
 
 
     ##
@@ -375,12 +320,13 @@ zone "%s" {
     def do_exit(self, *foo):
         return True
     do_q = do_quit = do_exit
+
     def _domain_cmp(x, y):
         """
 
         Given two domain names, return -1, 0, or 1
 
-        Domains should be at least two places long, i.e, example.com, not example
+        Domain names must be at least two places long, i.e, example.com, not com
 
         first sort on SLD (second level domain)
         then sort on TLD
