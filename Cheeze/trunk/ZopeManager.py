@@ -8,6 +8,15 @@ class ZopeManager:
 
     security = ClassSecurityInfo()
 
+    port_range = ''
+    port_list = []
+
+    def ports_constrain(self):
+        """ return a boolean based on config """
+        return self.port_range or self.port_list
+
+    skel_root = ''
+
     ##
     # info providers - these can be used in mgmt zpt's
     ##
@@ -20,27 +29,31 @@ class ZopeManager:
 
     def zope_ids_list(self):
         """ return a list of available zopes, optionally constrained by regex """
-        regex = self.zopes_filter_get()
+
+        regex = self.filter_get('zopes')
+
         if self.managing_domains():
             pattern = '.zetaserver.com'
             ids = [dname.replace(pattern,'') \
                    for dname, port in self.canonical_names_list() \
                    if dname.count(pattern)]
         else:
-            all_ids = result = os.listdir(self.instance_root)
-            if regex != '':
-                try:
-                    import re
-                    result = []
-                    for zope_id in all_ids:
-                        str_to_search = self._zope_search_str(zope_id)
-                        if re.search(regex, str_to_search) is not None:
-                               result.append(zope_id)
-                except:
-                    import sys
-                    self.zopes_filter_set("regex < %s > has an " % regex \
-                                        + "error: %s" % sys.exc_info()[1])
-            ids = result
+            all_ids = results = os.listdir(self.instance_root)
+
+            if regex not in ['', self.regex_default]:
+                import re
+                results = []
+                for zope_id in all_ids:
+                    str_to_search = self._zope_search_str(zope_id)
+                    try:
+                        found = re.search(regex, str_to_search) != None
+                    except:
+                        import sys
+                        self.filter_set("zopes", "regex < %s > has an " % regex \
+                                               + "error: %s" % sys.exc_info()[1])
+                    if found:
+                        results.append(zope_id)
+            ids = results
         ids.sort()
         return ids
 
@@ -67,10 +80,10 @@ class ZopeManager:
         else:
             return os.listdir(self.skel_root)
 
+
     def ports_list_available(self, include = None):
         """ return a list of available ports,
             including an optional arbitrary port """
-        mode = self._mode
         if include is not None:
             try:
                 include = int(include)
@@ -276,20 +289,19 @@ class ZopeManager:
 
     def _ports_list(self, port_range = None, port_list = None):
         """ list all possible ports, if applicable """
+        ports = []
 
+        # initialize port_range and port_list
         if port_range is None:
             port_range = self.port_range
         port_range = port_range.strip()
 
         if port_list is None:
             port_list = self.port_list
-        port_list = port_list.strip()
+        port_list = list(port_list)
 
-        ###
-        ## the tuple format seems unnecesary here. how bout just a comma
-        ## separated list
-        ###
-        ports = []
+
+        # do port_range
         if port_range:
 
             try:
@@ -298,16 +310,21 @@ class ZopeManager:
                 raise CheezeError, "port_range must contain only integers"
 
             if len(parts) not in [2,3]:
-                raise CheezeError, "port_range needs a comma separated list of length 2 or 3"
+                raise CheezeError, "port_range needs a comma separated "\
+                                 + "list of length 2 or 3"
 
             ports.extend(range(*parts))
 
+        # do port_lsit
         if port_list:
-            parts = [int(n) for n in port_list.split(',') if n]
-            ports.extend(parts)
+            ports.extend([int(n) for n in port_list])
 
+        # remove ports that are used for the current instance
         for port in self._instance_ports_get():
-                if port in ports:
-                    ports.remove(port)
+            if port in ports:
+                ports.remove(port)
+
+        # sort and return
         ports.sort()
+        #raise 'ports', ports
         return ports

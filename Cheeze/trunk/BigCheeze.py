@@ -114,25 +114,6 @@ class BigCheeze(Implicit, Persistent, \
         self._hosts_write()
         return self.REQUEST.RESPONSE.redirect('manage_hosts')
 
-    def hosts_filter_set(self, regex):
-        """ takes a regex filter and sets it in a cookie """
-        r = self.REQUEST.RESPONSE
-        r.setCookie('hosts_filter', regex.strip(),
-                    expires='Wed, 19 Feb 2020 14:28:00 GMT')
-        r.redirect('manage_hosts')
-
-    def hosts_filter_get(self):
-        """ returns a regex from a form or a cookie """
-        form = self.REQUEST.form.get('regex','')
-        cookie = self.REQUEST.cookies.get('hosts_filter','')
-        if form != '':
-            regex = form.strip()
-        else:
-            regex = cookie
-        if regex == '':
-            regex = self.regex_default
-        return regex
-
 
     ##
     # Domain mgmt
@@ -208,19 +189,19 @@ class BigCheeze(Implicit, Persistent, \
 
     manage_zopes = PageTemplateFile('www/manage_zopes.pt',globals())
 
-    security.declareProtected('Manage Big Cheeze', 'zope_add'),
+    security.declareProtected('Manage Cheezen', 'zope_add'),
     def zope_add(self):
         """ add a zope instance """
         mode = self._mode
-        if mode in [1,3]:
+        if self.managing_zopes():
             ZopeManager._zope_add(self)
-            if mode==3:
+            if self.managing_domains():
                 self.fs_db_sync()
-        elif mode==2:
+        if self.managing_domains() and not self.managing_zopes():
             ApacheVHostManager._zope_add(self)
-        return self.REQUEST.RESPONSE.redirect('manage')
+        return self.REQUEST.RESPONSE.redirect('manage_zopes')
 
-    security.declareProtected('Manage Big Cheeze', 'zope_edit'),
+    security.declareProtected('Manage Cheezen', 'zope_edit'),
     def zope_edit(self):
         """ edit a zope instance """
         if self.production_mode:
@@ -233,9 +214,9 @@ class BigCheeze(Implicit, Persistent, \
         elif mode==2:
             ApacheVHostManager._zope_edit(self)
 
-        return self.REQUEST.RESPONSE.redirect('manage')
+        return self.REQUEST.RESPONSE.redirect('manage_zopes')
 
-    security.declareProtected('Manage Big Cheeze', 'zope_remove'),
+    security.declareProtected('Manage Cheezen', 'zope_remove'),
     def zope_remove(self):
         """ remove a zope instance """
         mode = self._mode
@@ -245,10 +226,10 @@ class BigCheeze(Implicit, Persistent, \
                 self.fs_db_sync()
         elif mode==2:
             ApacheVHostManager._zope_remove(self)
-        return self.REQUEST.RESPONSE.redirect('manage')
+        return self.REQUEST.RESPONSE.redirect('manage_zopes')
 
-    def zope_info(self):
-        '''just passes stuff over to manage_zopes'''
+    def zopes_list(self):
+        """ return a list of zopes for zpt """
         info = {}
         zopes = []
         mode = self._mode
@@ -262,26 +243,7 @@ class BigCheeze(Implicit, Persistent, \
             }
             zopes.append(zope_info)
 
-        #if mode==2: zopes = []
-        info['zopes'] = zopes
-        return info
-
-    def zopes_filter_set(self, regex):
-        """ takes a regex filter and sets it in a cookie """
-        r = self.REQUEST.RESPONSE
-        r.setCookie('zopes_filter', regex,
-                    expires='Wed, 19 Feb 2020 14:28:00 GMT')
-        r.redirect('manage_zopes')
-
-    def zopes_filter_get(self):
-        """ returns a regex from a form or a cookie """
-        form = self.REQUEST.form.get('regex','')
-        cookie = self.REQUEST.cookies.get('zopes_filter','')
-        if form != '':
-            return form
-        else:
-            return cookie
-
+        return zopes
 
     ##
     # Property mgmt
@@ -517,6 +479,39 @@ class BigCheeze(Implicit, Persistent, \
     #manage = manage_main = manage_workspace
 
     regex_default = 'regex filter goes here'
+
+    def filter_set(self, name, regex):
+        """ given a name and a regex, set a filter as a cookie """
+        cookie_name = '_'.join(['cheeze',name,'filter'])
+        self._cookie_set(cookie_name, regex)
+
+    def filter_get(self, name):
+        """ given a name, return a regex from a cookie """
+
+        cookie_name = '_'.join(['cheeze',name,'filter'])
+        regex = self._cookie_get(cookie_name)
+
+        if regex == '':
+            regex = self.regex_default
+        return regex
+
+    ##
+    # Yummy cookies
+    ##
+
+    def _cookie_set(self, name, value, expires='Wed, 19 Feb 2020 14:28:00 GMT'):
+        """ sets an arbitrary cookie """
+        # I suppose this could be used to maliciously set a cookie
+        # but then there would be no way to get the cookie so I
+        # guess it's not dangerous
+        r = self.REQUEST
+        rr = r.RESPONSE
+        rr.setCookie(name, value.strip(), expires=expires)
+        rr.redirect(r['HTTP_REFERER'])
+
+    def _cookie_get(self, name):
+        """ gets an arbitrary a cookie """
+        return self.REQUEST.cookies.get(name,'')
 
 
 ##

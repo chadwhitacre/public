@@ -17,7 +17,11 @@
     <p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
 
     <tal:mode_check condition="context/managing_hosts">
-    <table id="table">
+    <table id="table"
+           tal:define="regex         python:context.filter_get('hosts');
+                       regex_default context/regex_default;
+                       filtered      python:regex != regex_default;
+                       ">
         <thead>
             <tr>
                 <th>Domain</th>
@@ -49,22 +53,30 @@
 
             <!-- this is a form to set the regex filter -->
             <tr class="yellow">
-            <form action="hosts_filter_set" method="post">
+            <form action="filter_set" method="post">
+                <input type="hidden" name="name" value="hosts" />
                 <td colspan="2">
                     <input type="text"
                            name="regex"
-                           tal:attributes="value context/hosts_filter_get;
-                                           onclick python:'''if(this.value=='%s'){this.value=''}''' % context.regex_default;"
+                           tal:attributes="value regex;
+                                           onclick python:'''if(this.value=='%s'){this.value=''}''' % regex_default;"
                            style="width: 100%" />
                 </td>
-                <td class="action">
+                <td colspan="2" class="action"
+                    tal:condition="not:filtered">
+                    <input type="submit"
+                           value="filter" />
+                </td>
+                <td class="action"
+                    tal:condition="filtered">
                     <input type="submit"
                            value="submit"
                            class="save"
-                           title="save filter" />
+                           title="update filter" />
                 </td>
-                <td class="action">
-                    <a tal:define="tmp python:'%s/hosts_filter_set?regex=';
+                <td class="action"
+                    tal:condition="filtered">
+                    <a tal:define="tmp python:'%s/filter_set?name=hosts&regex=';
                                    href python:tmp % context.absolute_url();"
                        tal:attributes="href href;">
                         <img style="border:none;" src="image_delete"
@@ -85,11 +97,11 @@
                 <td><input type="text"
                            name="ip"
                            tal:attributes="value host/ip" />
-                    <a tal:define="tmp python:'%s/hosts_filter_set?regex=%s';
+                    <a tal:define="tmp python:'%s/filter_set?name=hosts&regex=%s';
                                    href python:tmp % (context.absolute_url(),
                                                       host['ip']);"
                        tal:attributes="href href;"
-                       tal:condition="python:context.hosts_filter_get() != host['ip']">
+                       tal:condition="python:regex != host['ip']">
                         <img style="border:none;" src="image_star"
                              alt="remove filter" title="set filter to this IP address" />
                     </a>
