@@ -15,20 +15,26 @@
 
 <p>Need help? <a href="manage_doc#zopes">RTFM</a>. :-)</p>
 
-<table id="table" tal:define="zope_ids context/zope_ids_list">
+<table id="table"
+       tal:define="zope_ids     context/zope_ids_list;
+                   availaskel   context/skel_list;
+                   port_range   python:context.port_range != '';
+                   availaports  context/ports_list_available;
+                   skel_root    context/skel_root;
+                   ">
     <thead>
+
         <tr>
             <th style="text-align: left;">Name</th>
             <th>Port</th>
             <th colspan="2">Actions</th>
         </tr>
 
-
-        <!-- This is the add form -->
-        <tr class="green">
-        <form action="zope_add" method="post"
-              tal:define="availaskel context/skel_list;
-                          skel_root  context/skel_root;">
+        <!-- This is the add form with port number as <select>,
+             shown if we have port_range and availaports -->
+        <tr class="green"
+            tal:condition="python:port_range and availaports">
+        <form action="zope_add" method="post">
             <td>
                 <input name="name:required" type="text"/>
                 <select name="skel:required"
@@ -37,24 +43,17 @@
                     <option tal:repeat="skel availaskel"
                             tal:attributes="value skel;
                                             selected python:test(
-                                              skel=='default','selected','');
-                                           "
+                                              skel=='default','selected','');"
                             tal:content="skel" />
                     <option value="|stock|">zope stock</option>
                 </select>
                 <input type="hidden" name="skel" value="|stock|"
                        tal:condition="not:availaskel" />
             </td>
-            <td><select name="port:int"
-                        tal:condition="context/vhosting">
-                    <option tal:repeat="port context/list_ports" tal:content="port" />
+            <td class="port"><select name="port:int"
+                        tal:condition="availaports">
+                    <option tal:repeat="port availaports" tal:content="port" />
                 </select>
-                <input type="text"
-                       name="port:int:required"
-                       value="80"
-                       size="3"
-                       style="text-align: right;"
-                       tal:condition="not:context/vhosting" />
             </td>
             <td colspan="2" class="action">
                 <input type="submit" value="add" />
@@ -62,30 +61,92 @@
         </form>
         </tr>
 
+        <!-- This is the add form with port number as <input>,
+             shown if we do not have port_range at all -->
+        <tr class="green"
+            tal:condition="python:not port_range">
+        <form action="zope_add" method="post">
+            <td>
+                <input name="name:required" type="text"/>
+                <select name="skel:required"
+                        tal:condition="availaskel">
+                    <option value="">which skel?</option>
+                    <option tal:repeat="skel availaskel"
+                            tal:attributes="value skel;
+                                            selected python:test(
+                                              skel=='default','selected','');"
+                            tal:content="skel" />
+                    <option value="|stock|">zope stock</option>
+                </select>
+                <input type="hidden" name="skel" value="|stock|"
+                       tal:condition="not:availaskel" />
+            </td>
+            <td class="port"><input type="text"
+                       name="port:int:required"
+                       value="80"
+                       size="3"
+                       style="text-align: right;" />
+            </td>
+            <td colspan="2" class="action">
+                <input type="submit" value="add" />
+            </td>
+        </form>
+        </tr>
+
+        <!-- The add form is disabled if we have port_range
+             but no availaports -->
+        <tr class="green" tal:condition="python:port_range and not availaports">
+            <td colspan="4">
+
+                Zope creation is disabled because there are no more available <a
+                href="manage_doc#port_range">ports</a>.
+
+            </td>
+        </tr>
+
+
+
     </thead>
     <tbody tal:condition="zope_ids">
 
         <!-- Now loop through all our zopes and make a form for each -->
         <tr tal:repeat="zope_id zope_ids">
         <form action="zope_edit" method="post"
-              tal:define="info python:context.zope_info_get(zope_id)">
+              tal:define="info        python: context.zope_info_get(zope_id);
+                   availaports python: context.ports_list_available(info[1]);">
             <td>
                 <input type="text"
                        name="new_name:required"
                        value="80"
                        style="width: 100%;"
-                       tal:condition="not:context/vhosting"
-                       tal:attributes="value python:info[0]" /></td>
+                       tal:attributes="value python:info[0]" />
                 <input type="hidden" name="old_name"
                        tal:attributes="value python:info[0]" />
-            <td>
+            </td>
+            <td class="port">
+                <!-- show a <select> if we have port_range and availaports -->
+                <select name="new_port:int"
+                        tal:condition="python:port_range and len(availaports) > 1">
+                    <option tal:repeat="port availaports"
+                            tal:content="python:test(port == int(info[1]),
+                                                     '*%s' % port, port)"
+                            tal:attributes="selected python:test(port == int(info[1]),
+                                                                 'selected','')" />
+                </select>
+
+                <!-- show an <input> if we don't have port_range -->
                 <input type="text"
                        name="new_port:int:required"
                        value="80"
                        size="3"
-                       style="text-align: right;"
-                       tal:condition="not:context/vhosting"
+                       tal:condition="not:port_range"
                        tal:attributes="value python:info[1]" />
+
+                <!-- show text only if we have port_range but no availaports -->
+                <div style="text-align: right;"
+                     tal:replace="python:info[1]"
+                     tal:condition="python:port_range and len(availaports) == 1" />
+
                 <input type="hidden" name="old_port"
                        tal:attributes="value python:info[1]" />
             </td>

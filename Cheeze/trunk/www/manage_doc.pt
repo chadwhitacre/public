@@ -19,7 +19,7 @@
 
     <h1>Cheeze Documentation</h1>
     <div id="motto">
-        >>> Cheeze.explain()<br />
+        >>> <a href="explain">Cheeze.explain()</a><br />
         'Cheap Zopes :-)'<br />
         >>> <blink>_</blink>
     </div>
@@ -64,7 +64,7 @@
     There are a couple gotchas with regard to port numbers.</p>
 
     <div class="screenshot">
-        <span class="screenshot-label">Screenshot: Zopes table</span>
+        <span class="screenshot-label">Screenshot: <a href="manage_zopes">Zopes</a> table</span>
         <img src="image_zopes"
              alt="screenshot of zopes form" />
     </div>
@@ -114,18 +114,20 @@
 
     <ul>
 
-        <li>All domains entered on this page are entered in the server's
+        <li class="not-yet">All domains entered on this page are entered in the
+        server's
         DNS. It is assumed that the DNS file you point to in properties is
         being propagated out to the Net.</li>
 
-        <li>You can map domain names to Zopes.</li>
+        <li>You can map domain names to Zopes. This hits Apache vhosting.</li>
 
         <li>Domains that point at the same Zope are considered aliases; these
         are noted on this page for convenience.</li>
 
-        <li>Delete always removes the domain from both DNS and Apache</li>
+        <li class="not-yet">Delete always removes the domain from both DNS and Apache</li>
 
-        <li>Domains that don't point to a Zope are "parked"</li>
+        <li>Domains that don't point to a Zope are pointed at a parking lot
+        zope. Prolly just use master?</li>
 
     </ul>
 
@@ -136,53 +138,77 @@
         Configuration
     </h2>
 
-    <p>Big Cheeze objects have four properties, which are all optional.
+    <p>Big Cheeze objects have six properties, which are all optional.
     Functionality is gracefully degraded if a given property is left blank. This
-    allows Cheeze to be used in a variety of hosting situations.</p>
-
-    <p> Additionally, it is possible to configure the module as a whole to use
-    either a predefined set of port numbers or arbitrary integers.</p>
+    flexibility allows Cheeze to be used in a variety of hosting situations.</p>
 
 
     <h3>instance_root</h3>
 
-    <p>This is the path to the directory where your instances are housed. If it
-    is present, then the Zopes tab will have create/delete functionality. It is
-    up to you to make sure that the directory only contains Zope instances.</p>
+    <p>This is a path to a directory containing Zope instances (it is up to you
+    to make sure that the directory only contains Zope instances). If it is
+    present, then you will be able to use the <a href="manage_zopes">Zopes</a>
+    tab to create, delete, and edit Zope instances. This property also enables
+    the 'Zope' column on the <a href="manage_domains">Domains</a> tab. If it is
+    not present, the <a href="manage_zopes">Zopes</a> tab will be blank, and the
+    <a href="manage_domains">Domains</a> tab will show the 'IP Address' column
+    instead. This property overrides <b>address_list</b>.</p>
 
 
     <h3>skel_root</h3>
 
     <p>This is the path to the directory where your skel reside. If present, and
-    the directory is not empty, then the add form on the Zopes tab will
-    include a skel dropdown and a 'Port' column. It is up to you to make
-    sure that the directory only contains Zope skel.</p>
+    the directory is not empty, then the add form on the <a
+    href="manage_zopes">Zopes</a> tab will include a skel dropdown and a 'Port'
+    column. It is up to you to make sure that the directory only contains Zope
+    skel.</p>
 
 
+    <a name="vhost_db"></a>
     <h3>vhost_db</h3>
 
     <p>This is the path to your Apache vhost dbm. If this property points to a
-    valid dbm file, then you will be able to use the Domains tab, and the 'Port'
-    column on the Zopes tab will display select boxes. If not present, then the
-    Zopes tab will show text boxes in the 'Port' column. If neither this
-    property nor <b>dns_file</b> are present, then the Domains tab will be
-    blank.</p>
+    valid dbm file, then you will be able to use the <a
+    href="manage_domains">Domains</a> tab, and the 'Port' column on the <a
+    href="manage_zopes">Zopes</a> tab will display select boxes. If not present,
+    then the <a href="manage_zopes">Zopes</a> tab will show text boxes in the
+    'Port' column. If neither this property nor <b>dns_file</b> are present,
+    then the <a href="manage_domains">Domains</a> tab will be blank.</p>
 
 
+    <div class="not-yet">
     <h3>dns_file</h3>
 
-    <p>This is the path to your DNS file. If present, then changes on the
-    Domains tab will propogate to this file. If neither this property nor
-    <b>vhost_db</b> are present, then the Domains tab will be blank.</p>
+    <p>This is the path to your DNS file. If present, then changes on the <a
+    href="manage_domains">Domains</a> tab will propogate to this file. If
+    neither this property nor <b>vhost_db</b> are present, then the <a
+    href="manage_domains">Domains</a> tab will be blank.</p>
+    </div>
+
+    <a name="port_range"></a>
+    <h3>port_range</h3>
+
+    <p>This property controls the input of port numbers on the <a
+    href="manage_zopes">Zopes</a> tab. If you enter a tuple with 2 or 3 items,
+    these will be passed as arguments to python's <a
+    href="http://www.python.org/doc/current/lib/built-in-funcs.html"
+    target="_blank">range()</a> function to generate a list of acceptable port
+    numbers. You may also enter a list of integers directly. Other types of
+    input will throw an exception. Once all of the available ports are used,
+    Zope creation and port assignment will be disabled. If this property is left
+    blank, then the <a href="manage_zopes">Zopes</a> tab will allow arbitrary
+    integers to be entered for port numbers.</p>
 
 
-    <h3>port_numbers.py</h3>
+    <div class="not-yet">
+    <h3>address_list</h3>
 
-    <p>There is a script called port_numbers.py included in the package which
-    provides a 'CONSTRAIN_PORT_NUMBERS' constant, and a function called
-    '_ports_list_acceptable' that is intended to return a list of acceptable
-    ports to be used if CONSTRAIN_PORT_NUMBERS is true. If this value is false
-    then you will be able to enter any integer for port numbers.</p>
+    <p>This property allows you to define a list of IP addresses to be used on
+    the <a href="manage_domains">Domains</a> tab. This property only applies
+    when <b>instance_root</b> is blank. If both are blank, then both the <a
+    href="manage_zopes">Zopes</a> tab and the <a
+    href="manage_domains">Domains</a> tab will be blank.</p>
+    </div>
 
 </div>
 </div>

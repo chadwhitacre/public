@@ -46,17 +46,20 @@ form {
 .save {
     border: none;
     cursor: pointer;
-
     width: 14px;
     padding: 14px 0 0 0;
     overflow: hidden;
     background-image: url("image_save");
     background-repeat: no-repeat;
     white-space: normal;
-
-
     height: 0px !important;
     height /**/:14px;
-}
+    }
 
 .padding {padding: 1em;}
+
+.port,
+.port select,
+.port input {
+    text-align: right;
+    }

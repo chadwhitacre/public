@@ -14,18 +14,12 @@ class ApacheVHostManager:
     def __init__(self):
         pass
 
+    ##
+    #
+    ##
+
     def test_func(self):
         return self.domains_info()
-
-    def list_ports(self):
-        """ return a list of available ports """
-        if vhosting:
-            avail_ports = [str(x) for x in range(8010,9000,10)]
-            for zope in self.zope_ids_list():
-                if self.port_get(zope) in avail_ports:
-                    avail_ports.remove(port)
-        else:
-            return None
 
     def orphans_handle(self):
         orphan_dict ={}

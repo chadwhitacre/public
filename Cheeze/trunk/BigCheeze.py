@@ -20,6 +20,8 @@ from Globals import DTMLFile, ImageFile
 import os
 from os.path import join
 
+
+from CheezeError import CheezeError
 from ZopeManager import ZopeManager
 from ApacheVHostManager import ApacheVHostManager
 from DNSManager import DNSManager
@@ -32,13 +34,10 @@ class BigCheeze(Implicit, Persistent, \
     security = ClassSecurityInfo()
 
     id = 'Cheeze'
-    title = 'Centralized instance management'
+    title = 'Cheap Zopes :-)'
     meta_type= 'Big Cheeze'
 
-    instance_root = ''
-    skel_root = ''
-    vhost_db = ''
-    dns_file = ''
+    instance_root = skel_root = vhost_db = dns_file = port_range = ''
 
     vhosting = 0
 
@@ -54,10 +53,12 @@ class BigCheeze(Implicit, Persistent, \
                    + Item.manage_options
 
     _properties=(
+        {'id'   :'title',        'type' :'string','value':'','mode': 'w',},
         {'id'   :'instance_root','type' :'string','value':'','mode': 'w',},
         {'id'   :'skel_root',    'type' :'string','value':'','mode': 'w',},
-        {'id'   :'vhost_db',    'type' :'string','value':'','mode': 'w',},
+        {'id'   :'vhost_db',     'type' :'string','value':'','mode': 'w',},
         {'id'   :'dns_file',     'type' :'string','value':'','mode': 'w',},
+        {'id'   :'port_range',   'type' :'string','value':'','mode': 'w',},
                 )
 
     def __init__(self, id, instance_root='', skel_root=''):
@@ -71,11 +72,14 @@ class BigCheeze(Implicit, Persistent, \
     # documentation
     ##
 
+    dependencies = DTMLFile('doc/dependencies.txt',globals())
+
     manage_doc = PageTemplateFile('www/manage_doc.pt',globals())
 
     style_doc  = DTMLFile('www/style_doc.css',globals())
 
     def explain(self):
+        """  """
         return 'Cheap Zopes :-)'
 
 
@@ -138,11 +142,13 @@ class BigCheeze(Implicit, Persistent, \
     ##
 
     def _setPropValue(self, id, value):
-        """ intercept so we can do validation """
+        """ intercept from PropertyManager so we can do validation """
         if id == 'instance_root':
             self._set_instance_root(value)
         elif id == 'skel_root':
             self._set_skel_root(value)
+        elif id == 'port_range':
+            self._set_port_range(value)
         else:
             PropertyManager._setPropValue(self, id, value)
 
@@ -151,12 +157,12 @@ class BigCheeze(Implicit, Persistent, \
         if instance_root == '':
             PropertyManager._setPropValue(self, 'instance_root', '')
         elif not os.path.exists(instance_root):
-            raise 'Cheeze Error', "Proposed instance root " \
-                                + "'%s' does not exist" % instance_root
+            raise CheezeError, "Proposed instance root " \
+                             + "'%s' does not exist" % instance_root
         elif not os.path.isdir(instance_root):
-            raise 'Cheeze Error', "Proposed instance root " \
-                                + "'%s' " % instance_root \
-                                + "does not point to a directory"
+            raise CheezeError, "Proposed instance root " \
+                             + "'%s' " % instance_root \
+                             + "does not point to a directory"
         else:
             clean_path = self._scrub_path(instance_root)
             PropertyManager._setPropValue(self,
@@ -168,14 +174,21 @@ class BigCheeze(Implicit, Persistent, \
         if skel_root == '':
             PropertyManager._setPropValue(self, 'skel_root', '')
         elif not os.path.exists(skel_root):
-            raise 'Cheeze Error', "Proposed skel root " \
-                                + "'%s' does not exist" % skel_root
+            raise CheezeError, "Proposed skel root " \
+                             + "'%s' does not exist" % skel_root
         elif not os.path.isdir(skel_root):
-            raise 'Cheeze Error', "Proposed skel root '%s' " % skel_root \
-                                + "does not point to a directory"
+            raise CheezeError, "Proposed skel root '%s' " % skel_root \
+                             + "does not point to a directory"
         else:
             clean_path = self._scrub_path(skel_root)
             PropertyManager._setPropValue(self, 'skel_root', clean_path)
+
+    def _set_port_range(self, port_range):
+        if port_range == '':
+            PropertyManager._setPropValue(self, 'port_range', '')
+        else:
+            self._ports_list(port_range) # smoke it!
+            PropertyManager._setPropValue(self, 'port_range', port_range)
 
     def _scrub_path(self, p):
         """ given a valid path, return a clean path """

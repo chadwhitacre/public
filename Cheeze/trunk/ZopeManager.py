@@ -1,6 +1,7 @@
 from AccessControl import ClassSecurityInfo
 import os
 from os.path import join
+from CheezeError import CheezeError
 
 class ZopeManager:
     """ provides functionality to manage Zope instances """
@@ -15,9 +16,10 @@ class ZopeManager:
     # info providers - these can be used in mgmt zpt's
     ##
 
-    security.declareProtected('Manage Big Cheeze', 'zopes_list',
+    security.declareProtected('Manage Big Cheeze', 'zope_ids_list',
                                                    'skel_list',
-                                                   'port_get',
+                                                   'zope_info_get',
+                                                   'ports_list_available',
                                                    )
 
     def zope_ids_list(self):
@@ -37,6 +39,27 @@ class ZopeManager:
         name = ''.join(zope.split('_')[0:-1])
         return (name, port)
 
+    def ports_list_available(self, include = None):
+        """ return a list of available ports,
+            including an optional arbitrary port """
+        if include is not None:
+            try:
+                include = int(include)
+                if include < 1:
+                    raise CheezeError
+            except:
+                raise CheezeError, "include must be a positive integer"
+        all_ports = self._ports_list()
+        if all_ports:
+            for zope_id in self.zope_ids_list():
+                port = int(self.zope_info_get(zope_id)[1])
+                if (port < 1 or port != include) and port in all_ports:
+                    all_ports.remove(port)
+                if include not in all_ports and include is not None:
+                    all_ports.append(include)
+            return all_ports
+        else:
+            return False
 
     ##
     # heavy lifters - these are only used by BigCheeze wrappers
@@ -89,6 +112,17 @@ class ZopeManager:
         #    zs_name = zope['name'] + zope['port'] + '.zetaserver.com'
         #    update_vhosts({zs_name:zope['port']},www=1)
 
+    def _zope_delete(self, zope):
+        """ given an instance name, delete a zope """
+        top = join(self.instance_root, zope)
+        #raise 'top', top
+        for root, dirs, files in os.walk(top, topdown=False):
+            for name in files:
+                os.remove(join(root, name))
+            for name in dirs:
+                os.rmdir(join(root, name))
+        os.rmdir(top)
+
     def _zope_id_set(self, old_id, new_id):
         """ rename a zope instance """
 
@@ -130,16 +164,9 @@ class ZopeManager:
         txt = txt.replace(old_port_def, new_port_def)
         file(conf, 'w').write(txt)
 
-    def _zope_delete(self, zope):
-        """ given an instance name, delete a zope """
-        top = join(self.instance_root, zope)
-        #raise 'top', top
-        for root, dirs, files in os.walk(top, topdown=False):
-            for name in files:
-                os.remove(join(root, name))
-            for name in dirs:
-                os.rmdir(join(root, name))
-        os.rmdir(top)
+
+
+
 
 
     ##
@@ -184,3 +211,51 @@ class ZopeManager:
                 "SOFTWARE_HOME" : softwarehome,
                 "ZOPE_HOME"     : zopehome,
                 }
+
+    def _ports_list(self, port_range = None):
+        """ list all possible ports, if applicable """
+
+        if port_range is None:
+            port_range = self.port_range
+
+        port_range = port_range.strip()
+
+        if port_range == '':
+            return False
+        else:
+            if port_range.startswith('(') and port_range.endswith(')'):
+                # guessing we have a tuple
+                type_func = tuple
+            elif port_range.startswith('[') and port_range.endswith(']'):
+                # guessing we have a list
+                type_func = list
+            else:
+                raise CheezeError, "port_range must be either a tuple or a list"
+
+            port_range = type_func(port_range[1:-1].split(','))
+            try:
+                port_range = type_func([int(i) for i in port_range if i != ''])
+            except ValueError:
+                raise CheezeError, "port_range must contain only integers"
+
+            # ok, we passed the test!
+
+            port_range_type = type(port_range)
+
+            if port_range_type == type([]):
+                if False in [p > 0 for p in port_range]:
+                    raise CheezeError, "if port_range is a list, it may only " \
+                                     + "contain positive integers"
+                else:
+                    return port_range
+            elif port_range_type == type(()):
+                if not(1 < len(port_range) <= 3):
+                    raise CheezeError, "if port_range is a tuple, " \
+                                     + "it must have 2 or 3 items"
+                elif False in [p > 0 for p in port_range[:2]]:
+                    raise CheezeError, "if port_range is a tuple, " \
+                                     + "its first two items must be " \
+                                     + "positive integers"
+                else:
+                    return range(*port_range)
+
