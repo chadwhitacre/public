@@ -1,7 +1,10 @@
 import os, dbm
 from cmd import Cmd
 
-class PorterCmd(Cmd):
+class PorterError:
+    pass
+
+class Porter(Cmd):
 
     def __init__(self, db_path, *args, **kw):
         self.intro = """

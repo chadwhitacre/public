@@ -1,6 +1,6 @@
 import unittest, os, pdb
 from StringIO import StringIO
-from porter.PorterCmd import PorterCmd
+from porter.Porter import Porter
 
 class TestCRUD(unittest.TestCase):
 
@@ -8,7 +8,7 @@ class TestCRUD(unittest.TestCase):
         self.out = StringIO()
         try: os.remove('test_db.db')
         except: pass
-        self.c = PorterCmd('test_db', stdout=self.out)
+        self.c = Porter('test_db', stdout=self.out)
 
     def tearDown(self):
         os.remove('test_db.db')

@@ -1,9 +1,13 @@
 #!/usr/local/bin/python
-from PorterCmd import PorterCmd
-import sys
+from Porter import Porter, PorterError
+from ConfigParser import RawConfigParser
+
+cp = RawConfigParser()
+conf_filenames = cp.read('porter.conf')
+db_path = cp.get('default','db_path')
 
 def main():
-    c = PorterCmd('/usr/local/apache2/conf/vhosts')
+    c = Porter(db_path)
     try:
         c.cmdloop()
     except KeyboardInterrupt:
