@@ -1,12 +1,12 @@
-import os, dbm
-from cmd import Cmd
+import os, dbm, cmd
 
 class PorterError:
+    """ error class for porter """
     pass
 
-class Porter(Cmd):
+class Porter(cmd.Cmd):
 
-    def __init__(self, db_path, *args, **kw):
+    def __init__(self, rewrite_db_path, *args, **kw):
         self.intro = """
 #-------------------------------------------------------------------#
 #  Porter v0.1 (c)2004 Zeta Design & Development <www.zetaweb.com>  #
@@ -16,8 +16,8 @@ class Porter(Cmd):
 
         # on startup, read in our data
         #  a one-to-one mapping of domains to websites
-        self.db_path = db_path
-        db = dbm.open(self.db_path, 'c')
+        self.rewrite_db_path = rewrite_db_path
+        db = dbm.open(self.rewrite_db_path, 'c')
         domains = dict(db)
         db.close()
 
@@ -38,7 +38,7 @@ class Porter(Cmd):
                 self.aliases[website] = [domain]
 
         # and let our superclass have its way too
-        Cmd.__init__(self, *args, **kw)
+        cmd.Cmd.__init__(self, *args, **kw)
 
     def parse_inStr(inStr):
         """ given a Cmd inStr string, return a tuple containing a list of
@@ -149,7 +149,7 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
 
         # update our data
         self.domains[domain] = website
-        self._update_db()
+        self._update_data()
 
         # and update our indices
         if website in self.aliases:
@@ -169,16 +169,16 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
             for website in self.aliases:
                 if domain in self.aliases[website]:
                     self.aliases[website].remove(domain)
-        self._update_db()
+        self._update_data()
 
 
 
-
-    def _update_db(self):
+    def _update_data(self):
         """ given that our data is clean, store it to file """
-        db = dbm.open(self.db_path, 'n')
+        db = dbm.open(self.rewrite_db_path, 'n')
         for domain in self.domains:
             website = self.domains[domain]
             db[domain] = website
             db['www.' + domain] = website
         db.close()
+

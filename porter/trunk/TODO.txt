@@ -1,18 +1,23 @@
+0.2
+=======================
+use sample db in tests
 write dns module
 
 deal with orphans
 
-non-interactive mode
-install properly with distutils
-factor out db path to config
 tab complete available servers (from etc/hosts) and ports (from rpc to servers)
-fit codenames back into the mix
-help
-license
-build in fault-tolerance, no more proxy errors! put in a default parked page for orphans, from porter's Apache!
+fit codenames back into the mix, somehow?
+build in fault-tolerance, no more proxy errors! put in a default "parked" page for orphans, from porter's Apache!
 
 
-done
+future
+=======================
+inline help
+install properly with distutils
+non-interactive mode
+
+
+done - 0.2
 =======================
 ls -l
 convert websites to aliases
@@ -20,3 +25,8 @@ validate input
 capture ^C
 also account for www
 only store server:port in the actual db
+factor out db path to config
+get tests working from outside of site-packages
+runalltests.py
+README
+license

@@ -1,3 +1,6 @@
+if __name__ == '__main__':
+    import framework
+
 import unittest
 from porter.Porter import Porter
 
@@ -36,13 +39,11 @@ class TestParseInStr(unittest.TestCase):
         self.assertEqual(opts, ['l'])
         self.assertEqual(args, ['long'])
 
-"""
-    ['zetaweb.com'
-                      ,'thedwarf.com'
-                       ,'malcontents.org'
-                       ,'jewelryjohn.com'
-                       ,'tesm.edu'
-"""
+def test_suite():
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(TestParseInStr))
+    return suite
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,3 +1,6 @@
+if __name__ == '__main__':
+    import framework
+
 import unittest, os, pdb
 from StringIO import StringIO
 from porter.Porter import Porter
@@ -36,9 +39,9 @@ class TestCRUD(unittest.TestCase):
 
     def testAddMultipleItems(self):
         self.c.onecmd("add zetaweb.com alpin 8010")
-        self.c.onecmd("map thedwarf.com duder 8020")
+        self.c.onecmd("mk  thedwarf.com duder 8020")
         self.c.onecmd("add malcontents.org duder 8020")
-        self.c.onecmd("map christyanity.com duder 8020")
+        self.c.onecmd("mk  christyanity.com duder 8020")
         self.c.onecmd("add tesm.edu underbird 8310")
 
         domains = self.c.domains.keys(); domains.sort()
@@ -70,9 +73,9 @@ class TestCRUD(unittest.TestCase):
 
     def testList(self):
         self.c.onecmd("add zetaweb.com alpin 8010")
-        self.c.onecmd("map thedwarf.com duder 8020")
+        self.c.onecmd("mk thedwarf.com duder 8020")
         self.c.onecmd("add malcontents.org duder 8020")
-        self.c.onecmd("map christyanity.com duder 8020")
+        self.c.onecmd("mk christyanity.com duder 8020")
         self.c.onecmd("add tesm.edu underbird 8310")
         self.c.onecmd("add zoobaz.info dummy 80")
         self.c.onecmd("add latebutlaughing.com dummy 80")
@@ -86,9 +89,9 @@ latebutlaughing.com  tesm.edu         zetaweb.com \n"""
 
     def testRemove(self):
         self.c.onecmd("add zetaweb.com alpin 8010")
-        self.c.onecmd("map thedwarf.com duder 8020")
+        self.c.onecmd("mk thedwarf.com duder 8020")
         self.c.onecmd("add malcontents.org duder 8020")
-        self.c.onecmd("map christyanity.com duder 8020")
+        self.c.onecmd("mk christyanity.com duder 8020")
         self.c.onecmd("add tesm.edu underbird 8310")
         self.c.onecmd("add zoobaz.info dummy 80")
         self.c.onecmd("add latebutlaughing.com dummy 80")
@@ -127,6 +130,11 @@ latebutlaughing.com  tesm.edu         zetaweb.com \n"""
         domains = self.c.domains.keys(); domains.sort()
         self.assertEqual(domains, ['tesm.edu','zoobaz.info'])
 
+def test_suite():
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(TestCRUD))
+    return suite
 
 if __name__ == '__main__':
     unittest.main()
