@@ -7,6 +7,7 @@
 should we wrap Binder and Porter into one package, Cambridge?
     Fellow won't be on the same server, so we at least want that in a separate package
 ls arg should affect all ls modes
+it would be nice to be able to do ping from within porter
 ^C should cancel the command if there is one, or exit the program otherwise
 porter> named # manually flush current settings to named frags
 
