@@ -1,3 +1,10 @@
 tab completion
 non-interactive mode
-mimic the columns we get from shell ls
+ls -l
+
+
+
+1) boot jail
+2) dns
+3) mod_rewrite
+4) profit
