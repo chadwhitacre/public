@@ -5,7 +5,7 @@
 
 import os, sys
 
-ERROR = 'see man 1 zopeme for usage'
+ERROR = 'see man 1 svneol for usage'
 
 # first get and validate some options
 args = sys.argv[1:]
