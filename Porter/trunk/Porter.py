@@ -1,49 +1,26 @@
 """
 
-ok, porter
-
-Porter is our Cmd app that basically does the ui for us. Our three data-relevant
-commands are:
-
-    add
-
-    rm
-
-    mv
-
-We have data stored in three places:
-
-    [codename] -- actually, not used atm, maybe in 0.6?
+Porter is our Cmd app that manages rewrite.db and our named.porter.conf:
 
     rewrite.db -- {'domain':'server:port'}
 
     named.porter.conf -- fragment to be appended to named.conf, records are of the
     form:
 
-zone "example.com" {
-        type master;
-        file "porter.zone";
-};
+        zone "example.com" {
+                type master;
+                file "porter.zone";
+        };
 
     The good news here is that all we need to replace is example.com. So it
     really shouldn't be too much overhead to just generate this entire file
     fragment every time we store to disk. And the rest of the record can be
-    hard-coded, so we run very little chance of screwing this up. ;-)
+    hard-coded, so we run very little chance of screwing this up. ;^)
 
-    [porter.zone] -- this is the main abstracted config file for named, but we
-    are going to manage it manually for now (forever?)
-
-Ok, so let's treat the db as authoritative, for these reasons:
-
-    - it is easier to parse data out
-
-    - it has all the data we need in it (named.porter.conf only has domain)
-
-    - it is harder to screw up (not being plaintext)
-
-On program initialization, we want to read data from rewrite.db into an internal
-data structure or two. Then whenever we do one of [add, mv, rm] we want to save
-these changes to the db and regenerate our named.porter.conf file.
+On program initialization, we read data in from rewrite.db into an internal
+data structure, and we generate an index that we use to present aliases for
+convenience. Then whenever we do one of [mk, rm] we want to save these changes
+to the db and regenerate our named.porter.conf file.
 
 """
 
@@ -118,27 +95,28 @@ You are currently managing %s domains. Type ? for help.
             print >> self.stdout, """\
 
 Porter is a piece of software for managing the interface between the public
-Internet and a server cluster set up according to the Cambridge distributed http
-server architecture. For more on Cambridge ... um, talk to Chad. ;^)
+Internet and a server cluster set up according to the Cambridge distributed 
+http server architecture. For more on Cambridge ... um, talk to Chad. ;^)
 
 Commands available:
 
-    ls -- list available domains.
-          OPTIONS: -l/--long, -i/-info, -r/--raw
+    ls -- list available domains
+          OPTIONS: -l/--long, -i/--info, -r/--raw
 
-    mk -- register a domain with Porter.
+    mk -- register a domain with Porter
           ARGS: domain server port, e.g.: example.com srvrname 8080
           ALIASES: add, mv. mv adds tab-completion for domain names
 
-    rm -- unregister a domain, includes tab completion of domains
-          ARGS: domain1 domain2 domain3 (i.e., handles multiple domains)
+    rm -- unregister a domain
+          ARGS: one or more space-separated domain names, e.g.: foo.example.net
+          domain names can be tab completed 
             """
 
     ##
     # Completes
     ##
 
-    def complete_domains(self,text, line, begidx, endidx):
+    def complete_domains(self, text, line, begidx, endidx):
         return [d for d in self.domains.keys() if d.startswith(text)]
 
 
@@ -258,11 +236,16 @@ DOMAIN NAME                   SERVER        PORT  ALIASES\n%s""" % (self.ruler*7
         """ given one or more domain names, remove it/them from our storage """
         opts, args = self._parse_inStr(inStr)
         for domain in args:
+            
             if domain in self.domains:
                 del self.domains[domain]
+            else:
+                print >> self.stdout, "%s is not in our database" % domain
+            
             for website in self.aliases:
                 if domain in self.aliases[website]:
                     self.aliases[website].remove(domain)
+
         self._write_to_disk()
 
 
