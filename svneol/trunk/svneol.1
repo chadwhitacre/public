@@ -1,6 +1,6 @@
-.Dd March 30, 2005
+.Dd March 31, 2005
 .Os
-.Dt ZOPEME 1 LOCAL
+.Dt SVNEOL 1 LOCAL
 .\"
 .\"
 .\"
@@ -8,7 +8,7 @@
 .\"
 .Sh NAME
 .Nm svneol
-.Nd create a ZEO-configured Zope instance
+.Nd clean up line endings
 .\"
 .\"
 .\"
@@ -16,108 +16,63 @@
 .\"
 .Sh SYNOPSIS
 .Nm
-.Op Ar --force
-.Ar name
-.Op Ar port
 .\"
 .\"
 .\"
 .\"
 .\"
 .Sh DESCRIPTION
-.Nm
-creates a Zope instance that is configured with ZEO. It assumes that the
-following paths exist:
-.Bl -item -offset indent
-.It
-.Pa /usr/local/zope/rc.d/
-.It
-.Pa /usr/local/zope/zope/bin/mkzeoinstance.py
-.It
-.Pa /usr/local/zope/zope/bin/mkzopeinstance.py
-.El
-.Pp
-It creates the ZEO client and server instances at:
-.Bl -item -offset indent
-.It
-.Pa ./ Ns << Ns Ar name Ns >> Ns Pa /client-1
-.It
-.Pa ./ Ns << Ns Ar name Ns >> Ns Pa /server
-.El
-.Pp
-If
-.Pa ./ Ns << Ns Ar name Ns >>
-already exists, it is not overwritten, unless the
-.Ar --force
-argument is given. After the client and server are created, they are customized
-as follows
-.Ns ( Ns Ar port
-defaults to 8080):
-.Bl -bullet -offset indent
-.It
-sets the HTTP port to
-.Ar port
-.It
-sets the FTP port to
-.Ar port
-+ 1
-.It
-sets the ZEO port to
-.Ar port
-+ 9
-.It
-sets the effective-user to the user that
-.Nm
-is run as
-.El
-.Pp
-Lastly,
-.Nm
-creates a script at:
-.Bl -item -offset indent
-.It
-.Pa /usr/local/zope/rc.d/ Ns << Ns Ar name Ns >> Ns Pa .sh
-.El
-.Pp
+When files are committed to a Subversion repository (see
+.Xr svn 1 )
+with the property 'svn:eol-style=native', the line endings for that file are
+checked for consistency. If the newlines are inconsistent -- i.e., they are a
+mixture of Windows ('\er\en'), legacy Macintosh ('\er'), and/or Unix ('\en')
+newlines -- then an error is raised and the commit fails.
 
-This script can be used to start, stop, and restart the Zope+ZEO instance.
+.Nm
+is a
+.Xr python 1
+script that traverses the tree rooted at
+.Pa ./
+and cleans up the line endings in all text files.
+The definition of a text file is taken from the current user's
+.Xr svn 1
+config file, which is assumed to be at:
+.Bd -literal -offset indent
+.Pa ~/.subversion/config
+.Ed
+.Pp
+Specifically, text files are those with filenames matching any key in the
+[auto-props] section with the value,
+.Sq svn:eol-style=native .
+These files are opened, and all instances of
+(Windows newline) are replaced with
+.Sq \en
+(Unix newline).
 
+The tree does not have to be an
+.Xr svn 1
+working copy in order to be processed successfully.
 .\"
 .\"
 .\"
 .\"
 .\"
 .Sh IMPLEMENTATION NOTES
-This program was written with FreeBSD 4.11, Python 2.4, and Zope 2.7.4.
+This program was written with FreeBSD 4.11, Python 2.4, and Subversion 1.1.0.
 .\"
 .\"
 .\"
 .\"
 .\"
 .Sh EXAMPLES
-.Bd -literal
-% PATH=/usr/local/zope/rc.d
-% cd /usr/local/zope/instances
-% svneol foo
-.Ns ...
-% svneol bar_8000 8000
-.Ns ...
-% ls
-bar_8000        foo
-% bar_8000.sh start
-.Ns . daemon process started, pid=12345
-started bar_8000 zeo server
-.Ns . daemon process started, pid=12346
-started bar_8000 zeo client
-%
-.Ed
 .\"
 .\"
 .\"
 .\"
 .\"
 .Sh SEE ALSO
-.Xr rc 8
+.Xr svn 1
 .\"
 .\"
 .\"
