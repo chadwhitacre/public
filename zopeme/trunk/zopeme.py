@@ -115,14 +115,14 @@ else:
 
 case "$1" in
 start)
-    %(server)s start && echo -n ' %(name)s/server' && %(client)s start && echo -n ' %(name)s/client'
+    %(server)s start && echo 'started %(name)s zeo server' && %(client)s start && echo 'started %(name)s zeo client'
     ;;
 stop)
-    %(client)s stop && echo -n ' %(name)s/client' && %(server)s stop && echo -n ' %(name)s/server'
+    %(client)s stop && echo 'stopped %(name)s zeo client' && %(server)s stop && echo 'stopped %(name)s zeo server'
     ;;
 restart)
-    echo -n 'restarting:'
-    %(client)s stop && echo -n ' %(name)s/client' && %(server)s restart && echo -n ' %(name)s/server' && %(client)s start && echo -n ' %(name)s/client'
+    echo 'restarting:'
+    %(client)s stop && echo 'stopped %(name)s zeo client' && %(server)s restart && echo 'restarted %(name)s zeo server' && %(client)s start && echo 'started %(name)s zeo client'
     echo
     ;;
 *)
