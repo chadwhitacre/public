@@ -1,13 +1,6 @@
 Steve's todo
 ------------------------------
 
-Very High Priority (we need this to develop sites)
-
-    on zope instance create, create canonical address and file it in the apache dbm
-
-    handle edits in apache for zopes
-
-
 High Priority (we need this to host sites)
 
     smarter error messages (which domain did you click?)
