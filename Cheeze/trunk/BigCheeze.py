@@ -43,10 +43,10 @@ class BigCheeze(Implicit, Persistent, \
     vhosting = 0
 
     BigCheeze_manage_options = (
-        {'label':'Zopes', 'action':'big_cheeze_edit',},
-        {'label':'Domains', 'action':'big_cheeze_domains',},
-        {'label':'Documentation', 'action':'big_cheeze_doc',},
-        )
+        {'label':'Zopes',           'action':'manage_zopes',    },
+        {'label':'Domains',         'action':'manage_domains',  },
+        {'label':'Documentation',   'action':'manage_doc',      },
+                                )
 
     manage_options = BigCheeze_manage_options \
                    + PropertyManager.manage_options \
@@ -54,26 +54,10 @@ class BigCheeze(Implicit, Persistent, \
                    + Item.manage_options
 
     _properties=(
-        {'id'   :'instance_root',
-         'type' :'string',
-         'value':'',
-         'mode': 'w',
-         },
-        {'id'   :'skel_root',
-         'type' :'string',
-         'value':'',
-         'mode': 'w',
-         },
-        {'id'   :'apache_db',
-         'type' :'string',
-         'value':'',
-         'mode': 'w',
-         },
-        {'id'   :'dns_file',
-         'type' :'string',
-         'value':'',
-         'mode': 'w',
-         },
+        {'id'   :'instance_root','type' :'string','value':'','mode': 'w',},
+        {'id'   :'skel_root',    'type' :'string','value':'','mode': 'w',},
+        {'id'   :'apache_db',    'type' :'string','value':'','mode': 'w',},
+        {'id'   :'dns_file',     'type' :'string','value':'','mode': 'w',},
                 )
 
     def __init__(self, id, instance_root='', skel_root=''):
@@ -81,37 +65,44 @@ class BigCheeze(Implicit, Persistent, \
         self._set_instance_root(str(instance_root))
         self._set_skel_root(str(skel_root))
 
+
     ##
-    # These are attributes that we will call TTW for manage views
+    # Presentation routines
     ##
 
-    big_cheeze_edit = PageTemplateFile('www/big_cheeze_edit.pt',
-                                       globals(),
-                                       __name__='big_cheeze_edit',)
+    def manage_edit(self):
+        """  """
+        return PageTemplateFile('www/big_cheeze_edit.pt',globals())
 
-    big_cheeze_domains = PageTemplateFile('www/big_cheeze_domains.pt',
-                                          globals(),
-                                          __name__='big_cheeze_domains',)
+    def manage_domains(self):
+        """  """
+        return PageTemplateFile('www/manage_domains.pt',globals())
 
-    big_cheeze_doc = PageTemplateFile('www/big_cheeze_doc.pt',
-                                       globals(),
-                                       __name__='big_cheeze_doc',)
+    def manage_doc(self):
+        """  """
+        return PageTemplateFile('www/manage_doc.pt',globals())
 
-    big_cheeze_style = DTMLFile('www/style.css',
-                                globals(),
-                                __name__ = 'big_cheeze_style',)
+    def style(self):
+        """  """
+        return DTMLFile('www/style.css',globals())
 
-    big_cheeze_delete = ImageFile('www/delete.gif',
-                                  globals(),)
+    def style_zopes(self):
+        """  """
+        return DTMLFile('www/style_zopes.css',globals())
+
+    def image_delete(self):
+        """  """
+        return ImageFile('www/delete.gif',globals(),)
 
 
 
     big_cheeze_edit._owner = big_cheeze_domains._owner \
-                           = big_cheeze_doc._owner \
-                           = big_cheeze_style._owner \
-                           = big_cheeze_delete._owner \
+                           = manage_doc._owner \
+                           = style_big_cheeze._owner \
+                           = style_zopes.owner \
+                           = image_delete._owner \
                            = None
-    manage = manage_main = big_cheeze_edit
+    manage = manage_main = manage_edit_big_cheeze
 
 
     ##
@@ -225,5 +216,3 @@ def initialize(context):
                       manage_addBigCheeze),
         icon='www/big_cheeze.png',
         )
-    context.registerHelp()
-    context.registerHelpTitle('Cheeze')
