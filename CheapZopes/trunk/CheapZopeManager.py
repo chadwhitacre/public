@@ -1,21 +1,43 @@
-from Products.TheZetaServer.interfaces import ITheZetaServer
-from Products.ZetaUtils import compare_domains, pformat, index_sort
-from Products.TheZetaServer.vh_utils import update_vhosts, \
+from Products.CheapZopes.interfaces import ICheapZopes
+from Products.CheapZopes.vh_utils import update_vhosts, \
                                             recreate_vhosts, \
                                             get_vhosts
+from Products.ZetaUtils import compare_domains, pformat, index_sort
 from AccessControl import ModuleSecurityInfo
 
+from Acquisition import Implicit
+from Globals import Persistent
+from AccessControl.Role import RoleManager
+from OFS.SimpleItem import Item
 
-class TheZetaServer:
+class CheapZopeManager(Implicit, Persistent, RoleManager, Item):
 
-    __implements__ = ITheZetaServer
+    __implements__ = ICheapZopeManager
 
-    def __init__(self):
-        pass
+    security = ClassSecurityInfo()
 
-    security = ModuleSecurityInfo()
+    id = 'CheapZopeManager'
+    title = 'Centrally manage many zope instances'
+    meta_type= 'Cheap Zope Manager'
+    
+    _properties=(
+        {'id'   :'instance_root',
+         'type' :'string',
+         'value':'',
+         },
+        {'id'   :'skel_root',
+         'type' :'string',
+         'value':'',
+         },
+                )
 
-    security.declarePublic('')
+    def __init__(self, **kw):
+        if kw:
+            self.__dict__.update(**kw)
+        if not self.__dict__.has_key('instance_root'):
+            self.__dict__['instance_root'] = self.instance_root
+        if not self.__dict__.has_key('skel_root'):
+            self.__dict__['skel_root'] = self.skel_root
 
     ##
     # vhost wrappers
@@ -42,7 +64,7 @@ class TheZetaServer:
     ##
 
     def domains_info(self, troubleshoot=0):
-        "deletes a vhost given a name"
+        "populates the domains pt"
         vhosts = self.domains_list()
         index_sort(vhosts,0,compare_domains)
         info = {} 
