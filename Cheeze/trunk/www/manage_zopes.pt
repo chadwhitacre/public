@@ -110,7 +110,7 @@
         <!-- The add form is disabled if we have port_range
              but no availaports, or if we don't have skel_root -->
         <tr class="green" tal:condition="python:port_range and not availaports">
-            <td tal:attributes="colspan python:test(context/vhost_db, '5', '4')">
+            <td tal:attributes="colspan python:test(context.vhost_db, '5', '4')">
 
                 Zope creation is disabled because there are no more available <a
                 href="manage_doc#port_range">ports</a>.
