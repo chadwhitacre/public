@@ -4,11 +4,11 @@ Ok man, here's what I did: I mercilessly refactored ZetaServerAdmin into a
 Product, which is now called Cheeze and which is in the public repo. "Cheeze"
 stands for "Cheap Zopes". :)
 
-I decided to keep the vhosting and instance mgmt functionality more distinct
-than we have been. Doing this means we can use Cheeze on our local machines,
-cause we need cheap zopes for dev as well as for production. I didn't remove any
-of your vhosting work, but it only shows up if we are on unix (haven't actually
-fully tested this yet).
+I decided to keep the vhosting and instance mgmt functionality a little more
+distinct than we have been. Doing this means we can use Cheeze on our local
+machines, cause we need cheap zopes for dev at least as much as for production.
+I didn't remove any of your vhosting work, but it only shows up if we are on
+unix (haven't actually fully tested this yet).
 
 So here's how to set up a Cheeze server (dev or production):
 
@@ -22,52 +22,36 @@ So here's how to set up a Cheeze server (dev or production):
 
   3) Use stock mkzopeinstance.py to create a "master" instance in zopes/
 
-  4) Manually tweak master/etc/zope.conf, etc.
+  4) Manually tweak master/etc/zope.conf, etc. to your liking (I am using port
+     8000 for master, 80 for dev instances)
 
-  5) Right now it expects a
+  5) Optionally, add a custom skel or two to skel/.
 
   6) In master/ZMI, add a Big Cheeze, and set the instance_root and skel_root to
      the directories you created above.
 
 
-
-
 Notes:
 
-  - I've been using "skel" as the plural of "skel" prolly dumb but it's late ;)
+  - Create/delete is working :)
 
   - "decommission" (take out of vhosting) will act as a protection against
   accidental deletion once it is in place.
 
-  - We may want to make delete impossible on production servers.
+  - We may want to make delete impossible on production servers. (i.e., have
+  two 'modes' for Big Cheeze -- production, dev)
 
   - You can have multiple Big Cheezes pointing to different instance
   roots. Heck, you can even point them at same root :)
 
-  - No tests, interfaces are out of sync
+  - No tests, and interface is out of sync
+
+  - list_zopes and list_skel are dumb! They just list the directories in
+  instance_root and skel_root, regardless of whether those directories will
+  actually function as zopes or skel.
+
+  - I've been using "skel" as the plural of "skel" prolly dumb but it's late ;)
 
 
 
-
-
-CheapZopeManager will handle several tasks:
-
-    - creation of new zope instances
-
-    - registering instances with apache
-
-
-
-    - registering domains with dns
-
-
-
-    - centralized error management
-
-    - per site bandwith, storage, and memory usage
-
-
-
-
-    - serving up data for zeta client apps, such as an app that would browse and
-    download instances for local dev purposes
+SEE ALSO: TODO.txt

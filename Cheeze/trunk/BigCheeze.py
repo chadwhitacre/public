@@ -163,9 +163,12 @@ class BigCheeze(Implicit, Persistent, \
 
             # set skelsrc
             skel = zope['skel']
-            if skel == '':
-                skel = 'default'
-            skelsrc = join(self.skel_root, skel)
+            if skel == '|stock|':
+                # default to using stock Zope skeleton source
+                # NB: kw['HTTP_PORT'] will be meaningless!
+                skelsrc = join(kw['ZOPE_HOME'], 'skel')
+            else:
+                skelsrc = join(self.skel_root, skel)
 
             # set skeltarget
             kw['INSTANCE_HOME'] = skeltarget \
@@ -177,7 +180,7 @@ class BigCheeze(Implicit, Persistent, \
             if port == '':
                 port = '80'
             kw['HTTP_PORT'] = port
-            kw['FTP_PORT'] = '21' # should revisit this later
+            kw['FTP_PORT'] = '21' # will want to revisit this later
 
             # now make the zope!
             copyzopeskel.copyskel(skelsrc, skeltarget, None, None, **kw)
@@ -215,7 +218,7 @@ class BigCheeze(Implicit, Persistent, \
     ##
 
     def _setPropValue(self, id, value):
-        """ override PropertyManager default in order to provide validation """
+        """ intercept so we can do validation """
         if id == 'instance_root':
             self._set_instance_root(value)
         elif id == 'skel_root':
@@ -243,7 +246,7 @@ class BigCheeze(Implicit, Persistent, \
     def _set_skel_root(self, skel_root):
         """ validate and set the skel root """
         if skel_root == '':
-            return
+            PropertyManager._setPropValue(self, 'skel_root', '')
         elif not os.path.exists(skel_root):
             raise 'Cheeze Error', "Proposed skel root '%s' " \
                                 + "does not exist" % skel_root
