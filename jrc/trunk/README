@@ -1,0 +1,27 @@
+(c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+This program is beerware. If you like it, buy me a beer someday.
+No warranty is expressed or implied.
+
+Contents:
+
+    Makefile    installation instructions
+
+    README      this file
+
+    jrc.1       man page
+
+    jrc.py      script itself
+
+
+To install:
+
+    % cd ~
+    % svn export https://svn.zetadev.com/private/utils/jrc/trunk/ jrc
+    % cd jrc
+    % make install
+
+
+To uninstall:
+
+    % cd ~/jrc
+    % make uninstall
