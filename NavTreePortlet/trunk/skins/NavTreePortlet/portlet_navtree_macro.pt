@@ -1,0 +1,10 @@
+<li tal:repeat="item options/children" style="margin-left : 0.5em">
+    <a tal:attributes="href item/absolute_url; class python:test(item.get('currentItem',0), 'selected', '')" style="text-decoration:none; " >
+        <img tal:attributes="src item/icon" />
+        <span tal:content="item/Title|nothing" 
+              tal:attributes="title item/Description|nothing" />
+    </a>
+  <ul tal:define="children item/children|nothing" tal:condition="children" tal:content="structure python:here.portlet_navtree_macro(children=children)">
+          RECURSE TO SUBTREE
+  </ul>
+</li>
