@@ -20,6 +20,8 @@
     I. INTRODUCTION
 ========================================
 
+    From http://dictionary.reference.com/search?q=porter:
+
         por·ter[1] (pôrt@r)
         n.
 
@@ -37,21 +39,13 @@
             One in charge of a gate or door.
 
 
-    Porter is a piece of software for mapping domain names to websites served
-    from within a clustered server environment. Porter, then, is a gatekeeper
-    for the server cluster, as well as the one who ferries packets to the proper
-    backend server. This centralization provides certain benefits:
+    Porter is a piece of software for managing the interface between the public
+    Internet and a server cluster set up according to the Cambridge distributed
+    http server architecture. All of the above definitions can be helpful in
+    understanding what Porter is about, but given that Cambridge's namesake is
+    Cambridge University, the second definition is the most apt.
 
-        - Fewer changes to DNS since all DNS always points to the cluster's
-        public IP address. This means instant rerouting of domain names among
-        backend servers, vastly streamlining staging, rollout, and fallback.
-
-        - Easier log configuration
-
-        - Easier cache configuration
-
-    The drawback, of course, is that we have a single point of failure. In
-    future versions we need to address this issue.
+    TODO: For more on Cambridge, see http://www.zetaweb.com/software
 
 
 
@@ -59,39 +53,17 @@
     II. DEFINITIONS
 ========================================
 
-    DOMAIN NAME -- a domain name is a fully qualified second- or higher-level
-    domain[1]. Examples:
+    These definitions are part of Cambridge, and are repeated here for convenience
 
-        - zetaserver.com
+    DOMAIN NAME -- To register a domain name with Porter it must have at least
+    two levels, i.e., sub.example.com or example.com but not example.
 
-        - tesm.edu
+    SERVER -- A server is an IP address which will be serving websites.
 
-        - online.tesm.edu
-
-        - library.tesm.edu
-
-        - jewelryjohn.com
-
-
-    WEBSITE -- A website in our clustered server is an abstraction, a purely
-    logical construct, identified by a codename. Instances of this abstraction
-    are uniquely identified by an id of the form:
-
-        codename@server:port
-
-    Note that the server and port are sufficient to distinguish the instance as
-    far as Apache is concerned, but the codename is necessary in cases where we
-    want to relate this instance to other instances of the website on the human
-    level.
-
-    SERVER -- A server is any IP address in /etc/hosts that returns the
-    following when called via HTTP on port 80:
-
-        https://127.0.0.1:80/websites
-        https://127.0.0.1:80/open_ports
-
-            Should return some data structure. Format yet to be decided (XML or
-            pure python?) Should include: available ports, current websites
+    WEBSITE -- A website in Cambridge is an abstraction, a purely logical
+    construct, identified by a codename. Within Porter, instances of this
+    abstraction are uniquely identified by an id of the form: server:port, e.g.
+    websrvr:8080.
 
 
 
@@ -117,7 +89,7 @@
     IV. INSTALLATION & USAGE
 ========================================
 
-    Set up porter
+    Set up Porter
     ----------------------------------------
     $PKG_HOME -- the directory to which you installed porter
     prtrsrvr -- example porter server hostname
@@ -131,21 +103,12 @@
         stuff (var/, bin/) in /usr/local/porter/.
 
         For now just put the package somewhere (e.g., /usr/local/porter), and
-        follow the instructions in /usr/local/porterbin/porter.
+        follow the instructions in /usr/local/porter/bin/porter.
 
 
     2) Install and configure Apache.
 
-        Porter expects that httpd will do the actual routing of http requests
-        to the appropriate backend server. The two interface via a dbm file at
-        $PKG_HOME/var/rewrite.db, which maps domain name to server:port. The
-        intention is that this file be used in a dbm RewriteMap[2], e.g.:
-
-            <VirtualHost *>
-                RewriteEngine On
-                RewriteMap  PorterMap dbm:$PKG_HOME/var/rewrite.db
-                RewriteRule ^/(.*) http://${PorterMap:%{HTTP_HOST}}/$1 [L,P]
-            </VirtualHost>
+        See APACHE.txt.
 
 
     3) Install and configure BIND.
@@ -188,7 +151,7 @@
 
     4) Install a website.
 
-    5) Tell prtrsrvr about websrvr[3]:
+    5) Tell prtrsrvr about websrvr[1]:
 
         prtrsrvr# vi /etc/hosts
         127.0.0.1   websrvr
@@ -222,7 +185,7 @@
     CREDITS & LEGAL
 ========================================
 
-    Porter was written and is maintained by Chad Whitacre <chad zetaweb.com>.
+    Porter was written and is maintained by Chad Whitacre <chad zetaweb com>.
 
     Porter is licensed under the BSD license (see LICENSE.txt).
 
@@ -232,22 +195,7 @@
     NOTES
 ========================================
 
-[1] If I'm not mistaken, these actually aren't true FQDNs since they don't have
-a final period.
-
-[2] For details on dbm RewriteMaps see Apache's documentation:
-
-    Apache 1.3 -- http://httpd.apache.org/docs/mod/mod_rewrite.html#RewriteMap
-
-    Apache 2.0 -- http://httpd.apache.org/docs-2.0/mod/mod_rewrite.html#rewritemap
-
-Apache 2 supports four dbm types -- sdbm, ndbm, gdbm, and db. The default is
-sdbm, which doesn't have a Python library afaict. We are using Python's dbm
-module, which produces ndbm-compatible files. However, I couldn't get Apache
-2.0.52 to compile --with-ndbm. I therefore dropped back to Apache 1.3.33 because
-ndbm is in fact the only available type in 1.3.
-
-[3] In a future version of porter, the plan is to constrain the server hostnames
+[1] In a future version of porter, the plan is to constrain the server hostnames
 available in step 6 to those hosts named in /etc/hosts that provide a certain API,
 and to constrain the available port numbers to those that $server tells us about
 via the API.
