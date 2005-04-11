@@ -38,8 +38,7 @@ else:
         zeo_port = http_port + 9
 
         root = os.path.realpath(name)
-        client_path = os.path.join(root, 'client-1')
-        server_path = os.path.join(root, 'server')
+        instance_path = os.path.join(root)
 
         # make the base directory if it doesn't already exist
         if os.path.exists(root) and not FORCE:
@@ -49,8 +48,8 @@ else:
             os.makedirs(root)
 
             # create and configure the ZEO server instance
-            os.system('/usr/local/zope/zope/bin/mkzeoinstance.py %s' % server_path)
-            confile = file(os.path.join(server_path,'etc','zeo.conf'), 'r+')
+            os.system('/usr/local/zope/zope/bin/mkzeoinstance.py %s' % instance_path)
+            confile = file(os.path.join(instance_path,'etc','zeo.conf'), 'r+')
             tmp = confile.read(); confile.seek(0); confile.truncate()
             tmp = tmp.replace( '  address 9999'
                              , '  address %s' % zeo_port)
@@ -59,8 +58,8 @@ else:
 
 
             # create and configure the ZEO client instance
-            os.system('/usr/local/zope/zope/bin/mkzopeinstance.py -d %s' % client_path)
-            confile = file(os.path.join(client_path,'etc','zope.conf'), 'r+')
+            os.system('/usr/local/zope/zope/bin/mkzopeinstance.py -d %s' % instance_path)
+            confile = file(os.path.join(instance_path,'etc','zope.conf'), 'r+')
             tmp = confile.read(); confile.seek(0); confile.truncate()
             tmp = tmp.replace( '#    effective-user chrism'
                              , '    effective-user %s' % current_user)
@@ -116,8 +115,8 @@ else:
 
 
             # now install a script into rc.d
-            rcd = { 'client'   : os.path.join(client_path, 'bin', 'zopectl')
-                  , 'server'   : os.path.join(server_path, 'bin', 'zeoctl')
+            rcd = { 'client'   : os.path.join(instance_path, 'bin', 'zopectl')
+                  , 'server'   : os.path.join(instance_path, 'bin', 'zeoctl')
                   , 'name'     : name
                   , 'fullpath' : root
                    }
