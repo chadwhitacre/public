@@ -37,14 +37,13 @@ following paths exist:
 .Pa /usr/local/zope/zope/bin/mkzopeinstance.py
 .El
 .Pp
-It creates the ZEO client and server instances at:
-.Bl -item -offset indent
-.It
-.Pa ./ Ns << Ns Ar name Ns >> Ns Pa /client-1
-.It
-.Pa ./ Ns << Ns Ar name Ns >> Ns Pa /server
-.El
-.Pp
+It creates the ZEO client and server instances in the same folder at
+.Pa ./ Ns << Ns Ar name Ns >>.
+This is nice for interchangeability between Zope+ZEO and straight Zope
+instances. And I believe that if a second ZEO client were necessary you could
+get one by simply starting the same Zope instance on a different port, i.e., by
+overriding zope.conf from the command line (assuming that is possible).
+
 If
 .Pa ./ Ns << Ns Ar name Ns >>
 already exists, it is not overwritten, unless the
