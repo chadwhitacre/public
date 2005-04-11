@@ -1,0 +1,130 @@
+<!doctype html public "-//w3c//dtd xhtml 1.0 transitional//en"
+"http://www.w3.org/tr/xhtml1/dtd/xhtml1-transitional.dtd">
+
+<html i18n:domain="plone">
+
+<!-- wysiwyg default widget -->
+<div metal:define-macro="wysiwygEditorBox">
+
+ <tal:block tal:define="useFCK python: here.portal_membership.getAuthenticatedMember().getProperty('wysiwyg_editor')=='FCK Editor';
+                       wysiwyg python: useFCK">
+
+  <tal:block tal:condition="python: useFCK"
+             tal:define="parent_url python:here.aq_parent.absolute_url();
+                         cleaninput0 python:inputvalue.replace('\x5C','\x5C\x5C');
+                         cleaninput1 python:cleaninput0.replace('\x27','\x5C\x27');
+                         cleaninput2 python:cleaninput1.replace('\r',' ');
+                         cleaninput python:cleaninput2.replace('\n',' ')">
+
+
+   <script type="text/javascript" src="" tal:attributes="src string:${portal_url}/fckeditor.js">
+   </script>
+
+   <script type="text/javascript" tal:content="structure string:
+&lt;!--
+var oFCKeditor=new FCKeditor('${inputname}');
+oFCKeditor.Config['CustomConfigurationsPath'] = '/fckcustom.js'
+oFCKeditor.BasePath='${request/URLPATH2}/';
+oFCKeditor.Value='${cleaninput}';
+oFCKeditor.ToolbarSet='ZopeCmf';
+oFCKeditor.Width=780;
+oFCKeditor.Height=600;
+oFCKeditor.Create();
+--&gt;
+">
+     The FCK Editor Script
+   </script>
+
+
+  </tal:block>
+
+
+  <tal:block condition="not: wysiwyg">
+   <textarea cols="80"
+             rows="25"
+             tabindex=""
+             name="text"
+             tal:content="inputvalue"
+             tal:attributes="name inputname;
+                             id inputname;
+                             onfocus onfocus|nothing;
+                             onblur onblur|nothing;
+                             tabindex tabindex|nothing;" id="Textarea2"></textarea>
+  </tal:block>
+ </tal:block>
+</div>
+
+<div metal:define-macro="textFormatSelector">
+
+ <tal:block tal:define="wysiwyg python: here.portal_membership.getAuthenticatedMember().getProperty('wysiwyg_editor')!='None'">
+
+  <tal:block condition="wysiwyg">
+        <input type="hidden"
+               name="text_format"
+               value="html" id="Hidden1"/>
+  </tal:block>
+
+  <tal:block condition="not: wysiwyg">
+    <div class="row">
+      <div class="label">
+         <span i18n:translate="label_format">Format</span>
+         <div id="format_help"
+              i18n:translate="help_format"
+              class="help"
+              style="visibility:hidden">
+           Select which format you want to type the contents of this
+           document in. If you are unsure of which format to use, just
+           select Plain Text and type the document as you usually
+           do.
+         </div>
+      </div>
+      <div class="field"
+           tal:define="tabindex tabindex/next;
+                       text_format python:request.get('text_format', getattr(here,'text_format','structured-text'))">
+        <input class="noborder"
+               type="radio"
+               name="text_format"
+               value="structured-text"
+               tabindex=""
+               id="cb_structuredtext"
+               onfocus="formtooltip('format_help',1)"
+               onblur="formtooltip('format_help',0)"
+               tal:attributes="checked python:test(text_format=='structured-text', 1, '');
+                               tabindex tabindex;"
+               />
+        <label for="cb_structuredtext" i18n:translate="structured_text">Structured Text</label> <br />
+
+        <input class="noborder"
+               type="radio"
+               name="text_format"
+               value="html"
+               tabindex=""
+               id="cb_html"
+               tal:attributes="checked python:test(text_format=='html', 1, '');
+                               tabindex tabindex;"
+               onfocus="formtooltip('format_help',1)"
+               onblur="formtooltip('format_help',0)"
+               />
+        <label for="cb_html" i18n:translate="html">HTML</label> <br />
+
+        <input class="noborder"
+               type="radio"
+               name="text_format"
+               value="plain"
+               tabindex=""
+               id="cb_plain"
+               tal:attributes="checked python:test(text_format=='plain', 1, '');
+                               tabindex tabindex;"
+               onfocus="formtooltip('format_help',1)"
+               onblur="formtooltip('format_help',0)"
+               />
+        <label for="cb_plain" i18n:translate="plain_text">Plain Text</label>
+      </div>
+    </div>
+  </tal:block>
+
+ </tal:block>
+
+</div>
+
+</html>
