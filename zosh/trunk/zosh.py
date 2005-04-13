@@ -47,7 +47,6 @@ class Zosh(cmd.Cmd):
         objects = self.context.objectIds()
         if objects: self.columnize(objects)
 
-
     def _getcwd(self):
         cwd = '/'.join(self.context.getPhysicalPath())
         if not cwd: cwd = '/'
