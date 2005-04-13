@@ -11,6 +11,14 @@ class Zosh(cmd.Cmd):
 
     def __init__(self, INSTANCE_HOME = None, *args, **kw):
 
+        # Cmd-specific attributes
+        self.intro = 'zosh version 0.1'
+        self.prompt = 'zosh: '
+
+        # let our superclass have its way too
+        cmd.Cmd.__init__(self, *args, **kw)
+
+
         # get SOFTWARE_HOME from the environment
 
         SOFTWARE_HOME = os.environ.get('SOFTWARE_HOME')
@@ -29,16 +37,12 @@ class Zosh(cmd.Cmd):
             INSTANCE_HOME = os.path.realpath(INSTANCE_HOME)
             Zope.configure('%s/etc/zope.conf' % INSTANCE_HOME)
         else:
+            print >> self.stdout, "no INSTANCE_HOME given, using a test ZODB"
             sys.stderr = file('/dev/null', 'r+')
             from Testing.ZopeTestCase import base as Zope
             sys.stderr = sys.__stderr__
 
         self.context = Zope.app()
-        self.intro = 'zosh version 0.1'
-        self.prompt = 'zosh: '
-
-        # let our superclass have its way too
-        cmd.Cmd.__init__(self, *args, **kw)
 
 
     def do_ls(self, line):
@@ -151,6 +155,7 @@ less
     TODO
 ========================================
 
+should only interact w/ test ZODB if curdir is not an INSTANCE_HOME
 _refresh command reimports the Zosh obj so we don't have to kill and restart Zope for testing
 tab completion for cd
 locals should contain the current objectIds so we can operate on them directly
