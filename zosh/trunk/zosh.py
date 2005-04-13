@@ -5,35 +5,41 @@
 # python modules
 import cmd, os, sys, traceback
 
-# get our Zope connection
-sys.path.append(os.environ['SOFTWARE_HOME'])
-import Zope
-Zope.configure('/home/whit537/zosh/testzope/etc/zope.conf')
-app = Zope.app()
-
-# set up logging
-import logging
-logger = logging.getLogger('zosh')
-hdlr = logging.FileHandler('zosh.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
-
-# for complete_cd
-from OFS.Folder import Folder
-
-class ZoshCmd(cmd.Cmd):
+class Zosh(cmd.Cmd):
     """
     """
 
-    def __init__(self, *args, **kw):
-        self.context = app
+    def __init__(self, INSTANCE_HOME = None, *args, **kw):
+
+        # get SOFTWARE_HOME from the environment
+
+        SOFTWARE_HOME = os.environ.get('SOFTWARE_HOME')
+        if SOFTWARE_HOME is None:
+            print "Please set SOFTWARE_HOME to your Zope's lib/python."
+            sys.exit(2)
+        sys.path.append(SOFTWARE_HOME)
+
+
+        # If we are given an INSTANCE_HOME, use the ZODB there. Otherwise
+        # assume we are being tested either interactively or from a test
+        # runner and use a stub ZODB.
+
+        if INSTANCE_HOME is not None:
+            import Zope
+            INSTANCE_HOME = os.path.realpath(INSTANCE_HOME)
+            Zope.configure('%s/etc/zope.conf' % INSTANCE_HOME)
+        else:
+            sys.stderr = file('/dev/null', 'r+')
+            from Testing.ZopeTestCase import base as Zope
+            sys.stderr = sys.__stderr__
+
+        self.context = Zope.app()
         self.intro = 'zosh version 0.1'
         self.prompt = 'zosh: '
 
         # let our superclass have its way too
         cmd.Cmd.__init__(self, *args, **kw)
+
 
     def do_ls(self, line):
         """list objects
@@ -55,6 +61,8 @@ class ZoshCmd(cmd.Cmd):
     def complete_cd(self, text, line, begidx, endidx):
         """tab-completion for cd
         """
+        from OFS.Folder import Folder
+
         logger.error('newcontext: %s' % 'foo')
         # get the context based on the path that has been entered so far
         if not text.startswith('/'):
@@ -111,11 +119,22 @@ class ZoshCmd(cmd.Cmd):
 
 
 if __name__ == '__main__':
-    c = ZoshCmd()
+
+    # determine the INSTANCE_HOME if possible
+    if len(sys.argv) == 2:
+        INSTANCE_HOME = sys.argv.pop(1)
+    else:
+        INSTANCE_HOME = os.environ.get('INSTANCE_HOME')
+
+    shell = Zosh(INSTANCE_HOME)
     try:
-        c.cmdloop()
+        shell.cmdloop()
     except KeyboardInterrupt:
-        c.onecmd("EOF")
+        shell.onecmd("EOF")
+
+
+
+
 
 """
 zbin/
@@ -133,8 +152,23 @@ less
     TODO
 ========================================
 
+_refresh command reimports the Zosh obj so we don't have to kill and restart Zope for testing
 tab completion for cd
 locals should contain the current objectIds so we can operate on them directly
 add should provide API similar to "Select type to add ..." dropdown
-
+commands should be passed through from a bin/ directory in the distribution
 """
+
+##
+# automated testing -- run these tests using runtests.py or make test
+##
+
+from StringIO import StringIO
+testout = StringIO()
+
+def test_test():
+    zosh = Zosh(stdout=testout)
+    zosh.onecmd("ls")
+    assert testout.getvalue() == "acl_users  Control_Panel\n"
+    zosh.onecmd("cd acl_users")
+    assert testout.getvalue() == "acl_users  Control_Panel\n"
