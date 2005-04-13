@@ -28,3 +28,7 @@ uninstall:
 # delete the script and man page from their installed locations
 	rm -f ${prefix}/bin/zosh
 	rm -f ${prefix}/man/man1/zosh.1.gz
+
+test:
+# run the tests
+	./runtests.py
