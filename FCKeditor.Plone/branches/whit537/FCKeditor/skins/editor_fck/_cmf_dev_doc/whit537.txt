@@ -1,0 +1,118 @@
+Changes in FCK 2.0 FC-Preview for Plone/CMF integration :
+
+layout:
+
+FCKeditor/
+    Extensions/
+        __init__.py
+        install.py
+    skins/
+        fckeditor/
+            [customized tree]
+    __init__.py
+    LICENSE
+    README
+    version.txt
+
+
+repos/
+    FCKeditor.Plone/
+        branches/
+        tags/
+        trunk/
+            FCKeditor.Plone/
+                X - FCKeditor/tags/1.9.0 base
+                Extensions/
+                skins/
+                    fckeditor/
+                        [output of setup.py]
+                __init__.py
+                license.txt
+                setup.py
+                readme.txt
+
+
+workflow
+    Fred does a release of FCKeditor
+    we ...
+        [import the release into FCKeditor/tags/<release>]
+        cut a branch at FCKeditor.Plone/branches/<release>-integration
+        change svn:externals to point to FCKeditor/tags/<release>
+        checkout the branches, run setup.py to generate new skins folder
+
+
+
+
+I. Changes to fckconfig.js
+
+    Added link to BrowseLink and BrowseImage in fckconfig.js
+        Added dtml and scripts python for browseLinks and BrowseImages
+
+    Added default basepath in fckconfig.js
+
+    Customization of toolbars in fckconfig.js
+
+    Change file fckconfig.js  (line 29 for skinPath)
+
+    Change fonts in fckconfig.js
+
+
+
+II. Filename changes
+
+    The folder skins is renamed fck_skins because 'skins' is reserved in Zope
+    CMF ... is it!?
+
+    Move all files in folder skins/editor_fck/ for CMF product integration
+
+    Change all files in ".html" as ".html.html" .
+
+    Rename fckstyles.xml in fckstyles.xml.pt for Zope compatibility
+
+
+
+III. New files
+
+    Added wysiwyg_support files (CMF template) for CMF integration
+
+    Added CMF/plone installation files at product root
+
+    Added a .metadata file for each file (for Zope HttpCache) with vbs script
+    (routine_for_zope_files.vbs)
+
+
+
+IV. Javascript formatting issue
+
+    Since Zope 2.7.2 Zope doesn't accept anymore "</" in javascript strings
+    inside html files, for example we must change '</div>' in '<'+ '/div>'.
+
+    Très chiant de vérifier tout ça - j'arrive pas à faire une routine propre >
+    please Frederico can you change these files? Translation: "Very shitting to
+    check all that - I do not manage to make a clean routine"
+
+    Details : files and lines with corrections:
+
+        editor/fckdialog.html 40
+        editor/fckdebug.html 38 46 78
+        filemanager/browser/default/frmfolders.html 60 65 70
+        filemanager/browser/default/frmresourceslist.html 47 52 58 67 75 79
+        editor/dialog/fck_anchor.html  57
+        editor/dialog/fck_specialchar.html  76 81 85 86 89
+        editor/dialog/fck_smiley.html  70 76 77 80 81 84
+        editor/dialog/fck_about.html  119
+
+
+
+
+V. For the future
+
+    I will add an XML connector (ZPT xml) and i'll use fck browse interface . I
+    can't do that immediately because in Zope, files and folders don't exist,
+    all elements are objects which contain a lot of information and, for
+    example, file extensions are not important in Zope ... i need to think about
+    it, very interesting.
+
+
+
+jean-mat@macadames.com
