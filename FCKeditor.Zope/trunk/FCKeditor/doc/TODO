@@ -1,0 +1,28 @@
+0.2 -- wysiwyg_support + JavaScript
+========================================
+wysiwyg_support
+add compile templates test to tests/
+
+
+
+0.4 -- FCKconnector.py
+========================================
+
+
+
+
+0.6 -- FCKeditor.py
+========================================
+
+
+
+
+0.8 -- mgmt iface
+========================================
+
+
+
+
+0.2 -- done
+========================================
+base2zope should clean up '</' in Javascript in HTML
