@@ -86,7 +86,7 @@ for path, dirs, files in os.walk(SRC_ROOT):
         # create the new file if we want it
         if ext not in dont_want:
 
-            if ext == 'html':
+            if ext == 'hml':
                 # Since Zope 2.7.2 we can't have '</' in javascript strings in page
                 #  templates. It appears that FCKeditor only does this in <script>
                 #  blocks, never in HTML attributes.
