@@ -3,7 +3,7 @@
 Zope, outputting to ../skins/fckeditor_base/
 """
 
-import os, shutil, sys
+import os, re, shutil, sys
 
 
 
@@ -12,8 +12,8 @@ import os, shutil, sys
 ##
 
 PRODUCT_ROOT = os.path.realpath(os.path.join('.','..'))
-SRC_ROOT = os.path.join(PRODUCT_ROOT, 'src')
-DEST_ROOT = os.path.join(PRODUCT_ROOT, 'skins', 'fckeditor_base')
+SRC_ROOT     = os.path.join(PRODUCT_ROOT, 'src')
+DEST_ROOT    = os.path.join(PRODUCT_ROOT, 'skins', 'fckeditor_base')
 
 
 
@@ -52,7 +52,7 @@ if os.path.exists(DEST_ROOT):
 
 METADATA = """\
 [default]
-cache = HTTPCache"""
+cache = FCKCache"""
 
 def metadata(filepath):
     """ given a filepath, write a complementary metadata file
@@ -62,6 +62,7 @@ def metadata(filepath):
     mdfile.write(METADATA)
     mdfile.close()
 
+cache_me  = ('css','gif','html','js','xml')
 dont_want = ('asp','aspx','cfc','cfm','cgi','exe','htc','php','pl')
 
 for path, dirs, files in os.walk(SRC_ROOT):
@@ -84,8 +85,35 @@ for path, dirs, files in os.walk(SRC_ROOT):
 
         # create the new file if we want it
         if ext not in dont_want:
-            shutil.copy(src, dest)
-            metadata(dest)
+
+            if ext == 'html':
+                # Since Zope 2.7.2 we can't have '</' in javascript strings in page
+                #  templates. It appears that FCKeditor only does this in <script>
+                #  blocks, never in HTML attributes.
+
+                inputfile = file(src)
+                outputfile = file(dest, 'w+')
+
+                SCRIPT = False
+                for line in inputfile.readlines():
+
+                    if line.count('<script'):   SCRIPT = True
+                    if line.count('</script>'): SCRIPT = False
+
+                    if SCRIPT:
+                        line = line.replace(r'</', "<'+'/")
+
+                    outputfile.write(line)
+
+                inputfile.close()
+                outputfile.close()
+
+            else:
+                # non-HTML files don't need any processing
+                shutil.copy(src, dest)
+
+            if ext in cache_me:
+                metadata(dest)
 
     # skip svn directories
     if '.svn' in dirs: dirs.remove('.svn')
@@ -96,7 +124,6 @@ for path, dirs, files in os.walk(SRC_ROOT):
             dirs.remove(dirname)
 
 """
-
     from FCKeditor.ZopeCMF:
 
     Changes in Zope Package 03/04/05
@@ -105,37 +132,6 @@ for path, dirs, files in os.walk(SRC_ROOT):
     2. added : FCK HHTP Cache for better compatibility with others Zope 2.xx based CMS
     3. added : ZPT example for CPS integration (popup_rte_form.pt)
 
-    Changes in FCK 2.0 FC-Preview for Plone/CMF integration :
-
-    ##
-    # rename certain files, create metadata files
-    ##
-    #The folder skins is renamed fck_skins because 'skins' is reserved in Zope CMF -- is this true?
-        Change all files in ".html" as ".html.html"
-        Rename fckstyles.xml in fckstyles.xml.pt for Zope compatibility
-        Added a .metadata file for each file (for Zope HttpCache)
-            [default]
-            cache = HTTPCache
-    Since Zope 2.7.2 Zope doesn't accept anymore "</" in javascript strings
-    inside html files, for example we must change '</div>' in '<'+ '/div>'
-    The ideal would be to have these changed in the base distribution
-        Details : files and lines with corrections
-        editor/fckdialog.html 40
-        editor/fckdebug.html 38 46 78
-        filemanager/browser/default/frmfolders.html 60 65 70
-        filemanager/browser/default/frmresourceslist.html 47 52 58 67 75 79
-        editor/dialog/fck_anchor.html  57
-        editor/dialog/fck_specialchar.html  76 81 85 86 89
-        editor/dialog/fck_smiley.html  70 76 77 80 81 84
-        editor/dialog/fck_about.html  119
-        editor/dialog/fck_spellerpages/spellchecker.html  many lines
-"""
-
-
-
-
-
-"""
     ##
     # change fckconfig.js -- shouldn't do this in fckeditor_base, maybe have an
     #  fckeditor_common?
