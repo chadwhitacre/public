@@ -1,0 +1,87 @@
+# Python
+from StringIO import StringIO
+
+# Zope
+from Products.CMFCore.utils import getToolByName
+from Products.CMFCore.DirectoryView import addDirectoryViews
+from Products.StandardCacheManagers.AcceleratedHTTPCacheManager \
+                             import AcceleratedHTTPCacheManager
+
+# us
+from Products.FCKeditor import FCKglobals
+
+
+
+def install_cache(self, out):
+    """ add an HTTPCache specifically for FCKeditor; apparently this is for
+    compatibility with non-Plone CMF apps
+    """
+
+    if 'FCKCache' not in self.objectIds():
+        self._setObject('FCKCache', AcceleratedHTTPCacheManager('FCKCache'))
+        cache_settings = { 'anonymous_only' : 0
+                         , 'notify_urls'    : ()
+                         , 'interval'       : 36000
+                          }
+        self.FCKCache.manage_editProps( 'HTTPCache for FCKeditor'
+                                      , settings = cache_settings
+                                      )
+        print >> out, "Added FCKeditor HTTPCache"
+
+
+
+def install_plone(self, out):
+    """ add FCKeditor to 'My Preferences'
+    """
+    portal_props = getToolByName(self, 'portal_properties')
+    site_props = getattr(portal_props, 'site_properties', None)
+    attrname='available_editors'
+
+    if site_props is not None:
+
+        editors = list(site_props.getProperty(attrname))
+        if 'FCK Editor' not in editors:
+           editors.append('FCK Editor')
+        site_props._updateProperty(attrname, editors)
+
+        print >> out, "Added FCKeditor 2.0 Final Candidate (Preview) to " +\
+                      "available editors in Plone."
+
+
+
+def install_subskin(self, out, skin_name, globals=FCKglobals):
+    """ add a skin to portal_skins
+    """
+    skinstool = getToolByName(self, 'portal_skins')
+    if skin_name not in skinstool.objectIds():
+        addDirectoryViews(skinstool, 'skins', globals)
+
+    for skinName in skinstool.getSkinSelections():
+        path = skinstool.getSkinPath(skinName)
+        path = [i.strip() for i in  path.split(',')]
+        try:
+            if skin_name not in path:
+                path.insert(path.index('custom') +1, skin_name)
+        except ValueError:
+            if skin_name not in path:
+                path.append(skin_name)
+
+        path = ','.join(path)
+        skinstool.addSkinSelection( skinName, path)
+
+
+
+def install(self):
+    out = StringIO()
+
+    print >>out, "Installing FCKeditor 2.0 Final Candidate (Preview)"
+
+    install_cache(self, out)
+    install_plone(self, out)
+    install_subskin(self, out, 'fckeditor_base')
+    install_subskin(self, out, 'fckeditor_cps')
+    install_subskin(self, out, 'fckeditor_plone')
+
+    print >> out, "FCKeditor installation done."
+
+    return out.getvalue()
