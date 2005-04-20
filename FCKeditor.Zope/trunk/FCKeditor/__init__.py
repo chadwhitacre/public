@@ -1,4 +1,6 @@
 from Products.CMFCore.DirectoryView import registerDirectory
 
+FCKglobals = globals()
+
 def initialize(context):
-    registerDirectory('skins', globals())
+    registerDirectory('skins', FCKglobals)
