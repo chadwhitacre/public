@@ -1,4 +1,5 @@
 # Python
+import os
 from StringIO import StringIO
 
 # Zope
@@ -74,8 +75,16 @@ def install_subskin(self, out, skin_name, globals=FCKglobals):
 def install(self):
     out = StringIO()
 
-    print >>out, "Installing FCKeditor 2.0 Final Candidate (Preview)"
+    print >> out, "Installing FCKeditor 2.0 Final Candidate (Preview)"
 
+    # check to see if base2zope has been run
+    def fail():
+        raise "It looks like you haven't yet run utils/base2zope.py"
+    fckeditor_base = os.path.join('..', 'skins', 'fckeditor_base')
+    if not os.path.isdir(fckeditor_base): fail()
+    if len(os.listdir(fckeditor_base)) <= 1: fail() # account for .svn
+
+    # do the installation
     install_cache(self, out)
     install_plone(self, out)
     install_subskin(self, out, 'fckeditor_base')
