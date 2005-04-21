@@ -42,19 +42,16 @@ class FCKeditor:
     """ provides API for server-side tuning and instantiation of an FCKeditor
     """
 
-    def __init__(self, InstanceName     = 'MyEditor'
-                     , Width            = '100%'
-                     , Height           = '200px'
-                     , ToolbarSet       = 'Default'
-                     , Value            = ''
-                     , BasePath         = '/FCKeditor/'
-                      ):
-        self.InstanceName   = InstanceName
-        self.Width          = Width
-        self.Height         = Height
-        self.ToolbarSet     = ToolbarSet
-        self.Value          = Value
-        self.BasePath       = BasePath
+    def __init__(self, *args, **kw):
+
+        self.InstanceName   = 'MyEditor'
+        self.Width          = '100%'
+        self.Height         = '200px'
+        self.ToolbarSet     = 'Default'
+        self.Value          = ''
+        self.BasePath       = '/FCKeditor/'
+
+        self.__dict__.update(kw)
 
         self.Config         = {}
         self.ConfigQuerystring = ''
