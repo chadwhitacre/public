@@ -1,0 +1,8 @@
+<html>
+<head>
+    <title>FCKeditor.Zope example</title>
+</head>
+<body>
+    <tal:replace="context/FCKeditor" />
+</body>
+</html>
