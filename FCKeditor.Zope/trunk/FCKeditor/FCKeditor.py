@@ -1,38 +1,39 @@
 """
 
-should config settings be changed at run time? or should we have multiple
+should Config settings be changed at run time? or should we have multiple
 instances of FCKeditor, all with separate settings? since the thing you really
 want to change from instance to instance is the composition of the toolbar, and
-toolbars themselves are not defined here, but rather in the fckconfig.js file,
+toolbars themselves are not defined here, but rather in the fckConfig.js file,
 then I think it makes sense for this to be a single object
 
 
 """
-import urllib
+from urllib import quote_plus
 
+class FCKtemplates:
 
-COMPATIBLE_TEMPLATE = """\
+    COMPATIBLE = """\
 <div>
     <input type="hidden"
-           id="%(instance_name)s"
-           name="%(instance_name)s"
-           value="%(value)s" />
+           id="%(InstanceName)s"
+           name="%(InstanceName)s"
+           value="%(Value)s" />
     <input type="hidden"
-           id="%(instance_name)s___Config"
-           value="%(config_querystring)s" />
-    <iframe id="%(instance_name)sr___Frame"
-            src="%(base_path)seditor/fckeditor.html?InstanceName=%(instance_name)s&Toolbar=%(toolbar_set)s"
-            width="%(height)s" height="%(width)s"
+           id="%(InstanceName)s___Config"
+           value="%(ConfigQuerystring)s" />
+    <iframe id="%(InstanceName)s___Frame"
+            src="%(BasePath)seditor/fckeditor.html?InstanceName=%(InstanceName)s&Toolbar=%(ToolbarSet)s"
+            width="%(Width)s" height="%(Height)s"
             frameborder="no" scrolling="no"></iframe>
 </div>"""
 
-INCOMPATIBLE_TEMPLATE = """\
+    INCOMPATIBLE = """\
 <div>
-    <textarea name="%(instance_name)s"
+    <textarea name="%(InstanceName)s"
               rows="4" cols="40"
-              style="width: %(width)s; height: %(height)s;"
+              style="Width: %(Width)s; Height: %(Height)s;"
               wrap="virtual" />
-        %(value)s
+        %(Value)s
     </textarea>
 </div>"""
 
@@ -41,46 +42,58 @@ class FCKeditor:
     """ provides API for server-side tuning and instantiation of an FCKeditor
     """
 
-    def __init__(self, instance_name    = '/FCKeditor/'
-                     , width            = '100%'
-                     , height           = '200px'
-                     , toolbar_set      = 'Default'
-                     , value            = ''
-                     , base_path        = '/'
-                     , config           = {}
+    def __init__(self, InstanceName     = 'MyEditor'
+                     , Width            = '100%'
+                     , Height           = '200px'
+                     , ToolbarSet       = 'Default'
+                     , Value            = ''
+                     , BasePath         = '/FCKeditor/'
                       ):
-        self.instance_name  = instance_name
-        self.width          = width
-        self.height         = height
-        self.toolbar_set    = toolbar_set
-        self.value          = value
-        self.base_path      = base_path
-        self.config         = config
+        self.InstanceName   = InstanceName
+        self.Width          = Width
+        self.Height         = Height
+        self.ToolbarSet     = ToolbarSet
+        self.Value          = Value
+        self.BasePath       = BasePath
+
+        self.Config         = {}
+        self.ConfigQuerystring = ''
 
     def __call__(self):
         return self.create()
 
-    def create(self):
+    def Create(self):
         """return an HTML snippet which instantiates the editor with our
         configuration
         """
-        if compatible():
-            self.config_querystring = self.get_config_querystring()
-            return COMPATIBLE_TEMPLATE % self.__dict__
-        else:
-            return INCOMPATIBLE_TEMPLATE % self.__dict__
 
-    def compatible(self):
+        # quote the initial HTML value
+        self.Value = quote_plus(self.Value)
+
+        # marshall config into a querystring (only used for compatible)
+        self.ConfigQuerystring = self.GetConfigQuerystring()
+
+        # parse width & height
+        if str(self.Width).isdigit():  self.Width  = '%spx' % self.Width
+        if str(self.Height).isdigit(): self.Height = '%spx' % self.Height
+
+        # spit out either FCKeditor or a textarea
+        if self.Compatible():
+            return FCKtemplates.COMPATIBLE % self.__dict__
+        else:
+            return FCKtemplates.INCOMPATIBLE % self.__dict__
+
+    def Compatible(self):
         """only actually meaningful in Zope-space
         """
         return True
 
-    def get_config_querystring(self):
-        """marshall our config settings into a querystring
+    def GetConfigQuerystring(self):
+        """marshall our Config settings into a querystring
         """
-        c = self.config
-        q = urllib.quote_plus
+        c = self.Config
+        q = quote_plus
         return '&'.join(['%s=%s' % (q(key), q(c[key])) for key in c])
 
-    def set_config(self, key, value):
-        self.config[key] = value
+    def SetConfig(self, key, value):
+        self.Config[key] = value
