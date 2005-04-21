@@ -2,80 +2,76 @@ The heart of any content management system is its WYSIWYG editor, the rich-text
 widget that makes using the web to write the web practical for the masses.
 "FCKeditor":http://www.fckeditor.net is one such widget. FCKeditor hews closely
 to an MS Word model, making it much more comfortable for many users than Plone's
-usual Epoz or Kupu. The downside (assuming that likeness to Word is not a
-downside ;^) ) is that it is somewhat inelegant under the hood, and it suffers
-from a bit of "Not Invented Here" syndrome in the Plone community. Also, in my
-experience, the FCKeditor project is not as receptive to new developers as it
-could be.
+usual Epoz or Kupu. However, there are some cultural differences in the way it
+is developed:
 
-Current Status
+- no version control
 
-  FCKeditor 2.0 is slated for a May 2005 release, and the current published
-  version is 2.0 RC3. However, due to a couple critical bugs, the project issued
-  a "Final Candidate Preview" release, which was announced "in the SF
-  forums":http://sourceforge.net/forum/forum.php?thread_id=1247594&forum_id=3794
-  87. Although FCKeditor is "hosted on
-  Sourceforge":http://sourceforge.net/projects/fckeditor, it doesn't appear to
-  use Sourceforge's CVS. I'm assuming the author is afk or very busy, as I
-  haven't heard back from him yet about where his code is stored, and how he
-  usually interfaces with other developers. However, 2.0 FC Preview does indeed
-  address the major bugs I was seeing, so access to CVS is less critical. Also,
-  I made a donation today, so we will see if that helps. :^)
+- no unit testing
 
-  The project *does* interface with other developers, because "Jean-mat
-  Grimaldi":http://www.macadames.com has done an initial Plone integration, the
-  latest version of which (based on the FC Preview release) is "available as a
-  Windows ZIP file":http://http//www.fckeditor.net/dev/FCKeditor.plone_2.0-fc-
-  preview.zip. This sub-project is not currently under version control, but I am
-  hoping to convince Fred and Jean-mat to develop FCKeditor.Plone in the
-  "Collective":http://svn.plone.org/view/collective/, and to host it in the
-  "Plone Products area":/products.
+- more VBScript than Python
 
-  There is still a fair amount of work to be done on FCKeditor.Plone. The
-  biggest missing piece is the server-side file browser integration. Hopefully
-  this work will proceed more smoothly if we can get the code in the Collective.
+- more Windows-centric
 
-  FCKeditor.Plone comes with the standard FCKeditor documentation, which is only
-  available in the product itself afaict (i.e., not TTW).
+- communication is via SourceForge forums rather than mailings lists and
+freenode
 
-FCKeditor.Plone and You
+- single primary maintainer rather than distributed authority
 
-  That said, here is how to get FCKeditor into your Plone site so you can play
-  around with it:
+- licensed under LGPL
 
-  1. Download "FCKeditor.plone_2.0-fc-
-  preview.zip":http://www.fckeditor.net/dev/FCKeditor.plone_2.0-fc-preview.zip.
-  (When unzipping on *nix remember to use -a so newlines are handled properly.)
-  Put it in your Products directory and restart Zope.
+These make the project somewhat awkward to interface with Plone, but I think
+we've managed to find a workable situation in this Product.
 
-  2. FCKeditor.Plone is not currently configured to play nice with other
-  editors, so you will need to swap out Epoz, etc. Using the QuickInstaller,
-  uninstall Epoz and install FCKeditor. If necessary, manually edit the layers
-  in portal_skins > Properties.
+The Lay of the FCKland
 
-  3. In "My Preferences," choose FCKeditor as your content editor.
+    FCKeditor 2.0 is slated for a May 2005 release, and the current published
+    version is 2.0 RC3. However, due to a couple critical bugs, the project
+    issued a "Final Candidate Preview" release, which is currently only
+    available from "the SF
+    forums":http://sourceforge.net/forum/forum.php?thread_id=1247594&forum_id=379487.
 
-  The first customizations you are likely to want are a tweaked toolbar, and a
-  different width (it is fixed at 780px by default). Here's the best way I found
-  to do these customizations:
+    FCKeditor provides server-side hooks at two points: widget creation, and
+    server-side file browsing. The base distribution includes integrations for
+    light-weight technologies such as ASP, ColdFusion, PHP, and Perl. For more
+    full-bodied frameworks, FCKeditor is repackaged. Currently, separate
+    packages are maintained for .NET, Java, and ZopeCMF.
 
-  1. Add an fckcustom.js script to your portal_skins/custom or your filesystem
-  Product's skins. Anything you would put in fckconfig.js &mdash; such as
-  toolbar definitions &mdash; put in here instead.
+    The ZopeCMF package is maintained by "Jean-mat
+    Grimaldi":http://www.macadames.com. However, imo it is closer in culture to
+    FCKeditor than to Zope/Plone:
 
-  2. Override the wysiwyg_support.pt template that comes w/ FCKeditor.Plone,
-  either in Zope space (portal_skins/custom) or in a filesystem Product. You
-  will see where the editor is invoked, and that you can set the width/height
-  here, as well as the toolbar set to use. However, in order to use our custom
-  toolbar set, we need to hook in our custom config script. So, right after the
-  editor is initially defined, put this line::
+    - it is not under version control
 
-    oFCKeditor.Config['CustomConfigurationsPath'] = '/fckcustom.js'
+    - it is not unit tested
+
+    - it is released as "a Windows ZIP file":http://www.fckeditor.net/dev/FCKeditor.plone_2.0-fc-preview.zip
+
+    - it uses VBScript
+
+    - it has a single maintainer (Jean-Mat prefers not to host it in the
+    Collective, e.g.)
+
+    - licensed under LGPL
+
+    Since FCKeditor.ZopeCMF doesn't even provide server-side integration for the
+    FCKeditor file browser, I decided to start from scratch. In writing
+    FCKeditor.Zope I've taken some pointers from FCKeditor.ZopeCMF, but almost
+    all of the code is new.
+
+    FCKeditor.Plone comes with the standard FCKeditor documentation, which is
+    only available in the product itself afaict (i.e., not TTW).
+
+FCKeditor.Zope and You
+
+    1. base2zope.py
+
+    2. testing
 
 Conclusion
 
-  Of the FLOSS WYSIWYG editors, FCKeditor appears to have the most momentum
-  behind it, and the broadest appeal, though at times it can seem a bit chaotic
-  and overgrown. Both FCKeditor and FCKeditor.Plone are young, but over the next
-  6-12 months I anticipate that they will mature into a compelling solution for
-  certain audiences to the heart of the CMS problem.
+    Of the FLOSS WYSIWYG editors, FCKeditor appears to have the most momentum
+    behind it, and the broadest appeal, though the cultural differences can make
+    it uncomfortable to work with. Both FCKeditor and FCKeditor.Plone are young,
+    but over the next 12-18 months I anticipate that they will mature into a
+    compelling solution for certain audiences to the heart of the CMS problem.
