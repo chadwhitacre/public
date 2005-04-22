@@ -25,11 +25,13 @@ install: configure
 # after deleting and recreating the script and man page, install them
 	install -C -o root -g wheel -m 555 motdgen ${prefix}/bin
 	install -C -o root -g wheel -m 444 motdgen.1.gz ${prefix}/man/man1
+	install -C -o root -g wheel -m 444 chad3d.flf ${prefix}/share/figlet
 
 uninstall:
 # delete the script and man page from their installed locations
 	rm -f ${prefix}/bin/motdgen
 	rm -f ${prefix}/man/man1/motdgen.1.gz
+	rm -f ${prefix}/share/figlet/chad3d.flf
 
 test: install
 # install, spit out an example, and then show the man page
