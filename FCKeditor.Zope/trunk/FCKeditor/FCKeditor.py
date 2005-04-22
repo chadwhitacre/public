@@ -44,17 +44,20 @@ class FCKeditor:
 
     def __init__(self, *args, **kw):
 
-        self.InstanceName   = 'MyEditor'
-        self.Width          = '100%'
-        self.Height         = '200px'
-        self.ToolbarSet     = 'Default'
-        self.Value          = ''
-        self.BasePath       = '/FCKeditor/'
+        # defaults -- need to use instance attrs instead of class attrs so we
+        # can use self.__dict__
+        self.InstanceName        = 'MyEditor'
+        self.Width               = '100%'
+        self.Height              = '200px'
+        self.ToolbarSet          = 'Default'
+        self.Value               = ''
+        self.BasePath            = '/FCKeditor/'
+        self.ConfigQuerystring   = ''
 
+        # custom
         self.__dict__.update(kw)
 
         self.Config         = {}
-        self.ConfigQuerystring = ''
 
     def __call__(self):
         return self.create()
