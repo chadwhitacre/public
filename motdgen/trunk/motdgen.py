@@ -14,7 +14,7 @@ else:
     data['fqdn'] = '  '.join([c for c in fqdn]).rjust(78)
 
     hostname = fqdn.split('.')[0]
-    figlet = "figlet -S -w78 %s" % hostname
+    figlet = "figlet -f chad3d -S -w78 %s" % hostname
     stdin, stdout = os.popen4(figlet)
     data['hostname'] = stdout.read()
     stdin.close(), stdout.close()
