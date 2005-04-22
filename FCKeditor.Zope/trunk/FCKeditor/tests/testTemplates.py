@@ -1,8 +1,8 @@
-"""This script walks the tree at ../skins/fckeditor_base and compiles all of
-files with extension .pt as page templates. With no arguments it prints out
-a summary of errors and warnings for all files. Files with errors are indexed
-in the summary. Pass one of those integers to the script for details on that
-file. Examples:
+"""This script walks the tree at ../skins/fckeditor_base/FCKeditor and compiles
+all of files with extension .pt as page templates. With no arguments it prints
+out a summary of errors and warnings for all files. Files with errors are
+indexed in the summary. Pass one of those integers to the script for details on
+that file. Examples:
 
   % python testTemplates.py
    #  File                                                          Err  Warn
@@ -31,7 +31,7 @@ fileindex = sys.argv[1:2]
 if fileindex:
     fileindex = fileindex[0]
 
-top = os.path.join('..','skins','fckeditor_base')
+top = os.path.join('..','skins','fckeditor_base','FCKeditor')
 baddies = {}; i=0
 
 # walk the tree looking for bad page templates

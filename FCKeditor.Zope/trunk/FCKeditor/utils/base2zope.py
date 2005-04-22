@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """ takes the FCKeditor base distribution in ../src/ and massages it for use in
-Zope, outputting to ../skins/fckeditor_base/
+Zope, outputting to ../skins/fckeditor_base/FCKeditor/
 """
 
 import os, re, shutil, sys
@@ -13,7 +13,7 @@ import os, re, shutil, sys
 
 PRODUCT_ROOT = os.path.realpath(os.path.join('.','..'))
 SRC_ROOT     = os.path.join(PRODUCT_ROOT, 'src')
-DEST_ROOT    = os.path.join(PRODUCT_ROOT, 'skins', 'fckeditor_base')
+DEST_ROOT    = os.path.join(PRODUCT_ROOT, 'skins', 'fckeditor_base', 'FCKeditor')
 
 
 
@@ -43,6 +43,8 @@ if os.path.exists(DEST_ROOT):
         force = answer.lower() == 'y'
     if force:   rm_rf(DEST_ROOT)
     else:       sys.exit(1)
+else:
+    os.makedirs(DEST_ROOT)
 
 
 

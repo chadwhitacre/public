@@ -22,6 +22,10 @@ class ZopeFCKeditor(FCKeditor, Implicit, Persistent, PropertyManager, \
     """
 
     security = ClassSecurityInfo()
+    security.declarePublic('Create')
+    security.declarePrivate('Compatible')
+    security.declarePublic('GetConfigQuerystring')
+    security.declarePublic('SetConfig')
 
     id = ''
     title = ''
@@ -42,10 +46,10 @@ class ZopeFCKeditor(FCKeditor, Implicit, Persistent, PropertyManager, \
 
     def __init__(self, id, *arg, **kw):
         self.id = id
-
         FCKeditor.__init__(self, *arg, **kw)
         self._propertize_attrs()
 
+    security.declarePrivate('_propertize_attrs')
     def _propertize_attrs(self):
         """In our base class we want to use instance attrs so that we can use
         self.__dict__. However, self.__dict__ doesn't contain class attrs, and
@@ -58,15 +62,12 @@ class ZopeFCKeditor(FCKeditor, Implicit, Persistent, PropertyManager, \
             # don't need values here since they are overriden by instance attrs
             cls.__dict__[attr] = None
 
-    def Compatible(self):
-        """only actually meaningful in Zope-space
-        """
-        return True
 
     ##
     # Management methods
     ##
 
+    security.declarePublic('index_html')
     index_html = PageTemplateFile('www/manage_test.pt', globals())
 
 InitializeClass(ZopeFCKeditor)

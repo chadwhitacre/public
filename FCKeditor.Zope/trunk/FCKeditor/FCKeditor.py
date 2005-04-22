@@ -63,9 +63,9 @@ class FCKeditor:
     def __call__(self):
         return self.create()
 
-    def Create(self):
-        """return an HTML snippet which instantiates the editor with our
-        configuration
+    def Create(self, useragent=''):
+        """given an optional user-agent string, return an HTML snippet which
+        instantiates an FCKeditor or a plain textarea
         """
 
         # quote the initial HTML value
@@ -78,21 +78,19 @@ class FCKeditor:
         if str(self.Width).isdigit():  self.Width  = '%spx' % self.Width
         if str(self.Height).isdigit(): self.Height = '%spx' % self.Height
 
-        # spit out either FCKeditor or a textarea
-        if self.Compatible():
+        # by default return an FCKeditor; but if we have a useragent, then
+        # test that first
+        if not useragent:
+            realdeal = True
+        else:
+            realdeal = self.Compatible(useragent)
+
+        if realdeal:
             return FCKtemplates.COMPATIBLE % self.__dict__
         else:
             return FCKtemplates.INCOMPATIBLE % self.__dict__
 
-    def Compatible(self):
-        """to be overriden by framework wrappers that know how to get a user
-        agent string. e.g.:
-            useragent = 'user agent string from my request object'
-            return self._compatible(useragent) # return a boolean
-        """
-        return True
-
-    def _compatible(self, useragent):
+    def Compatible(self, useragent):
         """given a browser's user-agent string, return a boolean
         """
         useragent = useragent.lower()
@@ -114,7 +112,6 @@ class FCKeditor:
 	            return int(version) >= 20030210
 
         return False
-
 
     def GetConfigQuerystring(self):
         """marshall our Config settings into a querystring
