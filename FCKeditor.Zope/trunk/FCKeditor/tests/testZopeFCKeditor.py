@@ -18,7 +18,6 @@ class TestSomeProduct(ZopeTestCase.ZopeTestCase):
         factory = self.folder.manage_addProduct['FCKeditor']
         factory.manage_addFCKeditor('fckeditor', None)
 
-
     def testSomething(self):
         self.failUnless(hasattr(self.folder, 'fckeditor'),
                         "FCKeditor was not installed")

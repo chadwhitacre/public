@@ -1,9 +1,17 @@
-<h1 tal:replace="structure context/manage_page_header">Header</h1>
+<html>
+<head>
+    <title>FCKeditor.Zope test</title>
+    <style>
 
-<p class="form-help"> FCKeditor is a rich-text, WYSIWYG DHTML form widget. This
-object provides API for tuning and instantiating an FCKeditor w/in your
-pages.</p>
+    </style>
+</head>
 
+<body>
 
+    <p>FCKeditor is a rich-text, WYSIWYG DHTML form widget. This object provides
+    API for tuning and instantiating an FCKeditor w/in your pages.</p>
 
-<h1 tal:replace="structure context/manage_page_footer">Footer</h1>
+    <tal:x replace="structure context/Create" />
+
+</body>
+</html>

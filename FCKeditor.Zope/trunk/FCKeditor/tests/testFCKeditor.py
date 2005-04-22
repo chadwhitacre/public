@@ -20,19 +20,16 @@ class TestFCKeditor(unittest.TestCase):
     def setUp(self):
         self.fck = FCKeditor()
 
-
     def testInstantiation(self):
         self.failUnless( isinstance(self.fck, FCKeditor)
                        , "error instantiating FCKeditor"
                        )
-
 
     def testSimpleConfig(self):
         self.fck.SetConfig('AutoDetectLanguage','false')
         self.fck.SetConfig('DefaultLanguage','pt-BR')
         qs = self.fck.GetConfigQuerystring()
         self.failUnlessEqual(qs, "AutoDetectLanguage=false&DefaultLanguage=pt-BR")
-
 
     def testUrlEncodedConfig(self):
         #self.fck.config = {} # hmmm ... not sure why I need this
@@ -41,7 +38,6 @@ class TestFCKeditor(unittest.TestCase):
         qs = self.fck.GetConfigQuerystring()
         self.failUnlessEqual(qs,"foo=%26I+need%3A++%22URL+encoding%22" +\
                                  "&so+do+%2AI%2A=bar")
-
 
     def testDefaultReplacement(self):
         expected = """\
@@ -59,7 +55,7 @@ class TestFCKeditor(unittest.TestCase):
             frameborder="no" scrolling="no"></iframe>
 </div>"""
 
-        self.assertEqual(self.fck.Create(), expected)
+        self.assertEqual(self.fck.Create('Gecko/20030313'), expected)
 
 
     def testCustomReplacement(self):
@@ -96,7 +92,7 @@ class TestFCKeditor(unittest.TestCase):
             frameborder="no" scrolling="no"></iframe>
 </div>"""
 
-        self.assertEqual(self.fck.Create(), expected)
+        self.assertEqual(self.fck.Create('Gecko/20030313'), expected)
 
 
 
@@ -125,7 +121,7 @@ Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0);JTB:104:a95eef30-9f35-4ec0-bc
         for useragent in compatible_useragents.split(os.linesep):
             i += 1
             if useragent.strip():
-                self.failUnless(self.fck._compatible(useragent),
+                self.failUnless(self.fck.Compatible(useragent),
                                 "compatible failed on #%s: %s" % (i, useragent))
 
 
@@ -148,7 +144,7 @@ Opera/7.54 (FreeBSD; U)
         for useragent in incompatible_useragents.split(os.linesep):
             i += 1
             if useragent.strip():
-                self.failIf(self.fck._compatible(useragent),
+                self.failIf(self.fck.Compatible(useragent),
                             "incompatible failed on #%s: %s" % (i, useragent))
 
 
