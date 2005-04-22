@@ -8,6 +8,7 @@ then I think it makes sense for this to be a single object
 
 
 """
+import re
 from urllib import quote_plus
 
 class FCKtemplates:
@@ -39,13 +40,13 @@ class FCKtemplates:
 
 
 class FCKeditor:
-    """ provides API for server-side tuning and instantiation of an FCKeditor
+    """ provides API for tuning and instantiating an FCKeditor DHTML widget
     """
 
     def __init__(self, *args, **kw):
 
-        # defaults -- need to use instance attrs instead of class attrs so we
-        # can use self.__dict__
+        # defaults -- using instance attrs instead of class attrs so we can
+        # use self.__dict__
         self.InstanceName        = 'MyEditor'
         self.Width               = '100%'
         self.Height              = '200px'
@@ -84,9 +85,36 @@ class FCKeditor:
             return FCKtemplates.INCOMPATIBLE % self.__dict__
 
     def Compatible(self):
-        """only actually meaningful in Zope-space
+        """to be overriden by framework wrappers that know how to get a user
+        agent string. e.g.:
+            useragent = 'user agent string from my request object'
+            return self._compatible(useragent) # return a boolean
         """
         return True
+
+    def _compatible(self, useragent):
+        """given a browser's user-agent string, return a boolean
+        """
+        useragent = useragent.lower()
+
+    	# Internet Explorer
+        """Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)"""
+    	match = re.search(r'msie (\d*\.\d*)', useragent)
+    	if match is not None:
+    	    version = match.group(1)
+    	    if version is not None:
+        	    return float(version) >= 5.5
+
+    	# Gecko
+        """Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.7) Gecko/20050414 Firefox/1.0.3"""
+    	match = re.search(r'gecko/(\d*)', useragent)
+    	if match is not None:
+    	    version = match.group(1)
+    	    if version is not None:
+	            return int(version) >= 20030210
+
+        return False
+
 
     def GetConfigQuerystring(self):
         """marshall our Config settings into a querystring

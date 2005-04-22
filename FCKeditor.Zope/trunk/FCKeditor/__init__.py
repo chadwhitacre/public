@@ -1,11 +1,13 @@
-from Products.CMFCore.DirectoryView import registerDirectory
+try:
+    from Products.CMFCore.DirectoryView import registerDirectory
+    CMF = True
+except ImportError:
+    CMF = False
 
 FCKglobals = globals()
 
 def initialize(context):
-    registerDirectory('skins', FCKglobals)
+    if CMF: registerDirectory('skins', FCKglobals)
 
     import ZopeFCKeditor
     ZopeFCKeditor.initialize(context)
-
-
