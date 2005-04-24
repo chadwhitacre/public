@@ -64,7 +64,7 @@ class FCKeditor:
         return self.create()
 
     def Create(self, useragent=''):
-        """given an optional user-agent string, return an HTML snippet which
+        """given an optional useragent string, return an HTML snippet which
         instantiates an FCKeditor or a plain textarea
         """
 

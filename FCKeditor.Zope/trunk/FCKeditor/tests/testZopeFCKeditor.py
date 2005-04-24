@@ -12,7 +12,7 @@ ZopeTestCase.installProduct('FCKeditor')
 
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 
-class TestSomeProduct(ZopeTestCase.ZopeTestCase):
+class TestZopeFCKeditor(ZopeTestCase.ZopeTestCase):
 
     def afterSetUp(self):
         factory = self.folder.manage_addProduct['FCKeditor']
@@ -28,7 +28,7 @@ class TestSomeProduct(ZopeTestCase.ZopeTestCase):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestSomeProduct))
+    suite.addTest(makeSuite(TestZopeFCKeditor))
     return suite
 
 if __name__ == '__main__':

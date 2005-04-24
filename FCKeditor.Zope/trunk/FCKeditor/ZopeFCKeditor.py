@@ -1,27 +1,21 @@
-# Python
-import types
-
 # Zope
-from Acquisition import Implicit
-from Persistence import Persistent
-from AccessControl.Role import RoleManager
-from OFS.SimpleItem import Item
+from OFS.SimpleItem import SimpleItem
 from OFS.PropertyManager import PropertyManager
 
 from AccessControl import ClassSecurityInfo
 from Globals import InitializeClass
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-import ExtensionClass
 
 # us
 from FCKeditor import FCKeditor
 
-class ZopeFCKeditor(FCKeditor, Implicit, Persistent, PropertyManager, \
-                    RoleManager, Item):
+class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
     """A Zope wrapper around FCKeditor
     """
 
     security = ClassSecurityInfo()
+
+    # security declarations for base class API
     security.declarePublic('Create')
     security.declarePrivate('Compatible')
     security.declarePublic('GetConfigQuerystring')
@@ -41,8 +35,7 @@ class ZopeFCKeditor(FCKeditor, Implicit, Persistent, PropertyManager, \
 
     manage_options = PropertyManager.manage_options +\
                      ({'label':'View', 'action':''},) +\
-                     RoleManager.manage_options +\
-                     Item.manage_options
+                     SimpleItem.manage_options
 
     def __init__(self, id, *arg, **kw):
         self.id = id
@@ -91,5 +84,5 @@ def initialize(context):
         ZopeFCKeditor,
         permission='Add FCKeditor',
         constructors=(manage_add, manage_addFCKeditor),
-        icon='www/icon.gif',
+        icon='www/fckeditor.gif',
         )
