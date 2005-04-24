@@ -1,4 +1,4 @@
-"""Zope-specific tests
+"""Zope-specific tests; requires ZopeTestCase
 """
 
 import os, sys

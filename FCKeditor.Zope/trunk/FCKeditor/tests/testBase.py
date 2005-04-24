@@ -3,12 +3,10 @@ from pprint import pprint
 import unittest
 
 # make sure we can find ourselves
-if __name__ == '__main__':
-    execfile(os.path.join(sys.path[0], 'framework.py'))
-
+sys.path.insert(1, os.path.realpath('..'))
 
 # the thing we want to test
-from Products.FCKeditor.FCKeditor import FCKeditor
+from FCKeditor import FCKeditor
 
 
 ##
@@ -150,4 +148,3 @@ Opera/7.54 (FreeBSD; U)
 
 if __name__ == '__main__':
     unittest.main()
-
