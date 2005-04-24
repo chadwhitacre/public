@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #
 # Runs all tests in the current directory [and below]
 #
@@ -8,6 +10,7 @@
 #   python /path/to/Zope/bin/testrunner.py -qa
 #
 
+"""
 import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
@@ -37,4 +40,21 @@ def visitor(recursive, dir, names):
 if __name__ == '__main__':
     os.path.walk(os.curdir, visitor, '-R' in sys.argv)
     TestRunner().run(suite)
+
+"""
+
+
+import os, sys
+C = '#'; SOLID = C*79; EMPTY = '%s%s%s' % (C, ' '*77, C)
+tests = [n for n in os.listdir('.') if n.startswith('test') and n.endswith('.py')]
+print tests
+for test in tests:
+    print
+    print SOLID
+    print EMPTY
+    print '%s  %s  %s' % (C, test.ljust(73), C)
+    print EMPTY
+    os.system('%s %s' % (sys.executable, test))
+    print EMPTY
+    print SOLID
 
