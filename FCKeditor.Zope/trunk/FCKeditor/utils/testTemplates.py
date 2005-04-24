@@ -23,7 +23,7 @@ import os, sys, time
 from pprint import pprint
 
 if __name__ == '__main__':
-    execfile(os.path.join(sys.path[0], 'framework.py'))
+    execfile(os.path.join(sys.path[0], '..', 'tests', 'framework.py'))
 
 from Products.PageTemplates.PageTemplate import PageTemplate
 
