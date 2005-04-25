@@ -1,13 +1,13 @@
 0.0 -- Understand it
 ========================================
-=== DONE ===
+    === DONE ===
 
 
 0.2 -- Packaging
 ========================================
 base2zope should clean up '</' in Javascript in HTML
 add compile templates test to tests/
-=== DONE ===
+    === DONE ===
 
 
 
@@ -15,7 +15,8 @@ add compile templates test to tests/
 ========================================
 python
 zope
-=== DONE ===
+integrated testing -- runalltests.py
+    === DONE ===
 cmf/plone  -- portal_fckmanager
     contains different FCKeditor objects
     provides API for rule-based FCK instantiation, i.e. beyond browser compatibility
@@ -23,7 +24,6 @@ cmf/plone  -- portal_fckmanager
     this will be first supported usecase: mapping portal roles to FCK toolbars
 plone -- wysiwyg_support
 documentation
-integrated testing -- runalltests.py
 
 
 

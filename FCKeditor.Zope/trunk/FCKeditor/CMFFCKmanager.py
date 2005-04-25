@@ -7,29 +7,15 @@ from AccessControl import ClassSecurityInfo
 from Globals import InitializeClass
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
+ID = 'portal_fckmanager'
 
 class CMFFCKmanager(ZopeFCKmanager, UniqueObject):
     """a CMF tool to support a set of FCKeditor objects
     """
 
-    security = ClassSecurityInfo()
-
-    id = 'portal_fckmanager'
+    id = ID
     title = 'Manage a set of FCKeditors'
-    meta_type = 'CMFFCKmanager'
-
-    def __init__(self, *arg, **kw):
-        pass
-
-
-
-
-    ##
-    # Management methods
-    ##
-
-    security.declarePublic('index_html')
-    index_html = PageTemplateFile('www/manage_test.pt', globals())
+    meta_type = 'FCKmanager for CMF'
 
 InitializeClass(CMFFCKmanager)
 
@@ -39,18 +25,16 @@ InitializeClass(CMFFCKmanager)
 # Product addition and registration
 ##
 
-manage_add = PageTemplateFile('www/manage_addCMFFCKmanager.pt', globals())
-
-def manage_addFCKmanager(self, id, REQUEST=None):
+def manage_addCMFFCKmanager(self, REQUEST=None):
     """  """
-    self._setObject(id, ZopeFCKeditor(id))
+    self._setObject(ID, CMFFCKmanager(ID))
     if REQUEST is not None:
         return self.manage_main(self, REQUEST, update_menu=1)
 
 def initialize(context):
     context.registerClass(
-        ZopeFCKeditor,
-        permission='Add FCKmanager',
-        constructors=(manage_add, manage_addFCKeditor),
+        CMFFCKmanager,
+        permission='Add FCKmanager for CMF',
+        constructors=(manage_addCMFFCKmanager,),
         icon='www/fckmanager.gif',
         )
