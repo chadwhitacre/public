@@ -17,6 +17,12 @@ class CMFFCKmanager(ZopeFCKmanager, UniqueObject):
     title = 'Manage a set of FCKeditors'
     meta_type = 'FCKmanager for CMF'
 
+    def setProperty(self, key, val):
+        """
+        """
+        #raise 'hrm', val
+        setattr(self, key, val)
+
 InitializeClass(CMFFCKmanager)
 
 

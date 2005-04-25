@@ -13,6 +13,8 @@ from Products.CMFPlone.tests import PloneTestCase
 
 ZopeTestCase.installProduct('FCKeditor')
 
+from Products.FCKeditor.CMFFCKmanager import CMFFCKmanager
+
 
 ##
 # Define our tests
@@ -52,6 +54,16 @@ class TestFCKeditorPlone(PloneTestCase.PloneTestCase):
                          'Missing skin: fckeditor_cps')
         self.failUnless( hasattr(self.portal.portal_skins, 'fckeditor_plone'),
                          'Missing skin: fckeditor_plone')
+
+    def testLayout(self):
+        self.assertEqual( isinstance(self.portal.portal_fckmanager, CMFFCKmanager)
+                        , True)
+        self.assertEqual( self.portal.portal_fckmanager.objectIds()
+                        , ['DefaultFCKeditor'])
+
+    def testWeirdIDissue(self):
+        fckeditor = self.portal.portal_fckmanager
+        self.assertEqual(fckeditor(),'foo')
 
 
 

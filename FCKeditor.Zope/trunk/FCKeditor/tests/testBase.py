@@ -30,7 +30,6 @@ class TestFCKeditor(unittest.TestCase):
         self.failUnlessEqual(qs, "AutoDetectLanguage=false&DefaultLanguage=pt-BR")
 
     def testUrlEncodedConfig(self):
-        #self.fck.config = {} # hmmm ... not sure why I need this
         self.fck.SetConfig('foo','&I need:  "URL encoding"')
         self.fck.SetConfig('so do *I*','bar')
         qs = self.fck.GetConfigQuerystring()

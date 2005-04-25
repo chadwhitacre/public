@@ -1,0 +1,13 @@
+<html i18n:domain="plone">
+
+<div metal:define-macro="wysiwygEditorBox"
+     tal:define="useragent request/HTTP_USER_AGENT;
+                 fckeditor python:context.portal_fckmanager.DefaultFCKeditor;
+                 dummy     python:fckeditor.setProperty('Value', inputvalue);">
+
+    <tal:x replace="structure fckeditor/Create" />
+
+</div>
+<div metal:define-macro="textFormatSelector">
+</div>
+</html>

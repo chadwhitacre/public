@@ -11,12 +11,12 @@ from Products import meta_types
 
 # us
 from Products.FCKeditor.FCKconnector import FCKconnector
+from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 
 
 # base class order is important
 class ZopeFCKmanager(ObjectManager, PropertyManager, SimpleItem):
-    """provides API for managing and supporting a set of FCKeditor objects from
-    w/in Zope
+    """provides API for managing and supporting FCKeditor objects w/in Zope
     """
 
     security = ClassSecurityInfo()
@@ -43,6 +43,14 @@ class ZopeFCKmanager(ObjectManager, PropertyManager, SimpleItem):
         """
         meta_types = ObjectManager.all_meta_types(self)
         return [m for m in meta_types if m['name'] == 'FCKeditor']
+
+    security.declarePublic('new_editor')
+    def new_editor(self, id):
+        """return an FCKeditor object
+        """
+        return ZopeFCKeditor(id)
+    __call__ = new_editor
+
 
 InitializeClass(ZopeFCKmanager)
 
