@@ -1,14 +1,20 @@
 # base classes
 from OFS.SimpleItem import SimpleItem
 from OFS.ObjectManager import ObjectManager
+from OFS.PropertyManager import PropertyManager
 
 # Zope
 from AccessControl import ClassSecurityInfo
 from Globals import InitializeClass
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from Products import meta_types
+
+# us
+from Products.FCKeditor.FCKconnector import FCKconnector
 
 
-class ZopeFCKmanager(SimpleItem, ObjectManager):
+# base class order is important
+class ZopeFCKmanager(ObjectManager, PropertyManager, SimpleItem):
     """provides API for managing and supporting a set of FCKeditor objects from
     w/in Zope
     """
@@ -16,29 +22,27 @@ class ZopeFCKmanager(SimpleItem, ObjectManager):
     security = ClassSecurityInfo()
 
     id = ''
-    title = 'Manage a set of FCKeditors'
+    title = ''
     meta_type = 'FCKmanager'
 
-    manage_options = ({'label':'View', 'action':''},) +\
+    _properties=({'id':'title', 'type':'string', 'mode':'w'},)
+
+    manage_options = ObjectManager.manage_options +\
+                     PropertyManager.manage_options +\
                      SimpleItem.manage_options
 
-    def __init__(self, id, *arg, **kw):
+    def __init__(self, id, title=''):
         self.id = id
+        if title: self.title = title
 
     security.declarePrivate('all_meta_types')
     def all_meta_types(self):
         """this overrides a method of ObjectManager that determines the kinds
-        of objects that can be added here
+        of objects that are displayed as addable on manage_main; I don't see a
+        way to constrain programmatic object addition
         """
-        return ['FCKeditor']
-
-
-    ##
-    # Management methods
-    ##
-
-    security.declarePublic('index_html')
-    index_html = PageTemplateFile('www/manage_test.pt', globals())
+        meta_types = ObjectManager.all_meta_types(self)
+        return [m for m in meta_types if m['name'] == 'FCKeditor']
 
 InitializeClass(ZopeFCKmanager)
 
@@ -48,11 +52,11 @@ InitializeClass(ZopeFCKmanager)
 # Product addition and registration
 ##
 
-manage_add = PageTemplateFile('www/manage_addFCKmanager.pt', globals())
+addForm = PageTemplateFile('www/addFCKmanager.pt', globals())
 
-def manage_addFCKmanager(self, id, REQUEST=None):
+def manage_addFCKmanager(self, id, title='', REQUEST=None):
     """  """
-    self._setObject(id, ZopeFCKeditor(id))
+    self._setObject(id, ZopeFCKmanager(id, title))
     if REQUEST is not None:
         return self.manage_main(self, REQUEST, update_menu=1)
 
@@ -60,6 +64,6 @@ def initialize(context):
     context.registerClass(
         ZopeFCKmanager,
         permission='Add FCKmanager',
-        constructors=(manage_add, manage_addFCKmanager),
+        constructors=(addForm, manage_addFCKmanager),
         icon='www/fckmanager.gif',
         )

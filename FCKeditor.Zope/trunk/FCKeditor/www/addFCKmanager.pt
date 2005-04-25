@@ -1,13 +1,12 @@
 <h1 tal:replace="structure context/manage_page_header">Header</h1>
 
-<h2 tal:define="form_title string:Add an FCKeditor"
+<h2 tal:define="form_title string:Add an FCKmanager"
     tal:replace="structure here/manage_form_title">Form Title</h2>
 
 <p class="form-help"> FCKeditor is a rich-text, WYSIWYG DHTML form widget. This
-object provides API for tuning and instantiating an FCKeditor w/in your
-pages.</p>
+object manages and support multiple FCKeditor objects.</p>
 
-<form action="manage_addFCKeditor"
+<form action="manage_addFCKmanager"
       method="post"
       enctype="multipart/form-data">
 
@@ -21,13 +20,21 @@ pages.</p>
         </td>
     </tr>
     <tr>
+        <td align="left" valign="top">
+            <div class="form-label">Title</div>
+        </td>
+        <td align="left" valign="top">
+            <input type="text" name="title" size="40" />
+        </td>
+    </tr>
+    <tr>
         <td align="left" valign="top">&nbsp;</td>
         <td align="left" valign="top">
             <div class="form-element">
                 <input class="form-element"
                        type="submit"
                        name="submit"
-                       value=" Add an FCKeditor " />
+                       value=" Add an FCKmanager " />
             </div>
         </td>
     </tr>
