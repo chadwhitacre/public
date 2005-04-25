@@ -55,18 +55,30 @@ class FCKeditor:
         self.BasePath            = '/FCKeditor/'
         self.ConfigQuerystring   = ''
 
+        # clean up InstanceName
+        if kw.has_key('InstanceName'):
+            kw['InstanceName'] = self._scrub(kw['InstanceName'])
+
         # custom
         self.__dict__.update(kw)
 
         self.Config         = {}
 
-    def __call__(self):
-        return self.create()
+    _bad_InstanceName = re.compile(r'[^a-zA-Z0-9-]')
+    def _scrub(self, InstanceName):
+        """given an id, make it safe for use as an InstanceName, which is used
+        as a CSS identifier """
+        InstanceName = self._bad_InstanceName.sub('-', InstanceName)
+        while not InstanceName[:1].isalpha(): # can only start with a letter
+            InstanceName = InstanceName[1:]
+        return InstanceName
 
-    def Create(self, useragent=''):
-        """given an optional useragent string, return an HTML snippet which
-        instantiates an FCKeditor or a plain textarea
-        """
+    def __call__(self, useragent):
+        return self.Create(useragent)
+
+    def Create(self, useragent):
+        """given a useragent string, return an HTML snippet which instantiates
+        an FCKeditor or a plain textarea """
 
         # quote the initial HTML value
         self.Value = quote_plus(self.Value)
@@ -78,14 +90,7 @@ class FCKeditor:
         if str(self.Width).isdigit():  self.Width  = '%spx' % self.Width
         if str(self.Height).isdigit(): self.Height = '%spx' % self.Height
 
-        # by default return an FCKeditor; but if we have a useragent, then
-        # test that first
-        if not useragent:
-            realdeal = True
-        else:
-            realdeal = self.Compatible(useragent)
-
-        if realdeal:
+        if self.Compatible(useragent):
             return FCKtemplates.COMPATIBLE % self.__dict__
         else:
             return FCKtemplates.INCOMPATIBLE % self.__dict__

@@ -18,7 +18,11 @@ class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
 
     security = ClassSecurityInfo()
 
+    security.declareObjectPublic()
+
     # security declarations for base class API
+    security.declarePrivate('_bad_InstanceName')
+    security.declarePrivate('_scrub')
     security.declarePublic('Create')
     security.declarePrivate('Compatible')
     security.declarePublic('GetConfigQuerystring')
@@ -46,27 +50,13 @@ class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
         self.id = id
         if title: self.title = title
 
-        # clean up InstanceName
+        # InstanceName should default to id
         if not kw.has_key('InstanceName'):
             kw['InstanceName'] = id
-        kw['InstanceName'] = self._scrub(kw['InstanceName'])
 
         # final initialization
         FCKeditor.__init__(self, *arg, **kw)
         self._propertize_attrs()
-
-    security.declarePrivate('_bad_InstanceName')
-    # Zope bad_id: re.compile(r'[^a-zA-Z0-9-_~,.$\(\)# ]').search
-    _bad_InstanceName = re.compile(r'[^a-zA-Z0-9-]').sub
-
-    security.declarePrivate('_scrub')
-    def _scrub(self, id):
-        """given an id, make it safe for use as an InstanceName, which is used
-        as a CSS identifier """
-        safe_id = self._bad_InstanceName('-', id)
-        while safe_id[:1].isdigit():
-            safe_id = safe_id[1:]
-        return safe_id
 
     security.declarePrivate('_propertize_attrs')
     def _propertize_attrs(self):
@@ -81,6 +71,12 @@ class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
             # don't need values here since they are overriden by instance attrs
             cls.__dict__[attr] = ''
 
+    def Create(self, REQUEST):
+        """overriden from FCKeditor to use REQUEST instead of useragent directly
+        """
+        useragent = REQUEST.get('HTTP_USER_AGENT','')
+        return FCKeditor.Create(self, useragent)
+    __call__ = Create
 
     ##
     # Management methods
