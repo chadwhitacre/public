@@ -7,8 +7,7 @@
 import os
 from traceback import print_exc
 
-def testosterone(block, globals, locals):
-
+class testosterone:
     """Testoterone is a simple testing framework. To use it, include it in a
     testing script. In this script, set up a bunch of fixture, and then call
     testosterone. Testosterone takes three parameters:
@@ -29,47 +28,58 @@ def testosterone(block, globals, locals):
     the test is tallied as an exception.
     """
 
-    block = [a.strip() for a in block.split(os.linesep)]
-    block = [a for a in block if a.strip()]
-    statements = [a for a in block if not a.startswith('#')]
+    passed = 0
+    failed = 0
+    exceptions = 0
 
-    passed = 0; failed = 0; exceptions = 0
+    def __init__(self, block, globals, locals):
+        block = [a.strip() for a in block.split(os.linesep)]
+        block = [a for a in block if a.strip()]
+        self.statements = [a for a in block if not a.startswith('#')]
 
-    print
-    print "#"*79
-    print "#"+"running tests ...".rjust(47)+" "*30+"#"
-    print "#"*79
-    print
+        self.globals = globals
+        self.locals = locals
 
-    for statement in statements:
+        self.do_header()
+        self.do_body()
+        self.do_footer()
 
-        # first we try to evaluate it as a conditional expression statement
-        # then we try to execute it
-        # then we let the error ride
+    ##
+    # presentation
+    ##
 
-        try:
+    def do_header(self):
+        """output a header for the report
+        """
+        print
+        print "#"*79
+        print "#"+"running tests ...".rjust(47)+" "*30+"#"
+        print "#"*79
+        print
+
+    def do_body(self):
+        """run the tests and output the body of the report
+        """
+        for statement in self.statements:
+
             try:
-                if eval(statement, globals, locals):
-                    passed += 1
+                if statement.startswith('exec '):
+                    # statement is explicitly executable
+                    statement = statement[5:].strip()
+                    self.do_exec(statement)
                 else:
-                    print 'False: %s ' % statement
-                    failed += 1
-            except SyntaxError:
-                print
-                print statement
-                print '-'*79
-                exec statement in globals, locals
-                print
-        except:
-            print
-            print statement
-            print_exc()
-            print
-            exceptions += 1
+                    self.do_eval(statement)
+            except:
+                self.do_exec(statement)
 
-    if failed + exceptions: print
+    def do_footer(self):
+        """output a footer for the report
+        """
 
-    print """\
+        total = self.passed + self.failed + self.exceptions
+        if self.failed + self.exceptions: print
+
+        print """\
 #######################
 #       RESULTS       #
 #######################
@@ -81,7 +91,44 @@ def testosterone(block, globals, locals):
 #  total tests: %s  #
 #                     #
 #######################
-""" % ( str(passed).rjust(4)
-      , str(failed).rjust(4)
-      , str(exceptions).rjust(4)
-      , str(passed + failed + exceptions).rjust(4))
+""" % ( str(self.passed).rjust(4)
+      , str(self.failed).rjust(4)
+      , str(self.exceptions).rjust(4)
+      , str(total).rjust(4))
+
+
+    ##
+    # logic
+    ##
+
+    def do_eval(self, statement):
+        """given a statement, try to evaluate it; on SyntaxError, execute it
+        """
+        try:
+            if eval(statement, self.globals, self.locals):
+                self.passed += 1
+            else:
+                print 'False: %s ' % statement
+                self.failed += 1
+        except SyntaxError:
+            do_exec(statement)
+
+    def do_exec(self, statement):
+        """given a statement, execute it; if a print statement, wrap its output
+        """
+        printing = statement.startswith('print')
+        if printing:
+            print
+            print statement
+            print '-'*79
+        exec statement in self.globals, self.locals
+        if printing: print
+
+    def do_except(self, statement):
+        """given a bad statement, capture its exception
+        """
+        print
+        print statement
+        print_exc()
+        print
+        self.exceptions += 1
