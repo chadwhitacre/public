@@ -8,24 +8,38 @@ import os
 from traceback import print_exc
 
 class testosterone:
-    """Testoterone is a simple testing framework. To use it, include it in a
+    """Testoterone is a manly testing framework. To use it, include it in a
     testing script. In this script, set up a bunch of fixture, and then call
     testosterone. Testosterone takes three parameters:
 
-      block -- a multi-line string of single-line statements, empty lines,
-      and comments (lines beginning with #); initial and trailing whitespace per
-      line is ignored
+        block -- a multi-line string of single-line statements, empty lines,
+            and comments (lines beginning with #); initial and trailing
+            whitespace per line is ignored
 
-      globals, locals -- the context in which the statements should be evaluated
-      and possibly executed
+        globals, locals -- the context in which the statements should be
+            evaluated and/or executed
 
-    Each statement is treated in sequence: first it is assumed to be a test
-    expression and is evaluated. If this succeeds, then the evaluated value is
-    interpreted as a pass/fail for that test. If evaluation raises a
-    SyntaxError, then the statement is assumed to be an executable statement and
-    is executed. This allows for changing the fixture during test runtime, as
-    well as printing during runtime. If execution also raises an exception, then
-    the test is tallied as an exception.
+    Each statement is treated in sequence, according to the following rubric:
+
+        1. If the statement is prefixed with 'exec ' or 'eval ', then the
+           remainder of the line (the prefix is stripped off) is executed or
+           evaluated, respectively.
+
+        2. If there is no prefix, then the statement is first assumed to be a
+           test expression evaluation is attempted. If this succeeds, then the
+           evaluated value is interpreted as a pass/fail for that test.
+
+        3. If evaluation raises SyntaxError, then the statement is assumed to
+           be an executable statement and is executed.
+
+        4. All otherwise uncaught exceptions result in the test being tallied as
+           an exception.
+
+    If a an executable statement begins with 'print' or 'pprint' then the output
+    is wrapped to be more readable.
+
+    Statements that successfully execute are not counted towards total tests.
+
     """
 
     passed = 0
@@ -63,14 +77,22 @@ class testosterone:
         for statement in self.statements:
 
             try:
+                # explicit
                 if statement.startswith('exec '):
-                    # statement is explicitly executable
                     statement = statement[5:].strip()
                     self.do_exec(statement)
-                else:
+                elif statement.startswith('eval '):
+                    statement = statement[5:].strip()
                     self.do_eval(statement)
+
+                # implicit
+                else:
+                    try:
+                        self.do_eval(statement)
+                    except SyntaxError:
+                        self.do_exec(statement)
             except:
-                self.do_exec(statement)
+                self.do_except(statement)
 
     def do_footer(self):
         """output a footer for the report
@@ -102,16 +124,13 @@ class testosterone:
     ##
 
     def do_eval(self, statement):
-        """given a statement, try to evaluate it; on SyntaxError, execute it
+        """given a statement, evaluate it and tally/output the result
         """
-        try:
-            if eval(statement, self.globals, self.locals):
-                self.passed += 1
-            else:
-                print 'False: %s ' % statement
-                self.failed += 1
-        except SyntaxError:
-            do_exec(statement)
+        if eval(statement, self.globals, self.locals):
+            self.passed += 1
+        else:
+            print 'False: %s ' % statement
+            self.failed += 1
 
     def do_exec(self, statement):
         """given a statement, execute it; if a print statement, wrap its output
@@ -126,7 +145,7 @@ class testosterone:
         if printing: print
 
     def do_except(self, statement):
-        """given a bad statement, capture its exception
+        """given a bad statement, tally and output the exception
         """
         print
         print statement
