@@ -116,7 +116,8 @@ class testosterone:
     def do_exec(self, statement):
         """given a statement, execute it; if a print statement, wrap its output
         """
-        printing = statement.startswith('print')
+        printing = statement.startswith('print') or\
+                   statement.startswith('pprint')
         if printing:
             print
             print statement
