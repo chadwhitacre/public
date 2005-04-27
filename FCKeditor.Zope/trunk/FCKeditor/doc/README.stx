@@ -75,3 +75,67 @@ Conclusion
     it uncomfortable to work with. Both FCKeditor and FCKeditor.Plone are young,
     but over the next 12-18 months I anticipate that they will mature into a
     compelling solution for certain audiences to the heart of the CMS problem.
+
+
+==========================================
+
+usage patterns:
+
+The problem with keeping actual instances of FCKeditor around is that the value
+is stored on the object. If the object is going to *be* your content object,
+then this is great! In that case, a content object could simply subclass
+ZopeFCKeditor.
+
+However, in the case where you want to use an FCKeditor object simply to
+instantiate a widget for a form on an exisiting content object, it may not make
+sense to keep instances of FCKeditor objects themselves around, but rather to
+instantiate them on the fly. Yeah, cause you don't actually want to use them for
+storage.
+
+The FCKmanager will provide API for runtime generation of new FCKeditor objects,
+with rules-based runtime tuning. But the FCKmanager will not itself contain
+FCKeditor objects.
+
+1. set rules on FCKmanager
+
+2. instantiate FCKeditors in-template via FCKmanager; FCKmanager rules apply
+
+3. perform any further tuning as necessary (e.g., set the Value)
+
+4. create the widget itself
+
+The REQUEST object is not implicitly available to methods of filesystem-defined
+objects, so we will provide a wrapper script that will return a new context-
+aware FCKeditor object.
+
+Therefore, our stack is as follows:
+
+wysiwyg_support.pt
+wysiwyg_fckeditor.py
+    returns whatever info is needed by wysiwyg_support
+portal_fckmanager (CMFFCKmanager)
+    ZopeFCKeditor
+    FCKeditor
+
+
+If we keep FCKeditors around, then we will want to feed them useragent each time
+they are called. However, if we create a new FCKeditor for each request then it
+may be nicer to feed in useragent on instantiation.
+
+fckeditor = FCKeditor(useragent)
+fckeditor.Create()
+
+fckeditor = FCKeditor()
+...
+fckeditor.Create(useragent)
+
+Or should we have a separate method that must be called?
+
+fckeditor = FCKeditor()
+fckeditor.SetCompatible(useragent)
+fckeditor.Create()
+
+ooh! I like that :-)
+
+so explicit. so what happens if SetCompatible is not run? The default should be
+False.
