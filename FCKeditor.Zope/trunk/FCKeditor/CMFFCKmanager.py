@@ -10,18 +10,13 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 ID = 'portal_fckmanager'
 
 class CMFFCKmanager(ZopeFCKmanager, UniqueObject):
-    """a CMF tool to support a set of FCKeditor objects
+    """a CMF tool to support on-the-fly FCKeditor objects
     """
 
     id = ID
     title = 'Manage a set of FCKeditors'
     meta_type = 'FCKmanager for CMF'
 
-    def setProperty(self, key, val):
-        """
-        """
-        #raise 'hrm', val
-        setattr(self, key, val)
 
 InitializeClass(CMFFCKmanager)
 

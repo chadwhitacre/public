@@ -39,6 +39,10 @@ class FCKtemplates:
 </div>"""
 
 
+class FCKexception(Exception):
+    pass
+
+
 class FCKeditor:
     """ provides API for tuning and instantiating an FCKeditor DHTML widget
     """
@@ -67,18 +71,20 @@ class FCKeditor:
     _bad_InstanceName = re.compile(r'[^a-zA-Z0-9-]')
     def _scrub(self, InstanceName):
         """given an id, make it safe for use as an InstanceName, which is used
-        as a CSS identifier """
+        as a CSS identifier
+        """
         InstanceName = self._bad_InstanceName.sub('-', InstanceName)
         while not InstanceName[:1].isalpha(): # can only start with a letter
             InstanceName = InstanceName[1:]
         return InstanceName
 
-    def __call__(self, useragent):
-        return self.Create(useragent)
+    def Create(self):
+        """return an HTML snippet which instantiates an FCKeditor or a plain
+        textarea
+        """
 
-    def Create(self, useragent):
-        """given a useragent string, return an HTML snippet which instantiates
-        an FCKeditor or a plain textarea """
+        if not hasattr(self, 'Compatible'):
+            raise FCKexception, "You must run the setCompatible method first"
 
         # quote the initial HTML value
         self.Value = quote_plus(self.Value)
@@ -90,15 +96,17 @@ class FCKeditor:
         if str(self.Width).isdigit():  self.Width  = '%spx' % self.Width
         if str(self.Height).isdigit(): self.Height = '%spx' % self.Height
 
-        if self.Compatible(useragent):
+        if self.Compatible:
             return FCKtemplates.COMPATIBLE % self.__dict__
         else:
             return FCKtemplates.INCOMPATIBLE % self.__dict__
 
-    def Compatible(self, useragent):
-        """given a browser's user-agent string, return a boolean
+    def SetCompatible(self, useragent):
+        """given a browser's user-agent string, set a boolean on self
         """
+
         useragent = useragent.lower()
+        Compatible = False # default
 
     	# Internet Explorer
         """Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)"""
@@ -106,7 +114,7 @@ class FCKeditor:
     	if match is not None:
     	    version = match.group(1)
     	    if version is not None:
-        	    return float(version) >= 5.5
+        	    Compatible = float(version) >= 5.5
 
     	# Gecko
         """Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.7) Gecko/20050414 Firefox/1.0.3"""
@@ -114,9 +122,10 @@ class FCKeditor:
     	if match is not None:
     	    version = match.group(1)
     	    if version is not None:
-	            return int(version) >= 20030210
+	            Compatible = int(version) >= 20030210
 
-        return False
+        self.Compatible = Compatible
+        return Compatible
 
     def GetConfigQuerystring(self):
         """marshall our Config settings into a querystring

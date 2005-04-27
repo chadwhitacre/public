@@ -10,7 +10,7 @@ from Globals import InitializeClass
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
 # us
-from FCKeditor import FCKeditor
+from FCKeditor import FCKeditor, FCKexception
 
 class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
     """A Zope wrapper around FCKeditor
@@ -24,6 +24,7 @@ class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
     security.declarePrivate('_bad_InstanceName')
     security.declarePrivate('_scrub')
     security.declarePublic('Create')
+    security.declarePublic('SetCompatible')
     security.declarePrivate('Compatible')
     security.declarePublic('GetConfigQuerystring')
     security.declarePublic('SetConfig')
@@ -71,12 +72,11 @@ class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
             # don't need values here since they are overriden by instance attrs
             cls.__dict__[attr] = ''
 
-    def Create(self, REQUEST):
-        """overriden from FCKeditor to use REQUEST instead of useragent directly
+    security.declareProtected('Manage FCKeditor','setProperty')
+    def SetProperty(self, key, val):
+        """support attribute assignment
         """
-        useragent = REQUEST.get('HTTP_USER_AGENT','')
-        return FCKeditor.Create(self, useragent)
-    __call__ = Create
+        setattr(self, key, val)
 
     ##
     # Management methods

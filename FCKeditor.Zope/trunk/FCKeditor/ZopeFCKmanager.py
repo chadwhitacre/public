@@ -10,13 +10,12 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products import meta_types
 
 # us
-from Products.FCKeditor.FCKconnector import FCKconnector
+#from Products.FCKeditor.FCKconnector import FCKconnector
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 
 
-# base class order is important
-class ZopeFCKmanager(ObjectManager, PropertyManager, SimpleItem):
-    """provides API for managing and supporting FCKeditor objects w/in Zope
+class ZopeFCKmanager(PropertyManager, SimpleItem):
+    """provides API to support on-the-fly FCKeditor objects w/in Zope
     """
 
     security = ClassSecurityInfo()
@@ -27,30 +26,24 @@ class ZopeFCKmanager(ObjectManager, PropertyManager, SimpleItem):
 
     _properties=({'id':'title', 'type':'string', 'mode':'w'},)
 
-    manage_options = ObjectManager.manage_options +\
-                     PropertyManager.manage_options +\
+    manage_options = PropertyManager.manage_options +\
                      SimpleItem.manage_options
 
     def __init__(self, id, title=''):
         self.id = id
-        if title: self.title = title
+        self.title = title
 
-    security.declarePrivate('all_meta_types')
-    def all_meta_types(self):
-        """this overrides a method of ObjectManager that determines the kinds
-        of objects that are displayed as addable on manage_main; I don't see a
-        way to constrain programmatic object addition
-        """
-        meta_types = ObjectManager.all_meta_types(self)
-        return [m for m in meta_types if m['name'] == 'FCKeditor']
-
-    security.declarePublic('new_editor')
-    def new_editor(self, id):
-        """return an FCKeditor object
+    security.declarePublic('spawn')
+    def spawn(self, id):
+        """given an id string, return an FCKeditor object
         """
         return ZopeFCKeditor(id)
-    __call__ = new_editor
 
+#    security.declareProtected('Manage FCKmanager', 'setProperty')
+#    def setProperty(self, key, val):
+#        """support property assignment
+#        """
+#        setattr(self, key, val)
 
 InitializeClass(ZopeFCKmanager)
 

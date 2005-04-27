@@ -18,12 +18,14 @@ zope
 integrated testing -- runalltests.py
     === DONE ===
 cmf/plone  -- portal_fckmanager
-    contains different FCKeditor objects
     provides API for rule-based FCK instantiation, i.e. beyond browser compatibility
     so you can return a simple editor for "normal" users and a more featureful editor for power users, e.g.
     this will be first supported usecase: mapping portal roles to FCK toolbars
 plone -- wysiwyg_support
+    needs to support different storage formats (html, plain, stx)
+    needs to play nice with other editors (epoz, kupu, etc.)
 documentation
+
 
 
 
@@ -37,10 +39,6 @@ documentation
 ========================================
 
 
-prelim
-    understand it
-    package it
-product
             editor      connector       toolbar mgr
 python        x
 zope          x
