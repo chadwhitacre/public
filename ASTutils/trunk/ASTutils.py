@@ -177,17 +177,15 @@ class ASTutils:
         Usage:
 
             >>> import parser
-            >>> block = "if 1: print 'hello world'"
-            >>> ast = parser.suite(block)
-            >>> ASTutils.hasnode(ast, 'suite')
-            True
-            >>> suite = ASTutils.getnode(ast, 'suite')
-            >>> print suite
-
-            >>> stmt = ASTutils.getnode(suite, 'stmt')
-            >>> print stmt
-            >>> st = ASTutils.promote_stmt(stmt)
-            >>> print st
+            >>> ast = parser.suite("print 'hello world'")
+            >>> stmt = ASTutils.getnode(ast, 'stmt')
+            >>> parser.sequence2ast(stmt)
+            Traceback (most recent call last):
+                ...
+            ParserError: parse tree does not use a valid start symbol
+            >>> stmt = ASTutils.promote_stmt(stmt)
+            >>> parser.sequence2ast(stmt)
+            <parser.st object at 0x817c090>
 
         """
         if type(cst) in (type(()), type([])):
