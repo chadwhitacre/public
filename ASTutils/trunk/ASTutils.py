@@ -154,8 +154,9 @@ class ASTutils:
 
                     TEXT.write(text)
 
+        cst = self._standardize_st(st, 'tuple')
         TEXT = StringIO()
-        walk(ast.totuple(), TEXT)
+        walk(cst, TEXT)
 
         # trim a possible trailing newline and/or space; this is necessary to
         # make the doctest work
@@ -175,18 +176,18 @@ class ASTutils:
 
         Usage:
 
-            #>>> import parser
-            #>>> block = "if 1: print 'hello world'"
-            #>>> ast = parser.suite(block)
-            #>>> ASTutils.hasnode(ast, 'suite')
-            #True
-            #>>> suite = ASTutils.getnode(ast, 'suite')
-            #>>> print suite
+            >>> import parser
+            >>> block = "if 1: print 'hello world'"
+            >>> ast = parser.suite(block)
+            >>> ASTutils.hasnode(ast, 'suite')
+            True
+            >>> suite = ASTutils.getnode(ast, 'suite')
+            >>> print suite
 
-            #>>> stmt = ASTutils.getnode(suite, 'stmt')
-            #>>> print stmt
-            #>>> st = ASTutils.promote_stmt(stmt)
-            #>>> print st
+            >>> stmt = ASTutils.getnode(suite, 'stmt')
+            >>> print stmt
+            >>> st = ASTutils.promote_stmt(stmt)
+            >>> print st
 
         """
         if type(cst) in (type(()), type([])):
@@ -232,7 +233,12 @@ class ASTutils:
 
         """
 
-        cst = self._standardize_st(st, 'tuple')
+        # we don't call _standardize_st because we want to accept fragments
+        ast = parser.suite('')
+        if type(st) is type(ast):
+            cst = st.totuple()
+        else:
+            cst = st
 
         # standardize the incoming nodetype to a symbol or token int
         if type(nodetype) is type(''):
@@ -255,7 +261,7 @@ class ASTutils:
         # define our recursive function
         def walk(cst, nodetype):
             for node in cst:
-                if type(node) is type(()):
+                if type(node) in (type(()), type([])):
                     candidate = walk(node, nodetype)
                 else:
                     candidate = cst
