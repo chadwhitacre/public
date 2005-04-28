@@ -1,7 +1,7 @@
 from distutils.core import setup
-setup( name = 'astutils'
+setup( name = 'ASTutils'
      , version = '0.2'
-     , py_modules = ['astutils']
+     , py_modules = ['ASTutils']
      , description = 'utilities for working with AST objects'
      , author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
