@@ -5,23 +5,21 @@
 # This program is beerware. If you like it, buy me a beer someday.
 # No warranty is expressed or implied.
 
+__author__ = 'Chad Whitacre'
+__version__ = '0.1'
 
 import parser, token, symbol
 from os import linesep
 from pprint import pformat
 from StringIO import StringIO
 
-
 class ASTutilsException(Exception):
     pass
 
-
 class ASTutils:
-
-    """Utilities for working with syntax trees. Where an st argument is called
-    for, this may be either an AST object, or a list or tuple as produced by
-    parser.ast2list and parser.ast2tuple.
-    """
+    """A class holding utilities for working with syntax trees. Where an st
+    argument is called for, this may be either an AST object, or a list or tuple
+    as produced by parser.ast2list and parser.ast2tuple. """
 
 
     def _standardize_st(self, st, format='tuple'):
@@ -38,6 +36,7 @@ class ASTutils:
                 raise ASTutilsException, "incoming type unrecognized: " +\
                                          repr(type(st))
 
+        # return the tree in the desired format
         formats = { 'tuple' : ast.totuple
                   , 'list'  : ast.tolist
                   , 'ast'   : lambda: ast
@@ -54,8 +53,8 @@ class ASTutils:
 
 
     def ast2read(self, st):
-        """Given a syntax tree, return a human-readable representation of the
-        tree.
+        """Given a syntax tree, return a more human-readable representation of
+        the tree than is returned by parser.ast2list and parser.ast2tuple.
 
         Usage:
 
@@ -118,8 +117,8 @@ class ASTutils:
 
     def ast2text(self, st):
         """Given a syntax tree, return an approximation of the source code that
-        generated it. The approximation will only differ from the original in non-
-        essential whitespace.
+        generated it. The approximation will only differ from the original in
+        non-essential whitespace and missing comments.
 
         Usage:
 
@@ -158,8 +157,9 @@ class ASTutils:
         TEXT = StringIO()
         walk(ast.totuple(), TEXT)
 
-        # trim a possible trailing newline and/or space; this is necessary to make the
-        # doctest work
+        # trim a possible trailing newline and/or space; this is necessary to
+        # make the doctest work
+
         output = TEXT.getvalue()
         if output.endswith(linesep): output = output.rstrip(linesep)
         if output.endswith(' '):  output = output[:-1]
@@ -230,10 +230,6 @@ class ASTutils:
                 ...
             ASTutilsException: nodetype '-1' is not in symbol or token tables
 
-            >>> ast = parser.suite("if 1: print 'hello world'")
-            >>> ASTutils.hasnode(ast, symbol.print_stmt)
-            True
-
         """
 
         cst = self._standardize_st(st, 'tuple')
@@ -276,8 +272,8 @@ class ASTutils:
 
 
     def hasnode(self, cst, nodetype):
-        """Given an AST object or a cst fragment (either in list or tuple form), and
-        a nodetype (either as a string or an int), return a boolean.
+        """Given an AST object or a cst fragment (either in list or tuple form),
+       and a nodetype (either as a string or an int), return a boolean.
 
         Usage:
 
@@ -285,11 +281,15 @@ class ASTutils:
             >>> ast = parser.suite("print 'hello world'")
             >>> ASTutils.hasnode(ast, 'print_stmt')
             True
+            >>> ast = parser.suite("if 1: print 'hello world'")
+            >>> ASTutils.hasnode(ast, 'print_stmt')
+            True
 
         """
         return self.getnode(cst, nodetype) is not None
 
     hasnode = classmethod(hasnode)
+
 
 
 if __name__ == "__main__":
