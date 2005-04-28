@@ -5,6 +5,7 @@
 # This program is beerware. If you like it, buy me a beer someday.
 # No warranty is expressed or implied.
 
+
 import parser, token, symbol
 from os import linesep
 from pprint import pformat
@@ -17,16 +18,50 @@ class ASTutilsException(Exception):
 
 class ASTutils:
 
-    def ast2read(ast):
-        """Given an AST object, return a human-readable representation of the
+    """Utilities for working with syntax trees. Where an st argument is called
+    for, this may be either an AST object, or a list or tuple as produced by
+    parser.ast2list and parser.ast2tuple.
+    """
+
+
+    def _standardize_st(self, st, format='tuple'):
+        """Given a syntax tree and a desired format, return the tree in that
+        format.
+        """
+        # convert the incoming ast/cst into an AST
+        if type(st) is type(parser.suite('')):
+            ast = st
+        else:
+            if type(st) in (type(()), type([])):
+                ast = parser.sequence2ast(st)
+            else:
+                raise ASTutilsException, "incoming type unrecognized: " +\
+                                         repr(type(st))
+
+        formats = { 'tuple' : ast.totuple
+                  , 'list'  : ast.tolist
+                  , 'ast'   : lambda: ast
+                   }
+
+        outgoing = formats.get(format.lower())
+        if outgoing is None:
+            raise ASTutilsException, "requested format unrecognized: " + format
+
+        return outgoing()
+
+    _standardize_st = classmethod(_standardize_st)
+
+
+
+    def ast2read(self, st):
+        """Given a syntax tree, return a human-readable representation of the
         tree.
 
         Usage:
 
         >>> import parser
-        >>> from astutils import ast2read
         >>> ast = parser.suite("print 'hello world'")
-        >>> print ast2read(ast)
+        >>> print ASTutils.ast2read(ast)
         ['file_input',
          ['stmt',
           ['simple_stmt',
@@ -50,8 +85,7 @@ class ASTutils:
          ['ENDMARKER', '']]
         """
 
-        self.
-
+        # define our recursive function
         def walk(cst):
             """ given an AST list (a CST?), recursively walk it and replace the
             nodes with human-readable equivalents
@@ -64,24 +98,26 @@ class ASTutils:
                 else:
                     # we have an actual node; interpret it and store the result
                     if type(node) is type(0):
-                        if node < 256:
+                       if node < 256:
                             readable_node = token.tok_name[node]
-                        else:
+                       else:
                             readable_node = symbol.sym_name[node]
                     else:
                         readable_node = node
 
                     cst[cst.index(node)] = readable_node
 
-        TREE = ast.tolist()
+        # ggg!
+        TREE = self._standardize_st(st, 'list')
         walk(TREE)
         return pformat(TREE)
 
-    ast2read = staticmethod(ast2read)
+    ast2read = classmethod(ast2read)
 
 
-    def ast2text(ast):
-        """Given an AST object, return an approximation of the source code that
+
+    def ast2text(self, st):
+        """Given a syntax tree, return an approximation of the source code that
         generated it. The approximation will only differ from the original in non-
         essential whitespace.
 
@@ -130,11 +166,28 @@ class ASTutils:
 
         return output
 
-    ast2text = staticmethod(ast2text)
+    ast2text = classmethod(ast2text)
 
 
-    def promotenode(cst):
+
+    def promote_stmt(self, cst):
         """Given a cst stmt fragment (list or tuple), return a first-class cst.
+
+        Usage:
+
+            #>>> import parser
+            #>>> block = "if 1: print 'hello world'"
+            #>>> ast = parser.suite(block)
+            #>>> ASTutils.hasnode(ast, 'suite')
+            #True
+            #>>> suite = ASTutils.getnode(ast, 'suite')
+            #>>> print suite
+
+            #>>> stmt = ASTutils.getnode(suite, 'stmt')
+            #>>> print stmt
+            #>>> st = ASTutils.promote_stmt(stmt)
+            #>>> print st
+
         """
         if type(cst) in (type(()), type([])):
             if cst[0] == symbol.stmt:
@@ -155,35 +208,37 @@ class ASTutils:
         else:
             raise ASTutilsException, "cst to promote must be list or tuple"
 
+    promote_stmt = classmethod(promote_stmt)
 
-    def getnode(cst, nodetype):
-        """Given an AST object or a cst fragment (as list or tuple), and a string
-        or int nodetype, return the first instance of the desired nodetype as a cst
-        fragment, or None if the nodetype is not found.
+
+
+    def getnode(self, st, nodetype):
+        """Given an AST object or a cst fragment (as list or tuple), and a
+        string or int nodetype, return the first instance of the desired
+        nodetype as a cst fragment, or None if the nodetype is not found.
 
         Usage:
 
-            >>> import parser
-            >>> from astutils import getnode
+            >>> import parser, symbol
             >>> ast = parser.suite("print 'hello world'")
-            >>> getnode(ast, 'print_stmt')
+            >>> ASTutils.getnode(ast, 'print_stmt')
+            (271, (1, 'print'), (298, (299, (300, (301, (303, (304, (305, (306, (307, (308, (309, (310, (311, (3, "'hello world'")))))))))))))))
+            >>> ASTutils.getnode(ast, symbol.pass_stmt) is None
+            True
+            >>> ASTutils.getnode(ast, -1) # bad data
+            Traceback (most recent call last):
+                ...
+            ASTutilsException: nodetype '-1' is not in symbol or token tables
+
+            >>> ast = parser.suite("if 1: print 'hello world'")
+            >>> ASTutils.hasnode(ast, symbol.print_stmt)
+            True
 
         """
 
-        # convert the incoming ast/cst into a first-class cst tuple
-        ast = parser.suite('')
-        if type(cst) is type(ast):
-            cst = cst.totuple()
-        else:
-            if cst[0] not in ( symbol.single_input
-                             , symbol.file_input
-                             , symbol.eval_input ):
-                # convert a fragment to a first-class cst so we can parse it
-                cst = promotenode(cst)
-        if type(cst) is type([]):
-            cst = parser.sequence2ast(cst).totuple()
+        cst = self._standardize_st(st, 'tuple')
 
-        # convert the incoming nodetype to a symbol or token int
+        # standardize the incoming nodetype to a symbol or token int
         if type(nodetype) is type(''):
             symtype = getattr(symbol, nodetype, '')
             if symtype:
@@ -193,49 +248,48 @@ class ASTutils:
                 if toktype:
                     nodetype = toktype
                 else:
-                    raise ASTutilsException, "nodetype '%s' " % nodetype +\
-                                             "is not in symbol or token tables"
+                    nodetype = -1 # bad data
+
+        # validate the input
+        valid_ints = symbol.sym_name.keys() + token.tok_name.keys()
+        if nodetype not in valid_ints:
+            raise ASTutilsException, "nodetype '%s' " % nodetype +\
+                                     "is not in symbol or token tables"
 
         # define our recursive function
         def walk(cst, nodetype):
             for node in cst:
                 if type(node) is type(()):
-                    return walk(node, nodetype)
+                    candidate = walk(node, nodetype)
                 else:
-                    if node == nodetype:
-                        return cst
-            return None
+                    candidate = cst
+                if candidate is not None:
+                    if candidate[0] == nodetype:
+                        return candidate
+            return None # default
 
+        # ggg!
         return walk(cst, nodetype)
 
+    getnode = classmethod(getnode)
 
-    def hasnode(cst, nodetype):
+
+
+    def hasnode(self, cst, nodetype):
         """Given an AST object or a cst fragment (either in list or tuple form), and
         a nodetype (either as a string or an int), return a boolean.
 
         Usage:
 
-            >>> import parser
-            >>> from astutils import hasnode
+            >>> import parser, symbol
             >>> ast = parser.suite("print 'hello world'")
-            >>> hasnode(ast, 'print_stmt')
+            >>> ASTutils.hasnode(ast, 'print_stmt')
             True
-            >>> hasnode(ast, 273) # pass_stmt
-            False
-            >>> hasnode(ast.tolist(), 'print_stmt')
-            True
-            >>> hasnode(ast.totuple(), 273)
-            False
-
-            #>>> hasnode(ast, 'foo_stmt') # bad nodetype
-            #<traceback>
-            #>>> hasnode(ast, 1500) # bad nodetype
-            #<traceback>
 
         """
-        return getnode(cst, nodetype) is not None
+        return self.getnode(cst, nodetype) is not None
 
-
+    hasnode = classmethod(hasnode)
 
 
 if __name__ == "__main__":
