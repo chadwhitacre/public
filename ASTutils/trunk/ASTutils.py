@@ -123,21 +123,27 @@ class ASTutils:
         Usage:
 
             >>> import parser
-            >>> from ast2text import ast2text
+            >>> from ASTutils import ASTutils
             >>> ast = parser.suite("print 'hello world'")
-            >>> print ast2text(ast)
+            >>> print ASTutils.ast2text(ast)
             print 'hello world'
-
-            >>> from os import linesep as lf
-            >>> block = "def foo():"+lf+" if 1:"+lf+"  return True"
-            >>> ast = parser.suite(block)
-            >>> print ast2text(ast)
-            def foo ( ) :
-                if 1 :
-                    return True
 
         Here's an example of whitespace differences (also tests multiple indent
         levels):
+
+            >>> from os import linesep as lf
+
+            # no whitespace around parens & colons, and one-space indents
+            >>> block = "def foo():"+lf+" if 1:"+lf+"  return True"
+            >>> ast = parser.suite(block)
+            >>> text = ASTutils.ast2text(ast)
+
+            # account for the fact that I trim trailing spaces in my editor
+            >>> text = linesep.join([l.rstrip() for l in text.split(linesep)])
+            >>> print text
+            def foo ( ) :
+                if 1 :
+                    return True
 
         """
 
