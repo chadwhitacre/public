@@ -171,7 +171,7 @@ class ASTutils:
 
 
 
-    def getnode(self, st, nodetype):
+    def getnodes(self, st, nodetype):
         """Given an AST object or a cst fragment (as list or tuple), and a
         string or int nodetype, return the first instance of the desired
         nodetype as a cst fragment, or None if the nodetype is not found.
@@ -180,11 +180,11 @@ class ASTutils:
 
             >>> import parser, symbol
             >>> ast = parser.suite("print 'hello world'")
-            >>> ASTutils.getnode(ast, 'print_stmt')
-            (271, (1, 'print'), (298, (299, (300, (301, (303, (304, (305, (306, (307, (308, (309, (310, (311, (3, "'hello world'")))))))))))))))
-            >>> ASTutils.getnode(ast, symbol.pass_stmt) is None
-            True
-            >>> ASTutils.getnode(ast, -1) # bad data
+            >>> ASTutils.getnodes(ast, 'print_stmt')
+            [(271, (1, 'print'), (298, (299, (300, (301, (303, (304, (305, (306, (307, (308, (309, (310, (311, (3, "'hello world'")))))))))))))))]
+            >>> ASTutils.getnodes(ast, symbol.pass_stmt)
+            []
+            >>> ASTutils.getnodes(ast, -1) # bad data
             Traceback (most recent call last):
                 ...
             ASTutilsException: nodetype '-1' is not in symbol or token tables
@@ -217,21 +217,26 @@ class ASTutils:
                                      "is not in symbol or token tables"
 
         # define our recursive function
-        def walk(cst, nodetype):
-            for node in cst:
-                if type(node) in (type(()), type([])):
-                    candidate = walk(node, nodetype)
-                else:
-                    candidate = cst
-                if candidate is not None:
-                    if candidate[0] == nodetype:
-                        return candidate
-            return None # default
+        class walker:
+
+            NODES = []
+
+            def walk(self, cst, nodetype):
+                for node in cst:
+                    if type(node) in (type(()), type([])):
+                        candidate = self.walk(node, nodetype)
+                    else:
+                        candidate = cst
+                    if candidate is not None:
+                        if candidate[0] == nodetype:
+                            self.NODES.append(candidate)
+            walk = classmethod(walk)
 
         # ggg!
-        return walk(cst, nodetype)
+        walker.walk(cst, nodetype)
+        return walker.NODES
 
-    getnode = classmethod(getnode)
+    getnodes = classmethod(getnodes)
 
 
 
@@ -250,7 +255,7 @@ class ASTutils:
             True
 
         """
-        return self.getnode(cst, nodetype) is not None
+        return len(self.getnodes(cst, nodetype)) > 0
 
     hasnode = classmethod(hasnode)
 
