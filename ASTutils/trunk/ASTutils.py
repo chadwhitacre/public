@@ -128,40 +128,77 @@ class ASTutils:
             >>> print ast2text(ast)
             print 'hello world'
 
+            >>> from os import linesep as lf
+            >>> block = "def foo():"+lf+" if 1:"+lf+"  return True"
+            >>> ast = parser.suite(block)
+            >>> print ast2text(ast)
+            def foo ( ) :
+                if 1 :
+                    return True
+
+        Here's an example of whitespace differences (also tests multiple indent
+        levels):
+
         """
 
-        def walk(cst, TEXT):
-            """ given an AST tuple (a CST?), recursively walk it and assemble the
-            nodes back into a text code block
-            """
+        class walker:
 
-            for node in cst:
-                if type(node) is type(()):
-                    # we have a tuple of subnodes; recurse
-                    walk(node, TEXT)
-                else:
-                    # we have an actual node; interpret it and store the result
-                    if type(node) is type(''):
-                        if node <> '': node += ' ' # insert some whitespace
-                        if not node.startswith('#'):
-                            text = node
-                    elif node == token.NEWLINE:
-                        text = '\n'
-                    elif node == token.INDENT:
-                        text = '    '
+            TEXT = ''
+            INDENT_LEVEL = 0
+
+            def walk(self, cst):
+                """Given an AST tuple (a CST?), recursively walk it and
+                assemble the nodes back into a text code block.
+                """
+
+                for node in cst:
+                    if type(node) is type(()):
+                        # we have a tuple of subnodes; recurse
+                        self.walk(node)
                     else:
-                        text = ''
+                        # we have an actual node; interpret it and store the
+                        # result
 
-                    TEXT.write(text)
+                        text = '' # default
+
+                        if type(node) is type(''):
+                            if node <> '':
+                                node += ' ' # insert some whitespace
+                            if not node.startswith('#'):
+                                text = node # ignore comments
+
+                        elif node == token.NEWLINE:
+                            text = linesep + self.indent()
+
+                        elif node == token.INDENT:
+                            self.INDENT_LEVEL += 1
+                            text = '    '
+
+                        elif node == token.DEDENT:
+                            self.INDENT_LEVEL -= 1
+                            self.dedent()
+
+                        self.TEXT += text
+            walk = classmethod(walk)
+
+            def indent(self):
+                if self.INDENT_LEVEL == 0:
+                    return ''
+                else:
+                    return self.INDENT_LEVEL * '    '
+            indent = classmethod(indent)
+
+            def dedent(self):
+                self.TEXT = self.TEXT[:-4]
+            dedent = classmethod(dedent)
 
         cst = self._standardize_st(st, 'tuple')
-        TEXT = StringIO()
-        walk(cst, TEXT)
+        walker.walk(cst)
 
         # trim a possible trailing newline and/or space; this is necessary to
         # make the doctest work
 
-        output = TEXT.getvalue()
+        output = walker.TEXT
         if output.endswith(linesep): output = output.rstrip(linesep)
         if output.endswith(' '):  output = output[:-1]
 
