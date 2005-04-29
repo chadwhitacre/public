@@ -171,46 +171,6 @@ class ASTutils:
 
 
 
-    def promote_stmt(self, cst):
-        """Given a cst stmt fragment (list or tuple), return a first-class cst.
-
-        Usage:
-
-            >>> import parser
-            >>> ast = parser.suite("print 'hello world'")
-            >>> stmt = ASTutils.getnode(ast, 'stmt')
-            >>> parser.sequence2ast(stmt)
-            Traceback (most recent call last):
-                ...
-            ParserError: parse tree does not use a valid start symbol
-            >>> stmt = ASTutils.promote_stmt(stmt)
-            >>> parser.sequence2ast(stmt)
-            <parser.st object at 0x817c090>
-
-        """
-        if type(cst) in (type(()), type([])):
-            if cst[0] == symbol.stmt:
-                if type(cst) is type(()):
-                    return ( symbol.file_input
-                           , cst
-                           , (token.NEWLINE, '')
-                           , (token.ENDMARKER,'')
-                            )
-                elif type(cst) is type([]):
-                    return [ symbol.file_input
-                           , cst
-                           , [token.NEWLINE, '']
-                           , [token.ENDMARKER,'']
-                            ]
-            else:
-                raise ASTutilsException, "only stmt's can be promoted"
-        else:
-            raise ASTutilsException, "cst to promote must be list or tuple"
-
-    promote_stmt = classmethod(promote_stmt)
-
-
-
     def getnode(self, st, nodetype):
         """Given an AST object or a cst fragment (as list or tuple), and a
         string or int nodetype, return the first instance of the desired
