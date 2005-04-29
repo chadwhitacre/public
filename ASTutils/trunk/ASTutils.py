@@ -231,6 +231,10 @@ class ASTutils:
             Traceback (most recent call last):
                 ...
             ASTutilsException: nodetype '-1' is not in symbol or token tables
+            >>> ASTutils.getnodes(ast, 'foo') # bad data
+            Traceback (most recent call last):
+                ...
+            ASTutilsException: nodetype '-1' is not in symbol or token tables
 
         """
 
