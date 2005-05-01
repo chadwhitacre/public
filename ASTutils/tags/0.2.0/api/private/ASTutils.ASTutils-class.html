@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>ASTutils.ASTutils</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="ASTutils-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        <a href="ASTutils-module.html">Module&nbsp;ASTutils</a> ::
+        Class&nbsp;ASTutils
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[show&nbsp;private&nbsp;|&nbsp;<a href="../public/ASTutils.ASTutils-class.html">hide&nbsp;private</a>]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="ASTutils.ASTutils-class.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF CLASS DESCRIPTION =========== -->
+<h2 class="class">Class ASTutils</h2>
+
+<hr/>
+
+<p>This class holds four utilities for working with Python syntax 
+trees.</p>
+<p>Syntax trees are the output of the Python parser, which is mimicked in 
+the standard library's parser module. The parser module trades in AST 
+objects, which represent &quot;abstract syntax trees.&quot; The parser 
+module can convert ASTs to list and tuple representations. I believe that 
+these are considered &quot;concrete syntax trees,&quot; or CSTs. The 
+compiler module also works with ASTs, but I believe at a higher level. 
+This module uses parser, but not compiler.</p>
+<p>Where an 'st' argument is called for in this module, you may provide 
+either an AST object, or a list or tuple as produced by parser.ast2list 
+and parser.ast2tuple. This module uses the term &quot;cst fragment&quot; 
+to refer to a fragment of a syntax tree sequence that does not represent 
+a well-formed Python structure, e.g., the tree does not begin with one 
+of: single_input, file_input, or eval_input. Unless otherwise mentioned, 
+syntax trees provided as 'st' arguments must be well-formed; they may not 
+be fragments.</p>
+For the record, I implemented these as classmethods rather than as 
+module-level functions because they call each other and I didn't want to 
+think about the order they were defined in.
+<hr/>
+
+
+<!-- =========== START OF METHOD SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Method Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="ASTutils.ASTutils-class.html#ast2read" class="summary-sig-name"><code>ast2read</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>st</span>)</span></code>
+<br />
+Given a syntax tree, return a more human-readable representation of 
+the tree than is returned by parser.ast2list and parser.ast2tuple.    <i>(Class method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="ASTutils.ASTutils-class.html#ast2text" class="summary-sig-name"><code>ast2text</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>st</span>)</span></code>
+<br />
+Given a syntax tree, return an approximation of the source code that 
+generated it.    <i>(Class method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="ASTutils.ASTutils-class.html#getnodes" class="summary-sig-name"><code>getnodes</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>st</span>,
+          <span class=summary-sig-arg>nodetype</span>)</span></code>
+<br />
+Given an AST object or a cst fragment (as list or tuple), and a string 
+or int nodetype, return the first instance of the desired nodetype as a 
+cst fragment, or None if the nodetype is not found.    <i>(Class method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="ASTutils.ASTutils-class.html#hasnode" class="summary-sig-name"><code>hasnode</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>cst</span>,
+          <span class=summary-sig-arg>nodetype</span>)</span></code>
+<br />
+Given an AST object or a cst fragment (either in list or tuple form), 
+and a nodetype (either as a string or an int), return a boolean.    <i>(Class method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/ASTutils.ASTutils-class.html#_standardize_st" class="summary-sig-name"><code>_standardize_st</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>st</span>,
+          <span class=summary-sig-arg>format</span>)</span></code>
+<br />
+Given a syntax tree and a desired format, return the tree in that 
+format.    <i>(Class method)</i>
+</td></tr>
+</table><br />
+
+
+<!-- =========== START OF CLASS METHOD DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Class Method Details</th></tr>
+</table>
+
+<a name="ast2read"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">ast2read</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>st</span>)</span>
+  </h3>
+  <p>Given a syntax tree, return a more human-readable representation of 
+  the tree than is returned by parser.ast2list and parser.ast2tuple.</p>
+  Usage:
+<pre class="doctestblock">
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">import</span> parser
+<span class="py-prompt">&gt;&gt;&gt; </span>ast = parser.suite(<span class="py-string">&quot;print 'hello world'&quot;</span>)
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">print</span> parser.ast2list(ast)</span>
+<span class="py-output">[257, [266, [267, [268, [271, [1, 'print'], [298, [299, [300, [301, [303, [304, [305, [306, [307, [308, [309, [310, [311, [3, &quot;'hello world'&quot;]]]]]]]]]]]]]]]], [4, '']]], [0, '']]</span>
+
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">print</span> ASTutils.ast2read(ast)</span>
+<span class="py-output">['file_input',
+ ['stmt',
+  ['simple_stmt',
+   ['small_stmt',
+    ['print_stmt',
+     ['NAME', 'print'],
+     ['test',
+      ['and_test',
+       ['not_test',
+        ['comparison',
+         ['expr',
+          ['xor_expr',
+           ['and_expr',
+            ['shift_expr',
+             ['arith_expr',
+              ['term',
+               ['factor',
+                ['power',
+                 ['atom', ['STRING', &quot;'hello world'&quot;]]]]]]]]]]]]]]]],
+   ['NEWLINE', '']]],
+ ['ENDMARKER', '']]</span></pre>
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="ast2text"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">ast2text</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>st</span>)</span>
+  </h3>
+  <p>Given a syntax tree, return an approximation of the source code that 
+  generated it. The approximation will only differ from the original in 
+  non-essential whitespace and missing comments.</p>
+  Usage:
+<pre class="doctestblock">
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">import</span> parser
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">from</span> ASTutils <span class="py-keyword">import</span> ASTutils
+<span class="py-prompt">&gt;&gt;&gt; </span>ast = parser.suite(<span class="py-string">&quot;print 'hello world'&quot;</span>)
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">print</span> ASTutils.ast2text(ast)</span>
+<span class="py-output">print 'hello world'</span></pre>
+<pre class="doctestblock">
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span><span class="py-comment"># Here's an example of whitespace differences (this also tests</span>
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-comment"># multiple indent levels):</span>
+<span class="py-prompt">&gt;&gt;&gt;
+</span><span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">from</span> os <span class="py-keyword">import</span> linesep as lf
+<span class="py-prompt">&gt;&gt;&gt; </span>block = <span class="py-string">&quot;def foo():&quot;</span>+lf+<span class="py-string">&quot; if 1:&quot;</span>+lf+<span class="py-string">&quot;  return True&quot;</span>
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-comment"># note no whitespace around parens/colons and one-space indents</span>
+<span class="py-prompt">&gt;&gt;&gt;
+</span><span class="py-prompt">&gt;&gt;&gt; </span>ast = parser.suite(block)
+<span class="py-prompt">&gt;&gt;&gt; </span>text = ASTutils.ast2text(ast)
+<span class="py-prompt">&gt;&gt;&gt;
+</span><span class="py-prompt">&gt;&gt;&gt; </span><span class="py-comment"># account for the fact that I trim trailing spaces in my editor</span>
+<span class="py-prompt">&gt;&gt;&gt; </span>text = linesep.join([l.rstrip() <span class="py-keyword">for</span> l <span class="py-keyword">in</span> text.split(linesep)])
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">print</span> text</span>
+<span class="py-output">def foo ( ) :
+    if 1 :
+        return True</span>
+
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span><span class="py-comment"># note extra spacing around parens/colons and four-space indents</span></span></pre>
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="getnodes"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">getnodes</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>st</span>,
+          <span class=sig-arg>nodetype</span>)</span>
+  </h3>
+  <p>Given an AST object or a cst fragment (as list or tuple), and a 
+  string or int nodetype, return the first instance of the desired 
+  nodetype as a cst fragment, or None if the nodetype is not found.</p>
+  Usage:
+<pre class="doctestblock">
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">import</span> parser, symbol
+<span class="py-prompt">&gt;&gt;&gt; </span>ast = parser.suite(<span class="py-string">&quot;print 'hello world'&quot;</span>)
+<span class="py-prompt">&gt;&gt;&gt; </span>ASTutils.getnodes(ast, <span class="py-string">'print_stmt'</span>)</span>
+<span class="py-output">[(271, (1, 'print'), (298, (299, (300, (301, (303, (304, (305, (306, (307, (308, (309, (310, (311, (3, &quot;'hello world'&quot;)))))))))))))))]</span>
+
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span>ASTutils.getnodes(ast, symbol.pass_stmt)</span>
+<span class="py-output">[]</span>
+
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span>ASTutils.getnodes(ast, -1) <span class="py-comment"># bad data</span></span>
+<span class="py-output">Traceback (most recent call last):</span>
+
+<span class="py-src"><span class="py-prompt">    ...
+</span></span>
+<span class="py-output">ASTutilsException: nodetype '-1' is not in symbol or token tables</span>
+
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span>ASTutils.getnodes(ast, <span class="py-string">'foo'</span>) <span class="py-comment"># bad data</span></span>
+<span class="py-output">Traceback (most recent call last):</span>
+
+<span class="py-src"><span class="py-prompt">    ...
+</span></span>
+<span class="py-output">ASTutilsException: nodetype '-1' is not in symbol or token tables</span></pre>
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="hasnode"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">hasnode</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>cst</span>,
+          <span class=sig-arg>nodetype</span>)</span>
+  </h3>
+  <p>Given an AST object or a cst fragment (either in list or tuple 
+  form), and a nodetype (either as a string or an int), return a 
+  boolean.</p>
+  Usage:
+<pre class="doctestblock">
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">import</span> parser, symbol
+<span class="py-prompt">&gt;&gt;&gt; </span>ast = parser.suite(<span class="py-string">&quot;print 'hello world'&quot;</span>)
+<span class="py-prompt">&gt;&gt;&gt; </span>ASTutils.hasnode(ast, <span class="py-string">'print_stmt'</span>)</span>
+<span class="py-output">True</span>
+
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span>ast = parser.suite(<span class="py-string">&quot;if 1: print 'hello world'&quot;</span>)
+<span class="py-prompt">&gt;&gt;&gt; </span>ASTutils.hasnode(ast, symbol.pass_stmt)</span>
+<span class="py-output">False</span>
+
+<span class="py-src"><span class="py-prompt">&gt;&gt;&gt; </span>ASTutils.hasnode(ast, symbol.print_stmt)</span>
+<span class="py-output">True</span></pre>
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="_standardize_st"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">_standardize_st</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>st</span>,
+          <span class=sig-arg>format</span>=<span class=sig-default>'tuple'</span>)</span>
+  </h3>
+  Given a syntax tree and a desired format, return the tree in that 
+  format.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="ASTutils-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Sat Apr 30 22:06:08 2005</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>
