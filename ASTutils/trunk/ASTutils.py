@@ -1,12 +1,16 @@
 #!/usr/bin/env python
-"""ASTutils -- utilities for working with abstract syntax tree (AST) objects
+"""utilities for working with syntax tree (AST) objects
 """
 # (c) 2005 Chad Whitacre <http://www.zetaweb.com/>
 # This program is beerware. If you like it, buy me a beer someday.
 # No warranty is expressed or implied.
 
-__author__ = 'Chad Whitacre'
 __version__ = '0.1'
+__author__ = 'Chad Whitacre'
+__author_email__ = 'chad [at] zetaweb [dot] com'
+__url__ = 'http://www.zetadev.com/'
+
+
 
 import parser, token, symbol
 from os import linesep
