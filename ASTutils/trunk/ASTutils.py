@@ -14,12 +14,33 @@ from pprint import pformat
 from StringIO import StringIO
 
 class ASTutilsException(Exception):
-    pass
+    """This represents an error in one of the ASTutils methods."""
 
 class ASTutils:
-    """A class holding utilities for working with syntax trees. Where an st
-    argument is called for, this may be either an AST object, or a list or tuple
-    as produced by parser.ast2list and parser.ast2tuple. """
+
+    """
+    This class holds four utilities for working with Python syntax trees.
+
+    Syntax trees are the output of the Python parser, which is mimicked in the
+    standard library's parser module. The parser module trades in AST objects,
+    which represent "abstract syntax trees." The parser module can convert ASTs
+    to list and tuple representations. I believe that these are considered
+    "concrete syntax trees," or CSTs. The compiler module also works with ASTs,
+    but I believe at a higher level. This module uses parser, but not compiler.
+
+    Where an 'st' argument is called for in this module, you may provide either
+    an AST object, or a list or tuple as produced by parser.ast2list and
+    parser.ast2tuple. This module uses the term "cst fragment" to refer to a
+    fragment of a syntax tree sequence that does not represent a well-formed
+    Python structure, e.g., the tree does not begin with one of: single_input,
+    file_input, or eval_input. Unless otherwise mentioned, syntax trees provided
+    as 'st' arguments must be well-formed; they may not be fragments.
+
+    For the record, I implemented these as classmethods rather than as
+    module-level functions because they call each other and I didn't want to
+    think about the order they were defined in.
+
+    """
 
 
     def _standardize_st(self, st, format='tuple'):
@@ -60,6 +81,8 @@ class ASTutils:
 
         >>> import parser
         >>> ast = parser.suite("print 'hello world'")
+        >>> print parser.ast2list(ast)
+        [257, [266, [267, [268, [271, [1, 'print'], [298, [299, [300, [301, [303, [304, [305, [306, [307, [308, [309, [310, [311, [3, "'hello world'"]]]]]]]]]]]]]]]], [4, '']]], [0, '']]
         >>> print ASTutils.ast2read(ast)
         ['file_input',
          ['stmt',
@@ -86,8 +109,8 @@ class ASTutils:
 
         # define our recursive function
         def walk(cst):
-            """ given an AST list (a CST?), recursively walk it and replace the
-            nodes with human-readable equivalents
+            """Given an AST list, recursively walk it and replace the nodes with
+            human-readable equivalents.
             """
 
             for node in cst:
@@ -128,22 +151,23 @@ class ASTutils:
             >>> print ASTutils.ast2text(ast)
             print 'hello world'
 
-        Here's an example of whitespace differences (also tests multiple indent
-        levels):
-
+            >>> # Here's an example of whitespace differences (this also tests
+            >>> # multiple indent levels):
+            >>>
             >>> from os import linesep as lf
-
-            # no whitespace around parens & colons, and one-space indents
             >>> block = "def foo():"+lf+" if 1:"+lf+"  return True"
+            >>> # note no whitespace around parens/colons and one-space indents
+            >>>
             >>> ast = parser.suite(block)
             >>> text = ASTutils.ast2text(ast)
-
-            # account for the fact that I trim trailing spaces in my editor
+            >>>
+            >>> # account for the fact that I trim trailing spaces in my editor
             >>> text = linesep.join([l.rstrip() for l in text.split(linesep)])
             >>> print text
             def foo ( ) :
                 if 1 :
                     return True
+            >>> # note extra spacing around parens/colons and four-space indents
 
         """
 
@@ -289,7 +313,7 @@ class ASTutils:
 
     def hasnode(self, cst, nodetype):
         """Given an AST object or a cst fragment (either in list or tuple form),
-       and a nodetype (either as a string or an int), return a boolean.
+        and a nodetype (either as a string or an int), return a boolean.
 
         Usage:
 
@@ -298,7 +322,9 @@ class ASTutils:
             >>> ASTutils.hasnode(ast, 'print_stmt')
             True
             >>> ast = parser.suite("if 1: print 'hello world'")
-            >>> ASTutils.hasnode(ast, 'print_stmt')
+            >>> ASTutils.hasnode(ast, symbol.pass_stmt)
+            False
+            >>> ASTutils.hasnode(ast, symbol.print_stmt)
             True
 
         """
