@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """utilities for working with syntax tree (AST) objects
 """
-# (c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+# (c) 2005 Chad Whitacre <http://www.zetadev.com/>
 # This program is beerware. If you like it, buy me a beer someday.
 # No warranty is expressed or implied.
 

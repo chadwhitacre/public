@@ -1,3 +1,24 @@
-ASTutils is a Python module for ASTutils that provides utilities for working
-with abstract syntax tree (AST) objects. Methods provided are:
+ASTutils provides utilities for working with abstract syntax tree (AST) objects.
+To install and verify installation, run:
 
+    $ python setup.py install
+    $ python
+    Python 2.4 (#1, Dec 30 2004, 22:20:12)
+    [GCC 2.95.4 20020320 [FreeBSD]] on freebsd4
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import ASTutils
+    >>>
+
+
+Auto-generated API documentation is in api/ in HTML format.
+
+This software is distributed under the following license:
+
+    (c) 2005 Chad Whitacre <http://www.zetadev.com/>
+    This program is beerware. If you like it, buy me a beer someday.
+    No warranty is expressed or implied.
+
+
+For more information, visit:
+
+    http://www.zetadev.com/
