@@ -5,7 +5,7 @@
 # This program is beerware. If you like it, buy me a beer someday.
 # No warranty is expressed or implied.
 
-__version__ = '0.2'
+__version__ = '0.2.0'
 __author__ = 'Chad Whitacre'
 __author_email__ = 'chad [at] zetaweb [dot] com'
 __url__ = 'http://www.zetadev.com/'
