@@ -1,0 +1,3 @@
+ASTutils is a Python module for ASTutils that provides utilities for working
+with abstract syntax tree (AST) objects. Methods provided are:
+
