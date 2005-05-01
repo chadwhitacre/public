@@ -1,9 +1,16 @@
 from distutils.core import setup
-setup( name = 'ASTutils'
-     , version = '0.2'
+from os import linesep
+
+import ASTutils as base
+
+description = base.__doc__.split(linesep+linesep)[0]
+description = description.strip(linesep)
+
+setup( name = base.__name__
+     , version = base.__version__
      , py_modules = ['ASTutils']
-     , description = 'utilities for working with AST objects'
-     , author = 'Chad Whitacre'
-     , author_email = 'chad@zetaweb.com'
-     , url = 'http://www.zetaewb.com/'
+     , description = description
+     , author = base.__author__
+     , author_email = base.__author_email__
+     , url = base.__url__
       )
