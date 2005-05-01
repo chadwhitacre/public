@@ -10,20 +10,17 @@ __author__ = 'Chad Whitacre'
 __author_email__ = 'chad [at] zetaweb [dot] com'
 __url__ = 'http://www.zetadev.com/'
 
-
-
 import parser, token, symbol
 from os import linesep
 from pprint import pformat
 from StringIO import StringIO
 
 class ASTutilsException(Exception):
-    """This represents an error in one of the ASTutils methods."""
+    """This represents an error in one of the ASTutils methods.
+    """
 
 class ASTutils:
-
-    """
-    This class holds four utilities for working with Python syntax trees.
+    """This class holds four utilities for working with Python syntax trees.
 
     Syntax trees are the output of the Python parser, which is mimicked in the
     standard library's parser module. The parser module trades in AST objects,
