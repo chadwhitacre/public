@@ -48,7 +48,7 @@ uninstall:
 ##
 
 # release parameters -- not meaningful for local use
-version=trunk
+version=0.3.0
 man_prefix = /usr/local/www/www.zetadev.com/software/pytest/${version}/man
 
 
