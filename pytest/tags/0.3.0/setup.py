@@ -13,7 +13,7 @@ classifiers = [
                 ]
 
 setup( name = 'pytest'
-     , version = '0.3'
+     , version = '0.3.0'
      , package_dir = {'':'site-packages'}
      , packages = ['ASTutils','PyTest']
      , description = 'Pytest is a testing interpreter for Python.'
