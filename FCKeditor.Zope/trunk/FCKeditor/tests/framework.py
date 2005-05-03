@@ -71,17 +71,6 @@ if not sys.modules.has_key('Testing'):
         sys.exit(1)
 
 import Testing, unittest
-
-###### tracer
-#
-#from pprint import pformat
-#print pformat(globals())
-#print pformat(locals())
-#print '%^&*'*20
-#raise SystemExit
-#
-######
-
 execfile(os.path.join(os.path.dirname(Testing.__file__), 'common.py'))
 
 # Include ZopeTestCase support
@@ -115,4 +104,3 @@ if 1:   # Create a new scope
 print 'SOFTWARE_HOME: %s' % os.environ.get('SOFTWARE_HOME', 'Not set')
 print 'INSTANCE_HOME: %s' % os.environ.get('INSTANCE_HOME', 'Not set')
 sys.stdout.flush()
-
