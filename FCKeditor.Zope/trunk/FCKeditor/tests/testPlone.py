@@ -58,12 +58,7 @@ class TestFCKeditorPlone(PloneTestCase.PloneTestCase):
     def testLayout(self):
         self.assertEqual( isinstance(self.portal.portal_fckmanager, CMFFCKmanager)
                         , True)
-        self.assertEqual( self.portal.portal_fckmanager.objectIds()
-                        , ['DefaultFCKeditor'])
 
-    def testWeirdIDissue(self):
-        fckeditor = self.portal.portal_fckmanager
-        self.assertEqual(fckeditor(),'foo')
 
 
 

@@ -10,9 +10,7 @@ ZopeTestCase.installProduct('FCKeditor')
 
 from zExceptions import BadRequest
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
-
-CompatibleREQUEST = {'HTTP_USER_AGENT':'gecko/20050414'}
-IncompatibleREQUEST = {'HTTP_USER_AGENT':'Mozilla/4.08'}
+from data import testdata
 
 class TestZopeFCKeditor(ZopeTestCase.ZopeTestCase):
 
@@ -56,10 +54,10 @@ class TestZopeFCKmanager(ZopeTestCase.ZopeTestCase):
         self.assertEqual(hasattr(self.fckmanager, 'foo'), True)
 
     def testInstantiateTextarea(self):
-        # using implicit creation
-        fckeditor = self.fckmanager('MyField')
+        fckeditor = self.fckmanager.spawn('MyField')
         self.assertEqual(isinstance(fckeditor, ZopeFCKeditor), True)
-        self.assertEqual(fckeditor(IncompatibleREQUEST), """\
+        fckeditor.SetCompatible(testdata.INCOMPATIBLE_USERAGENT)
+        self.assertEqual(fckeditor.Create(), """\
 <div>
     <textarea name="MyField"
               rows="4" cols="40"
@@ -71,10 +69,10 @@ class TestZopeFCKmanager(ZopeTestCase.ZopeTestCase):
 </div>""")
 
     def testInstantiateFCKeditor(self):
-        # using explicit creation
-        fckeditor = self.fckmanager.new_editor('MyField')
+        fckeditor = self.fckmanager.spawn('MyField')
         self.assertEqual(isinstance(fckeditor, ZopeFCKeditor), True)
-        self.assertEqual(fckeditor.Create(CompatibleREQUEST), """\
+        fckeditor.SetCompatible(testdata.COMPATIBLE_USERAGENT)
+        self.assertEqual(fckeditor.Create(), """\
 <div>
     <input type="hidden"
            id="MyField"

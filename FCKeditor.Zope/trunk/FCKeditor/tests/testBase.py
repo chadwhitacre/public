@@ -52,7 +52,8 @@ class TestFCKeditor(unittest.TestCase):
             frameborder="no" scrolling="no"></iframe>
 </div>"""
 
-        self.assertEqual(self.fck.Create('Gecko/20030313'), expected)
+        self.fck.SetCompatible('Gecko/20030313')
+        self.assertEqual(self.fck.Create(), expected)
 
 
     def testCustomReplacement(self):
@@ -89,7 +90,8 @@ class TestFCKeditor(unittest.TestCase):
             frameborder="no" scrolling="no"></iframe>
 </div>"""
 
-        self.assertEqual(self.fck.Create('Gecko/20030313'), expected)
+        self.fck.SetCompatible('Gecko/20030313')
+        self.assertEqual(self.fck.Create(), expected)
 
 
 
@@ -118,7 +120,7 @@ Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0);JTB:104:a95eef30-9f35-4ec0-bc
         for useragent in compatible_useragents.split(os.linesep):
             i += 1
             if useragent.strip():
-                self.failUnless(self.fck.Compatible(useragent),
+                self.failUnless(self.fck.SetCompatible(useragent),
                                 "compatible failed on #%s: %s" % (i, useragent))
 
 
@@ -141,7 +143,7 @@ Opera/7.54 (FreeBSD; U)
         for useragent in incompatible_useragents.split(os.linesep):
             i += 1
             if useragent.strip():
-                self.failIf(self.fck.Compatible(useragent),
+                self.failIf(self.fck.SetCompatible(useragent),
                             "incompatible failed on #%s: %s" % (i, useragent))
 
 
