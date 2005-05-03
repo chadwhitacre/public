@@ -10,11 +10,11 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products import meta_types
 
 # us
-#from Products.FCKeditor.FCKconnector import FCKconnector
+from Products.FCKeditor.ZopeFCKconnector import ZopeFCKconnector
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 
 
-class ZopeFCKmanager(PropertyManager, SimpleItem):
+class ZopeFCKmanager(ZopeFCKconnector, PropertyManager, SimpleItem):
     """provides API to support on-the-fly FCKeditor objects w/in Zope
     """
 

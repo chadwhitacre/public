@@ -40,7 +40,7 @@ class FCKtemplates:
 
 
 class FCKexception(Exception):
-    pass
+    """Error within the FCK connector application"""
 
 
 class FCKeditor:
@@ -102,7 +102,8 @@ class FCKeditor:
             return FCKtemplates.INCOMPATIBLE % self.__dict__
 
     def SetCompatible(self, useragent):
-        """given a browser's user-agent string, set a boolean on self
+        """given a browser's user-agent string, set a boolean on self and
+        return it
         """
 
         useragent = useragent.lower()
