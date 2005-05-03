@@ -88,6 +88,15 @@ class TestZopeFCKmanager(ZopeTestCase.ZopeTestCase):
 </div>""")
 
 
+class TestZopeFCKconnector(ZopeTestCase.ZopeTestCase):
+
+    def afterSetUp(self):
+        add = self.folder.manage_addProduct['FCKeditor'].manage_addFCKmanager
+        add('fckmanager')
+        self.fckmanager = self.folder.fckmanager
+
+
+
 ##
 # Assemble into a suite and run
 ##

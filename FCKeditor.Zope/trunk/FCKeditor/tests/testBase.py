@@ -6,7 +6,8 @@ import unittest
 sys.path.insert(1, os.path.realpath('..'))
 
 # the thing we want to test
-from FCKeditor import FCKeditor
+from FCKeditor import FCKeditor, FCKexception
+from FCKconnector import FCKconnector
 
 
 ##
@@ -145,6 +146,121 @@ Opera/7.54 (FreeBSD; U)
             if useragent.strip():
                 self.failIf(self.fck.SetCompatible(useragent),
                             "incompatible failed on #%s: %s" % (i, useragent))
+
+
+class TestFCKeditor(unittest.TestCase):
+
+    def setUp(self):
+        self.fck = FCKconnector()
+
+    def testGoodData(self):
+        data = { 'CommandName'  : 'GetFolders'
+               , 'ResourceType' : 'Image'
+               , 'FolderPath'   : '/path/to/content/'
+               , 'ServerPath'   : '/'
+                }
+        self.assertEqual(self.fck._validate(data), data)
+
+    def testAllCommands(self):
+        data = { 'ResourceType' : 'Image'
+               , 'FolderPath'   : '/path/to/content/'
+               , 'ServerPath'   : '/'
+                }
+
+        data['CommandName'] = 'GetFolders'
+        self.assertEqual(self.fck._validate(data), data)
+
+        data['CommandName'] = 'GetFoldersAndFiles'
+        self.assertEqual(self.fck._validate(data), data)
+
+        data['CommandName'] = 'CreateFolder'
+        self.assertEqual(self.fck._validate(data), data)
+
+        data['CommandName'] = 'FileUpload'
+        self.assertEqual(self.fck._validate(data), data)
+
+    def testBadCommand(self):
+        data = { 'CommandName'  : 'YADAYADAYADA'
+               , 'ResourceType' : 'Image'
+               , 'FolderPath'   : '/path/to/content/'
+               , 'ServerPath'   : '/'
+                }
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+    def testAllResourceTypes(self):
+        data = { 'CommandName'  : 'GetFolders'
+               , 'FolderPath'   : '/path/to/content/'
+               , 'ServerPath'   : '/'
+                }
+
+        data['ResourceType'] = 'File'
+        self.assertEqual(self.fck._validate(data), data)
+
+        data['ResourceType'] = 'Image'
+        self.assertEqual(self.fck._validate(data), data)
+
+        data['ResourceType'] = 'Flash'
+        self.assertEqual(self.fck._validate(data), data)
+
+        data['ResourceType'] = 'Media'
+        self.assertEqual(self.fck._validate(data), data)
+
+    def testBadResourceType(self):
+        data = { 'CommandName'  : 'GetFolders'
+               , 'ResourceType' : 'Audio'
+               , 'FolderPath'   : '/path/to/content/'
+               , 'ServerPath'   : '/'
+                }
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+    def testFolderPath(self):
+        data = { 'CommandName'  : 'GetFolders'
+               , 'ResourceType' : 'Image'
+               , 'ServerPath'   : '/'
+                }
+
+        # must start and end with a forward slash
+        data['FolderPath'] = '/Docs/Test/'
+        self.assertEqual(self.fck._validate(data), data)
+
+        data['FolderPath'] = '/'
+        self.assertEqual(self.fck._validate(data), data)
+
+        # bad data
+        data['FolderPath'] = 'Docs/Test/'
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+        data['FolderPath'] = '/Docs/Test'
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+        data['FolderPath'] = ''
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+    def testServerPath(self):
+        data = { 'CommandName'  : 'GetFolders'
+               , 'ResourceType' : 'Image'
+               , 'FolderPath'   : '/'
+                }
+
+        # must start and end with a forward slash
+        data['ServerPath'] = '/Docs/Test/'
+        self.assertEqual(self.fck._validate(data), data)
+
+        data['ServerPath'] = '/'
+        self.assertEqual(self.fck._validate(data), data)
+
+
+        # bad data
+        data['ServerPath'] = 'Docs/Test/'
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+        data['ServerPath'] = '/Docs/Test'
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+        data['ServerPath'] = ''
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+
 
 
 if __name__ == '__main__':
