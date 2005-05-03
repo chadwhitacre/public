@@ -1,5 +1,12 @@
 Pytest is a testing interpreter for Python.
 
+Unlike a testing /framework/, pytest requires nothing of its test scripts that
+is not included in the Python language itself. Pytests are regular Python
+scripts that are interpreted in a special way. Specifically, all explicit
+comparison statements (i.e., those with a comparison operator), are interpreted
+as tests, and their results are tallied and reported on following execution of
+the script.
+
 
 ========================================
     INSTALLATION
@@ -34,3 +41,12 @@ For more information, please consult the following resources:
     - Documentation and archives are also available at:
 
         http://www.zetadev.com/software/pytest/
+
+
+========================================
+    LICENSE
+========================================
+
+(c) 2005 Chad Whitacre <http://www.zetadev.com/>
+This program is beerware. If you like it, buy me a beer someday.
+No warranty is expressed or implied.
