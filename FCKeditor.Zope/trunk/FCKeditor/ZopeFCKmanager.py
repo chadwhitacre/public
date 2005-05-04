@@ -108,9 +108,12 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     security.declarePrivate('GetFolders')
     def GetFolders(self, Type, CurrentFolder):
         """Get the list of the children folders of a folder."""
+
         folder = self.restrictedTraverse('..'+CurrentFolder)
+
         meta_types = self._FCK2Zope('Folder')
         folders = folder.objectIds(meta_types)
+
         xml_response = self._xmlGetFolders( Type
                                           , CurrentFolder
                                           , CurrentFolder # ServerPath
@@ -139,6 +142,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
         id = self._get_info(f, ('getId','id'))
         size = self._get_info(f, ('getSize','get_size'))
+        size = size / 1024 # convert to kB
 
         return (id, size)
 
@@ -153,9 +157,6 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
         meta_types = self._FCK2Zope(Type)
         files = [self._file_info(f) for f in folder.objectValues(meta_types)]
-
-        #o = folder.objectValues(meta_types)[0]
-        #raise 'hrm', self._get_info(o, 'getId')
 
         xml_response = self._xmlGetFoldersAndFiles( Type
                                                   , CurrentFolder

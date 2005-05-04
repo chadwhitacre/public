@@ -1,6 +1,8 @@
 fckmanager
-    map meta_type to Type
+    wire up CMFFCKmanager with CMF types
     map portal roles to FCK toolbars
+    === DONE ===
+    map meta_type to Type
     provide size for files/images
 plone -- wysiwyg_support
     needs to play nice with other editors (epoz, kupu, etc.)

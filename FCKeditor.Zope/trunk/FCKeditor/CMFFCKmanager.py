@@ -17,6 +17,13 @@ class CMFFCKmanager(ZopeFCKmanager, UniqueObject):
     title = 'Manage a set of FCKeditors'
     meta_type = 'FCKmanager for CMF'
 
+    # override with stock CMF types
+    FolderTypes = ('Portal Folder',)
+    FileTypes = ('Portal File','Document')
+    ImageTypes = ('Portal Image',)
+    FlashTypes = ()
+    MediaTypes = ()
+
 
 InitializeClass(CMFFCKmanager)
 
