@@ -26,61 +26,64 @@ class FCKconnector:
 
         """
         data = self._validate(incoming) # will raise an error if bad data
-        method = getattr(self, data['CommandName'])
-        return method(ResourceType, FolderPath, ServerPath)
+        method = getattr(self, data['Command'])
+        return method(Type, CurrentFolder, ServerPath)
 
     def _validate(self, incoming):
         """Given a dictionary, return a validated dict.
         """
 
         # parse our four variables out of the dict and validate them
+        # all variables are optional
 
-        CommandName  = incoming.get('CommandName', '')
-        if not hasattr(self, CommandName):
-            raise FCKexception, "CommandName '%s' not found" % CommandName
+        Command = incoming.get('Command', '')
+        if Command:
+            if not hasattr(self, Command):
+                raise FCKexception, "Command '%s' not found" % Command
 
-        ResourceType = incoming.get('ResourceType', '')
-        if ResourceType not in ( ''
+        Type = incoming.get('Type', '')
+        if Type not in ( ''
                                , 'File'
                                , 'Image'
                                , 'Flash'
                                , 'Media'
                                 ):
-            raise FCKexception, "ResourceType '%s' not found" % ResourceType
+            raise FCKexception, "Type '%s' not found" % Type
 
-        FolderPath   = incoming.get('FolderPath', '')
-        if not (FolderPath.startswith('/') and FolderPath.endswith('/')):
-            raise FCKexception, "FolderPath '%s' must" % FolderPath +\
-                                " start and end with '/'"
+        CurrentFolder = incoming.get('CurrentFolder', '')
+        if CurrentFolder:
+            if not (CurrentFolder.startswith('/') and CurrentFolder.endswith('/')):
+                raise FCKexception, "CurrentFolder '%s' must" % CurrentFolder +\
+                                    " start and end with '/'"
 
-        ServerPath   = incoming.get('ServerPath', '')
-        if ServerPath: # it is optional
+        ServerPath = incoming.get('ServerPath', '')
+        if ServerPath:
             if not (ServerPath.startswith('/') and ServerPath.endswith('/')):
                 raise FCKexception, "ServerPath '%s' must" % ServerPath +\
                                     " start and end with '/'"
 
-        return { 'CommandName'  : CommandName
-               , 'ResourceType' : ResourceType
-               , 'FolderPath'   : FolderPath
+        return { 'Command'  : Command
+               , 'Type' : Type
+               , 'CurrentFolder'   : CurrentFolder
                , 'ServerPath'   : ServerPath
                 }
 
 
 
-    def GetFolders(self, ResourceType, FolderPath, ServerPath):
+    def GetFolders(self, Type, CurrentFolder, ServerPath):
         """Get the list of the children folders of a folder."""
         # here is an example of what these four methods should do:
 
         # folders = get list of folder names per your framework
 
-        # response_body = self._xmlGetFolders( ResourceType, FolderPath
+        # response_body = self._xmlGetFolders( Type, CurrentFolder
         #                                    , ServerPath, folders)
 
         # return response_body
 
         pass
 
-    def _xmlGetFolders(self, ResourceType, FolderPath, ServerPath, Folders):
+    def _xmlGetFolders(self, Type, CurrentFolder, ServerPath, Folders):
         """Given the input and a list of folders, format an XML response.
         """
 
@@ -96,16 +99,16 @@ class FCKconnector:
     </Folders>
 </Connector>"""
 
-        return template % (ResourceType, FolderPath, ServerPath, folders)
+        return template % (Type, CurrentFolder, ServerPath, folders)
 
 
 
 
-    def GetFoldersAndFiles(self, ResourceType, FolderPath, ServerPath):
+    def GetFoldersAndFiles(self, Type, CurrentFolder, ServerPath):
         """Gets the list of the children folders and files of a folder."""
         pass # expects XML response
 
-    def _xmlGetFoldersAndFiles(self, ResourceType, FolderPath, ServerPath,
+    def _xmlGetFoldersAndFiles(self, Type, CurrentFolder, ServerPath,
                                Folders, Files):
         """Given the input and a list of folders, format an XML response.
         """
@@ -130,16 +133,16 @@ class FCKconnector:
     </Files>
 </Connector>"""
 
-        return template % (ResourceType, FolderPath, ServerPath, folders, files)
+        return template % (Type, CurrentFolder, ServerPath, folders, files)
 
 
 
 
-    def CreateFolder(self, ResourceType, FolderPath, ServerPath):
+    def CreateFolder(self, Type, CurrentFolder, ServerPath):
         """Create a child folder."""
         pass # expects XML response
 
-    def _xmlGetFolders(self, ResourceType, FolderPath, ServerPath, Folders):
+    def _xmlGetFolders(self, Type, CurrentFolder, ServerPath, Folders):
         """Given the input and a list of folders, format an XML response.
         """
 
@@ -155,11 +158,11 @@ class FCKconnector:
     </Folders>
 </Connector>"""
 
-        return template % (ResourceType, FolderPath, ServerPath, folders)
+        return template % (Type, CurrentFolder, ServerPath, folders)
 
 
 
 
-    def FileUpload(self, ResourceType, FolderPath, ServerPath):
+    def FileUpload(self, Type, CurrentFolder, ServerPath):
         """Add a file in a folder."""
         pass # expects HTML response
