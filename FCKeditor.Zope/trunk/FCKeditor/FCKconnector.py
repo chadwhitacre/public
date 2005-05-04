@@ -26,7 +26,7 @@ class FCKconnector:
         """
         data = self._validate(incoming) # will raise an error if bad data
         method = getattr(self, data['Command'])
-        return method(Type, CurrentFolder, ServerPath)
+        return method(data)
 
     def _validate(self, incoming):
         """Given a dictionary, return a validated dict.
@@ -61,15 +61,18 @@ class FCKconnector:
                 raise FCKexception, "ServerPath '%s' must" % ServerPath +\
                                     " start and end with '/'"
 
-        return { 'Command'  : Command
+        NewFolderName = incoming.get('NewFolderName', '')
+
+        return { 'Command' : Command
                , 'Type' : Type
-               , 'CurrentFolder'   : CurrentFolder
-               , 'ServerPath'   : ServerPath
+               , 'CurrentFolder' : CurrentFolder
+               , 'ServerPath' : ServerPath
+               , 'NewFolderName' : NewFolderName
                 }
 
 
 
-    def GetFolders(self, Type, CurrentFolder, ServerPath):
+    def GetFolders(self, **kw):
         """Get the list of the children folders of a folder."""
         # here is an example of what these four methods should do:
 
@@ -103,7 +106,7 @@ class FCKconnector:
 
 
 
-    def GetFoldersAndFiles(self, Type, CurrentFolder, ServerPath):
+    def GetFoldersAndFiles(self, **kw):
         """Gets the list of the children folders and files of a folder."""
         pass # expects XML response
 
@@ -137,31 +140,26 @@ class FCKconnector:
 
 
 
-    def CreateFolder(self, Type, CurrentFolder, ServerPath):
+    def CreateFolder(self, **kw):
         """Create a child folder."""
         pass # expects XML response
 
-    def _xmlGetFolders(self, Type, CurrentFolder, ServerPath, Folders):
+    def _xmlCreateFolder(self, Type, CurrentFolder, ServerPath, error_code):
         """Given the input and a list of folders, format an XML response.
         """
 
-        folder_template = '''<Folder name="%s" />'''
-        folders = '\n      '.join([folder_template % f for f in Folders])
-
         template = """\
 <?xml version="1.0" encoding="utf-8" ?>
-  <Connector command="GetFolders" resourceType="%s">
+  <Connector command="CreateFolder" resourceType="%s">
     <CurrentFolder path="%s" url="%s" />
-    <Folders>
-      %s
-    </Folders>
+    <Error number="%s" />
 </Connector>"""
 
-        return template % (Type, CurrentFolder, ServerPath, folders)
+        return template % (Type, CurrentFolder, ServerPath, error_code)
 
 
 
 
-    def FileUpload(self, Type, CurrentFolder, ServerPath):
+    def FileUpload(self, **kw):
         """Add a file in a folder."""
         pass # expects HTML response
