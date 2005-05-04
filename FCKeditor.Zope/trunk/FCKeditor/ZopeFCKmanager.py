@@ -17,8 +17,12 @@ from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     """This object provides Zope support services for FCKeditor.
 
-    Specific services provided include creation of on-the-fly FCKeditor
-    objects, and a backend for the FCKeditor file browser.
+    Specific services provided include:
+
+        - creation of on-the-fly FCKeditor objects, with rule-based
+          configuration
+
+        - a backend for the FCKeditor file browser
 
     """
 
@@ -28,7 +32,20 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     title = ''
     meta_type = 'FCKmanager'
 
-    _properties=({'id':'title', 'type':'string', 'mode':'w'},)
+    # these properties map FCKeditor ResourceType to Zope meta_type
+    FolderTypes = ('Folder',)
+    FileTypes = ('File',)
+    ImageTypes = ('Image',)
+    FlashTypes = ()
+    MediaTypes = ()
+
+    _properties=( { 'id':'title', 'type':'string', 'mode':'w' }
+                , { 'id':'FolderTypes', 'type':'lines', 'mode':'w' }
+                , { 'id':'FileTypes', 'type':'lines', 'mode':'w' }
+                , { 'id':'ImageTypes', 'type':'lines', 'mode':'w' }
+                , { 'id':'FlashTypes', 'type':'lines', 'mode':'w' }
+                , { 'id':'MediaTypes', 'type':'lines', 'mode':'w' }
+                  )
 
     manage_options = PropertyManager.manage_options +\
                      SimpleItem.manage_options
@@ -43,15 +60,8 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         """
         return ZopeFCKeditor(id)
 
-#    security.declareProtected('Manage FCKmanager', 'setProperty')
-#    def setProperty(self, key, val):
-#        """support property assignment
-#        """
-#        setattr(self, key, val)
-
-
     security.declarePublic('connect')
-    def connect(self, REQUEST):
+    def connector(self, REQUEST):
         """REQUEST acts like a dict, so we could hand it directly to our
         superclass. However, we need to set response headers based on
         Command, so we end up overriding.
@@ -81,6 +91,15 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         del outgoing['ServerPath']
         return outgoing
 
+    security.declarePrivate('_FCK2Zope')
+    def _FCK2Zope(self, Type):
+        """Given an FCKeditor ResourceType, return a list of Zope meta_types.
+        """
+        propname = Type + 'Types'
+        if not hasattr(self, propname):
+            raise FCKexception, "Property '%s' does not exist" % propname
+        return getattr(self, propname)
+
 
     ##
     # Command support
@@ -90,7 +109,8 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     def GetFolders(self, Type, CurrentFolder):
         """Get the list of the children folders of a folder."""
         folder = self.restrictedTraverse('..'+CurrentFolder)
-        folders = folder.objectIds('Folder')
+        meta_types = self._FCK2Zope('Folder')
+        folders = folder.objectIds(meta_types)
         xml_response = self._xmlGetFolders( Type
                                           , CurrentFolder
                                           , CurrentFolder # ServerPath
@@ -98,15 +118,44 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
                                            )
         return xml_response
 
+    security.declarePrivate('_get_info')
+    def _get_info(self, o, t):
+        """Given a tuple, return a value."""
+        for attr in t:
+            if hasattr(o, attr):
+                attr = getattr(o, attr)
+                break
+            else:
+                attr = None
+        if callable(attr):
+            value = attr()
+        else:
+            value = attr
+        return value
+
+    security.declarePrivate('_file_info')
+    def _file_info(self, f):
+        """Given an object, return a tuple."""
+
+        id = self._get_info(f, ('getId','id'))
+        size = self._get_info(f, ('getSize','get_size'))
+
+        return (id, size)
+
     security.declarePrivate('GetFoldersAndFiles')
     def GetFoldersAndFiles(self, Type, CurrentFolder):
         """Gets the list of the children folders and files of a folder."""
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
-        folders = folder.objectIds('Folder')
-        files = [(f.getId(), (f.getSize()/1024)) for f in folder.objectValues('File')]
 
-        #raise 'foo', folder
+        meta_types = self._FCK2Zope('Folder')
+        folders = folder.objectIds(meta_types)
+
+        meta_types = self._FCK2Zope(Type)
+        files = [self._file_info(f) for f in folder.objectValues(meta_types)]
+
+        #o = folder.objectValues(meta_types)[0]
+        #raise 'hrm', self._get_info(o, 'getId')
 
         xml_response = self._xmlGetFoldersAndFiles( Type
                                                   , CurrentFolder
