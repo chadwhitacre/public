@@ -48,12 +48,9 @@ def install_plone(self, out):
         print >> out, "Added FCKeditor 2.0 Final Candidate (Preview) to " +\
                       "available editors in Plone."
 
-    # add a CMFFCKmanager and a default FCKeditor
-    add = self.manage_addProduct['FCKeditor'].manage_addCMFFCKmanager
-    add()
-    add = self.portal_fckmanager.manage_addProduct['FCKeditor'].manage_addFCKeditor
-    add('DefaultFCKeditor')
-
+    # add a CMFFCKmanager and tweak the FolderTypes
+    self.manage_addProduct['FCKeditor'].manage_addCMFFCKmanager()
+    self.portal_fckmanager.FolderTypes = ('Plone Folder',)
 
 
 def install_subskin(self, out, skin_name, globals=FCKglobals):
