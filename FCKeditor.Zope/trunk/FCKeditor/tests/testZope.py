@@ -112,8 +112,8 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
 
 
     def testEmptyFolderGetFolders(self):
-        actual = self.fckmanager.GetFolders( ResourceType = 'File'
-                                           , FolderPath = '/path/to/empty/'
+        actual = self.fckmanager.GetFolders( Type = 'File'
+                                           , CurrentFolder = '/path/to/empty/'
                                              )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -127,8 +127,8 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
         self.assertEqual(actual, expected)
 
     def testSingleItemFolderGetFolders(self):
-        actual = self.fckmanager.GetFolders( ResourceType = 'File'
-                                           , FolderPath = '/path/to/one/'
+        actual = self.fckmanager.GetFolders( Type = 'File'
+                                           , CurrentFolder = '/path/to/one/'
                                              )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -142,8 +142,8 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
         self.assertEqual(actual, expected)
 
     def testFolderGetFolders(self):
-        actual = self.fckmanager.GetFolders( ResourceType = 'File'
-                                           , FolderPath = '/path/to/content/'
+        actual = self.fckmanager.GetFolders( Type = 'File'
+                                           , CurrentFolder = '/path/to/content/'
                                              )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -157,8 +157,8 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
         self.assertEqual(actual, expected)
 
     def testFolderGetFoldersAndFiles(self):
-        actual = self.fckmanager.GetFoldersAndFiles( ResourceType = 'File'
-                                                   , FolderPath = '/path/to/content/'
+        actual = self.fckmanager.GetFoldersAndFiles( Type = 'File'
+                                                   , CurrentFolder = '/path/to/content/'
                                                     )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>

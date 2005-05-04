@@ -54,21 +54,24 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     def connect(self, REQUEST):
         """REQUEST acts like a dict, so we could hand it directly to our
         superclass. However, we need to set response headers based on
-        CommandName, so we end up overriding.
+        Command, so we end up overriding.
 
         """
 
         data = self._validate(REQUEST)
-        CommandName = data['CommandName']
-        if CommandName in ( 'GetFolders'
-                          , 'GetFoldersAndFiles'
-                          , 'CreateFolder'
+        Command = data['Command']
+        if Command in ( 'GetFolders'
+                      , 'GetFoldersAndFiles'
+                      , 'CreateFolder'
                            ):
-            REQUEST.RESPONSE.set('Content-Type', 'text/xml')
-            REQUEST.RESPONSE.set('Cache-Control', 'no-cache')
+            REQUEST.RESPONSE.setHeader('Content-Type', 'text/xml')
+            REQUEST.RESPONSE.setHeader('Cache-Control', 'no-cache')
 
-        method = getattr(self, CommandName)
-        return method(ResourceType, FolderPath)
+        if hasattr(self, Command):
+            method = getattr(self, Command)
+            return method(data['Type'], data['CurrentFolder'])
+        else:
+            return ''
 
     security.declarePrivate('_validate')
     def _validate(self, incoming):
@@ -80,44 +83,46 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
 
     ##
-    # CommandName support
+    # Command support
     ##
 
     security.declarePrivate('GetFolders')
-    def GetFolders(self, ResourceType, FolderPath):
+    def GetFolders(self, Type, CurrentFolder):
         """Get the list of the children folders of a folder."""
-        folder = self.restrictedTraverse(FolderPath[1:])
+        folder = self.restrictedTraverse('..'+CurrentFolder)
         folders = folder.objectIds('Folder')
-        xml_response = self._xmlGetFolders( ResourceType
-                                          , FolderPath
-                                          , FolderPath # ServerPath
+        xml_response = self._xmlGetFolders( Type
+                                          , CurrentFolder
+                                          , CurrentFolder # ServerPath
                                           , folders
                                            )
         return xml_response
 
     security.declarePrivate('GetFoldersAndFiles')
-    def GetFoldersAndFiles(self, ResourceType, FolderPath):
+    def GetFoldersAndFiles(self, Type, CurrentFolder):
         """Gets the list of the children folders and files of a folder."""
 
-        folder = self.restrictedTraverse(FolderPath[1:])
+        folder = self.restrictedTraverse('..'+CurrentFolder)
         folders = folder.objectIds('Folder')
         files = [(f.getId(), (f.getSize()/1024)) for f in folder.objectValues('File')]
 
-        xml_response = self._xmlGetFoldersAndFiles( ResourceType
-                                                  , FolderPath
-                                                  , FolderPath # ServerPath
+        #raise 'foo', folder
+
+        xml_response = self._xmlGetFoldersAndFiles( Type
+                                                  , CurrentFolder
+                                                  , CurrentFolder # ServerPath
                                                   , folders
                                                   , files
                                                    )
         return xml_response
 
     security.declarePrivate('CreateFolder')
-    def CreateFolder(self, ResourceType, FolderPath, ServerPath):
+    def CreateFolder(self, Type, CurrentFolder):
         """Create a child folder."""
         pass
 
     security.declarePrivate('FileUpload')
-    def FileUpload(self, ResourceType, FolderPath, ServerPath):
+    def FileUpload(self, Type, CurrentFolder):
         """Add a file in a folder."""
         pass
 

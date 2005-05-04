@@ -161,103 +161,105 @@ class TestFCKconnector(unittest.TestCase):
         self.fck = FCKconnector()
 
     def testGoodData(self):
-        data = { 'CommandName'  : 'GetFolders'
-               , 'ResourceType' : 'Image'
-               , 'FolderPath'   : '/path/to/content/'
+        data = { 'Command'  : 'GetFolders'
+               , 'Type' : 'Image'
+               , 'CurrentFolder'   : '/path/to/content/'
                , 'ServerPath'   : '/'
                 }
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
     def testAllCommands(self):
-        data = { 'ResourceType' : 'Image'
-               , 'FolderPath'   : '/path/to/content/'
+        data = { 'Type' : 'Image'
+               , 'CurrentFolder'   : '/path/to/content/'
                , 'ServerPath'   : '/'
                 }
 
-        data['CommandName'] = 'GetFolders'
+        data['Command'] = 'GetFolders'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
-        data['CommandName'] = 'GetFoldersAndFiles'
+        data['Command'] = 'GetFoldersAndFiles'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
-        data['CommandName'] = 'CreateFolder'
+        data['Command'] = 'CreateFolder'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
-        data['CommandName'] = 'FileUpload'
+        data['Command'] = 'FileUpload'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
     def testBadCommand(self):
-        data = { 'CommandName'  : 'YADAYADAYADA'
-               , 'ResourceType' : 'Image'
-               , 'FolderPath'   : '/path/to/content/'
+        data = { 'Command'  : 'YADAYADAYADA'
+               , 'Type' : 'Image'
+               , 'CurrentFolder'   : '/path/to/content/'
                , 'ServerPath'   : '/'
                 }
         self.assertRaises(FCKexception, self.fck._validate, data)
 
-    def testAllResourceTypes(self):
-        data = { 'CommandName'  : 'GetFolders'
-               , 'FolderPath'   : '/path/to/content/'
+    def testAllTypes(self):
+        data = { 'Command'  : 'GetFolders'
+               , 'CurrentFolder'   : '/path/to/content/'
                , 'ServerPath'   : '/'
                 }
 
-        data['ResourceType'] = 'File'
+        data['Type'] = 'File'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
-        data['ResourceType'] = 'Image'
+        data['Type'] = 'Image'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
-        data['ResourceType'] = 'Flash'
+        data['Type'] = 'Flash'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
-        data['ResourceType'] = 'Media'
+        data['Type'] = 'Media'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
-    def testBadResourceType(self):
-        data = { 'CommandName'  : 'GetFolders'
-               , 'ResourceType' : 'Audio'
-               , 'FolderPath'   : '/path/to/content/'
+    def testBadType(self):
+        data = { 'Command'  : 'GetFolders'
+               , 'Type' : 'Audio'
+               , 'CurrentFolder'   : '/path/to/content/'
                , 'ServerPath'   : '/'
                 }
         self.assertRaises(FCKexception, self.fck._validate, data)
 
-    def testFolderPath(self):
-        data = { 'CommandName'  : 'GetFolders'
-               , 'ResourceType' : 'Image'
+    def testCurrentFolder(self):
+        data = { 'Command'  : 'GetFolders'
+               , 'Type' : 'Image'
                , 'ServerPath'   : '/'
                 }
 
         # must start and end with a forward slash
-        data['FolderPath'] = '/Docs/Test/'
+        data['CurrentFolder'] = '/Docs/Test/'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
-        data['FolderPath'] = '/'
+        data['CurrentFolder'] = '/'
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
+
+        data['CurrentFolder'] = ''
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
+
 
         # bad data
-        data['FolderPath'] = 'Docs/Test/'
+        data['CurrentFolder'] = 'Docs/Test/'
         self.assertRaises(FCKexception, self.fck._validate, data)
 
-        data['FolderPath'] = '/Docs/Test'
-        self.assertRaises(FCKexception, self.fck._validate, data)
-
-        data['FolderPath'] = ''
+        data['CurrentFolder'] = '/Docs/Test'
         self.assertRaises(FCKexception, self.fck._validate, data)
 
     def testServerPath(self):
-        data = { 'CommandName'  : 'GetFolders'
-               , 'ResourceType' : 'Image'
-               , 'FolderPath'   : '/'
+        data = { 'Command'  : 'GetFolders'
+               , 'Type' : 'Image'
+               , 'CurrentFolder'   : '/'
                 }
 
         # must start and end with a forward slash
@@ -289,8 +291,8 @@ class TestFCKconnector(unittest.TestCase):
 
 
     def test_xmlGetFolders(self):
-        actual = self.fck._xmlGetFolders( ResourceType='File'
-                                        , FolderPath='/path/to/content/'
+        actual = self.fck._xmlGetFolders( Type='File'
+                                        , CurrentFolder='/path/to/content/'
                                         , ServerPath='/'
                                         , Folders=['foo','bar']
                                          )
