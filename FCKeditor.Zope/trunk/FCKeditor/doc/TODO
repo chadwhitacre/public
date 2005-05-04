@@ -12,9 +12,11 @@ fckmanager
     map meta_type to Type
     provide size for files/images
 fckeditor
+    === DONE ===
     fix encoding bug
 plone -- wysiwyg_support
     needs to play nice with other editors (epoz, kupu, etc.)
+    tabindex obj not being called
     === DONE ===
     needs to support different storage formats (html, plain, stx)
 documentation

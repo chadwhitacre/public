@@ -78,6 +78,7 @@ class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
         """
         setattr(self, key, val)
 
+
     ##
     # Management methods
     ##
