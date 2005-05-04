@@ -9,6 +9,13 @@ sys.path.insert(1, os.path.realpath('..'))
 from FCKeditor import FCKeditor, FCKexception
 from FCKconnector import FCKconnector
 
+def dict2tuple(d):
+    """convert a dictionary to a sorted list of tuples
+    """
+    l = [(k, d[k]) for k in d]
+    l.sort()
+    return l
+
 
 ##
 # Define our tests
@@ -148,7 +155,7 @@ Opera/7.54 (FreeBSD; U)
                             "incompatible failed on #%s: %s" % (i, useragent))
 
 
-class TestFCKeditor(unittest.TestCase):
+class TestFCKconnector(unittest.TestCase):
 
     def setUp(self):
         self.fck = FCKconnector()
@@ -159,7 +166,8 @@ class TestFCKeditor(unittest.TestCase):
                , 'FolderPath'   : '/path/to/content/'
                , 'ServerPath'   : '/'
                 }
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
     def testAllCommands(self):
         data = { 'ResourceType' : 'Image'
@@ -168,16 +176,20 @@ class TestFCKeditor(unittest.TestCase):
                 }
 
         data['CommandName'] = 'GetFolders'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
         data['CommandName'] = 'GetFoldersAndFiles'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
         data['CommandName'] = 'CreateFolder'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
         data['CommandName'] = 'FileUpload'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
     def testBadCommand(self):
         data = { 'CommandName'  : 'YADAYADAYADA'
@@ -194,16 +206,20 @@ class TestFCKeditor(unittest.TestCase):
                 }
 
         data['ResourceType'] = 'File'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
         data['ResourceType'] = 'Image'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
         data['ResourceType'] = 'Flash'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
         data['ResourceType'] = 'Media'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
     def testBadResourceType(self):
         data = { 'CommandName'  : 'GetFolders'
@@ -221,10 +237,12 @@ class TestFCKeditor(unittest.TestCase):
 
         # must start and end with a forward slash
         data['FolderPath'] = '/Docs/Test/'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
         data['FolderPath'] = '/'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
         # bad data
         data['FolderPath'] = 'Docs/Test/'
@@ -244,10 +262,22 @@ class TestFCKeditor(unittest.TestCase):
 
         # must start and end with a forward slash
         data['ServerPath'] = '/Docs/Test/'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
 
         data['ServerPath'] = '/'
-        self.assertEqual(self.fck._validate(data), data)
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
+
+        data['ServerPath'] = ''
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(data))
+
+        del data['ServerPath']
+        expected = data.copy()
+        expected['ServerPath'] = ''
+        self.assertEqual( dict2tuple(self.fck._validate(data))
+                        , dict2tuple(expected))
 
 
         # bad data
@@ -257,11 +287,23 @@ class TestFCKeditor(unittest.TestCase):
         data['ServerPath'] = '/Docs/Test'
         self.assertRaises(FCKexception, self.fck._validate, data)
 
-        data['ServerPath'] = ''
-        self.assertRaises(FCKexception, self.fck._validate, data)
 
-
-
+    def test_xmlGetFolders(self):
+        actual = self.fck._xmlGetFolders( ResourceType='File'
+                                        , FolderPath='/path/to/content/'
+                                        , ServerPath='/'
+                                        , Folders=['foo','bar']
+                                         )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFolders" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/" />
+    <Folders>
+      <Folder name="foo" />
+      <Folder name="bar" />
+    </Folders>
+</Connector>"""
+        self.assertEqual(actual, expected)
 
 if __name__ == '__main__':
     unittest.main()
