@@ -1,22 +1,4 @@
-0.0 -- Understand it
-========================================
-    === DONE ===
-
-
-0.2 -- Packaging
-========================================
-base2zope should clean up '</' in Javascript in HTML
-add compile templates test to tests/
-    === DONE ===
-
-
-
-0.4 -- FCKeditor -- Python, Zope, Plone
-========================================
-python
-zope
-integrated testing -- runalltests.py
-    === DONE ===
+map meta_type to ResourceType
 cmf/plone  -- portal_fckmanager
     provides API for rule-based FCK instantiation, i.e. beyond browser compatibility
     so you can return a simple editor for "normal" users and a more featureful editor for power users, e.g.
@@ -25,22 +7,9 @@ plone -- wysiwyg_support
     needs to support different storage formats (html, plain, stx)
     needs to play nice with other editors (epoz, kupu, etc.)
 documentation
-
-
-
-
-0.8 -- FCKconnector.py
-========================================
-
-
-
-
-1.0 -- mgmt iface
-========================================
-
-
-            editor      connector       toolbar mgr
-python        x
-zope          x
-plone
-cps
+=== DONE ===
+base2zope should clean up '</' in Javascript in HTML
+add compile templates test to tests/
+python
+zope
+integrated testing -- runalltests.py

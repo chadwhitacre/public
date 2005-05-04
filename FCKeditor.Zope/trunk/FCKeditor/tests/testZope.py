@@ -88,14 +88,92 @@ class TestZopeFCKmanager(ZopeTestCase.ZopeTestCase):
 </div>""")
 
 
-class TestZopeFCKconnector(ZopeTestCase.ZopeTestCase):
+
+
+
+class TestFCKconnector(ZopeTestCase.ZopeTestCase):
 
     def afterSetUp(self):
         add = self.folder.manage_addProduct['FCKeditor'].manage_addFCKmanager
         add('fckmanager')
         self.fckmanager = self.folder.fckmanager
+        self.folder.manage_addFolder('path')
+        self.folder.path.manage_addFolder('to')
+        self.folder.path.to.manage_addFolder('empty')
+        self.folder.path.to.manage_addFolder('one')
+        self.folder.path.to.one.manage_addFile('foo file')
+        self.folder.path.to.manage_addFolder('content')
+        self.folder.path.to.content.manage_addFolder('sub-content')
+        self.folder.path.to.content.manage_addFile('foo file')
+        self.folder.path.to.content.manage_addFile('bar_file')
+        self.folder.path.to.content.manage_addImage('bar_image', None)
+        #self.folder.path.to.content.manage_addFolder('sub-content')
+        #self.folder.path.to.content.manage_addFolder('sub-content')
 
 
+    def testEmptyFolderGetFolders(self):
+        actual = self.fckmanager.GetFolders( ResourceType = 'File'
+                                           , FolderPath = '/path/to/empty/'
+                                             )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFolders" resourceType="File">
+    <CurrentFolder path="/path/to/empty/" url="/path/to/empty/" />
+    <Folders>
+      """+"""
+    </Folders>
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+
+    def testSingleItemFolderGetFolders(self):
+        actual = self.fckmanager.GetFolders( ResourceType = 'File'
+                                           , FolderPath = '/path/to/one/'
+                                             )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFolders" resourceType="File">
+    <CurrentFolder path="/path/to/one/" url="/path/to/one/" />
+    <Folders>
+      """+"""
+    </Folders>
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+
+    def testFolderGetFolders(self):
+        actual = self.fckmanager.GetFolders( ResourceType = 'File'
+                                           , FolderPath = '/path/to/content/'
+                                             )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFolders" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Folders>
+      <Folder name="sub-content" />
+    </Folders>
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+
+    def testFolderGetFoldersAndFiles(self):
+        actual = self.fckmanager.GetFoldersAndFiles( ResourceType = 'File'
+                                                   , FolderPath = '/path/to/content/'
+                                                    )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFoldersAndFiles" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Folders>
+      <Folder name="sub-content" />
+    </Folders>
+    <Files>
+      <File name="foo file" size="0" />
+      <File name="bar_file" size="0" />
+    </Files>
+</Connector>"""
+
+        self.assertEqual(actual, expected)
 
 ##
 # Assemble into a suite and run
@@ -106,6 +184,7 @@ def test_suite():
     suite = TestSuite()
     suite.addTest(makeSuite(TestZopeFCKeditor))
     suite.addTest(makeSuite(TestZopeFCKmanager))
+    suite.addTest(makeSuite(TestFCKconnector))
     return suite
 
 if __name__ == '__main__':

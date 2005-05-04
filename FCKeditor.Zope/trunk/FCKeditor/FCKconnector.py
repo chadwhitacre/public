@@ -3,21 +3,20 @@ from FCKeditor import FCKexception
 class FCKconnector:
     """This class provides back-end integration for FCKeditor's file browser.
 
-    Framework wrappers will need to extend the connect method and override the
-    others. Please see the FCKeditor documentation and ZopeFCKconnector.py for
-    documentation and an example wrapper.
+    As it stands this class is not useable, and it will need to be extended by
+    framework wrappers in the following ways:
+
+        - override connect to set the response headers as necessary
+
+        - override the GetFolders, GetFoldersAndFiles, CreateFolder, and
+        FileUpload methods to provide actual logic. These methods should call
+        their _[x|ht]ml* equivalents to properly format the response body.
+
+      will need to extend the connect
+    method and override the others. Please see the FCKeditor documentation and
+    ZopeFCKconnector.py for documentation and an example wrapper.
 
     """
-
-    RESPONSE_TEMPLATE = """\
-    <?xml version="1.0" encoding="utf-8" ?>
-        <Connector command="%(RequestedCommandName)s"
-                   resourceType="%(RequestedResourceType)s">
-        <CurrentFolder path="%(CurrentFolderPath)s"
-                       url="%(CurrentFolderUrl)s" />
-        <!-- Here goes all specific command data -->
-        %(CommandData)s
-    </Connector>"""
 
     def connect(self, incoming):
         """Given a dictionary, validate it and hand it off to another method.
@@ -55,9 +54,10 @@ class FCKconnector:
                                 " start and end with '/'"
 
         ServerPath   = incoming.get('ServerPath', '')
-        if not (ServerPath.startswith('/') and ServerPath.endswith('/')):
-            raise FCKexception, "ServerPath '%s' must" % ServerPath +\
-                                " start and end with '/'"
+        if ServerPath: # it is optional
+            if not (ServerPath.startswith('/') and ServerPath.endswith('/')):
+                raise FCKexception, "ServerPath '%s' must" % ServerPath +\
+                                    " start and end with '/'"
 
         return { 'CommandName'  : CommandName
                , 'ResourceType' : ResourceType
@@ -65,17 +65,100 @@ class FCKconnector:
                , 'ServerPath'   : ServerPath
                 }
 
+
+
     def GetFolders(self, ResourceType, FolderPath, ServerPath):
         """Get the list of the children folders of a folder."""
-        pass # expects XML response
+        # here is an example of what these four methods should do:
+
+        # folders = get list of folder names per your framework
+
+        # response_body = self._xmlGetFolders( ResourceType, FolderPath
+        #                                    , ServerPath, folders)
+
+        # return response_body
+
+        pass
+
+    def _xmlGetFolders(self, ResourceType, FolderPath, ServerPath, Folders):
+        """Given the input and a list of folders, format an XML response.
+        """
+
+        folder_template = '''<Folder name="%s" />'''
+        folders = '\n      '.join([folder_template % f for f in Folders])
+
+        template = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFolders" resourceType="%s">
+    <CurrentFolder path="%s" url="%s" />
+    <Folders>
+      %s
+    </Folders>
+</Connector>"""
+
+        return template % (ResourceType, FolderPath, ServerPath, folders)
+
+
+
 
     def GetFoldersAndFiles(self, ResourceType, FolderPath, ServerPath):
         """Gets the list of the children folders and files of a folder."""
         pass # expects XML response
 
+    def _xmlGetFoldersAndFiles(self, ResourceType, FolderPath, ServerPath,
+                               Folders, Files):
+        """Given the input and a list of folders, format an XML response.
+        """
+
+        # folders just needs to be a list of names
+        folder_template = '''<Folder name="%s" />'''
+        folders = '\n      '.join([folder_template % f for f in Folders])
+
+        # files needs to be a list of (name, size) tuples; size is kB
+        file_template = '''<File name="%s" size="%s" />'''
+        files   = '\n      '.join([file_template % f for f in Files])
+
+        template = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFoldersAndFiles" resourceType="%s">
+    <CurrentFolder path="%s" url="%s" />
+    <Folders>
+      %s
+    </Folders>
+    <Files>
+      %s
+    </Files>
+</Connector>"""
+
+        return template % (ResourceType, FolderPath, ServerPath, folders, files)
+
+
+
+
     def CreateFolder(self, ResourceType, FolderPath, ServerPath):
         """Create a child folder."""
         pass # expects XML response
+
+    def _xmlGetFolders(self, ResourceType, FolderPath, ServerPath, Folders):
+        """Given the input and a list of folders, format an XML response.
+        """
+
+        folder_template = '''<Folder name="%s" />'''
+        folders = '\n      '.join([folder_template % f for f in Folders])
+
+        template = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFolders" resourceType="%s">
+    <CurrentFolder path="%s" url="%s" />
+    <Folders>
+      %s
+    </Folders>
+</Connector>"""
+
+        return template % (ResourceType, FolderPath, ServerPath, folders)
+
+
+
 
     def FileUpload(self, ResourceType, FolderPath, ServerPath):
         """Add a file in a folder."""
