@@ -1,3 +1,6 @@
+# python
+import re
+
 # base classes
 from OFS.SimpleItem import SimpleItem
 from OFS.ObjectManager import ObjectManager
@@ -79,7 +82,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
         if hasattr(self, Command):
             method = getattr(self, Command)
-            return method(data['Type'], data['CurrentFolder'])
+            return method(**data)
         else:
             return ''
 
@@ -106,7 +109,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     ##
 
     security.declarePrivate('GetFolders')
-    def GetFolders(self, Type, CurrentFolder):
+    def GetFolders(self, Type, CurrentFolder, **kw):
         """Get the list of the children folders of a folder."""
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
@@ -147,7 +150,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         return (id, size)
 
     security.declarePrivate('GetFoldersAndFiles')
-    def GetFoldersAndFiles(self, Type, CurrentFolder):
+    def GetFoldersAndFiles(self, Type, CurrentFolder, **kw):
         """Gets the list of the children folders and files of a folder."""
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
@@ -167,9 +170,37 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         return xml_response
 
     security.declarePrivate('CreateFolder')
-    def CreateFolder(self, Type, CurrentFolder):
+    _bad_id=re.compile(r'[^a-zA-Z0-9-_~,.$\(\)# ]').search
+    def CreateFolder(self, Type, CurrentFolder, NewFolderName, **kw):
         """Create a child folder."""
-        pass
+
+        folder = self.restrictedTraverse('..'+CurrentFolder)
+
+        if hasattr(folder, NewFolderName):
+            error_code = 101 # Folder already exists.
+        elif self._bad_id(NewFolderName) is not None:
+            error_code = 102 # Invalid folder name.
+        elif 0:
+            error_code = 103 # You have no permissions to create the folder.
+        else:
+            try:
+                # We are lazy and assume that folder objects know how to
+                # replicate themselves.
+                folder.manage_addFolder(NewFolderName)
+                error_code = 0 # No Errors Found. The folder has been created.
+            except:
+                error_code = 110 # Unknown error creating folder.
+
+        xml_response = self._xmlCreateFolder( Type
+                                            , CurrentFolder
+                                            , CurrentFolder # ServerPath
+                                            , error_code
+                                             )
+
+        return xml_response
+
+
+
 
     security.declarePrivate('FileUpload')
     def FileUpload(self, Type, CurrentFolder):
