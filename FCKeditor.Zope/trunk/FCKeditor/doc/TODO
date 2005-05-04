@@ -1,18 +1,18 @@
-map meta_type to Type
-wire up templates to use FCKmanager
-factor out config into a better spot
-
-cmf/plone  -- portal_fckmanager
-    provides API for rule-based FCK instantiation, i.e. beyond browser compatibility
-    so you can return a simple editor for "normal" users and a more featureful editor for power users, e.g.
-    this will be first supported usecase: mapping portal roles to FCK toolbars
+fckmanager
+    map meta_type to Type
+    map portal roles to FCK toolbars
+    provide size for files/images
 plone -- wysiwyg_support
-    needs to support different storage formats (html, plain, stx)
     needs to play nice with other editors (epoz, kupu, etc.)
+    === DONE ===
+    needs to support different storage formats (html, plain, stx)
 documentation
+
 === DONE ===
 base2zope should clean up '</' in Javascript in HTML
 add compile templates test to tests/
 python
 zope
 integrated testing -- runalltests.py
+factor out config into a better spot
+wire up templates to use FCKmanager

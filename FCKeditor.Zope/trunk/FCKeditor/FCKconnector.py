@@ -12,9 +12,8 @@ class FCKconnector:
         FileUpload methods to provide actual logic. These methods should call
         their _[x|ht]ml* equivalents to properly format the response body.
 
-      will need to extend the connect
-    method and override the others. Please see the FCKeditor documentation and
-    ZopeFCKconnector.py for documentation and an example wrapper.
+    Please see the FCKeditor documentation and ZopeFCKconnector.py for
+    documentation and an example wrapper.
 
     """
 
