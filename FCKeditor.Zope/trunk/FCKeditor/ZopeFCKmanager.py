@@ -109,7 +109,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     ##
 
     security.declarePrivate('GetFolders')
-    def GetFolders(self, Type, CurrentFolder, **kw):
+    def GetFolders(self, Type, CurrentFolder, **other):
         """Get the list of the children folders of a folder."""
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
@@ -122,6 +122,29 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
                                           , CurrentFolder # ServerPath
                                           , folders
                                            )
+        return xml_response
+
+
+
+
+    security.declarePrivate('GetFoldersAndFiles')
+    def GetFoldersAndFiles(self, Type, CurrentFolder, **other):
+        """Gets the list of the children folders and files of a folder."""
+
+        folder = self.restrictedTraverse('..'+CurrentFolder)
+
+        meta_types = self._FCK2Zope('Folder')
+        folders = folder.objectIds(meta_types)
+
+        meta_types = self._FCK2Zope(Type)
+        files = [self._file_info(f) for f in folder.objectValues(meta_types)]
+
+        xml_response = self._xmlGetFoldersAndFiles( Type
+                                                  , CurrentFolder
+                                                  , CurrentFolder # ServerPath
+                                                  , folders
+                                                  , files
+                                                   )
         return xml_response
 
     security.declarePrivate('_get_info')
@@ -149,29 +172,11 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
         return (id, size)
 
-    security.declarePrivate('GetFoldersAndFiles')
-    def GetFoldersAndFiles(self, Type, CurrentFolder, **kw):
-        """Gets the list of the children folders and files of a folder."""
 
-        folder = self.restrictedTraverse('..'+CurrentFolder)
-
-        meta_types = self._FCK2Zope('Folder')
-        folders = folder.objectIds(meta_types)
-
-        meta_types = self._FCK2Zope(Type)
-        files = [self._file_info(f) for f in folder.objectValues(meta_types)]
-
-        xml_response = self._xmlGetFoldersAndFiles( Type
-                                                  , CurrentFolder
-                                                  , CurrentFolder # ServerPath
-                                                  , folders
-                                                  , files
-                                                   )
-        return xml_response
 
     security.declarePrivate('CreateFolder')
     _bad_id=re.compile(r'[^a-zA-Z0-9-_~,.$\(\)# ]').search
-    def CreateFolder(self, Type, CurrentFolder, NewFolderName, **kw):
+    def CreateFolder(self, Type, CurrentFolder, NewFolderName, **other):
         """Create a child folder."""
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
@@ -203,9 +208,55 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
 
     security.declarePrivate('FileUpload')
-    def FileUpload(self, Type, CurrentFolder):
+    def FileUpload(self, Type, CurrentFolder, NewFile, **other):
         """Add a file in a folder."""
-        pass
+
+        # disable this feature for now
+        html_response = self._htmlCreateFolder( Type
+                                              , CurrentFolder
+                                              , 202
+                                              )
+
+        folder = self.restrictedTraverse('..'+CurrentFolder)
+
+        filename = NewFile.filename
+
+        if self._bad_id(filename) is not None:
+            error_code = 202 # invalid file.
+
+        elif hasattr(folder, filename):
+            # FCKeditor spec calls for renaming the file in this case
+
+            parts = filename.split('.')
+
+            def _new_filename(parts, i):
+                if len(parts) == 1:
+                    parts.append('(%s)' % i)
+                elif len(parts) > 1:
+                    parts.insert(-1,'(%s)' % i)
+                else: # parts < 1
+                    raise FCKexception, "Should never get here"
+                return ''.join(parts)
+
+            i = 0
+            while hasattr(folder, filename):
+                i += 1
+                filename = _new_filename(parts, i)
+
+        else:
+            try:
+                # We want to create the first type in the list.
+                folder.manage_addFile(filename, NewFile)
+                error_code = 0 # No Errors Found. The folder has been created.
+            except:
+                error_code = 110 # Unknown error creating folder.
+
+        html_response = self._htmlCreateFolder( Type
+                                              , CurrentFolder
+                                              , error_code
+                                              )
+
+        return html_response
 
 InitializeClass(ZopeFCKmanager)
 

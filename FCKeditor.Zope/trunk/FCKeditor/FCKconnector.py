@@ -63,11 +63,14 @@ class FCKconnector:
 
         NewFolderName = incoming.get('NewFolderName', '')
 
+        NewFile = incoming.get('NewFile', '')
+
         return { 'Command' : Command
                , 'Type' : Type
                , 'CurrentFolder' : CurrentFolder
                , 'ServerPath' : ServerPath
                , 'NewFolderName' : NewFolderName
+               , 'NewFile' : NewFile
                 }
 
 
@@ -112,7 +115,7 @@ class FCKconnector:
 
     def _xmlGetFoldersAndFiles(self, Type, CurrentFolder, ServerPath,
                                Folders, Files):
-        """Given the input and a list of folders, format an XML response.
+        """Given data and lists of folders and files, format an XML response.
         """
 
         # folders just needs to be a list of names
@@ -145,7 +148,7 @@ class FCKconnector:
         pass # expects XML response
 
     def _xmlCreateFolder(self, Type, CurrentFolder, ServerPath, error_code):
-        """Given the input and a list of folders, format an XML response.
+        """Given the input and an error_code, format an XML response.
         """
 
         template = """\
@@ -163,3 +166,14 @@ class FCKconnector:
     def FileUpload(self, **kw):
         """Add a file in a folder."""
         pass # expects HTML response
+
+    def _htmlFileUpload(self, Type, CurrentFolder, error_code):
+        """Given the input and a list of folders, format an XML response.
+        """
+
+        template = """\
+<script type="text/javascript">
+    window.parent.frames['frmUpload'].OnUploadCompleted(%s) ;
+</script>"""
+
+        return template % error_code
