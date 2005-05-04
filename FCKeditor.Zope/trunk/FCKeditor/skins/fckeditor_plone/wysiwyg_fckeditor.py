@@ -7,17 +7,20 @@ useragent = context.REQUEST['HTTP_USER_AGENT']
 fckeditor.SetCompatible(useragent)
 
 
-# We are responsible to convert the value on the way from the object to the
-# editor. The form action is responsible to convert back from HTML to whatever.
+# We convert from whatever format the text is stored in to HTML. The FCKeditor
+# object is responsible for HTML-encoding the value. And then the form action is
+# responsible to convert back from HTML to whatever.
 
 text_format = getattr(context, 'text_format', 'html')
+
 transforms = { 'structured-text' : from_stx
              , 'plain'           : from_plain
              , 'html'            : lambda x: x
               }
 transform = transforms.get(text_format)
-fckeditor.SetProperty('Value', transform(inputvalue))
+HTML = transform(inputvalue)
 
+fckeditor.SetProperty('Value', HTML)
 fckeditor.SetProperty('Height', 500)
 
 return fckeditor.Create()

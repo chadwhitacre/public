@@ -3,12 +3,13 @@
 should Config settings be changed at run time? or should we have multiple
 instances of FCKeditor, all with separate settings? since the thing you really
 want to change from instance to instance is the composition of the toolbar, and
-toolbars themselves are not defined here, but rather in the fckConfig.js file,
+toolbars themselves are not defined here, but rather in the fckconfig.js file,
 then I think it makes sense for this to be a single object
 
 
 """
 import re
+from cgi import escape
 from urllib import quote_plus
 
 class FCKtemplates:
@@ -87,7 +88,7 @@ class FCKeditor:
             raise FCKexception, "You must run the setCompatible method first"
 
         # quote the initial HTML value
-        self.Value = quote_plus(self.Value)
+        self.Value = escape(self.Value).replace('"','&quot;')
 
         # marshall config into a querystring (only used for compatible)
         self.ConfigQuerystring = self.GetConfigQuerystring()
@@ -97,6 +98,7 @@ class FCKeditor:
         if str(self.Height).isdigit(): self.Height = '%spx' % self.Height
 
         if self.Compatible:
+            #raise 'hrm', '<div>%s</div>' % self.Value
             return FCKtemplates.COMPATIBLE % self.__dict__
         else:
             return FCKtemplates.INCOMPATIBLE % self.__dict__
