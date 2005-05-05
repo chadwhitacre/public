@@ -110,24 +110,8 @@ for path, dirs, files in os.walk(SRC_ROOT):
                 inputfile.close()
                 outputfile.close()
 
-            elif filename == 'fckconfig.js':
-                # we need a hook for custom configuration
-
-                inputfile = file(src)
-                outputfile = file(dest, 'w+')
-
-                data = inputfile.read()
-                data = data.replace(
-                    """FCKConfig.CustomConfigurationsPath = '' ;""",
-                    """FCKConfig.CustomConfigurationsPath = 'fckcustom.js' ;"""
-                             )
-                outputfile.write(data)
-
-                inputfile.close()
-                outputfile.close()
-
             else:
-                # almost all non-HTML files don't need any processing
+                # non-HTML files don't need any processing
                 shutil.copy(src, dest)
 
             if ext in cache_me:
