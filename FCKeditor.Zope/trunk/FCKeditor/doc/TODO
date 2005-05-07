@@ -1,20 +1,27 @@
+packaging
+    store FCKeditor proper in a separate svn repo/project
+    include FCKeditor via svn:externals
+    release 0.9.0 -- first development release
+    QI skins in reverse order
+    prolly drop CPS skin
 fckmanager
     make sure CreateFolder 110 gets logged
     clean up path/url interpretation
     NewFile should add the first meta_type in FolderTypes for the given ResourceType
         get from Control_Panel/Products if Zope
         get from portal_types if CMF
+    account for workflow & security (introduce ExtendedPathIndex dependency?)
+    === DONE ===
     wire up Plone QI with Plone types
     wire up CMFFCKmanager with CMF types
     map portal roles to FCK toolbars
-    account for workflow & security (introduce ExtendedPathIndex dependency?)
-    === DONE ===
     map meta_type to Type
     provide size for files/images
 fckeditor
     === DONE ===
     fix encoding bug
 plone -- wysiwyg_support
+    be smarter about showing format options or not
     needs to play nice with other editors (epoz, kupu, etc.)
     tabindex obj not being called
     === DONE ===

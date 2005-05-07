@@ -88,7 +88,15 @@ class TestFCKeditor(unittest.TestCase):
     <input type="hidden"
            id="CustomEditor"
            name="CustomEditor"
-           value="%3Chtml%3E%0A%3Chead%3E%0A++++%3Ctitle%3ETEST%3C%2Ftitle%3E%0A%3C%2Fhead%3E%0A%3Cbody%3E%0A++++Foo.%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E%0A++++++++" />
+           value="&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;TEST&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    Foo.
+&lt;/body&gt;
+&lt;/html&gt;
+        " />
     <input type="hidden"
            id="CustomEditor___Config"
            value="AutoDetectLanguage=false&DefaultLanguage=pt-BR" />
@@ -155,27 +163,37 @@ Opera/7.54 (FreeBSD; U)
                             "incompatible failed on #%s: %s" % (i, useragent))
 
 
+
+DATA = { 'Command'       : 'GetFolders'
+       , 'ComputedUrl'   : ''
+       , 'CurrentFolder' : '/'
+       , 'NewFile'       : None
+       , 'NewFolderName' : ''
+       , 'Type'          : 'File'
+       , 'ServerPath'    : ''
+        }
+
+
 class TestFCKconnector(unittest.TestCase):
 
     def setUp(self):
         self.fck = FCKconnector()
 
     def testGoodData(self):
-        data = { 'Command'  : 'GetFolders'
-               , 'Type' : 'Image'
-               , 'CurrentFolder'   : '/path/to/content/'
-               , 'ServerPath'   : '/'
-                }
+        data = DATA.copy()
+        data.update({ 'Command'       : 'GetFolders'
+                    , 'CurrentFolder' : '/path/to/content/'
+                    , 'Type'          : 'Image'
+                     })
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
     def testAllCommands(self):
-        data = { 'Type' : 'Image'
-               , 'CurrentFolder'   : '/path/to/content/'
-               , 'ServerPath'   : '/'
-                }
+        data = DATA.copy()
 
         data['Command'] = 'GetFolders'
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
@@ -192,64 +210,65 @@ class TestFCKconnector(unittest.TestCase):
                         , dict2tuple(data))
 
     def testBadCommand(self):
-        data = { 'Command'  : 'YADAYADAYADA'
-               , 'Type' : 'Image'
-               , 'CurrentFolder'   : '/path/to/content/'
-               , 'ServerPath'   : '/'
-                }
+        data = DATA.copy()
+
+        data['Command'] = 'YADAYADAYADA'
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+        data['Command'] = ''
         self.assertRaises(FCKexception, self.fck._validate, data)
 
     def testAllTypes(self):
-        data = { 'Command'  : 'GetFolders'
-               , 'CurrentFolder'   : '/path/to/content/'
-               , 'ServerPath'   : '/'
-                }
+        data = DATA.copy()
 
         data['Type'] = 'File'
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
         data['Type'] = 'Image'
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
         data['Type'] = 'Flash'
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
         data['Type'] = 'Media'
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
-    def testBadType(self):
-        data = { 'Command'  : 'GetFolders'
-               , 'Type' : 'Audio'
-               , 'CurrentFolder'   : '/path/to/content/'
-               , 'ServerPath'   : '/'
-                }
+    def testBadTypes(self):
+        data = DATA.copy()
+
+        data['Type'] = 'Audio'
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
+        data['Type'] = ''
         self.assertRaises(FCKexception, self.fck._validate, data)
 
     def testCurrentFolder(self):
-        data = { 'Command'  : 'GetFolders'
-               , 'Type' : 'Image'
-               , 'ServerPath'   : '/'
-                }
+        data = DATA.copy()
 
         # must start and end with a forward slash
         data['CurrentFolder'] = '/Docs/Test/'
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
         data['CurrentFolder'] = '/'
-        self.assertEqual( dict2tuple(self.fck._validate(data))
-                        , dict2tuple(data))
-
-        data['CurrentFolder'] = ''
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
 
         # bad data
+        data['CurrentFolder'] = ''
+        self.assertRaises(FCKexception, self.fck._validate, data)
+
         data['CurrentFolder'] = 'Docs/Test/'
         self.assertRaises(FCKexception, self.fck._validate, data)
 
@@ -257,27 +276,28 @@ class TestFCKconnector(unittest.TestCase):
         self.assertRaises(FCKexception, self.fck._validate, data)
 
     def testServerPath(self):
-        data = { 'Command'  : 'GetFolders'
-               , 'Type' : 'Image'
-               , 'CurrentFolder'   : '/'
-                }
+        data = DATA.copy()
 
         # must start and end with a forward slash
         data['ServerPath'] = '/Docs/Test/'
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
         data['ServerPath'] = '/'
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
         data['ServerPath'] = ''
+        data['ComputedUrl'] = self.fck._compute_url(**data)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(data))
 
         del data['ServerPath']
         expected = data.copy()
         expected['ServerPath'] = ''
+        data['ComputedUrl'] = self.fck._compute_url(**expected)
         self.assertEqual( dict2tuple(self.fck._validate(data))
                         , dict2tuple(expected))
 
@@ -290,10 +310,23 @@ class TestFCKconnector(unittest.TestCase):
         self.assertRaises(FCKexception, self.fck._validate, data)
 
 
+    def testComputedUrl(self):
+        data = DATA.copy()
+
+        data['CurrentFolder'] = '/Docs/Test/'
+        data['Type'] = 'Image'
+        url = self.fck._compute_url(**data)
+        self.assertEqual(url, '/UserFiles/Image/Docs/Test/')
+
+        data['ServerPath'] = '/'
+        url = self.fck._compute_url(**data)
+        self.assertEqual(url, '/Image/Docs/Test/')
+
+
     def test_xmlGetFolders(self):
         actual = self.fck._xmlGetFolders( Type='File'
                                         , CurrentFolder='/path/to/content/'
-                                        , ServerPath='/'
+                                        , ComputedUrl='/'
                                         , Folders=['foo','bar']
                                          )
         expected = """\
