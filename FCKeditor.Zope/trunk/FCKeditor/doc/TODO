@@ -2,8 +2,9 @@ packaging
     store FCKeditor proper in a separate svn repo/project
     include FCKeditor via svn:externals
     release 0.9.0 -- first development release
-    QI skins in reverse order
+    === DONE ===
     prolly drop CPS skin
+    QI skins in reverse order
 fckmanager
     make sure CreateFolder 110 gets logged
     NewFile should add the first meta_type in FolderTypes for the given ResourceType

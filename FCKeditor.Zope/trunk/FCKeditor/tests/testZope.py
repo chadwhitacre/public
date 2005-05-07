@@ -12,6 +12,25 @@ from zExceptions import BadRequest
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 from data import testdata
 
+
+##
+# stub classes
+##
+
+class RESPONSE:
+    def setHeader(self, *arg, **kw):
+        pass
+
+from types import DictType
+class REQUEST(DictType):
+
+    RESPONSE = RESPONSE()
+
+
+##
+# tests
+##
+
 class TestZopeFCKeditor(ZopeTestCase.ZopeTestCase):
 
     def afterSetUp(self):
@@ -174,10 +193,26 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
         self.assertEqual(actual, expected)
 
     def testPermissions(self):
-        #self.portal.acl_users._doAddUser('user1', 'secret', [], [])
-        #self.login('user1')
-        self.logout()
-        self.manage_addFolder('foo')
+        connector = self.folder.restrictedTraverse('fckmanager/connector')
+
+        self.folder.acl_users._doAddUser('user1', 'secret', [], [])
+        self.login('user1')
+        #self.logout()
+
+        req = REQUEST({ 'Command'       : 'GetFolders'
+                      , 'Type'          : 'File'
+                      , 'CurrentFolder' : '/'
+                       })
+        output = connector(req)
+
+        req = REQUEST({ 'Command'       : 'CreateFolder'
+                      , 'Type'          : 'File'
+                      , 'CurrentFolder' : '/'
+                      , 'NewFolderName' : 'foo'
+                       })
+        output = connector(req)
+
+
 
 ##
 # Assemble into a suite and run

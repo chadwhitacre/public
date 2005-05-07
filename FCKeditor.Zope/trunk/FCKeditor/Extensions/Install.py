@@ -90,9 +90,9 @@ def install(self):
     # do the installation
     install_cache(self, out)
     install_plone(self, out)
-    install_subskin(self, out, 'fckeditor_base')
-    install_subskin(self, out, 'fckeditor_cps')
     install_subskin(self, out, 'fckeditor_plone')
+    install_subskin(self, out, 'fckeditor_cps')
+    install_subskin(self, out, 'fckeditor_base')
 
     print >> out, "FCKeditor installation done."
 
