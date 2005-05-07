@@ -107,8 +107,6 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
         self.folder.path.to.content.manage_addFile('foo file')
         self.folder.path.to.content.manage_addFile('bar_file')
         self.folder.path.to.content.manage_addImage('bar_image', None)
-        #self.folder.path.to.content.manage_addFolder('sub-content')
-        #self.folder.path.to.content.manage_addFolder('sub-content')
 
 
     def testEmptyFolderGetFolders(self):
@@ -174,6 +172,12 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
 </Connector>"""
 
         self.assertEqual(actual, expected)
+
+    def testPermissions(self):
+        #self.portal.acl_users._doAddUser('user1', 'secret', [], [])
+        #self.login('user1')
+        self.logout()
+        self.manage_addFolder('foo')
 
 ##
 # Assemble into a suite and run

@@ -93,7 +93,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         del outgoing['ServerPath']
         return outgoing
 
-    def _compute_url(self, ServerPath, Type, CurrentFolder):
+    def _compute_url(self, ServerPath, Type, CurrentFolder, **other):
         """We depart from the FCK spec at this point because we don't want
         to organize our content that way.
 
