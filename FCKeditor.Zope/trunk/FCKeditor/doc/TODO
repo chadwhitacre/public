@@ -1,17 +1,19 @@
 packaging
     release 0.9.0 -- first development release
-    replace hasattr with shasattr
     === DONE ===
-    store FCKeditor proper in a separate svn repo/project
-    include FCKeditor via svn:externals
+    replace hasattr with getattr
+    store FCKeditor proper in a separate svn repo/project - no; cause we want this in the collective
+    include FCKeditor via svn:externals - no
     prolly drop CPS skin
     QI skins in reverse order
 fckmanager
+    use invokeFactory to create content in CMFFCKmanager
+    if we can use Plone's check_id when adding folder/file
     make sure CreateFolder 110 gets logged
+    account for workflow & security (introduce ExtendedPathIndex dependency?)
     NewFile should add the first meta_type in FolderTypes for the given ResourceType
         get from Control_Panel/Products if Zope
         get from portal_types if CMF
-    account for workflow & security (introduce ExtendedPathIndex dependency?)
     === DONE ===
     clean up path/url interpretation
     wire up Plone QI with Plone types

@@ -13,7 +13,7 @@ from Products.CMFPlone.tests import PloneTestCase
 
 ZopeTestCase.installProduct('FCKeditor')
 
-from Products.FCKeditor.CMFFCKmanager import CMFFCKmanager
+from Products.FCKeditor.PloneFCKmanager import PloneFCKmanager
 
 
 ##
@@ -55,7 +55,7 @@ class TestFCKeditorPlone(PloneTestCase.PloneTestCase):
                          'Missing skin: fckeditor_plone')
 
     def testLayout(self):
-        self.assertEqual( isinstance(self.portal.portal_fckmanager, CMFFCKmanager)
+        self.assertEqual( isinstance(self.portal.portal_fckmanager, PloneFCKmanager)
                         , True)
 
 

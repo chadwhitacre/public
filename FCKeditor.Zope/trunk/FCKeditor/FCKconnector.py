@@ -24,12 +24,12 @@ class FCKconnector:
         framework wrappers as necessary. FCKeditor sends us a querystring with
         up to five parameters in it. A sixth parameter may be given in the post:
 
-            Command         required    string
-            CurrentFolder   required    string
-            Type            required    string
-            ServerPath      optional    string
-            NewFolderName   optional    string
-            NewFile         optional    object
+            Command         required    string  querystring
+            CurrentFolder   required    string  querystring
+            NewFile         optional    object  post
+            NewFolderName   optional    string  querystring
+            ServerPath      optional    string  querystring
+            Type            required    string  querystring
 
         After validating our input into a dictionary, we hand this off to a
         method matching the name given as Command.
@@ -58,9 +58,9 @@ class FCKconnector:
             raise FCKexception, "CurrentFolder '%s' must" % CurrentFolder +\
                                 " start and end with a forward slash."
 
-        NewFolderName = incoming.get('NewFolderName', '') # optional
-
         NewFile = incoming.get('NewFile', None) # optional
+
+        NewFolderName = incoming.get('NewFolderName', '') # optional
 
         ServerPath = incoming.get('ServerPath', '')
         if ServerPath: # optional
