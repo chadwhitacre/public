@@ -6,73 +6,98 @@ class FCKconnector:
     As it stands this class is not useable, and it will need to be extended by
     framework wrappers in the following ways:
 
-        - override connect to set the response headers as necessary
+        - override connector to set the response headers as necessary
 
         - override the GetFolders, GetFoldersAndFiles, CreateFolder, and
-        FileUpload methods to provide actual logic. These methods should call
-        their _[x|ht]ml* equivalents to properly format the response body.
+          FileUpload methods to provide actual logic. These methods should call
+          their _[x|ht]ml* complements to properly format the response body.
 
     Please see the FCKeditor documentation and ZopeFCKconnector.py for
     documentation and an example wrapper.
 
     """
 
-    def connect(self, incoming):
+    def connector(self, incoming):
         """Given a dictionary, validate it and hand it off to another method.
 
         This is the main callable and should be overridden or extended by
-        framework wrappers as necessary.
+        framework wrappers as necessary. FCKeditor sends us a querystring with
+        up to five parameters in it. A sixth parameter may be given in the post:
+
+            Command
+            CurrentFolder
+            Type
+            ServerPath
+            NewFolderName
+            NewFile
+
+        After validating our input into a dictionary, we hand this off to a
+        method matching the name given as Command.
 
         """
-        data = self._validate(incoming) # will raise an error if bad data
+        data = incoming # in wrapper, parse input out of the querystring
+        data = self._validate(data) # will raise an error if bad data
         method = getattr(self, data['Command'])
-        return method(data)
+        return method(**data)
 
     def _validate(self, incoming):
         """Given a dictionary, return a validated dict.
         """
 
-        # parse our four variables out of the dict and validate them
-        # all variables are optional
+        # Parse our six variables out of the dict and validate them.
+        # A seventh dict key is computed.
 
         Command = incoming.get('Command', '')
-        if Command:
-            if not hasattr(self, Command):
-                raise FCKexception, "Command '%s' not found" % Command
-
-        Type = incoming.get('Type', '')
-        if Type not in ( ''
-                               , 'File'
-                               , 'Image'
-                               , 'Flash'
-                               , 'Media'
-                                ):
-            raise FCKexception, "Type '%s' not found" % Type
+        if not hasattr(self, Command):
+            raise FCKexception, "Command '%s' not found" % Command
 
         CurrentFolder = incoming.get('CurrentFolder', '')
-        if CurrentFolder:
-            if not (CurrentFolder.startswith('/') and CurrentFolder.endswith('/')):
-                raise FCKexception, "CurrentFolder '%s' must" % CurrentFolder +\
-                                    " start and end with '/'"
+        if not (( CurrentFolder.startswith('/') and
+                  CurrentFolder.endswith('/')
+                   )):
+            raise FCKexception, "CurrentFolder '%s' must" % CurrentFolder +\
+                                " start and end with a forward slash."
+
+        NewFolderName = incoming.get('NewFolderName', '') # optional
+
+        NewFile = incoming.get('NewFile', None) # optional
 
         ServerPath = incoming.get('ServerPath', '')
-        if ServerPath:
+        if ServerPath: # optional
             if not (ServerPath.startswith('/') and ServerPath.endswith('/')):
                 raise FCKexception, "ServerPath '%s' must" % ServerPath +\
                                     " start and end with '/'"
 
-        NewFolderName = incoming.get('NewFolderName', '')
+        Type = incoming.get('Type', '')
+        if Type not in ( 'File'
+                       , 'Image'
+                       , 'Flash'
+                       , 'Media'
+                        ):
+            raise FCKexception, "Type '%s' not found" % Type
 
-        NewFile = incoming.get('NewFile', '')
+        ComputedUrl = self._compute_url(ServerPath, Type, CurrentFolder)
 
-        return { 'Command' : Command
-               , 'Type' : Type
+        return { 'Command'       : Command
+               , 'ComputedUrl'   : ComputedUrl
                , 'CurrentFolder' : CurrentFolder
-               , 'ServerPath' : ServerPath
                , 'NewFolderName' : NewFolderName
-               , 'NewFile' : NewFile
+               , 'NewFile'       : NewFile
+               , 'ServerPath'    : ServerPath
+               , 'Type'          : Type
                 }
 
+    def _compute_url(self, ServerPath, Type, CurrentFolder, **other):
+        """Given three strings, compute the FCK url path
+
+        FCKeditor docs call for providing server-side config of ServerPath. If
+        this is desired then override this method in your framework wrapper.
+
+        """
+        ServerPath = ServerPath # server-side config is framework-specific
+        if ServerPath == '':
+            ServerPath = '/UserFiles/'
+        return ServerPath + Type + CurrentFolder
 
 
     def GetFolders(self, **kw):
@@ -88,8 +113,8 @@ class FCKconnector:
 
         pass
 
-    def _xmlGetFolders(self, Type, CurrentFolder, ServerPath, Folders):
-        """Given the input and a list of folders, format an XML response.
+    def _xmlGetFolders(self, Type, CurrentFolder, ComputedUrl, Folders):
+        """Given three strings and a list, format an XML response.
         """
 
         folder_template = '''<Folder name="%s" />'''
@@ -104,18 +129,18 @@ class FCKconnector:
     </Folders>
 </Connector>"""
 
-        return template % (Type, CurrentFolder, ServerPath, folders)
+        return template % (Type, CurrentFolder, ComputedUrl, folders)
 
 
 
 
     def GetFoldersAndFiles(self, **kw):
         """Gets the list of the children folders and files of a folder."""
-        pass # expects XML response
+        pass
 
-    def _xmlGetFoldersAndFiles(self, Type, CurrentFolder, ServerPath,
+    def _xmlGetFoldersAndFiles(self, Type, CurrentFolder, ComputedUrl,
                                Folders, Files):
-        """Given data and lists of folders and files, format an XML response.
+        """Given three strings and two lists, format an XML response.
         """
 
         # folders just needs to be a list of names
@@ -138,17 +163,17 @@ class FCKconnector:
     </Files>
 </Connector>"""
 
-        return template % (Type, CurrentFolder, ServerPath, folders, files)
+        return template % (Type, CurrentFolder, ComputedUrl, folders, files)
 
 
 
 
     def CreateFolder(self, **kw):
         """Create a child folder."""
-        pass # expects XML response
+        pass
 
-    def _xmlCreateFolder(self, Type, CurrentFolder, ServerPath, error_code):
-        """Given the input and an error_code, format an XML response.
+    def _xmlCreateFolder(self, Type, CurrentFolder, ComputedUrl, error_code):
+        """Given four strings, format an XML response.
         """
 
         template = """\
@@ -158,17 +183,17 @@ class FCKconnector:
     <Error number="%s" />
 </Connector>"""
 
-        return template % (Type, CurrentFolder, ServerPath, error_code)
+        return template % (Type, CurrentFolder, ComputedUrl, error_code)
 
 
 
 
     def FileUpload(self, **kw):
         """Add a file in a folder."""
-        pass # expects HTML response
+        pass
 
-    def _htmlFileUpload(self, Type, CurrentFolder, error_code):
-        """Given the input and a list of folders, format an XML response.
+    def _htmlFileUpload(self, error_code):
+        """Given a string, format an XML response.
         """
 
         template = """\

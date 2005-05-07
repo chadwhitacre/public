@@ -22,8 +22,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
     Specific services provided include:
 
-        - creation of on-the-fly FCKeditor objects, with rule-based
-          configuration
+        - creation of on-the-fly FCKeditor objects
 
         - a backend for the FCKeditor file browser
 
@@ -63,7 +62,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         """
         return ZopeFCKeditor(id)
 
-    security.declarePublic('connect')
+    security.declarePublic('connector')
     def connector(self, REQUEST):
         """REQUEST acts like a dict, so we could hand it directly to our
         superclass. However, we need to set response headers based on
@@ -94,6 +93,13 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         del outgoing['ServerPath']
         return outgoing
 
+    def _compute_url(self, ServerPath, Type, CurrentFolder):
+        """We depart from the FCK spec at this point because we don't want
+        to organize our content that way.
+
+        """
+        return CurrentFolder
+
     security.declarePrivate('_FCK2Zope')
     def _FCK2Zope(self, Type):
         """Given an FCKeditor ResourceType, return a list of Zope meta_types.
@@ -102,6 +108,8 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         if not hasattr(self, propname):
             raise FCKexception, "Property '%s' does not exist" % propname
         return getattr(self, propname)
+
+
 
 
     ##
