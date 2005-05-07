@@ -1,5 +1,6 @@
 packaging
     release 0.9.0 -- first development release
+    replace hasattr with shasattr
     === DONE ===
     store FCKeditor proper in a separate svn repo/project
     include FCKeditor via svn:externals

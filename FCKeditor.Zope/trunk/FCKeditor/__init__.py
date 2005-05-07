@@ -1,5 +1,5 @@
 import sys
-from AccessControl import allow_class, allow_module
+
 try:
     from Products.CMFCore.DirectoryView import registerDirectory
     CMFCore = True
@@ -10,7 +10,8 @@ FCKglobals = globals()
 
 def initialize(context):
 
-    if CMFCore: registerDirectory('skins', FCKglobals)
+    if CMFCore:
+        registerDirectory('skins', FCKglobals)
 
     import ZopeFCKeditor, ZopeFCKmanager, CMFFCKmanager
 

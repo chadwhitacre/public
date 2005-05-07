@@ -43,6 +43,7 @@ class TestFCKeditorPlone(PloneTestCase.PloneTestCase):
 
     def afterSetUp(self):
         self.portal.portal_quickinstaller.installProduct('FCKeditor')
+        #pass
 
     def testInstallation(self):
         self.portal.portal_quickinstaller.isProductInstalled('FCKeditor')
@@ -50,8 +51,6 @@ class TestFCKeditorPlone(PloneTestCase.PloneTestCase):
     def testSkins(self):
         self.failUnless( hasattr(self.portal.portal_skins, 'fckeditor_base'),
                          'Missing skin: fckeditor_base')
-        self.failUnless( hasattr(self.portal.portal_skins, 'fckeditor_cps'),
-                         'Missing skin: fckeditor_cps')
         self.failUnless( hasattr(self.portal.portal_skins, 'fckeditor_plone'),
                          'Missing skin: fckeditor_plone')
 

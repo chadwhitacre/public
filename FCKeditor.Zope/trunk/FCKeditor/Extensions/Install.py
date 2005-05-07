@@ -14,8 +14,10 @@ from Products.FCKeditor import FCKglobals
 
 
 def install_cache(self, out):
-    """ add an HTTPCache specifically for FCKeditor; apparently this is for
-    compatibility with non-Plone CMF apps
+    """ Add an HTTPCache specifically for FCKeditor.
+
+    Apparently this is for better compatibility with non-Plone CMF apps.
+
     """
 
     if 'FCKCache' not in self.objectIds():
@@ -32,7 +34,7 @@ def install_cache(self, out):
 
 
 def install_plone(self, out):
-    """ add FCKeditor to 'My Preferences'
+    """Add FCKeditor to 'My Preferences'.
     """
     portal_props = getToolByName(self, 'portal_properties')
     site_props = getattr(portal_props, 'site_properties', None)
@@ -54,7 +56,7 @@ def install_plone(self, out):
 
 
 def install_subskin(self, out, skin_name, globals=FCKglobals):
-    """ add a skin to portal_skins
+    """Add a skin to portal_skins.
     """
     skinstool = getToolByName(self, 'portal_skins')
     if skin_name not in skinstool.objectIds():
@@ -78,7 +80,7 @@ def install_subskin(self, out, skin_name, globals=FCKglobals):
 def install(self):
     out = StringIO()
 
-    print >> out, "Installing FCKeditor 2.0 Final Candidate (Preview)"
+    print >> out, "Installing FCKeditor.Zope 0.1"
 
     # check to see if base2zope has been run
     #def fail():
@@ -91,7 +93,6 @@ def install(self):
     install_cache(self, out)
     install_plone(self, out)
     install_subskin(self, out, 'fckeditor_plone')
-    install_subskin(self, out, 'fckeditor_cps')
     install_subskin(self, out, 'fckeditor_base')
 
     print >> out, "FCKeditor installation done."
