@@ -7,12 +7,14 @@ from OFS.ObjectManager import ObjectManager
 from OFS.PropertyManager import PropertyManager
 
 # Zope
-from AccessControl import ClassSecurityInfo
+import Products
+from AccessControl import ClassSecurityInfo, Unauthorized
 from Globals import InitializeClass
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products import meta_types
 
 # us
+from Products.FCKeditor.FCKeditor import FCKexception
 from Products.FCKeditor.FCKconnector import FCKconnector
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 
@@ -26,6 +28,28 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
         - a backend for the FCKeditor file browser
 
+
+    Design re: *Types properties:
+
+        So the question is: how do I get from meta_type, which is a
+        property that all Zope objects are required to have -- how do I
+        get from that to the object's constructor. I mean it's true
+        constructor, not just the form. BUT, I need it's TTW constructor
+        so that I can traverse to it and trigger security. Otherwise I
+        am looking at reimplementing security.
+
+        So the tradeoff is between implementing our own security and
+        getting at the true TTW constructor.
+
+        Of course, all of this is necessary because we are trying to
+        support mapping of FCK Type to arbitrary Zope/CMF types.
+
+        If we require that the constructor be explicitly specified along
+        with the type, then we get out of discovering it ourselves.
+        Since discovery appears to be a big pain, and the type mapping
+        is an admin-level thing anyway, and this is only version 1, that
+        is what we'll do.
+
     """
 
     security = ClassSecurityInfo()
@@ -35,9 +59,10 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     meta_type = 'FCKmanager'
 
     # these properties map FCKeditor ResourceType to Zope meta_type
-    FolderTypes = ('Folder',)
-    FileTypes = ('File',)
-    ImageTypes = ('Image',)
+    # the value is a tuple of (meta_type, constructory) two-tuples
+    FolderTypes = (('Folder','manage_addFolder'),)
+    FileTypes = (('File','manage_addFile'),)
+    ImageTypes = (('Image','manage_addImage'),)
     FlashTypes = ()
     MediaTypes = ()
 
@@ -100,16 +125,6 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         """
         return CurrentFolder
 
-    security.declarePrivate('_FCK2Zope')
-    def _FCK2Zope(self, Type):
-        """Given an FCKeditor ResourceType, return a list of Zope meta_types.
-        """
-        propname = Type + 'Types'
-        if not getattr(self, propname, None) is not None:
-            raise FCKexception, "Property '%s' does not exist" % propname
-        return getattr(self, propname)
-
-
 
 
     ##
@@ -117,17 +132,16 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     ##
 
     security.declarePrivate('GetFolders')
-    def GetFolders(self, Type, CurrentFolder, **other):
+    def GetFolders(self, Type, CurrentFolder, ComputedUrl, **other):
         """Get the list of the children folders of a folder."""
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
 
-        meta_types = self._FCK2Zope('Folder')
-        folders = folder.objectIds(meta_types)
+        folders = folder.objectIds('Folder')
 
         xml_response = self._xmlGetFolders( Type
                                           , CurrentFolder
-                                          , CurrentFolder # ServerPath
+                                          , ComputedUrl
                                           , folders
                                            )
         return xml_response
@@ -136,20 +150,18 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
 
     security.declarePrivate('GetFoldersAndFiles')
-    def GetFoldersAndFiles(self, Type, CurrentFolder, **other):
+    def GetFoldersAndFiles(self, Type, CurrentFolder, ComputedUrl, **other):
         """Gets the list of the children folders and files of a folder."""
-
         folder = self.restrictedTraverse('..'+CurrentFolder)
+        folders = folder.objectIds('Folder')
 
-        meta_types = self._FCK2Zope('Folder')
-        folders = folder.objectIds(meta_types)
-
-        meta_types = self._FCK2Zope(Type)
+        image = Type == 'Image'
+        meta_types = image and 'Image' or 'File'
         files = [self._file_info(f) for f in folder.objectValues(meta_types)]
 
         xml_response = self._xmlGetFoldersAndFiles( Type
                                                   , CurrentFolder
-                                                  , CurrentFolder # ServerPath
+                                                  , ComputedUrl
                                                   , folders
                                                   , files
                                                    )
@@ -184,29 +196,30 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
     security.declarePrivate('CreateFolder')
     _bad_id=re.compile(r'[^a-zA-Z0-9-_~,.$\(\)# ]').search
-    def CreateFolder(self, Type, CurrentFolder, NewFolderName, **other):
+    def CreateFolder(self, Type, CurrentFolder, NewFolderName, ComputedUrl,
+                     **other):
         """Create a child folder."""
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
 
-        if getattr(folder, NewFolderName, None) is not None:
+        if NewFolderName in folder.objectIds():
             error_code = 101 # Folder already exists.
         elif self._bad_id(NewFolderName) is not None:
             error_code = 102 # Invalid folder name.
-        elif 0:
-            error_code = 103 # You have no permissions to create the folder.
         else:
             try:
-                # We are lazy and assume that folder objects know how to
-                # replicate themselves.
-                folder.manage_addFolder(NewFolderName)
+                # get the constructor via traversal so that we trigger security
+                constructor = folder.restrictedTraverse('manage_addFolder')
+                constructor(NewFolderName)
                 error_code = 0 # No Errors Found. The folder has been created.
+            except Unauthorized:
+                error_code = 103 # You have no permissions to create the folder.
             except:
                 error_code = 110 # Unknown error creating folder.
 
         xml_response = self._xmlCreateFolder( Type
                                             , CurrentFolder
-                                            , CurrentFolder # ServerPath
+                                            , ComputedUrl
                                             , error_code
                                              )
 

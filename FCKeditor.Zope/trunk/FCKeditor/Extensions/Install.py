@@ -20,13 +20,13 @@ def install_cache(self, out):
 
     """
 
-    if 'FCKCache' not in self.objectIds():
-        self._setObject('FCKCache', AcceleratedHTTPCacheManager('FCKCache'))
+    if 'FCKcache' not in self.objectIds():
+        self._setObject('FCKcache', AcceleratedHTTPCacheManager('FCKcache'))
         cache_settings = { 'anonymous_only' : 0
                          , 'notify_urls'    : ()
                          , 'interval'       : 36000
                           }
-        self.FCKCache.manage_editProps( 'HTTPCache for FCKeditor'
+        self.FCKcache.manage_editProps( 'HTTPCache for FCKeditor'
                                       , settings = cache_settings
                                       )
         print >> out, "Added FCKeditor HTTPCache"
@@ -51,8 +51,7 @@ def install_plone(self, out):
                       "available editors in Plone."
 
     # add a CMFFCKmanager and tweak the FolderTypes
-    self.manage_addProduct['FCKeditor'].manage_addCMFFCKmanager()
-    self.portal_fckmanager.FolderTypes = ('Plone Folder',)
+    self.manage_addProduct['FCKeditor'].manage_addPloneFCKmanager()
 
 
 def install_subskin(self, out, skin_name, globals=FCKglobals):

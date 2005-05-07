@@ -54,7 +54,7 @@ else:
 
 METADATA = """\
 [default]
-cache = FCKCache"""
+cache = FCKcache"""
 
 def metadata(filepath):
     """ given a filepath, write a complementary metadata file

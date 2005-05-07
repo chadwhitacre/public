@@ -8,6 +8,7 @@ if __name__ == '__main__':
 from Testing import ZopeTestCase
 ZopeTestCase.installProduct('FCKeditor')
 
+from AccessControl import Unauthorized
 from zExceptions import BadRequest
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 from data import testdata
@@ -39,7 +40,7 @@ class TestZopeFCKeditor(ZopeTestCase.ZopeTestCase):
         self.fck = self.folder.fck
 
     def testSomething(self):
-        self.failUnless(hasattr(self, 'fck'),
+        self.failUnless(getattr(self, 'fck', None) is not None,
                         "FCKeditor was not installed")
         self.failUnless(isinstance(self.fck, ZopeFCKeditor),
                         "FCKeditor was not installed properly")
@@ -55,7 +56,7 @@ class TestZopeFCKeditor(ZopeTestCase.ZopeTestCase):
         SAFE_FOR_ZOPE = "123-456fck2_oh yeah, believe-itBABY~#$$#)(PO#JTKHEE."
         SAFE_FOR_CSS  = "fck2-oh-yeah--believe-itBABY-------PO-JTKHEE-"
         self.add(SAFE_FOR_ZOPE)
-        self.assertEqual(hasattr(self.folder, SAFE_FOR_ZOPE), True)
+        self.assertEqual(getattr(self.folder, SAFE_FOR_ZOPE, None) is not None, True)
         self.assertEqual(getattr(self.folder, SAFE_FOR_ZOPE).InstanceName
                         , SAFE_FOR_CSS )
 
@@ -70,7 +71,7 @@ class TestZopeFCKmanager(ZopeTestCase.ZopeTestCase):
     def testCanAddOtherObjectsProgrammatically(self):
         # afaict we in fact can't constrain programmatic addition of objects
         self.fckmanager.manage_addProduct['OFSP'].manage_addFolder('foo')
-        self.assertEqual(hasattr(self.fckmanager, 'foo'), True)
+        self.assertEqual(getattr(self.fckmanager, 'foo', None) is not None, True)
 
     def testInstantiateTextarea(self):
         fckeditor = self.fckmanager.spawn('MyField')
@@ -131,6 +132,7 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
     def testEmptyFolderGetFolders(self):
         actual = self.fckmanager.GetFolders( Type = 'File'
                                            , CurrentFolder = '/path/to/empty/'
+                                           , ComputedUrl = '/path/to/empty/'
                                              )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -146,6 +148,7 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
     def testSingleItemFolderGetFolders(self):
         actual = self.fckmanager.GetFolders( Type = 'File'
                                            , CurrentFolder = '/path/to/one/'
+                                           , ComputedUrl = '/path/to/one/'
                                              )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -161,6 +164,7 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
     def testFolderGetFolders(self):
         actual = self.fckmanager.GetFolders( Type = 'File'
                                            , CurrentFolder = '/path/to/content/'
+                                           , ComputedUrl = '/path/to/content/'
                                              )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -176,6 +180,7 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
     def testFolderGetFoldersAndFiles(self):
         actual = self.fckmanager.GetFoldersAndFiles( Type = 'File'
                                                    , CurrentFolder = '/path/to/content/'
+                                                   , ComputedUrl = '/path/to/content/'
                                                     )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -192,25 +197,182 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
 
         self.assertEqual(actual, expected)
 
-    def testPermissions(self):
+class TestCreateFolder(ZopeTestCase.ZopeTestCase):
+
+    def afterSetUp(self):
+        add = self.folder.manage_addProduct['FCKeditor'].manage_addFCKmanager
+        add('fckmanager')
+        self.fckmanager = self.folder.fckmanager
+        self.folder.manage_addFolder('path')
+        self.folder.path.manage_addFolder('to')
+        self.folder.path.to.manage_addFolder('content')
+
+        self.folder.acl_users._doAddUser('admin', 'secret', ['Manager',], [])
+        self.folder.acl_users._doAddUser('user1', 'secret', [], [])
+
+
+    def testCreateFolder(self):
+        self.login('admin')
+        actual = self.fckmanager.CreateFolder( Type = 'File'
+                                             , CurrentFolder = '/path/to/content/'
+                                             , NewFolderName = 'foo'
+                                             , ComputedUrl = '/path/to/content/'
+                                              )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="CreateFolder" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Error number="0" />
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+        parent = self.fckmanager.path.to.content
+        self.assert_(getattr(parent, 'foo', None) is not None,
+                     "folder 'foo' was not created")
+
+
+    def testFolderAlreadyExists(self):
+        self.login('admin')
+        actual = self.fckmanager.CreateFolder( Type = 'File'
+                                             , CurrentFolder = '/path/to/content/'
+                                             , NewFolderName = 'foo'
+                                             , ComputedUrl = '/path/to/content/'
+                                              )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="CreateFolder" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Error number="0" />
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+        parent = self.fckmanager.path.to.content
+        self.assert_(getattr(parent, 'foo', None) is not None,
+                     "folder 'foo' was not created")
+
+        actual = self.fckmanager.CreateFolder( Type = 'File'
+                                             , CurrentFolder = '/path/to/content/'
+                                             , NewFolderName = 'foo'
+                                             , ComputedUrl = '/path/to/content/'
+                                              )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="CreateFolder" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Error number="101" />
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+
+
+    def testCanOverrideParentNames(self):
+        self.login('admin')
+        actual = self.fckmanager.CreateFolder( Type = 'File'
+                                             , CurrentFolder = '/path/to/content/'
+                                             , NewFolderName = 'to'
+                                             , ComputedUrl = '/path/to/content/'
+                                              )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="CreateFolder" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Error number="0" />
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+        parent = self.fckmanager.path.to.content
+        self.assert_(getattr(parent, 'to', None) is not None,
+                     "folder 'to' was not created")
+
+
+    def testCreatFolderBadName(self):
+        self.login('admin')
+        actual = self.fckmanager.CreateFolder( Type = 'File'
+                                             , CurrentFolder = '/path/to/content/'
+                                             , NewFolderName = '_JAR!JAR!'
+                                             , ComputedUrl = '/path/to/content/'
+                                              )
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="CreateFolder" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Error number="102" />
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+        parent = self.fckmanager.path.to.content
+        self.assert_(getattr(parent, '_JAR!JAR!', None) is None,
+                     "folder '_JAR!JAR!' was created")
+
+
+
+    def testCreateFolderPermissions(self):
+
+        # the connector itself is public, security is delegated to the methods
         connector = self.folder.restrictedTraverse('fckmanager/connector')
 
-        self.folder.acl_users._doAddUser('user1', 'secret', [], [])
-        self.login('user1')
-        #self.logout()
 
-        req = REQUEST({ 'Command'       : 'GetFolders'
-                      , 'Type'          : 'File'
-                      , 'CurrentFolder' : '/'
-                       })
-        output = connector(req)
-
+        ##
+        # anonymous
+        ##
+        self.logout()
         req = REQUEST({ 'Command'       : 'CreateFolder'
                       , 'Type'          : 'File'
-                      , 'CurrentFolder' : '/'
+                      , 'CurrentFolder' : '/path/to/content/'
                       , 'NewFolderName' : 'foo'
                        })
-        output = connector(req)
+        actual = connector(req)
+
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="CreateFolder" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Error number="103" />
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+
+
+        ##
+        # bare authenticate
+        ##
+        self.login('user1')
+        req = REQUEST({ 'Command'       : 'CreateFolder'
+                      , 'Type'          : 'File'
+                      , 'CurrentFolder' : '/path/to/content/'
+                      , 'NewFolderName' : 'foo'
+                       })
+        actual = connector(req)
+
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="CreateFolder" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Error number="103" />
+</Connector>"""
+
+        self.assertEqual(actual, expected)
+
+
+        ##
+        # manager -- should succeed
+        ##
+        self.login('admin')
+        req = REQUEST({ 'Command'       : 'CreateFolder'
+                      , 'Type'          : 'File'
+                      , 'CurrentFolder' : '/path/to/content/'
+                      , 'NewFolderName' : 'foo'
+                       })
+        actual = connector(req)
+
+        expected = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="CreateFolder" resourceType="File">
+    <CurrentFolder path="/path/to/content/" url="/path/to/content/" />
+    <Error number="0" />
+</Connector>"""
+
+        self.assertEqual(actual, expected)
 
 
 
@@ -224,6 +386,7 @@ def test_suite():
     suite.addTest(makeSuite(TestZopeFCKeditor))
     suite.addTest(makeSuite(TestZopeFCKmanager))
     suite.addTest(makeSuite(TestFCKconnector))
+    suite.addTest(makeSuite(TestCreateFolder))
     return suite
 
 if __name__ == '__main__':
