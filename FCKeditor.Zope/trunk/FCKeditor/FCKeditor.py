@@ -84,7 +84,7 @@ class FCKeditor:
         textarea
         """
 
-        if not hasattr(self, 'Compatible'):
+        if not getattr(self, 'Compatible', None) is not None:
             raise FCKexception, "You must run the setCompatible method first"
 
         # quote the initial HTML value

@@ -48,7 +48,7 @@ class FCKconnector:
         # A seventh dict key is computed.
 
         Command = incoming.get('Command', '')
-        if not hasattr(self, Command):
+        if getattr(self, Command, None) is None:
             raise FCKexception, "Command '%s' not found" % Command
 
         CurrentFolder = incoming.get('CurrentFolder', '')

@@ -41,12 +41,12 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     FlashTypes = ()
     MediaTypes = ()
 
-    _properties=( { 'id':'title', 'type':'string', 'mode':'w' }
-                , { 'id':'FolderTypes', 'type':'lines', 'mode':'w' }
-                , { 'id':'FileTypes', 'type':'lines', 'mode':'w' }
-                , { 'id':'ImageTypes', 'type':'lines', 'mode':'w' }
-                , { 'id':'FlashTypes', 'type':'lines', 'mode':'w' }
-                , { 'id':'MediaTypes', 'type':'lines', 'mode':'w' }
+    _properties=( { 'id':'title',       'type':'string',    'mode':'w' }
+                , { 'id':'FolderTypes', 'type':'lines',     'mode':'w' }
+                , { 'id':'FileTypes',   'type':'lines',     'mode':'w' }
+                , { 'id':'ImageTypes',  'type':'lines',     'mode':'w' }
+                , { 'id':'FlashTypes',  'type':'lines',     'mode':'w' }
+                , { 'id':'MediaTypes',  'type':'lines',     'mode':'w' }
                   )
 
     manage_options = PropertyManager.manage_options +\
@@ -79,7 +79,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
             REQUEST.RESPONSE.setHeader('Content-Type', 'text/xml')
             REQUEST.RESPONSE.setHeader('Cache-Control', 'no-cache')
 
-        if hasattr(self, Command):
+        if getattr(self, Command, None) is not None:
             method = getattr(self, Command)
             return method(**data)
         else:
@@ -105,7 +105,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         """Given an FCKeditor ResourceType, return a list of Zope meta_types.
         """
         propname = Type + 'Types'
-        if not hasattr(self, propname):
+        if not getattr(self, propname, None) is not None:
             raise FCKexception, "Property '%s' does not exist" % propname
         return getattr(self, propname)
 
@@ -159,7 +159,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     def _get_info(self, o, t):
         """Given a tuple, return a value."""
         for attr in t:
-            if hasattr(o, attr):
+            if getattr(o, attr, None) is not None:
                 attr = getattr(o, attr)
                 break
             else:
@@ -189,7 +189,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
 
-        if hasattr(folder, NewFolderName):
+        if getattr(folder, NewFolderName, None) is not None:
             error_code = 101 # Folder already exists.
         elif self._bad_id(NewFolderName) is not None:
             error_code = 102 # Invalid folder name.
@@ -232,7 +232,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         if self._bad_id(filename) is not None:
             error_code = 202 # invalid file.
 
-        elif hasattr(folder, filename):
+        elif getattr(folder, filename, None) is not None:
             # FCKeditor spec calls for renaming the file in this case
 
             parts = filename.split('.')
@@ -247,7 +247,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
                 return ''.join(parts)
 
             i = 0
-            while hasattr(folder, filename):
+            while getattr(folder, filename, None) is not None:
                 i += 1
                 filename = _new_filename(parts, i)
 
