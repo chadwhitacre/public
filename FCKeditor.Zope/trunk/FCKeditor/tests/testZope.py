@@ -22,8 +22,15 @@ class RESPONSE:
     def setHeader(self, *arg, **kw):
         pass
 
+class AUTHENTICATED_USER:
+    def has_permission(self, *arg, **kw):
+        return True
+
 from types import DictType
 class REQUEST(DictType):
+
+    def __init__(self, *arg, **kw):
+        DictType.__init__(self, *arg, **kw)
 
     RESPONSE = RESPONSE()
 
@@ -133,6 +140,7 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
         actual = self.fckmanager.GetFolders( Type = 'File'
                                            , CurrentFolder = '/path/to/empty/'
                                            , ComputedUrl = '/path/to/empty/'
+                                           , User = AUTHENTICATED_USER()
                                              )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -149,6 +157,7 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
         actual = self.fckmanager.GetFolders( Type = 'File'
                                            , CurrentFolder = '/path/to/one/'
                                            , ComputedUrl = '/path/to/one/'
+                                           , User = AUTHENTICATED_USER()
                                              )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -165,6 +174,7 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
         actual = self.fckmanager.GetFolders( Type = 'File'
                                            , CurrentFolder = '/path/to/content/'
                                            , ComputedUrl = '/path/to/content/'
+                                           , User = AUTHENTICATED_USER()
                                              )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -181,6 +191,7 @@ class TestFCKconnector(ZopeTestCase.ZopeTestCase):
         actual = self.fckmanager.GetFoldersAndFiles( Type = 'File'
                                                    , CurrentFolder = '/path/to/content/'
                                                    , ComputedUrl = '/path/to/content/'
+                                                   , User = AUTHENTICATED_USER()
                                                     )
         expected = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -334,13 +345,14 @@ class TestCreateFolder(ZopeTestCase.ZopeTestCase):
 
 
         ##
-        # bare authenticate
+        # bare authenticated
         ##
         self.login('user1')
         req = REQUEST({ 'Command'       : 'CreateFolder'
                       , 'Type'          : 'File'
                       , 'CurrentFolder' : '/path/to/content/'
                       , 'NewFolderName' : 'foo'
+                      , 'AUTHENTICATED_USER' : AUTHENTICATED_USER()
                        })
         actual = connector(req)
 

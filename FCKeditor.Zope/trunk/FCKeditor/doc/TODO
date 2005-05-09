@@ -7,14 +7,19 @@ packaging
     prolly drop CPS skin
     QI skins in reverse order
 fckmanager
-    use invokeFactory to create content in CMFFCKmanager
-    if we can use Plone's check_id when adding folder/file
     make sure CreateFolder 110 gets logged
     account for workflow & security (introduce ExtendedPathIndex dependency?)
+        GetFolder - Check for "List folder contents"
+        GetFilesAndFolders LFC and View
+        FileUpload
+        === DONE ===
+        CreateFolder
     NewFile should add the first meta_type in FolderTypes for the given ResourceType
         get from Control_Panel/Products if Zope
         get from portal_types if CMF
     === DONE ===
+    if we can use Plone's check_id when adding folder/file
+    use invokeFactory to create content in CMFFCKmanager
     clean up path/url interpretation
     wire up Plone QI with Plone types
     wire up CMFFCKmanager with CMF types

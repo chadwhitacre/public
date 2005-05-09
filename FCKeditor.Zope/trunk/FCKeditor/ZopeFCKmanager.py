@@ -12,11 +12,16 @@ from AccessControl import ClassSecurityInfo, Unauthorized
 from Globals import InitializeClass
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products import meta_types
+from zExceptions import BadRequest
 
 # us
 from Products.FCKeditor.FCKeditor import FCKexception
 from Products.FCKeditor.FCKconnector import FCKconnector
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
+
+# permissions
+LIST_FOLDER_CONTENTS = 'List folder contents'
+VIEW = 'View'
 
 
 class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
@@ -104,6 +109,8 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
             REQUEST.RESPONSE.setHeader('Content-Type', 'text/xml')
             REQUEST.RESPONSE.setHeader('Cache-Control', 'no-cache')
 
+        data['User'] = REQUEST.get('AUTHENTICATED_USER')
+
         if getattr(self, Command, None) is not None:
             method = getattr(self, Command)
             return method(**data)
@@ -132,12 +139,15 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     ##
 
     security.declarePrivate('GetFolders')
-    def GetFolders(self, Type, CurrentFolder, ComputedUrl, **other):
+    def GetFolders(self, Type, CurrentFolder, ComputedUrl, User, **other):
         """Get the list of the children folders of a folder."""
 
-        folder = self.restrictedTraverse('..'+CurrentFolder)
-
-        folders = folder.objectIds('Folder')
+        folder = self.unrestrictedTraverse('..'+CurrentFolder)
+        if not User.has_permission(LIST_FOLDER_CONTENTS, folder):
+            folders = []
+        else:
+            folders = [o.getId() for o in folder.objectValues('Folder')
+                               if User.has_permission(LIST_FOLDER_CONTENTS, o)]
 
         xml_response = self._xmlGetFolders( Type
                                           , CurrentFolder
@@ -150,14 +160,26 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
 
     security.declarePrivate('GetFoldersAndFiles')
-    def GetFoldersAndFiles(self, Type, CurrentFolder, ComputedUrl, **other):
+    def GetFoldersAndFiles(self, Type, CurrentFolder, ComputedUrl, User, **other):
         """Gets the list of the children folders and files of a folder."""
-        folder = self.restrictedTraverse('..'+CurrentFolder)
-        folders = folder.objectIds('Folder')
 
-        image = Type == 'Image'
-        meta_types = image and 'Image' or 'File'
-        files = [self._file_info(f) for f in folder.objectValues(meta_types)]
+        folder = self.unrestrictedTraverse('..'+CurrentFolder)
+        if not User.has_permission(LIST_FOLDER_CONTENTS, folder):
+            # if the user doesn't have permission on this folder, return an empty
+            # page
+            folders = files = []
+        else:
+            folder = self.unrestrictedTraverse('..'+CurrentFolder)
+            folders = [o.getId() for o in folder.objectValues('Folder')
+                               if User.has_permission(LIST_FOLDER_CONTENTS, o)]
+
+            if Type == 'Image':
+                meta_type = 'Image'
+            else:
+                meta_type = 'File'
+
+            files = [self._file_info(o) for o in folder.objectValues(meta_types)
+                                              if User.has_permission(VIEW, o)]
 
         xml_response = self._xmlGetFoldersAndFiles( Type
                                                   , CurrentFolder
@@ -195,18 +217,22 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
 
     security.declarePrivate('CreateFolder')
-    _bad_id=re.compile(r'[^a-zA-Z0-9-_~,.$\(\)# ]').search
     def CreateFolder(self, Type, CurrentFolder, NewFolderName, ComputedUrl,
                      **other):
         """Create a child folder."""
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
 
+        error_code = 110
         if NewFolderName in folder.objectIds():
             error_code = 101 # Folder already exists.
-        elif self._bad_id(NewFolderName) is not None:
-            error_code = 102 # Invalid folder name.
         else:
+            try:
+                folder._checkId(NewFolderName)
+            except BadRequest:
+                error_code = 102 # Invalid folder name.
+
+        if error_code == 110:
             try:
                 # get the constructor via traversal so that we trigger security
                 constructor = folder.restrictedTraverse('manage_addFolder')
@@ -222,7 +248,6 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
                                             , ComputedUrl
                                             , error_code
                                              )
-
         return xml_response
 
 
@@ -237,14 +262,18 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
                                               , CurrentFolder
                                               , 202
                                               )
+        return html_response
 
         folder = self.restrictedTraverse('..'+CurrentFolder)
-
         filename = NewFile.filename
 
-        if self._bad_id(filename) is not None:
+        error_code = 110
+        try:
+            self._checkId(filename)
+        else:
             error_code = 202 # invalid file.
 
+        if
         elif getattr(folder, filename, None) is not None:
             # FCKeditor spec calls for renaming the file in this case
 

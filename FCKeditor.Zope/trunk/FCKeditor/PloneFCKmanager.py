@@ -69,7 +69,6 @@ class PloneFCKmanager(ZopeFCKmanager, UniqueObject):
             except Unauthorized:
                 error_code = 103 # You have no permissions to create the folder.
             except:
-                raise
                 error_code = 110 # Unknown error creating folder.
 
         xml_response = self._xmlCreateFolder( Type
