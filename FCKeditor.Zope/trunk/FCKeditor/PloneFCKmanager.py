@@ -179,7 +179,10 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
 
 
 
-
+    def FileUpload(self, **kw):
+        """Add a file in a folder."""
+        return { 'error_code' : 202 }
+        raise NotImplemented, "sorry, not done yet"
 
 
 InitializeClass(PloneFCKmanager)
