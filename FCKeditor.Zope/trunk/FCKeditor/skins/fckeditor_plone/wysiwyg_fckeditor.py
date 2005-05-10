@@ -31,7 +31,7 @@ fckeditor.SetProperty('Value', HTML)
 
 # pick a toolbar set based on user role
 user = AccessControl.getSecurityManager().getUser()
-if user.has_role(['Manager','Reviewer']):
+if user.has_role(['Manager',]):
     fckeditor.SetProperty('ToolbarSet', 'Default')
 else:
     fckeditor.SetProperty('ToolbarSet', 'Basic')

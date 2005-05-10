@@ -12,6 +12,8 @@ import re
 from cgi import escape
 from urllib import quote_plus
 
+from Products.FCKeditor import FCKexception
+
 class FCKtemplates:
 
     COMPATIBLE = """\
@@ -38,10 +40,6 @@ class FCKtemplates:
         %(Value)s
     </textarea>
 </div>"""
-
-
-class FCKexception(Exception):
-    """Error within the FCK connector application"""
 
 
 class FCKeditor:
