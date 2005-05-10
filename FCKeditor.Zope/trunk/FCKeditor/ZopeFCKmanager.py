@@ -1,9 +1,5 @@
-# python
-import re
-
 # base classes
 from OFS.SimpleItem import SimpleItem
-from OFS.ObjectManager import ObjectManager
 from OFS.PropertyManager import PropertyManager
 
 # Zope
@@ -11,7 +7,6 @@ import Products
 from AccessControl import ClassSecurityInfo, Unauthorized
 from Globals import InitializeClass
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from Products import meta_types
 from zExceptions import BadRequest
 
 # us
@@ -63,22 +58,6 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     title = ''
     meta_type = 'FCKmanager'
 
-    # these properties map FCKeditor ResourceType to Zope meta_type
-    # the value is a tuple of (meta_type, constructory) two-tuples
-    FolderTypes = (('Folder','manage_addFolder'),)
-    FileTypes = (('File','manage_addFile'),)
-    ImageTypes = (('Image','manage_addImage'),)
-    FlashTypes = ()
-    MediaTypes = ()
-
-    _properties=( { 'id':'title',       'type':'string',    'mode':'w' }
-                , { 'id':'FolderTypes', 'type':'lines',     'mode':'w' }
-                , { 'id':'FileTypes',   'type':'lines',     'mode':'w' }
-                , { 'id':'ImageTypes',  'type':'lines',     'mode':'w' }
-                , { 'id':'FlashTypes',  'type':'lines',     'mode':'w' }
-                , { 'id':'MediaTypes',  'type':'lines',     'mode':'w' }
-                  )
-
     manage_options = PropertyManager.manage_options +\
                      SimpleItem.manage_options
 
@@ -88,15 +67,17 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
     security.declarePublic('spawn')
     def spawn(self, id):
-        """given an id string, return an FCKeditor object
+        """Given an id string, return an FCKeditor object.
         """
         return ZopeFCKeditor(id)
 
     security.declarePublic('connector')
     def connector(self, REQUEST):
+
         """REQUEST acts like a dict, so we could hand it directly to our
-        superclass. However, we need to set response headers based on
-        Command, so we end up overriding.
+        superclass. However, we need to set response headers based on Command,
+        so we end up overriding. We also stick the user in there so we can
+        perform security checks against it.
 
         """
 
@@ -111,11 +92,11 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
         data['User'] = REQUEST.get('AUTHENTICATED_USER')
 
-        if getattr(self, Command, None) is not None:
-            method = getattr(self, Command)
-            return method(**data)
-        else:
-            return ''
+        logic_method = getattr(self, Command)
+        data.update(logic_method(**data))
+
+        response_method = getattr(self, Command + '_response')
+        return response_method(**data)
 
     security.declarePrivate('_validate')
     def _validate(self, incoming):
@@ -127,7 +108,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
     def _compute_url(self, ServerPath, Type, CurrentFolder, **other):
         """We depart from the FCK spec at this point because we don't want
-        to organize our content that way.
+        to organize our content in ResourceType folders.
 
         """
         return CurrentFolder
@@ -149,13 +130,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
             folders = [o.getId() for o in folder.objectValues('Folder')
                                if User.has_permission(LIST_FOLDER_CONTENTS, o)]
 
-        xml_response = self._xmlGetFolders( Type
-                                          , CurrentFolder
-                                          , ComputedUrl
-                                          , folders
-                                           )
-        return xml_response
-
+        return { 'folders' : folders }
 
 
 
@@ -165,33 +140,28 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
 
         folder = self.unrestrictedTraverse('..'+CurrentFolder)
         if not User.has_permission(LIST_FOLDER_CONTENTS, folder):
-            # if the user doesn't have permission on this folder, return an empty
-            # page
+            # return an empty page if no permissions
             folders = files = []
         else:
-            folder = self.unrestrictedTraverse('..'+CurrentFolder)
             folders = [o.getId() for o in folder.objectValues('Folder')
                                if User.has_permission(LIST_FOLDER_CONTENTS, o)]
 
+            # map FCK Type to Zope meta_type
             if Type == 'Image':
                 meta_type = 'Image'
             else:
                 meta_type = 'File'
 
-            files = [self._file_info(o) for o in folder.objectValues(meta_types)
+            files = [self._file_info(o) for o in folder.objectValues(meta_type)
                                               if User.has_permission(VIEW, o)]
 
-        xml_response = self._xmlGetFoldersAndFiles( Type
-                                                  , CurrentFolder
-                                                  , ComputedUrl
-                                                  , folders
-                                                  , files
-                                                   )
-        return xml_response
+        return { 'folders' : folders
+               , 'files'   : files
+                }
 
     security.declarePrivate('_get_info')
     def _get_info(self, o, t):
-        """Given a tuple, return a value."""
+        """Given an object and tuple of strings, return a value."""
         for attr in t:
             if getattr(o, attr, None) is not None:
                 attr = getattr(o, attr)
@@ -208,7 +178,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
     def _file_info(self, f):
         """Given an object, return a tuple."""
 
-        id = self._get_info(f, ('getId','id'))
+        id = self._get_info(f, ('getId', 'id'))
         size = self._get_info(f, ('getSize','get_size'))
         size = size / 1024 # convert to kB
 
@@ -243,14 +213,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
             except:
                 error_code = 110 # Unknown error creating folder.
 
-        xml_response = self._xmlCreateFolder( Type
-                                            , CurrentFolder
-                                            , ComputedUrl
-                                            , error_code
-                                             )
-        return xml_response
-
-
+        return { 'error_code' : error_code }
 
 
     security.declarePrivate('FileUpload')
@@ -270,10 +233,11 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
         error_code = 110
         try:
             self._checkId(filename)
-        else:
+        except:
             error_code = 202 # invalid file.
 
-        if
+        if 1:
+            pass
         elif getattr(folder, filename, None) is not None:
             # FCKeditor spec calls for renaming the file in this case
 
@@ -301,12 +265,7 @@ class ZopeFCKmanager(FCKconnector, PropertyManager, SimpleItem):
             except:
                 error_code = 110 # Unknown error creating folder.
 
-        html_response = self._htmlCreateFolder( Type
-                                              , CurrentFolder
-                                              , error_code
-                                              )
-
-        return html_response
+        return { 'error_code' : error_code }
 
 InitializeClass(ZopeFCKmanager)
 

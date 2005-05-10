@@ -1,42 +1,46 @@
-from FCKeditor import FCKexception
+from Products.FCKeditor import FCKexception
 
 class FCKconnector:
     """This class provides back-end integration for FCKeditor's file browser.
 
-    As it stands this class is not useable, and it will need to be extended by
-    framework wrappers in the following ways:
+    The pattern anticipated in this class is that all public calls will go to
+    the connector method. Connector will marshall the incoming HTTP get/post
+    into a dictionary, which it will run through _validate. After validating our
+    input into another dictionary, connector will hand this off to a method
+    matching the name given as Command.
 
-        - override connector to set the response headers as necessary
-
-        - override the GetFolders, GetFoldersAndFiles, CreateFolder, and
-          FileUpload methods to provide actual logic. These methods should call
-          their _[x|ht]ml* complements to properly format the response body.
-
-    Please see the FCKeditor documentation and ZopeFCKconnector.py for
-    documentation and an example wrapper.
+    <Command> -- which are just stubs in this class because their implementation
+    is framework-dependent -- will extract the input it needs from the incoming
+    dictionary, and will return an xml or html snippet to return to the
+    FCKeditor File Browser. Marshalling the result into an xml or html response
+    is framework independent, so that particular functionality is factored out
+    into separate methods.
 
     """
+
+    __all__ = ('connector',)
 
     def connector(self, incoming):
         """Given a dictionary, validate it and hand it off to another method.
 
         This is the main callable and should be overridden or extended by
-        framework wrappers as necessary. FCKeditor sends us a querystring with
-        up to five parameters in it. A sixth parameter may be given in the post:
+        framework wrappers as necessary. FCKeditor sends us a querystring or a
+        post with up to six parameters in it:
 
-            Command         required    string  querystring
-            CurrentFolder   required    string  querystring
-            NewFile         optional    object  post
-            NewFolderName   optional    string  querystring
-            ServerPath      optional    string  querystring
-            Type            required    string  querystring
-
-        After validating our input into a dictionary, we hand this off to a
-        method matching the name given as Command.
+            Command         required    string
+            CurrentFolder   required    string
+            NewFile         optional    object
+            NewFolderName   optional    string
+            ServerPath      optional    string
+            Type            required    string
 
         """
         data = incoming # in wrapper, parse input out of the querystring
-        data = self._validate(data) # will raise an error if bad data
+        data = self._validate(data) # will raise an FCKexception if bad data
+
+        # You will also need to set the HTTP response headers appropriately
+        # based on whether we are returning XML or HTML content.
+
         method = getattr(self, data['Command'])
         return method(**data)
 
@@ -62,7 +66,7 @@ class FCKconnector:
 
         NewFolderName = incoming.get('NewFolderName', '') # optional
 
-        ServerPath = incoming.get('ServerPath', '')
+        ServerPath = incoming.get('ServerPath', None)
         if ServerPath: # optional
             if not (ServerPath.startswith('/') and ServerPath.endswith('/')):
                 raise FCKexception, "ServerPath '%s' must" % ServerPath +\
@@ -90,12 +94,15 @@ class FCKconnector:
     def _compute_url(self, ServerPath, Type, CurrentFolder, **other):
         """Given three strings, compute the FCK url path
 
-        FCKeditor docs call for providing server-side config of ServerPath. If
-        this is desired then override this method in your framework wrapper.
+        FCKeditor docs call for storing files in a particular hierarchy. They
+        also call for providing server-side config of ServerPath. If this is
+        desired then override this method in your framework wrapper.
+
+        Validation of input is the responsibility of the caller.
 
         """
         ServerPath = ServerPath # server-side config is framework-specific
-        if ServerPath == '':
+        if ServerPath is None:
             ServerPath = '/UserFiles/'
         return ServerPath + Type + CurrentFolder
 
@@ -113,12 +120,13 @@ class FCKconnector:
 
         pass
 
-    def _xmlGetFolders(self, Type, CurrentFolder, ComputedUrl, Folders):
+    def GetFolders_response(self, Type, CurrentFolder, ComputedUrl, folders,
+                            **other):
         """Given three strings and a list, format an XML response.
         """
 
         folder_template = '''<Folder name="%s" />'''
-        folders = '\n      '.join([folder_template % f for f in Folders])
+        folders_xml = '\n      '.join([folder_template % f for f in folders])
 
         template = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -129,7 +137,7 @@ class FCKconnector:
     </Folders>
 </Connector>"""
 
-        return template % (Type, CurrentFolder, ComputedUrl, folders)
+        return template % (Type, CurrentFolder, ComputedUrl, folders_xml)
 
 
 
@@ -138,18 +146,18 @@ class FCKconnector:
         """Gets the list of the children folders and files of a folder."""
         pass
 
-    def _xmlGetFoldersAndFiles(self, Type, CurrentFolder, ComputedUrl,
-                               Folders, Files):
+    def GetFoldersAndFiles_response(self, Type, CurrentFolder, ComputedUrl,
+                               folders, files, **other):
         """Given three strings and two lists, format an XML response.
         """
 
         # folders just needs to be a list of names
         folder_template = '''<Folder name="%s" />'''
-        folders = '\n      '.join([folder_template % f for f in Folders])
+        folders_xml = '\n      '.join([folder_template % f for f in folders])
 
         # files needs to be a list of (name, size) tuples; size is kB
         file_template = '''<File name="%s" size="%s" />'''
-        files   = '\n      '.join([file_template % f for f in Files])
+        files_xml   = '\n      '.join([file_template % f for f in files])
 
         template = """\
 <?xml version="1.0" encoding="utf-8" ?>
@@ -163,7 +171,8 @@ class FCKconnector:
     </Files>
 </Connector>"""
 
-        return template % (Type, CurrentFolder, ComputedUrl, folders, files)
+        return template % (Type, CurrentFolder, ComputedUrl, folders_xml,
+                           files_xml)
 
 
 
@@ -172,7 +181,8 @@ class FCKconnector:
         """Create a child folder."""
         pass
 
-    def _xmlCreateFolder(self, Type, CurrentFolder, ComputedUrl, error_code):
+    def CreateFolder_response(self, Type, CurrentFolder, ComputedUrl, error_code,
+                              **other):
         """Given four strings, format an XML response.
         """
 
@@ -192,7 +202,7 @@ class FCKconnector:
         """Add a file in a folder."""
         pass
 
-    def _htmlFileUpload(self, error_code):
+    def FileUpload_response(self, error_code, **other):
         """Given a string, format an XML response.
         """
 

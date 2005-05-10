@@ -36,6 +36,24 @@ plone -- wysiwyg_support
     === DONE ===
     needs to support different storage formats (html, plain, stx)
 documentation
+test
+    testZopeFCKmanager_connector
+    testZopeFCKmanager_FileUpload
+    testZopeFCKmanager__compute_url
+    testZopeFCKmanager_CreateFolder
+    testZopeFCKmanager_GetFoldersAndFiles
+    testZopeFCKmanager__file_info
+    testZopeFCKmanager_GetFolders
+    === DONE ===
+
+    testFCKconnector__validate
+    testFCKconnector__xmlGetFolders
+    testFCKconnector__xmlGetFoldersAndFiles
+    testFCKconnector__xmlCreateFolder
+    testFCKconnector__htmlFileUpload
+    === DONE ===
+    testFCKconnector__compute_url
+
 
 === DONE ===
 base2zope should clean up '</' in Javascript in HTML
