@@ -185,5 +185,11 @@ class Test(unittest.TestCase):
 # And run them!
 ##
 
+def test_suite():
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(Test))
+    return suite
+
 if __name__ == '__main__':
-    unittest.main()
+    framework()
