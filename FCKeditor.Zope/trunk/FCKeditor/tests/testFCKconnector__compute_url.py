@@ -1,27 +1,19 @@
-import os, sys, time
-from pprint import pprint
+import os
+import sys
 import unittest
 
 # make sure we can find ourselves
-sys.path.insert(1, os.path.realpath('..'))
+if __name__ == '__main__':
+    execfile(os.path.join(sys.path[0], 'framework.py'))
 
 # the thing we want to test
-from FCKeditor import FCKeditor, FCKexception
-from FCKconnector import FCKconnector
-
-def dict2tuple(d):
-    """convert a dictionary to a sorted list of tuples
-    """
-    l = [(k, d[k]) for k in d]
-    l.sort()
-    return l
-
+from Products.FCKeditor.FCKconnector import FCKconnector
 
 ##
 # Define our tests
 ##
 
-class TestBase__compute_url(unittest.TestCase):
+class Test(unittest.TestCase):
 
     def setUp(self):
         self.fck = FCKconnector()
@@ -34,7 +26,7 @@ class TestBase__compute_url(unittest.TestCase):
 
         expected = '/UserFiles/Image/Docs/Test/'
         actual = self.fck._compute_url(**data)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def testButCanBeExplicitlyNegated(self):
         data = {}
@@ -44,7 +36,7 @@ class TestBase__compute_url(unittest.TestCase):
 
         expected = '/Image/Docs/Test/'
         actual = self.fck._compute_url(**data)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def testDoesntBorkOnExtraData(self):
         data = {}
@@ -55,7 +47,7 @@ class TestBase__compute_url(unittest.TestCase):
 
         expected = '/FooBar/Image/Docs/Test/'
         actual = self.fck._compute_url(**data)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
 
 
