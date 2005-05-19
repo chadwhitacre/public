@@ -1,5 +1,43 @@
 from Products.FCKeditor import FCKexception
 
+class Templates:
+    """Storage for XML and HTML templates used below.
+    """
+
+    GetFolders = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFolders" resourceType="%s">
+    <CurrentFolder path="%s" url="%s" />
+    <Folders>
+      %s
+    </Folders>
+</Connector>"""
+
+    GetFoldersAndFiles = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="GetFoldersAndFiles" resourceType="%s">
+    <CurrentFolder path="%s" url="%s" />
+    <Folders>
+      %s
+    </Folders>
+    <Files>
+      %s
+    </Files>
+</Connector>"""
+
+    CreateFolder = """\
+<?xml version="1.0" encoding="utf-8" ?>
+  <Connector command="CreateFolder" resourceType="%s">
+    <CurrentFolder path="%s" url="%s" />
+    <Error number="%s" />
+</Connector>"""
+
+    FileUpload = """\
+<script type="text/javascript">
+    window.parent.frames['frmUpload'].OnUploadCompleted(%s) ;
+</script>"""
+
+
 class FCKconnector:
     """This class provides back-end integration for FCKeditor's file browser.
 
@@ -17,8 +55,6 @@ class FCKconnector:
     into separate methods.
 
     """
-
-    __all__ = ('connector',)
 
     def connector(self, incoming):
         """Given a dictionary, validate it and hand it off to another method.
@@ -49,10 +85,14 @@ class FCKconnector:
         """
 
         # Parse our six variables out of the dict and validate them.
-        # A seventh dict key is computed.
+        # A seventh dict value is computed.
 
         Command = incoming.get('Command', '')
-        if getattr(self, Command, None) is None:
+        if Command not in ( 'GetFolders'
+                          , 'GetFoldersAndFiles'
+                          , 'CreateFolder'
+                          , 'FileUpload'
+                           ):
             raise FCKexception, "Command '%s' not found" % Command
 
         CurrentFolder = incoming.get('CurrentFolder', '')
@@ -107,14 +147,21 @@ class FCKconnector:
         return ServerPath + Type + CurrentFolder
 
 
+    ##
+    # Command support
+    ##
+
     def GetFolders(self, **kw):
         """Get the list of the children folders of a folder."""
         # here is an example of what these four methods should do:
 
         # folders = get list of folder names per your framework
 
-        # response_body = self._xmlGetFolders( Type, CurrentFolder
-        #                                    , ServerPath, folders)
+        # response_body = self.GetFolders_response( Type
+        #                                         , CurrentFolder
+        #                                         , ServerPath
+        #                                         , folders
+        #                                          )
 
         # return response_body
 
@@ -128,17 +175,11 @@ class FCKconnector:
         folder_template = '''<Folder name="%s" />'''
         folders_xml = '\n      '.join([folder_template % f for f in folders])
 
-        template = """\
-<?xml version="1.0" encoding="utf-8" ?>
-  <Connector command="GetFolders" resourceType="%s">
-    <CurrentFolder path="%s" url="%s" />
-    <Folders>
-      %s
-    </Folders>
-</Connector>"""
-
-        return template % (Type, CurrentFolder, ComputedUrl, folders_xml)
-
+        return Templates.GetFolders % ( Type
+                                      , CurrentFolder
+                                      , ComputedUrl
+                                      , folders_xml
+                                       )
 
 
 
@@ -147,7 +188,7 @@ class FCKconnector:
         pass
 
     def GetFoldersAndFiles_response(self, Type, CurrentFolder, ComputedUrl,
-                               folders, files, **other):
+                                    folders, files, **other):
         """Given three strings and two lists, format an XML response.
         """
 
@@ -159,21 +200,12 @@ class FCKconnector:
         file_template = '''<File name="%s" size="%s" />'''
         files_xml   = '\n      '.join([file_template % f for f in files])
 
-        template = """\
-<?xml version="1.0" encoding="utf-8" ?>
-  <Connector command="GetFoldersAndFiles" resourceType="%s">
-    <CurrentFolder path="%s" url="%s" />
-    <Folders>
-      %s
-    </Folders>
-    <Files>
-      %s
-    </Files>
-</Connector>"""
-
-        return template % (Type, CurrentFolder, ComputedUrl, folders_xml,
-                           files_xml)
-
+        return Templates.GetFoldersAndFiles % ( Type
+                                              , CurrentFolder
+                                              , ComputedUrl
+                                              , folders_xml
+                                              , files_xml
+                                               )
 
 
 
@@ -181,20 +213,16 @@ class FCKconnector:
         """Create a child folder."""
         pass
 
-    def CreateFolder_response(self, Type, CurrentFolder, ComputedUrl, error_code,
-                              **other):
+    def CreateFolder_response(self, Type, CurrentFolder, ComputedUrl,
+                              error_code, **other):
         """Given four strings, format an XML response.
         """
 
-        template = """\
-<?xml version="1.0" encoding="utf-8" ?>
-  <Connector command="CreateFolder" resourceType="%s">
-    <CurrentFolder path="%s" url="%s" />
-    <Error number="%s" />
-</Connector>"""
-
-        return template % (Type, CurrentFolder, ComputedUrl, error_code)
-
+        return Templates.CreateFolder % ( Type
+                                        , CurrentFolder
+                                        , ComputedUrl
+                                        , error_code
+                                         )
 
 
 
@@ -203,12 +231,6 @@ class FCKconnector:
         pass
 
     def FileUpload_response(self, error_code, **other):
-        """Given a string, format an XML response.
+        """Given a string, format an HTML response.
         """
-
-        template = """\
-<script type="text/javascript">
-    window.parent.frames['frmUpload'].OnUploadCompleted(%s) ;
-</script>"""
-
-        return template % error_code
+        return Templates.FileUpload % error_code
