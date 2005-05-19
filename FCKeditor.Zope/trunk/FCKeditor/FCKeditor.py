@@ -1,13 +1,3 @@
-"""
-
-should Config settings be changed at run time? or should we have multiple
-instances of FCKeditor, all with separate settings? since the thing you really
-want to change from instance to instance is the composition of the toolbar, and
-toolbars themselves are not defined here, but rather in the fckconfig.js file,
-then I think it makes sense for this to be a single object
-
-
-"""
 import re
 from xml.sax import saxutils
 from urllib import quote_plus
@@ -43,7 +33,7 @@ class FCKtemplates:
 
 
 class FCKeditor:
-    """ provides API for tuning and instantiating an FCKeditor DHTML widget
+    """Provide API for tuning and instantiating an FCKeditor DHTML widget.
     """
 
     def __init__(self, *args, **kw):
@@ -92,7 +82,6 @@ class FCKeditor:
     def Create(self):
         """Return an HTML snippet which instantiates an FCKeditor or a plain
         textarea.
-
         """
 
         if getattr(self, 'Compatible', None) is None:

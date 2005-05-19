@@ -1,29 +1,40 @@
-#!/usr/bin/env python
-"""This script runs all scripts named test*.py in the current directory with the
-current python interpreter. We use this instead of ZopeTestCase/runalltests.py
-because we don't want to be dependent on ZopeTestCase.
-"""
+#
+# Runs all tests in the current directory [and below]
+#
+# Execute like:
+#   python runalltests.py [-R]
+#
+# Alternatively use the testrunner:
+#   python /path/to/Zope/bin/testrunner.py -qa
+#
 
 import os, sys
+if __name__ == '__main__':
+    execfile(os.path.join(sys.path[0], 'framework.py'))
 
-# formatting helpers
-C = '#'; SOLID = C*79; EMPTY = '%s%s%s' % (C, ' '*77, C)
+import unittest, imp
+TestRunner = unittest.TextTestRunner
+suite = unittest.TestSuite()
 
-def header():
-    print
-    print SOLID
-    print EMPTY
-    print '%s  %s  %s' % (C, test.ljust(73), C)
-    print EMPTY
+def visitor(recursive, dir, names):
+    tests = [n[:-3] for n in names if n.startswith('test') and n.endswith('.py')]
 
+    for test in tests:
+        saved_syspath = sys.path[:]
+        sys.path.insert(0, dir)
+        try:
+            fp, path, desc = imp.find_module(test, [dir])
+            m = imp.load_module(test, fp, path, desc)
+            if hasattr(m, 'test_suite'):
+                suite.addTest(m.test_suite())
+        finally:
+            fp.close()
+            sys.path[:] = saved_syspath
 
-def footer():
-    print EMPTY
-    print SOLID
+    if not recursive:
+        names[:] = []
 
-tests = [n for n in os.listdir('.') if n.startswith('test') and n.endswith('.py')]
-for test in tests:
-    header()
-    os.system('%s %s' % (sys.executable, test))
-    footer()
+if __name__ == '__main__':
+    os.path.walk(os.curdir, visitor, '-R' in sys.argv)
+    TestRunner().run(suite)
 
