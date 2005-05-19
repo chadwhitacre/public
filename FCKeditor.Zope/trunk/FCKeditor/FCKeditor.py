@@ -9,7 +9,7 @@ then I think it makes sense for this to be a single object
 
 """
 import re
-from cgi import escape
+from xml.sax import saxutils
 from urllib import quote_plus
 
 from Products.FCKeditor import FCKexception
@@ -21,7 +21,7 @@ class FCKtemplates:
     <input type="hidden"
            id="%(InstanceName)s"
            name="%(InstanceName)s"
-           value="%(Value)s" />
+           value=%(Value)s />
     <input type="hidden"
            id="%(InstanceName)s___Config"
            value="%(ConfigQuerystring)s" />
@@ -35,7 +35,7 @@ class FCKtemplates:
 <div>
     <textarea name="%(InstanceName)s"
               rows="4" cols="40"
-              style="Width: %(Width)s; Height: %(Height)s;"
+              style="width: %(Width)s; height: %(Height)s;"
               wrap="virtual" />
         %(Value)s
     </textarea>
@@ -50,60 +50,93 @@ class FCKeditor:
 
         # defaults -- using instance attrs instead of class attrs so we can
         # use self.__dict__
-        self.InstanceName        = 'MyEditor'
-        self.Width               = '100%'
-        self.Height              = '200px'
-        self.ToolbarSet          = 'Default'
-        self.Value               = ''
-        self.BasePath            = '/FCKeditor/'
-        self.ConfigQuerystring   = ''
+        self.InstanceName       = 'MyEditor'
+        self.Width              = '100%'
+        self.Height             = '200px'
+        self.ToolbarSet         = 'Default'
+        self.Value              = ''
+        self.BasePath           = '/FCKeditor/'
+        self.ConfigQuerystring  = ''
 
         # clean up InstanceName
-        if kw.has_key('InstanceName'):
+        if 'InstanceName' in kw:
             kw['InstanceName'] = self._scrub(kw['InstanceName'])
 
-        # custom
+        # custom settings
         self.__dict__.update(kw)
 
-        self.Config         = {}
+        self.Config = {}
 
-    _bad_InstanceName = re.compile(r'[^a-zA-Z0-9-]')
+    _bad_InstanceName = re.compile(r'[^a-zA-Z0-9-_]')
     def _scrub(self, InstanceName):
         """given an id, make it safe for use as an InstanceName, which is used
-        as a CSS identifier
+        as a CSS identifier. See:
+
+            http://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
+
         """
-        InstanceName = self._bad_InstanceName.sub('-', InstanceName)
-        while not InstanceName[:1].isalpha(): # can only start with a letter
-            InstanceName = InstanceName[1:]
-        return InstanceName
+        scrubbed = self._bad_InstanceName.sub('-', InstanceName)
+        safety_belt = 0
+        while not scrubbed[:1].isalpha(): # can only start with a letter
+            scrubbed = scrubbed[1:]
+            safety_belt += 1
+            if safety_belt > 50: break
+        if scrubbed == '':
+            raise FCKexception, "The token '%s' has no " % InstanceName +\
+                                "characters that are valid in a CSS " +\
+                                "identifier."
+        return scrubbed
+
+
 
     def Create(self):
-        """return an HTML snippet which instantiates an FCKeditor or a plain
-        textarea
+        """Return an HTML snippet which instantiates an FCKeditor or a plain
+        textarea.
+
         """
 
-        if not getattr(self, 'Compatible', None) is not None:
-            raise FCKexception, "You must run the setCompatible method first"
-
-        # quote the initial HTML value
-        self.Value = escape(self.Value).replace('"','&quot;')
-
-        # marshall config into a querystring (only used for compatible)
-        self.ConfigQuerystring = self.GetConfigQuerystring()
+        if getattr(self, 'Compatible', None) is None:
+            raise FCKexception, "You must run the SetCompatible method first"
 
         # parse width & height
-        if str(self.Width).isdigit():  self.Width  = '%spx' % self.Width
-        if str(self.Height).isdigit(): self.Height = '%spx' % self.Height
-
+        self.Width, self.Height = self._parse_dimensions( self.Width
+                                                        , self.Height
+                                                         )
         if self.Compatible:
-            #raise 'hrm', '<div>%s</div>' % self.Value
+            # escape the initial HTML value for use as an HTML attribute
+            self.Value = saxutils.quoteattr(self.Value)
+
+            # marshall config into a querystring
+            self.ConfigQuerystring = self._config2querystring(self.Config)
+
             return FCKtemplates.COMPATIBLE % self.__dict__
         else:
+            # escape the initial HTML value for use inside a <textarea>
+            self.Value = saxutils.escape(self.Value)
+
             return FCKtemplates.INCOMPATIBLE % self.__dict__
 
+    def _config2querystring(self, c):
+        """Marshall our Config settings into a querystring.
+        """
+        q = quote_plus # from urllib
+        return '&'.join(['%s=%s' % (q(key), q(c[key])) for key in c])
+
+    def _parse_dimensions(self, w, h):
+        """Given a width and a height either as ints or strings, return a tuple
+        of strings.
+        """
+        if str(w).isdigit():
+            w = '%spx' % w
+        if str(h).isdigit():
+            h = '%spx' % h
+        return (w, h)
+
+
+
     def SetCompatible(self, useragent):
-        """given a browser's user-agent string, set a boolean on self and
-        return it
+        """Given a browser's user-agent string, set a boolean on self and
+        return it.
         """
 
         useragent = useragent.lower()
@@ -128,12 +161,7 @@ class FCKeditor:
         self.Compatible = Compatible
         return Compatible
 
-    def GetConfigQuerystring(self):
-        """marshall our Config settings into a querystring
-        """
-        c = self.Config
-        q = quote_plus
-        return '&'.join(['%s=%s' % (q(key), q(c[key])) for key in c])
+
 
     def SetConfig(self, key, value):
         self.Config[key] = value

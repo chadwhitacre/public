@@ -310,19 +310,6 @@ class TestFCKconnector(unittest.TestCase):
         self.assertRaises(FCKexception, self.fck._validate, data)
 
 
-    def testComputedUrl(self):
-        data = DATA.copy()
-
-        data['CurrentFolder'] = '/Docs/Test/'
-        data['Type'] = 'Image'
-        url = self.fck._compute_url(**data)
-        self.assertEqual(url, '/UserFiles/Image/Docs/Test/')
-
-        data['ServerPath'] = '/'
-        url = self.fck._compute_url(**data)
-        self.assertEqual(url, '/Image/Docs/Test/')
-
-
     def test_xmlGetFolders(self):
         actual = self.fck._xmlGetFolders( Type='File'
                                         , CurrentFolder='/path/to/content/'
