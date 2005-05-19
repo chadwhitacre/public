@@ -69,7 +69,8 @@ class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
         cls = self.__class__
         attrs = [p['id'] for p in cls._properties]
         for attr in attrs:
-            # don't need values here since they are overriden by instance attrs
+            # We don't actually need values here since they are overriden by
+            # the instance attrs.
             cls.__dict__[attr] = ''
 
     security.declareProtected('Manage FCKeditor','setProperty')
