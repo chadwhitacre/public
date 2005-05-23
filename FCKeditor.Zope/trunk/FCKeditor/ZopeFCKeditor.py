@@ -11,23 +11,31 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
 # us
 from FCKeditor import FCKeditor, FCKexception
+MANAGE_PERM = 'Manage FCKeditor'
 
 class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
-    """A Zope wrapper around FCKeditor
+    """A Zope wrapper around FCKeditor.
+
+    Usage ideas:
+
+        1. Multiple instances could be used to store a particular FCKeditor
+        configuration
+
+        2. Could be subclassed by a content object
+
+        3. Can be used on the fly via ZopeFCKmanager
+
     """
 
     security = ClassSecurityInfo()
 
-    security.declareObjectPublic()
-
     # security declarations for base class API
-    security.declarePrivate('_bad_InstanceName')
+    security.declarePrivate('_bad_chars')
     security.declarePrivate('_scrub')
     security.declarePublic('Create')
-    security.declarePublic('SetCompatible')
-    security.declarePrivate('Compatible')
-    security.declarePublic('GetConfigQuerystring')
-    security.declarePublic('SetConfig')
+    security.declarePrivate('_config2querystring')
+    security.declarePrivate('_parse_dimensions')
+    security.declareProtected(MANAGE_PERM, 'SetCompatible')
 
     id = ''
     title = ''
@@ -46,14 +54,13 @@ class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
                      ({'label':'View', 'action':''},) +\
                      SimpleItem.manage_options
 
-    def __init__(self, id, title='', *arg, **kw):
+    def __init__(self, id, title=''):
         # set basic props
         self.id = id
-        if title: self.title = title
+        self.title = title
 
         # InstanceName should default to id
-        if not kw.has_key('InstanceName'):
-            kw['InstanceName'] = id
+        kw['InstanceName'] = id
 
         # final initialization
         FCKeditor.__init__(self, *arg, **kw)
@@ -73,11 +80,12 @@ class ZopeFCKeditor(FCKeditor, PropertyManager, SimpleItem):
             # the instance attrs.
             cls.__dict__[attr] = ''
 
-    security.declareProtected('Manage FCKeditor','setProperty')
-    def SetProperty(self, key, val):
-        """support attribute assignment
+
+    security.declareProtected(MANAGE_PERM, 'SetConfig')
+    def SetConfig(self, key, val):
+        """support configuration
         """
-        setattr(self, key, val)
+        self.config[key] = val
 
 
     ##

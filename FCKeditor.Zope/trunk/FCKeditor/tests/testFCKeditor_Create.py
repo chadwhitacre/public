@@ -114,8 +114,9 @@ class Test(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def testReplacedCompatible(self):
-        self.fck.SetConfig('AutoDetectLanguage','false')
-        self.fck.SetConfig('DefaultLanguage','pt-BR')
+        self.fck.Config = {'AutoDetectLanguage':'false'
+                          ,'DefaultLanguage':'pt-BR'
+                           }
         self.fck.InstanceName = 'CustomEditor'
         self.fck.Width = '80%'
         self.fck.Height = 400 # int should be converted to '400px'
@@ -129,8 +130,9 @@ class Test(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def testReplacedIncompatible(self):
-        self.fck.SetConfig('AutoDetectLanguage','false')
-        self.fck.SetConfig('DefaultLanguage','pt-BR')
+        self.fck.Config = {'AutoDetectLanguage':'false'
+                          ,'DefaultLanguage':'pt-BR'
+                           }
         self.fck.InstanceName = 'CustomEditor'
         self.fck.Width = '80%'
         self.fck.Height = 400 # int should be converted to '400px'

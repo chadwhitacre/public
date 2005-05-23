@@ -11,7 +11,7 @@ from Products.FCKeditor.FCKconnector import FCKconnector
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 
 # constants
-LIST_FOLDER_CONTENTS = 'List folder contents'
+LIST = 'List folder contents'
 VIEW = 'View'
 ID = 'portal_fckmanager'
 
@@ -63,7 +63,7 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
         logic_method = getattr(self, Command)
         data.update(logic_method(**data))
 
-        response_method = getattr(self, Command + '_response')
+        response_method = getattr(self, '%s_response' % Command)
         return response_method(**data)
 
     def _compute_url(self, ServerPath, Type, CurrentFolder, **other):
@@ -83,12 +83,12 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
         """Get the list of the children folders of a folder."""
 
         folder = self.unrestrictedTraverse('..'+CurrentFolder)
-        if not User.has_permission(LIST_FOLDER_CONTENTS, folder):
+        if not User.has_permission(LIST, folder):
             folders = []
         else:
-            folders = folder.objectValues(('Plone Folder','Large Plone Folder'))
+            folders = folder.objectValues('Plone Folder')
             folders = [o.getId() for o in folders if User.has_permission(
-                                                      LIST_FOLDER_CONTENTS, o)]
+                                                      LIST, o)]
 
         return { 'folders' : folders }
 
@@ -100,15 +100,14 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
         """Gets the list of the children folders and files of a folder."""
 
         folder = self.unrestrictedTraverse('..'+CurrentFolder)
-        if not User.has_permission(LIST_FOLDER_CONTENTS, folder):
+        if not User.has_permission(LIST, folder):
             # return an empty page if no permissions
             folders = files = []
         else:
             # get folders
-            meta_types = ('Plone Folder','Large Plone Folder')
-            folders = folder.objectValues(meta_types)
-            folders = [o.getId() for o in folders if User.has_permission(
-                                                       LIST_FOLDER_CONTENTS, o)]
+            folders = folder.objectValues('Plone Folder')
+            folders = [o.getId() for o in folders
+                                       if User.has_permission(LIST, o)]
 
             # get files
             # map FCK Type to Zope meta_type
@@ -118,37 +117,38 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
                 meta_types = ('Portal File','Document')
 
             files = folder.objectValues(meta_types)
-            files = [self._file_info(o) for o in files if User.has_permission(
-                                                                      VIEW, o)]
+            files = [self._file_info(o) for o in files
+                                              if User.has_permission(VIEW, o)]
 
         return { 'folders' : folders
                , 'files'   : files
                 }
 
     security.declarePrivate('_file_info')
-    def _file_info(self, f):
+    def _file_info(o):
         """Given an object, return a tuple."""
 
-        id = self._get_info(f, ('getId', 'id'))
-        size = self._get_info(f, ('getSize','get_size'))
+        id = o.getId()
+        size = o.getSize()
         size = size / 1024 # convert to kB
 
         return (id, size)
+    _file_info = staticmethod(_file_info)
 
-    security.declarePrivate('_get_info')
-    def _get_info(self, o, t):
-        """Given an object and tuple of strings, return a value."""
-        for attr in t:
-            if getattr(o, attr, None) is not None:
-                attr = getattr(o, attr)
-                break
-            else:
-                attr = None
-        if callable(attr):
-            value = attr()
-        else:
-            value = attr
-        return value
+    #security.declarePrivate('_get_info')
+    #def _get_info(self, o, t):
+    #    """Given an object and tuple of strings, return a value."""
+    #    for attr in t:
+    #        if getattr(o, attr, None) is not None:
+    #            attr = getattr(o, attr)
+    #            break
+    #        else:
+    #            attr = None
+    #    if callable(attr):
+    #        value = attr()
+    #    else:
+    #        value = attr
+    #    return value
 
 
 
@@ -181,7 +181,7 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
 
     def FileUpload(self, **kw):
         """Add a file in a folder."""
-        return { 'error_code' : 202 }
+        #return { 'error_code' : 202 }
         raise NotImplemented, "sorry, not done yet"
 
 
@@ -204,5 +204,5 @@ def initialize(context):
         PloneFCKmanager,
         permission='Add FCKmanager for Plone',
         constructors=(manage_addPloneFCKmanager,),
-        icon='www/fckmanager-plone.gif',
+        icon='www/fckmanager.gif',
         )
