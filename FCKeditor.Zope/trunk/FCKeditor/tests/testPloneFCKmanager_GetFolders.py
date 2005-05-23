@@ -172,7 +172,7 @@ class Test(PloneTestCase.PloneTestCase):
         pwf.doActionFor(self.portal.Docs.Test, 'hide')
         self.logout()
 
-        # ...now you see don't
+        # ...now you don't
         expected = {'folders': []}
         actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
         self.assertEqual(d2t(expected), d2t(actual))
