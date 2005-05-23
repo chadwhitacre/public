@@ -7,6 +7,9 @@ packaging
     prolly drop CPS skin
     QI skins in reverse order
 fckmanager
+    Member doesn't have "List folder contents" on portal by default
+        https://svn.plone.org/svn/plone/CMFPlone/tags/Plone-2_0_5/migrations/v2/plone2_base.py
+        https://svn.plone.org/svn/plone/CMFPlone/tags/Plone-2_0_5/HISTORY.txt
     make sure CreateFolder 110 gets logged
     account for workflow & security (introduce ExtendedPathIndex dependency?)
         GetFolder - Check for "List folder contents"

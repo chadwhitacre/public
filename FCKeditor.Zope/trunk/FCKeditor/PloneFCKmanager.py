@@ -82,13 +82,20 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
     def GetFolders(self, Type, CurrentFolder, ComputedUrl, User, **other):
         """Get the list of the children folders of a folder."""
 
-        folder = self.unrestrictedTraverse('..'+CurrentFolder)
-        if not User.has_permission(LIST, folder):
+        try:
+            folder = self.unrestrictedTraverse('..'+CurrentFolder)
+            exists = True
+        except KeyError: # the CurrentFolder doesn't exist
+            exists = False
             folders = []
-        else:
-            folders = folder.objectValues('Plone Folder')
-            folders = [o.getId() for o in folders if User.has_permission(
-                                                      LIST, o)]
+
+        if exists:
+            if not User.has_permission(LIST, folder):
+                folders = []
+            else:
+                folders = folder.objectValues('Plone Folder')
+                folders = [o.getId() for o in folders
+                                           if User.has_permission(LIST, o)]
 
         return { 'folders' : folders }
 
@@ -134,22 +141,6 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
 
         return (id, size)
     _file_info = staticmethod(_file_info)
-
-    #security.declarePrivate('_get_info')
-    #def _get_info(self, o, t):
-    #    """Given an object and tuple of strings, return a value."""
-    #    for attr in t:
-    #        if getattr(o, attr, None) is not None:
-    #            attr = getattr(o, attr)
-    #            break
-    #        else:
-    #            attr = None
-    #    if callable(attr):
-    #        value = attr()
-    #    else:
-    #        value = attr
-    #    return value
-
 
 
 
