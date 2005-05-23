@@ -10,7 +10,7 @@ fckeditor = context.portal_fckmanager.spawn(inputname)
 fckeditor.SetConfig('CustomConfigurationsPath', '/fckcustom.js')
 
 # default height is 200px -- too short
-fckeditor.SetProperty('Height', 500)
+fckeditor.manage_changeProperties(Height=500)
 
 # decide whether the user's browser can support a WYSIWidget
 useragent = context.REQUEST['HTTP_USER_AGENT']

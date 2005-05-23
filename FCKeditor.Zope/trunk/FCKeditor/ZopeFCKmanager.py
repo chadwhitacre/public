@@ -10,7 +10,7 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from zExceptions import BadRequest
 
 # us
-from Products.FCKeditor.FCKeditor import FCKexception
+from Products.FCKeditor import FCKexception
 from Products.FCKeditor.FCKconnector import FCKconnector
 from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 

@@ -1,7 +1,9 @@
+# Python
 import re
 from xml.sax import saxutils
 from urllib import quote_plus
 
+# us
 from Products.FCKeditor import FCKexception
 
 class FCKtemplates:
@@ -57,7 +59,7 @@ class FCKeditor:
 
         self.Config = {}
 
-    _bad_InstanceName = re.compile(r'[^a-zA-Z0-9-_]')
+    _bad_chars = re.compile(r'[^a-zA-Z0-9-_]')
     def _scrub(self, InstanceName):
         """given an id, make it safe for use as an InstanceName, which is used
         as a CSS identifier. See:
@@ -65,7 +67,7 @@ class FCKeditor:
             http://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
 
         """
-        scrubbed = self._bad_InstanceName.sub('-', InstanceName)
+        scrubbed = self._bad_chars.sub('-', InstanceName)
         safety_belt = 0
         while not scrubbed[:1].isalpha(): # can only start with a letter
             scrubbed = scrubbed[1:]
@@ -149,8 +151,3 @@ class FCKeditor:
 
         self.Compatible = Compatible
         return Compatible
-
-
-
-    def SetConfig(self, key, value):
-        self.Config[key] = value

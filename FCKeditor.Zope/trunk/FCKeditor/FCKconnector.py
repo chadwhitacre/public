@@ -1,3 +1,4 @@
+# us
 from Products.FCKeditor import FCKexception
 
 class Templates:
@@ -147,6 +148,7 @@ class FCKconnector:
         return ServerPath + Type + CurrentFolder
 
 
+
     ##
     # Command support
     ##
@@ -169,7 +171,7 @@ class FCKconnector:
 
     def GetFolders_response(self, Type, CurrentFolder, ComputedUrl, folders,
                             **other):
-        """Given three strings and a list, format an XML response.
+        """Given three strings and a list, return an XML response.
         """
 
         folder_template = '''<Folder name="%s" />'''
@@ -189,7 +191,7 @@ class FCKconnector:
 
     def GetFoldersAndFiles_response(self, Type, CurrentFolder, ComputedUrl,
                                     folders, files, **other):
-        """Given three strings and two lists, format an XML response.
+        """Given three strings and two lists, return an XML response.
         """
 
         # folders just needs to be a list of names
@@ -215,7 +217,7 @@ class FCKconnector:
 
     def CreateFolder_response(self, Type, CurrentFolder, ComputedUrl,
                               error_code, **other):
-        """Given four strings, format an XML response.
+        """Given four strings, return an XML response.
         """
 
         return Templates.CreateFolder % ( Type
@@ -231,6 +233,6 @@ class FCKconnector:
         pass
 
     def FileUpload_response(self, error_code, **other):
-        """Given a string, format an HTML response.
+        """Given a string, return an HTML response.
         """
         return Templates.FileUpload % error_code

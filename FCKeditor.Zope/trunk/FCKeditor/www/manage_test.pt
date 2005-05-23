@@ -11,7 +11,9 @@
     <p>FCKeditor is a rich-text, WYSIWYG DHTML form widget. This object provides
     API for tuning and instantiating an FCKeditor w/in your pages.</p>
 
-    <tal:x replace="structure context/Create" />
+    <tal:x define="useragent python:context.REQUEST.get('HTTP_USER_AGENT', '');
+                   dummy     python:context.SetCompatible(useragent);"
+           replace="structure context/Create" />
 
 </body>
 </html>
