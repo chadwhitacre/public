@@ -3,8 +3,10 @@
 Zope, outputting to ../skins/fckeditor_base/FCKeditor/
 """
 
-import os, re, shutil, sys
-
+import os
+import re
+import shutil
+import sys
 
 
 ##
@@ -86,7 +88,7 @@ for path, dirs, files in os.walk(SRC_ROOT):
         dest = os.path.join(destpath, filename)
 
         # create the new file if we want it
-        if ext not in dont_want:
+        if (not filename.startswith('_')) and (ext not in dont_want):
 
             if ext == 'html':
                 # Since Zope 2.7.2 we can't have '</' in javascript strings in page

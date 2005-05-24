@@ -1,4 +1,6 @@
 packaging
+    decide on license (see end)
+        prolly do want to include with every file, since we are advocating cut/paste
     release 0.9.0 -- first development release
     === DONE ===
     replace hasattr with getattr
@@ -50,3 +52,16 @@ zope
 integrated testing -- runalltests.py
 factor out config into a better spot
 wire up templates to use FCKmanager
+
+
+
+
+###############################################################################
+#                                                                             #
+#  (pd) 2005. This software was written by Chad Whitacre and is dedicated to  #
+#  the public domain. If you like it, buy me a beer someday.                  #
+#                                                                             #
+#                                                    http://www.zetadev.com/  #
+#                          http://creativecommons.org/licenses/publicdomain/  #
+#                                                                             #
+###############################################################################
