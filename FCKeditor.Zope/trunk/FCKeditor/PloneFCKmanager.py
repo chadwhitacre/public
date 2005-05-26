@@ -1,4 +1,5 @@
 # Python
+import re
 from StringIO import StringIO
 from traceback import print_exc
 
@@ -91,9 +92,9 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
             exists = True
-        except ConflictError: # always raise
+        except ConflictError: # Always raise.
             raise
-        except KeyError: # the CurrentFolder doesn't exist
+        except KeyError: # The CurrentFolder doesn't exist.
             exists = False
             folders = []
 
@@ -116,9 +117,9 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
             exists = True
-        except ConflictError: # always raise
+        except ConflictError: # Always raise.
             raise
-        except KeyError: # the CurrentFolder doesn't exist
+        except KeyError: # The CurrentFolder doesn't exist.
             exists = False
             folders = files = []
         if exists:
@@ -178,9 +179,9 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
 
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
-        except ConflictError: # always raise
+        except ConflictError: # Always raise.
             raise
-        except KeyError: # the CurrentFolder doesn't exist
+        except KeyError: # The CurrentFolder doesn't exist.
             error_code = 110
 
         if error_code == 0:
@@ -193,7 +194,7 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
                     # use invokeFactory so that we trigger security
                     folder.invokeFactory('Folder', NewFolderName)
                     error_code = 0
-                except ConflictError: # always raise
+                except ConflictError: # Always raise.
                     raise
                 except Unauthorized:
                     error_code = 103
@@ -236,36 +237,92 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
 
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
-        except ConflictError: # always raise
+        except ConflictError: # Always raise.
             raise
-        except KeyError: # the CurrentFolder doesn't exist
+        except KeyError: # The CurrentFolder doesn't exist.
             error_code = 202
 
         if error_code == 0:
 
-            raise 'hrm', dir(NewFile)
+            NewFileName = NewFile.filename
 
-            if NewFileName in folder.contentIds():
-                error_code = 201
-                error_code = str(error_code) + ", 'FileName(1).ext'"
+            if NewFileName not in folder.contentIds():
+                FinalFileName = NewFileName
             else:
-                try:
-                    # use invokeFactory so that we trigger security
-                    folder.invokeFactory('File', NewFileName)
-                    error_code = 0
-                except ConflictError: # always raise
-                    raise
-                except:
-                    error_code = 202
-                    cap = StringIO()
-                    print >> cap, "While trying to upload a new file via " +\
-                                  "the filebrowser, the following " +\
-                                  "exception was captured:\n"
-                    print_exc(file=cap)
-                    LOG('FCKeditor', WARNING, cap.read())
-                    cap.close()
+                # The FCK spec calls for automatically resolving filename
+                # conflicts by incrementing filenames like so:
+                #
+                #   FileName.ext
+                #   FileName(1).ext
+                #   FileName(2).ext
 
-        return { 'error_code' : str(error_code) }
+                error_code = 201
+
+                # Resolve the incoming filename into parts
+                #
+                #  'File.Name.ext' -> 'File.Name', 'ext'
+                #  'FileName.ext' -> 'FileName', 'ext'
+                #  'FileName' -> 'FileName', ''
+
+                parts = NewFileName.split('.')
+                l = len(parts) # guaranteed to be >= 1
+                if l > 1:
+                    name = '.'.join(parts[:-1])
+                    ext = parts[-1]
+                else:
+                    name = parts[0]
+                    ext = ''
+
+                # Find the next available int in the current folder.
+                if ext:
+                    pattern = "%s\((\d+)\)\.%s$" % (name,ext)
+                else:
+                    pattern = "%s\((\d+)\)$" % name
+                match = re.compile(pattern).match
+
+                ints = []
+                for id in folder.objectIds():
+                    candidate = match(id)
+                    if candidate is not None:
+                        ints.append(int(candidate.group(1)))
+                if ints:
+                    ints.sort()
+                    next_int = ints[-1] + 1
+                else:
+                    next_int = 1
+                next_int = str(next_int)
+
+                # Build our new filename.
+                if ext:
+                    FinalFileName = '%s(%s).%s' % (name, next_int, ext)
+                else:
+                    FinalFileName = '%s(%s)' % (name, next_int)
+
+            try:
+                # Use invokeFactory so that we trigger security.
+                folder.invokeFactory('File', FinalFileName, file=NewFile)
+                if error_code <> 201:
+                    error_code = 0
+            except ConflictError: # Always raise.
+                raise
+            except:
+                error_code = 202
+                cap = StringIO()
+                print >> cap, "While trying to upload a new file via " +\
+                              "the filebrowser, the following " +\
+                              "exception was captured:\n"
+                print_exc(file=cap)
+                #print_exc() # debugging during testing -- where does ZTC
+                            # log to?
+                LOG('FCKeditor', WARNING, cap.read())
+                cap.close()
+
+        if error_code == 201:
+            return_val = "%s, '%s'" % (str(error_code), FinalFileName)
+        else:
+            return_val = str(error_code)
+
+        return { 'error_code' : str(return_val) }
 
 
 
