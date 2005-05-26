@@ -9,19 +9,12 @@ packaging
     prolly drop CPS skin
     QI skins in reverse order
 fckmanager
-    Member doesn't have "List folder contents" on portal by default
-        https://svn.plone.org/svn/plone/CMFPlone/tags/Plone-2_0_5/migrations/v2/plone2_base.py
-        https://svn.plone.org/svn/plone/CMFPlone/tags/Plone-2_0_5/HISTORY.txt
-    make sure CreateFolder 110 gets logged
-    account for workflow & security (introduce ExtendedPathIndex dependency?)
-        GetFolder - Check for "List folder contents"
-        GetFilesAndFolders LFC and View
+    command support
         FileUpload
         === DONE ===
+        GetFolder
+        GetFilesAndFolders
         CreateFolder
-    NewFile should add the first meta_type in FolderTypes for the given ResourceType
-        get from Control_Panel/Products if Zope
-        get from portal_types if CMF
     === DONE ===
     if we can use Plone's check_id when adding folder/file
     use invokeFactory to create content in CMFFCKmanager
@@ -31,6 +24,11 @@ fckmanager
     map portal roles to FCK toolbars
     map meta_type to Type
     provide size for files/images
+    Member doesn't have "List folder contents" on portal by default
+        https://svn.plone.org/svn/plone/CMFPlone/tags/Plone-2_0_5/migrations/v2/plone2_base.py
+        https://svn.plone.org/svn/plone/CMFPlone/tags/Plone-2_0_5/HISTORY.txt
+    make sure CreateFolder 110 gets logged
+    account for workflow & security (introduce ExtendedPathIndex dependency?)
 fckeditor
     === DONE ===
     fix encoding bug
