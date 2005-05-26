@@ -36,6 +36,8 @@ class Test(PloneTestCase.PloneTestCase):
         self.portal.invokeFactory('Folder', id='Docs')
         self.portal.Docs.invokeFactory('Folder', id='Test')
         self.portal.Docs.invokeFactory('Document', id='Doc')
+        self.portal.Docs.invokeFactory('Image', id='Img')
+        self.portal.Docs.invokeFactory('File', id='PDF')
         self.logout()
 
     def testCurrentFolderDoesntExist(self):
@@ -44,8 +46,8 @@ class Test(PloneTestCase.PloneTestCase):
         ComputedUrl = ''
         User = self.portal.acl_users.getUser('admin')
 
-        expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
+        expected = {'files': [], 'folders': []}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
     # the rest assume the folder exists
@@ -59,8 +61,8 @@ class Test(PloneTestCase.PloneTestCase):
         ComputedUrl = ''
         User = self.portal.acl_users.getUser('user')
 
-        expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
+        expected = {'files': [], 'folders': []}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
     def testUserDoesHavePermission(self):
@@ -69,8 +71,8 @@ class Test(PloneTestCase.PloneTestCase):
         ComputedUrl = ''
         User = self.portal.acl_users.getUser('admin')
 
-        expected = {'folders': ['Docs']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
+        expected = {'files': [], 'folders': ['Docs']}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
     def testWorkflowIsHonored(self):
@@ -80,27 +82,27 @@ class Test(PloneTestCase.PloneTestCase):
         User = self.portal.acl_users.getUser('user')
 
         # now you see it...
-        expected = {'folders': ['Test']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
+        expected = {'files': [('Doc',0),('PDF',0)], 'folders': ['Test']}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
 
-        # make Test private
+        # make Doc private
         self.login('admin')
-        folder = self.portal.Docs.Test
+        doc = self.portal.Docs.Doc
         pwf = self.portal.portal_workflow
-        pwf.doActionFor(folder, 'hide')
+        pwf.doActionFor(doc, 'hide')
         self.logout()
 
-        # prove that Test is now private
+        # prove that Doc is now private
         expected = 'private'
-        actual = pwf.getInfoFor(folder, 'review_state')
+        actual = pwf.getInfoFor(doc, 'review_state')
         self.assertEqual(expected, actual)
 
 
         # ...now you don't
-        expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
+        expected = {'files': [('PDF',0)], 'folders': ['Test']}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
     def testRootListingForMembers(self):
@@ -115,8 +117,8 @@ class Test(PloneTestCase.PloneTestCase):
         # contents in the site root.
 
         # where is it?
-        expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
+        expected = {'files': [], 'folders': []}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
         # The suggested workaround is to give them permission manually.
@@ -128,56 +130,62 @@ class Test(PloneTestCase.PloneTestCase):
         self.logout()
 
 
-        # there it is!
-        expected = {'folders': ['Docs']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
+        # there it is! NOTE: no /index_html in PloneTestCase
+        expected = {'files': [], 'folders': ['Docs']}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
     # the rest assume the user has permission on the folder in question
 
 
-    def testOnlyReturnsFolders(self):
+    def testNonImageOnlyReturnsDocsAndFiles(self):
+        Type = 'Foo' # can be anything besides 'Image'
+        CurrentFolder = '/Docs/'
+        ComputedUrl = ''
+        User = self.portal.acl_users.getUser('user')
+
+        expected = {'files': [('Doc',0),('PDF',0)], 'folders': ['Test']}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
+        self.assertEqual(d2t(expected), d2t(actual))
+
+        Type = [] # really, anything
+
+        expected = {'files': [('Doc',0),('PDF',0)], 'folders': ['Test']}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
+        self.assertEqual(d2t(expected), d2t(actual))
+
+
+    def testImageOnlyReturnsImages(self):
+        Type = 'Image'
+        CurrentFolder = '/Docs/'
+        ComputedUrl = ''
+        User = self.portal.acl_users.getUser('user')
+
+        expected = {'files': [('Img',0)], 'folders': ['Test']}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
+        self.assertEqual(d2t(expected), d2t(actual))
+
+    def testSize(self):
+        content = 'I AM THE CONTENT!!!!!!!!' * 50 # needs to be bigger than a KB
+        self.portal.Docs.Doc.edit('text/html', content)
+        #get_transaction().commit()
+
+        # actual size is given in bytes
+        expected = 1718
+        actual = self.portal.Docs.Doc.get_size()
+        self.assertEqual(expected, actual)
+
         Type = ''
         CurrentFolder = '/Docs/'
         ComputedUrl = ''
         User = self.portal.acl_users.getUser('user')
 
-        expected = {'folders': ['Test']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
-        self.assertEqual(d2t(expected), d2t(actual))
-
-        # add another Folder and an Image for kicks
-        self.login('admin')
-        self.portal.Docs.invokeFactory('Folder', id='another-folder')
-        self.portal.Docs.invokeFactory('Image', id='some-image')
-        self.logout()
-
-        expected = {'folders': ['Test', 'another-folder']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
+        # but we want size rounded to nearest kilobyte
+        expected = {'files': [('Doc',2),('PDF',0)], 'folders': ['Test']}
+        actual = self.fckm.GetFoldersAndFiles(Type, CurrentFolder, ComputedUrl, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
 
-    def testOnlyPermissibleFoldersListed(self):
-        Type = ''
-        CurrentFolder = '/Docs/'
-        ComputedUrl = ''
-        User = self.portal.acl_users.getUser('user')
-
-        # now you see it
-        expected = {'folders': ['Test']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
-        self.assertEqual(d2t(expected), d2t(actual))
-
-        # make the Test folder private so Member's can't see it
-        self.login('admin')
-        pwf = self.portal.portal_workflow
-        pwf.doActionFor(self.portal.Docs.Test, 'hide')
-        self.logout()
-
-        # ...now you don't
-        expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, ComputedUrl, User)
-        self.assertEqual(d2t(expected), d2t(actual))
 
 
 ##

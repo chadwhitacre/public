@@ -106,41 +106,48 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
                            **other):
         """Gets the list of the children folders and files of a folder."""
 
-        folder = self.unrestrictedTraverse('..'+CurrentFolder)
-        if not User.has_permission(LIST, folder):
-            # return an empty page if no permissions
+        try:
+            folder = self.unrestrictedTraverse('..'+CurrentFolder)
+            exists = True
+        except:
+            exists = False
             folders = files = []
-        else:
-            # get folders
-            folders = folder.objectValues('Plone Folder')
-            folders = [o.getId() for o in folders
-                                       if User.has_permission(LIST, o)]
-
-            # get files
-            # map FCK Type to Zope meta_type
-            if Type == 'Image':
-                meta_types = ('Portal Image',)
+        if exists:
+            if not User.has_permission(LIST, folder):
+                # return an empty page if no permissions
+                folders = files = []
             else:
-                meta_types = ('Portal File','Document')
+                # get folders
+                folders = folder.objectValues('Plone Folder')
+                folders = [o.getId() for o in folders
+                                           if User.has_permission(LIST, o)]
 
-            files = folder.objectValues(meta_types)
-            files = [self._file_info(o) for o in files
-                                              if User.has_permission(VIEW, o)]
+                # get files
+                # map FCK Type to Zope meta_type
+                if Type == 'Image':
+                    meta_types = ('Portal Image',)
+                else:
+                    meta_types = ('Portal File','Document')
+
+                files = folder.objectValues(meta_types)
+
+                files = [self._file_info(o) for o in files
+                                                  if User.has_permission(VIEW, o)]
 
         return { 'folders' : folders
                , 'files'   : files
                 }
 
     security.declarePrivate('_file_info')
-    def _file_info(o):
+    def _file_info(self, o):
         """Given an object, return a tuple."""
 
         id = o.getId()
-        size = o.getSize()
-        size = size / 1024 # convert to kB
+        size = o.get_size()
+        size = float(size) / 1024 # convert to KB
+        size = int(round(size))   # round to nearest KB
 
         return (id, size)
-    _file_info = staticmethod(_file_info)
 
 
 
