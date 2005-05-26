@@ -1,3 +1,7 @@
+# Python
+from StringIO import StringIO
+from traceback import print_exc
+
 # Zope
 from AccessControl import ClassSecurityInfo, Unauthorized
 from Globals import InitializeClass
@@ -5,6 +9,8 @@ from OFS.SimpleItem import SimpleItem
 from OFS.PropertyManager import PropertyManager
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.CMFCore.utils import UniqueObject
+from ZODB.POSException import ConflictError
+from zLOG import LOG, WARNING
 
 # us
 from Products.FCKeditor.FCKconnector import FCKconnector
@@ -79,12 +85,14 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
     ##
 
     security.declarePrivate('GetFolders')
-    def GetFolders(self, Type, CurrentFolder, ComputedUrl, User, **other):
+    def GetFolders(self, Type, CurrentFolder, User, **other):
         """Get the list of the children folders of a folder."""
 
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
             exists = True
+        except ConflictError: # always raise
+            raise
         except KeyError: # the CurrentFolder doesn't exist
             exists = False
             folders = []
@@ -102,14 +110,15 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
 
 
     security.declarePrivate('GetFoldersAndFiles')
-    def GetFoldersAndFiles(self, Type, CurrentFolder, ComputedUrl, User,
-                           **other):
+    def GetFoldersAndFiles(self, Type, CurrentFolder, User, **other):
         """Gets the list of the children folders and files of a folder."""
 
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
             exists = True
-        except:
+        except ConflictError: # always raise
+            raise
+        except KeyError: # the CurrentFolder doesn't exist
             exists = False
             folders = files = []
         if exists:
@@ -132,7 +141,7 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
                 files = folder.objectValues(meta_types)
 
                 files = [self._file_info(o) for o in files
-                                                  if User.has_permission(VIEW, o)]
+                                               if User.has_permission(VIEW, o)]
 
         return { 'folders' : folders
                , 'files'   : files
@@ -152,35 +161,112 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
 
 
     security.declarePrivate('CreateFolder')
-    def CreateFolder(self, Type, CurrentFolder, NewFolderName, ComputedUrl,
-                     **other):
-        """Create a child folder."""
+    def CreateFolder(self, Type, CurrentFolder, NewFolderName, **other):
+        """Create a child folder.
 
-        folder = self.unrestrictedTraverse('..'+CurrentFolder)
+        Error codes are as follows:
 
-        if NewFolderName in folder.contentIds():
-            error_code = 101 # Folder already exists.
-        elif folder.check_id(NewFolderName) is not None:
-            error_code = 102 # Invalid folder name.
-        else:
-            try:
-                # get the constructor via traversal so that we trigger security
-                constructor = folder.restrictedTraverse('invokeFactory')
-                constructor('Folder', NewFolderName)
-                error_code = 0 # No Errors Found. The folder has been created.
-            except Unauthorized:
-                error_code = 103 # You have no permissions to create the folder.
-            except:
-                error_code = 110 # Unknown error creating folder.
+            0   No Errors Found. The folder has been created.
+            101 Folder already exists.
+            102 Invalid folder name.
+            103 You have no permissions to create the folder.
+            110 Unknown error creating folder.
+
+        """
+
+        error_code = 0
+
+        try:
+            folder = self.unrestrictedTraverse('..'+CurrentFolder)
+        except ConflictError: # always raise
+            raise
+        except KeyError: # the CurrentFolder doesn't exist
+            error_code = 110
+
+        if error_code == 0:
+            if NewFolderName in folder.contentIds():
+                error_code = 101
+            elif folder.check_id(NewFolderName) is not None:
+                error_code = 102
+            else:
+                try:
+                    # use invokeFactory so that we trigger security
+                    folder.invokeFactory('Folder', NewFolderName)
+                    error_code = 0
+                except ConflictError: # always raise
+                    raise
+                except Unauthorized:
+                    error_code = 103
+                except: # catch-all
+                    error_code = 110
+                    cap = StringIO()
+                    print >> cap, "While trying to create a new folder via " +\
+                                  "the filebrowser, the following " +\
+                                  "exception was captured:\n"
+                    print_exc(file=cap)
+                    LOG('FCKeditor', WARNING, cap.read())
+                    cap.close()
 
         return { 'error_code' : error_code }
 
 
 
-    def FileUpload(self, **kw):
-        """Add a file in a folder."""
-        #return { 'error_code' : 202 }
-        raise NotImplemented, "sorry, not done yet"
+    def FileUpload(self, Type, CurrentFolder, NewFile, **kw):
+        """Add a file in a folder.
+
+        Our return value gets incorporated into an HTML snippet as the paramater
+        list of an ecmascript function call. The ecmascript function in question
+        takes one or two parameters. The simplest thing for us to do is to
+        return the parameter list as a single string rather than returning each
+        parameter individually.
+
+            OnUploadCompleted(0)
+                no errors found on the upload process.
+
+            OnUploadCompleted(201, 'FileName(1).ext')
+                the file has been uploaded successfully, but its name has been
+                changed to "FileName(1).ext".
+
+            OnUploadCompleted(202)
+                invalid file.
+
+        """
+
+        error_code = 0
+
+        try:
+            folder = self.unrestrictedTraverse('..'+CurrentFolder)
+        except ConflictError: # always raise
+            raise
+        except KeyError: # the CurrentFolder doesn't exist
+            error_code = 202
+
+        if error_code == 0:
+
+            raise 'hrm', dir(NewFile)
+
+            if NewFileName in folder.contentIds():
+                error_code = 201
+                error_code = str(error_code) + ", 'FileName(1).ext'"
+            else:
+                try:
+                    # use invokeFactory so that we trigger security
+                    folder.invokeFactory('File', NewFileName)
+                    error_code = 0
+                except ConflictError: # always raise
+                    raise
+                except:
+                    error_code = 202
+                    cap = StringIO()
+                    print >> cap, "While trying to upload a new file via " +\
+                                  "the filebrowser, the following " +\
+                                  "exception was captured:\n"
+                    print_exc(file=cap)
+                    LOG('FCKeditor', WARNING, cap.read())
+                    cap.close()
+
+        return { 'error_code' : str(error_code) }
+
 
 
 InitializeClass(PloneFCKmanager)
