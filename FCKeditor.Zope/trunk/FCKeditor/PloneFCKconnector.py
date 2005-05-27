@@ -15,23 +15,23 @@ from zLOG import LOG, WARNING
 
 # us
 from Products.FCKeditor.FCKconnector import FCKconnector
-from Products.FCKeditor.ZopeFCKeditor import ZopeFCKeditor
 
 # constants
 LIST = 'List folder contents'
 VIEW = 'View'
-ID = 'portal_fckmanager'
+ID = 'portal_fckconnector'
 
 
-class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
-    """A Plone tool to support FCKeditor objects.
+class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
+                        SimpleItem):
+    """A Plone wrapper for FCKconnector.
     """
 
     security = ClassSecurityInfo()
 
     id = ID
-    title = 'Manage a set of FCKeditors'
-    meta_type = 'FCKmanager for Plone'
+    title = ''
+    meta_type = 'FCKconnector for Plone'
 
     manage_options = PropertyManager.manage_options +\
                      SimpleItem.manage_options
@@ -40,19 +40,12 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
         self.id = id
         self.title = title
 
-    security.declarePublic('spawn')
-    def spawn(self, id):
-        """Given an id string, return an FCKeditor object.
-        """
-        return ZopeFCKeditor(id)
-
-    security.declarePublic('connector')
-    def connector(self, REQUEST):
+    def __call__(self, REQUEST):
 
         """REQUEST acts like a dict, so we could hand it directly to our
         superclass. However, we need to set response headers based on Command,
         so we end up overriding. We also stick the user in there so we can
-        perform security checks against it.
+        perform security checks against it in the Get* methods.
 
         """
 
@@ -74,6 +67,7 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
         return response_method(**data)
 
     def _compute_url(self, ServerPath, Type, CurrentFolder, **other):
+
         """We depart from the FCK spec at this point because we don't want
         to organize our content in ResourceType folders.
 
@@ -273,7 +267,9 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
                     name = parts[0]
                     ext = ''
 
+                #
                 # Find the next available int in the current folder.
+                #
                 if ext:
                     pattern = "%s\((\d+)\)\.%s$" % (name,ext)
                 else:
@@ -292,7 +288,9 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
                     next_int = 1
                 next_int = str(next_int)
 
+                #
                 # Build our new filename.
+                #
                 if ext:
                     FinalFileName = '%s(%s).%s' % (name, next_int, ext)
                 else:
@@ -324,9 +322,7 @@ class PloneFCKmanager(FCKconnector, UniqueObject, PropertyManager, SimpleItem):
 
         return { 'error_code' : str(return_val) }
 
-
-
-InitializeClass(PloneFCKmanager)
+InitializeClass(PloneFCKconnector)
 
 
 
@@ -334,16 +330,16 @@ InitializeClass(PloneFCKmanager)
 # Product addition and registration
 ##
 
-def manage_addPloneFCKmanager(self, REQUEST=None):
+def manage_addPloneFCKconnector(self, REQUEST=None):
     """  """
-    self._setObject(ID, PloneFCKmanager(ID))
+    self._setObject(ID, PloneFCKconnector(ID))
     if REQUEST is not None:
         return self.manage_main(self, REQUEST, update_menu=1)
 
-def initialize(context):
-    context.registerClass(
-        PloneFCKmanager,
-        permission='Add FCKmanager for Plone',
-        constructors=(manage_addPloneFCKmanager,),
-        icon='www/fckmanager.gif',
+def initialize(registrar):
+    registrar.registerClass(
+        PloneFCKconnector,
+        permission='Add FCKconnector for Plone',
+        constructors=(manage_addPloneFCKconnector,),
+        icon='www/PloneFCKconnector.gif',
         )

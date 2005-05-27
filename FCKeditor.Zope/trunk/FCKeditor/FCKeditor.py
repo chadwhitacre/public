@@ -1,7 +1,7 @@
 # Python
 import re
+from urllib import urlencode
 from xml.sax import saxutils
-from urllib import quote_plus
 
 # us
 from Products.FCKeditor import FCKexception
@@ -38,24 +38,17 @@ class FCKeditor:
     """Provide API for tuning and instantiating an FCKeditor DHTML widget.
     """
 
-    def __init__(self, *args, **kw):
+    def __init__(self, InstanceName='MyEditor'):
 
         # defaults -- using instance attrs instead of class attrs so we can
         # use self.__dict__
-        self.InstanceName       = 'MyEditor'
+        self.InstanceName       = self._scrub(InstanceName)
         self.Width              = '100%'
         self.Height             = '200px'
         self.ToolbarSet         = 'Default'
         self.Value              = ''
         self.BasePath           = '/FCKeditor/'
         self.ConfigQuerystring  = ''
-
-        # clean up InstanceName
-        if 'InstanceName' in kw:
-            kw['InstanceName'] = self._scrub(kw['InstanceName'])
-
-        # custom settings
-        self.__dict__.update(kw)
 
         self.Config = {}
 
@@ -98,7 +91,7 @@ class FCKeditor:
             self.Value = saxutils.quoteattr(self.Value)
 
             # marshall config into a querystring
-            self.ConfigQuerystring = self._config2querystring(self.Config)
+            self.ConfigQuerystring = urlencode(self.Config) # from urllib
 
             return FCKtemplates.COMPATIBLE % self.__dict__
         else:
@@ -106,12 +99,6 @@ class FCKeditor:
             self.Value = saxutils.escape(self.Value)
 
             return FCKtemplates.INCOMPATIBLE % self.__dict__
-
-    def _config2querystring(self, c):
-        """Marshall our Config settings into a querystring.
-        """
-        q = quote_plus # from urllib
-        return '&'.join(['%s=%s' % (q(key), q(c[key])) for key in c])
 
     def _parse_dimensions(self, w, h):
         """Given a width and a height either as ints or strings, return a tuple
