@@ -40,7 +40,8 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
         self.id = id
         self.title = title
 
-    def __call__(self, REQUEST):
+    security.declarePublic('connector')
+    def connector(self, REQUEST):
 
         """REQUEST acts like a dict, so we could hand it directly to our
         superclass. However, we need to set response headers based on Command,
@@ -61,7 +62,7 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
         data['User'] = REQUEST.get('AUTHENTICATED_USER')
 
         logic_method = getattr(self, Command)
-        data.update(logic_method(**data))
+        data.update(logic_method(**data)) # this adds a new key or two
 
         response_method = getattr(self, '%s_response' % Command)
         return response_method(**data)
@@ -73,6 +74,8 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
 
         """
         return CurrentFolder
+
+    __call__ = connector
 
 
     ##

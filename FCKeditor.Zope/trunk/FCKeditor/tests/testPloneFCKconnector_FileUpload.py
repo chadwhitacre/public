@@ -12,7 +12,7 @@ from cgi import FieldStorage
 
 # us
 from Products.FCKeditor.tests import dict2tuple as d2t
-from Products.FCKeditor.PloneFCKmanager import PloneFCKmanager
+from Products.FCKeditor.PloneFCKconnector import PloneFCKconnector
 
 
 ##
@@ -38,7 +38,7 @@ class Test(PloneTestCase.PloneTestCase):
 
     def afterSetUp(self):
         self.portal.portal_quickinstaller.installProduct('FCKeditor')
-        self.fckm = self.portal.portal_fckmanager
+        self.fckm = self.portal.portal_fckconnector
 
         self.portal.acl_users._doAddUser('admin', 'secret', ['Manager'], [])
         self.portal.acl_users._doAddUser('user', 'secret', ['Member'], [])
