@@ -1,6 +1,5 @@
 packaging
-    factor out a TestCase for speed
-    decide on license (see end)
+    decide on license (see README.stx)
         prolly do want to include with every file, since we are advocating cut/paste
     release 0.9.0 -- first development release
     === DONE ===
@@ -9,8 +8,31 @@ packaging
     include FCKeditor via svn:externals - no
     prolly drop CPS skin
     QI skins in reverse order
-fckconnector
+plone -- wysiwyg_support
+    be smarter about showing format options or not
+    needs to play nice with other editors (epoz, kupu, etc.)
+    tabindex obj not being called
     === DONE ===
+    needs to support different storage formats (html, plain, stx)
+documentation
+factor out a TestCase for speed
+test connector ttw
+rename fckm to fckc in tests
+factor out name collision logic
+get FileUpload working TTW
+
+
+=== DONE ===
+base2zope should clean up '</' in Javascript in HTML
+add compile templates test to tests/
+python
+zope
+integrated testing -- runalltests.py
+factor out config into a better spot
+wire up templates to use FCKmanager
+fckeditor
+    fix encoding bug
+fckconnector
     if we can, use Plone's check_id when adding folder/file
     use invokeFactory to create content in CMFFCKmanager
     clean up path/url interpretation
@@ -30,56 +52,4 @@ fckconnector
         CreateFolder
         FileUpload
     refactor
-fckeditor
-    === DONE ===
-    fix encoding bug
-plone -- wysiwyg_support
-    be smarter about showing format options or not
-    needs to play nice with other editors (epoz, kupu, etc.)
-    tabindex obj not being called
-    === DONE ===
-    needs to support different storage formats (html, plain, stx)
-documentation
 test
-
-
-=== DONE ===
-base2zope should clean up '</' in Javascript in HTML
-add compile templates test to tests/
-python
-zope
-integrated testing -- runalltests.py
-factor out config into a better spot
-wire up templates to use FCKmanager
-
-
-
-
-###############################################################################
-#                                                                             #
-#  (pd) 2005. This software was written by Chad Whitacre and is dedicated to  #
-#  the public domain. If you like it, buy me a beer someday.                  #
-#                                                                             #
-#                                                    http://www.zetadev.com/  #
-#                          http://creativecommons.org/licenses/publicdomain/  #
-#                                                                             #
-###############################################################################
-
-
-
-    security.declarePrivate('_propertize_attrs')
-    def _propertize_attrs(self):
-        """Convert certain instance attributes to class attributes.
-
-        In our base class we want to use instance attrs so that we can use
-        self.__dict__. However, self.__dict__ doesn't contain class attrs, and
-        Zope PropertyManager requires that object properties be class attrs. So
-        we need to convert certain of our inherited attrs into class attrs.
-
-        """
-        Class = self.__class__
-        attrs = [p['id'] for p in Class._properties]
-        for attr in attrs:
-            # We don't actually need values here since they are overriden by
-            # the instance attrs.
-            Class.__dict__[attr] = ''

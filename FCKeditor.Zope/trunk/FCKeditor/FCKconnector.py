@@ -220,7 +220,7 @@ class FCKconnector:
         """Add a file in a folder."""
         pass
 
-    def FileUpload_response(self, error_code, **other):
+    def FileUpload_response(self, param_string, **other):
         """Given a string, return an HTML response.
         """
-        return Templates.FileUpload % error_code
+        return Templates.FileUpload % param_string

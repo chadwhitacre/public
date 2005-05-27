@@ -107,7 +107,7 @@ class Test(unittest.TestCase):
 
     def testFileUpload_response(self):
         expected = TestData.FileUpload
-        actual = self.fck.FileUpload_response(error_code = 404)
+        actual = self.fck.FileUpload_response(param_string = 404)
         self.assertEqual(actual, expected)
 
 
