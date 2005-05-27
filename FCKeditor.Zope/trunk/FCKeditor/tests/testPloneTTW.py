@@ -41,7 +41,6 @@ class Test(PloneTestCase.PloneTestCase):
 
         wysiwyg = self.portal.portal_skins.fckeditor_plone.wysiwyg_fckeditor
         expected = 'foo'
-        #import pdb; pdb.set_trace()
         actual = wysiwyg('text','')
         self.assertEqual(expected, actual)
 

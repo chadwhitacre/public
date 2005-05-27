@@ -30,7 +30,9 @@ class Test(PloneTestCase.PloneTestCase):
         self.portal.portal_quickinstaller.installProduct('FCKeditor')
 
     def testInstallation(self):
-        self.portal.portal_quickinstaller.isProductInstalled('FCKeditor')
+        expected = True
+        actual = self.portal.portal_quickinstaller.isProductInstalled('FCKeditor')
+        self.assertEqual(expected, actual)
 
     def testSkins(self):
         self.failUnless( hasattr(self.portal.portal_skins, 'fckeditor_base'),
@@ -39,8 +41,9 @@ class Test(PloneTestCase.PloneTestCase):
                          'Missing skin: fckeditor_plone')
 
     def testLayout(self):
-        self.assertEqual( isinstance(self.portal.portal_fckmanager, PloneFCKmanager)
-                        , True)
+        expected = True
+        actual = isinstance(self.portal.portal_fckconnector, PloneFCKconnector)
+        self.assertEqual(expected, actual)
 
 
 ##
