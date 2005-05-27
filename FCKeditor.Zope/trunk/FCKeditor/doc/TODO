@@ -63,3 +63,22 @@ wire up templates to use FCKmanager
 #                          http://creativecommons.org/licenses/publicdomain/  #
 #                                                                             #
 ###############################################################################
+
+
+
+    security.declarePrivate('_propertize_attrs')
+    def _propertize_attrs(self):
+        """Convert certain instance attributes to class attributes.
+
+        In our base class we want to use instance attrs so that we can use
+        self.__dict__. However, self.__dict__ doesn't contain class attrs, and
+        Zope PropertyManager requires that object properties be class attrs. So
+        we need to convert certain of our inherited attrs into class attrs.
+
+        """
+        Class = self.__class__
+        attrs = [p['id'] for p in Class._properties]
+        for attr in attrs:
+            # We don't actually need values here since they are overriden by
+            # the instance attrs.
+            Class.__dict__[attr] = ''
