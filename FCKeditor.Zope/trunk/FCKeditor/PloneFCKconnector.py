@@ -57,12 +57,16 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
                       , 'CreateFolder'
                            ):
             REQUEST.RESPONSE.setHeader('Content-Type', 'text/xml')
-            REQUEST.RESPONSE.setHeader('Cache-Control', 'no-cache')
+        REQUEST.RESPONSE.setHeader('Cache-Control', 'no-cache')
 
         data['User'] = REQUEST.get('AUTHENTICATED_USER')
 
         logic_method = getattr(self, Command)
         data.update(logic_method(**data)) # this adds a new key or two
+
+        #from pprint import pprint
+        #pprint(data)
+        #print
 
         response_method = getattr(self, '%s_response' % Command)
         return response_method(**data)
@@ -75,7 +79,7 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
         """
         return CurrentFolder
 
-    __call__ = connector
+    __call__ = index_html = connector
 
 
     ##
@@ -319,11 +323,11 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
                 cap.close()
 
         if error_code == 201:
-            return_val = "%s, '%s'" % (str(error_code), FinalFileName)
+            param_string = "%s, '%s'" % (str(error_code), FinalFileName)
         else:
-            return_val = str(error_code)
+            param_string = str(error_code)
 
-        return { 'error_code' : str(return_val) }
+        return { 'param_string' : str(param_string) }
 
 InitializeClass(PloneFCKconnector)
 

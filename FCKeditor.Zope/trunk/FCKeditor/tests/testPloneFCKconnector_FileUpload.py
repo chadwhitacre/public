@@ -32,6 +32,8 @@ class DummyFileUpload(file):
     def __init__(self, filename):
         self.filename = filename
         file.__init__(self, 'blank.pdf')
+    def __repr__(self):
+        return "<DummyFileUpload named '%s'>" % self.filename
 
 
 class Test(PloneTestCase.PloneTestCase):
@@ -52,7 +54,7 @@ class Test(PloneTestCase.PloneTestCase):
         CurrentFolder = '/Nonexistant/'
         NewFile = DummyFileUpload('blank.pdf')
 
-        expected = {'error_code': '202'}
+        expected = {'param_string': '202'}
         actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
         self.assertEqual(d2t(expected), d2t(actual))
 
@@ -70,7 +72,7 @@ class Test(PloneTestCase.PloneTestCase):
         CurrentFolder = '/'
         NewFile = DummyFileUpload('blank.pdf')
 
-        expected = {'error_code': '202'}
+        expected = {'param_string': '202'}
         self.login('user')
         actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
@@ -81,7 +83,7 @@ class Test(PloneTestCase.PloneTestCase):
         CurrentFolder = '/'
         NewFile = DummyFileUpload('blank.pdf')
 
-        expected = {'error_code': '0'}
+        expected = {'param_string': '0'}
         self.login('admin')
         actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
@@ -96,14 +98,14 @@ class Test(PloneTestCase.PloneTestCase):
         NewFile = DummyFileUpload('blank.pdf')
 
         # first one goes up fine, as expected
-        expected = {'error_code': '0'}
+        expected = {'param_string': '0'}
         self.login('admin')
         actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
         self.assertEqual(d2t(expected), d2t(actual))
 
         # now let's upload it again; the spec calls for auto-renaming the file
-        expected = {'error_code': "201, 'blank(1).pdf'"}
+        expected = {'param_string': "201, 'blank(1).pdf'"}
         self.login('admin')
         actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
