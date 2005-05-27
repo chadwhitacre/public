@@ -7,7 +7,7 @@ if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
 # the thing we want to test
-from Products.FCKeditor.PloneFCKmanager import PloneFCKmanager
+from Products.FCKeditor.PloneFCKconnector import PloneFCKconnector
 
 
 ##

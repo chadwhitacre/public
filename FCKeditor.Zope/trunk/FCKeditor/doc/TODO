@@ -1,4 +1,5 @@
 packaging
+    factor out a TestCase for speed
     decide on license (see end)
         prolly do want to include with every file, since we are advocating cut/paste
     release 0.9.0 -- first development release
@@ -8,15 +9,9 @@ packaging
     include FCKeditor via svn:externals - no
     prolly drop CPS skin
     QI skins in reverse order
-fckmanager
-    command support
-        FileUpload
-        === DONE ===
-        GetFolder
-        GetFilesAndFolders
-        CreateFolder
+fckconnector
     === DONE ===
-    if we can use Plone's check_id when adding folder/file
+    if we can, use Plone's check_id when adding folder/file
     use invokeFactory to create content in CMFFCKmanager
     clean up path/url interpretation
     wire up Plone QI with Plone types
@@ -29,6 +24,12 @@ fckmanager
         https://svn.plone.org/svn/plone/CMFPlone/tags/Plone-2_0_5/HISTORY.txt
     make sure CreateFolder 110 gets logged
     account for workflow & security (introduce ExtendedPathIndex dependency?)
+    command support
+        GetFolder
+        GetFilesAndFolders
+        CreateFolder
+        FileUpload
+    refactor
 fckeditor
     === DONE ===
     fix encoding bug

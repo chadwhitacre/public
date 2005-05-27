@@ -73,7 +73,7 @@ class FCKconnector:
 
         """
         data = incoming # in wrapper, parse input out of the querystring
-        data = self._validate(data) # will raise an FCKexception if bad data
+        data = self._validate(data) # will raise FCKexception if bad data
 
         # You will also need to set the HTTP response headers appropriately
         # based on whether we are returning XML or HTML content.
@@ -153,20 +153,8 @@ class FCKconnector:
     # Command support
     ##
 
-    def GetFolders(self, **kw):
+    def GetFolders(self, *arg, **kw):
         """Get the list of the children folders of a folder."""
-        # here is an example of what these four methods should do:
-
-        # folders = get list of folder names per your framework
-
-        # response_body = self.GetFolders_response( Type
-        #                                         , CurrentFolder
-        #                                         , ServerPath
-        #                                         , folders
-        #                                          )
-
-        # return response_body
-
         pass
 
     def GetFolders_response(self, Type, CurrentFolder, ComputedUrl, folders,
@@ -185,7 +173,7 @@ class FCKconnector:
 
 
 
-    def GetFoldersAndFiles(self, **kw):
+    def GetFoldersAndFiles(self, *arg, **kw):
         """Gets the list of the children folders and files of a folder."""
         pass
 
@@ -211,7 +199,7 @@ class FCKconnector:
 
 
 
-    def CreateFolder(self, **kw):
+    def CreateFolder(self, *arg, **kw):
         """Create a child folder."""
         pass
 
@@ -228,7 +216,7 @@ class FCKconnector:
 
 
 
-    def FileUpload(self, **kw):
+    def FileUpload(self, *arg, **kw):
         """Add a file in a folder."""
         pass
 

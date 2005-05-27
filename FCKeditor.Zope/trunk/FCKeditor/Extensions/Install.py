@@ -43,15 +43,14 @@ def install_plone(self, out):
     if site_props is not None:
 
         editors = list(site_props.getProperty(attrname))
-        if 'FCK Editor' not in editors:
-           editors.append('FCK Editor')
+        if 'FCKeditor' not in editors:
+           editors.append('FCKeditor')
         site_props._updateProperty(attrname, editors)
 
-        print >> out, "Added FCKeditor 2.0 Final Candidate (Preview) to " +\
-                      "available editors in Plone."
+        print >> out, "Added FCKeditor to available editors in Plone."
 
-    # add a CMFFCKmanager and tweak the FolderTypes
-    self.manage_addProduct['FCKeditor'].manage_addPloneFCKmanager()
+    # add a PloneFCKconnector
+    self.manage_addProduct['FCKeditor'].manage_addPloneFCKconnector()
 
 
 def install_subskin(self, out, skin_name, globals=FCKglobals):
@@ -82,11 +81,11 @@ def install(self):
     print >> out, "Installing FCKeditor.Zope 0.1"
 
     # check to see if base2zope has been run
-    #def fail():
-    #    raise "It looks like you haven't yet run utils/base2zope.py"
-    #fckeditor_base = os.path.join('..', 'skins', 'fckeditor_base', 'FCKeditor')
-    #if not os.path.isdir(fckeditor_base): fail()
-    #if len(os.listdir(fckeditor_base)) <= 1: fail() # account for .svn
+    def fail():
+        raise "It looks like you haven't yet run utils/base2zope.py"
+    fckeditor_base = os.path.join('..', 'skins', 'fckeditor_base', 'FCKeditor')
+    if not os.path.isdir(fckeditor_base): fail()
+    if len(os.listdir(fckeditor_base)) <= 1: fail() # account for .svn
 
     # do the installation
     install_cache(self, out)
