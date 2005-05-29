@@ -40,7 +40,7 @@ class Test(PloneTestCase.PloneTestCase):
 
     def afterSetUp(self):
         self.portal.portal_quickinstaller.installProduct('FCKeditor')
-        self.fckm = self.portal.portal_fckconnector
+        self.fckc = self.portal.portal_fckconnector
 
         self.portal.acl_users._doAddUser('admin', 'secret', ['Manager'], [])
         self.portal.acl_users._doAddUser('user', 'secret', ['Member'], [])
@@ -55,12 +55,12 @@ class Test(PloneTestCase.PloneTestCase):
         NewFile = DummyFileUpload('blank.pdf')
 
         expected = {'param_string': '202'}
-        actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
+        actual = self.fckc.FileUpload(Type, CurrentFolder, NewFile)
         self.assertEqual(d2t(expected), d2t(actual))
 
         # but only KeyErrors are caught
         CurrentFolder = []
-        self.assertRaises( TypeError, self.fckm.FileUpload, Type
+        self.assertRaises( TypeError, self.fckc.FileUpload, Type
                          , CurrentFolder, NewFile
                           )
 
@@ -74,7 +74,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         expected = {'param_string': '202'}
         self.login('user')
-        actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
+        actual = self.fckc.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
         self.assertEqual(d2t(expected), d2t(actual))
 
@@ -85,12 +85,15 @@ class Test(PloneTestCase.PloneTestCase):
 
         expected = {'param_string': '0'}
         self.login('admin')
-        actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
+        actual = self.fckc.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
         self.assertEqual(d2t(expected), d2t(actual))
 
     # the rest assume the user has permission on the folder in question
 
+
+    # The name collision tests would properly be in testFCKconnector.py, since
+    # this functionality has been factored out into a method of FCKconnector.
 
     def testBasicNameCollision(self):
         Type = ''
@@ -100,14 +103,14 @@ class Test(PloneTestCase.PloneTestCase):
         # first one goes up fine, as expected
         expected = {'param_string': '0'}
         self.login('admin')
-        actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
+        actual = self.fckc.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
         self.assertEqual(d2t(expected), d2t(actual))
 
         # now let's upload it again; the spec calls for auto-renaming the file
         expected = {'param_string': "201, 'blank(1).pdf'"}
         self.login('admin')
-        actual = self.fckm.FileUpload(Type, CurrentFolder, NewFile)
+        actual = self.fckc.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
         self.assertEqual(d2t(expected), d2t(actual))
 
@@ -120,7 +123,7 @@ class Test(PloneTestCase.PloneTestCase):
         # upload a whole mess of files
         self.login('admin')
         for i in range(25):
-            self.fckm.FileUpload(Type, CurrentFolder, NewFile)
+            self.fckc.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
 
         # and see what we find
@@ -146,12 +149,12 @@ class Test(PloneTestCase.PloneTestCase):
 
         # prime the pumps
         OriginalFile = DummyFileUpload('blank.pdf')
-        self.fckm.FileUpload(Type, CurrentFolder, OriginalFile)
+        self.fckc.FileUpload(Type, CurrentFolder, OriginalFile)
 
         # mess with the pumps
         RenamedFile = DummyFileUpload('blank(4).pdf')
-        self.fckm.FileUpload(Type, CurrentFolder, RenamedFile)
-        self.fckm.FileUpload(Type, CurrentFolder, OriginalFile)
+        self.fckc.FileUpload(Type, CurrentFolder, RenamedFile)
+        self.fckc.FileUpload(Type, CurrentFolder, OriginalFile)
 
         self.logout()
 
@@ -167,12 +170,12 @@ class Test(PloneTestCase.PloneTestCase):
 
         # prime the pumps
         OriginalFile = DummyFileUpload('blank.pdf')
-        self.fckm.FileUpload(Type, CurrentFolder, OriginalFile)
+        self.fckc.FileUpload(Type, CurrentFolder, OriginalFile)
 
         # mess with the pumps
         RenamedFile = DummyFileUpload('blank(999923490303934890).pdf')
-        self.fckm.FileUpload(Type, CurrentFolder, RenamedFile)
-        self.fckm.FileUpload(Type, CurrentFolder, OriginalFile)
+        self.fckc.FileUpload(Type, CurrentFolder, RenamedFile)
+        self.fckc.FileUpload(Type, CurrentFolder, OriginalFile)
 
         self.logout()
 
@@ -190,8 +193,8 @@ class Test(PloneTestCase.PloneTestCase):
         NewFile = DummyFileUpload('blank().pdf')
 
         self.login('admin')
-        self.fckm.FileUpload(Type, CurrentFolder, NewFile)
-        self.fckm.FileUpload(Type, CurrentFolder, NewFile)
+        self.fckc.FileUpload(Type, CurrentFolder, NewFile)
+        self.fckc.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
 
         expected = [ 'blank().pdf'
@@ -206,8 +209,8 @@ class Test(PloneTestCase.PloneTestCase):
         NewFile = DummyFileUpload('blank')
 
         self.login('admin')
-        self.fckm.FileUpload(Type, CurrentFolder, NewFile)
-        self.fckm.FileUpload(Type, CurrentFolder, NewFile)
+        self.fckc.FileUpload(Type, CurrentFolder, NewFile)
+        self.fckc.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
 
         expected = [ 'blank'
@@ -222,8 +225,8 @@ class Test(PloneTestCase.PloneTestCase):
         NewFile = DummyFileUpload('blank.foo.hey.pdf')
 
         self.login('admin')
-        self.fckm.FileUpload(Type, CurrentFolder, NewFile)
-        self.fckm.FileUpload(Type, CurrentFolder, NewFile)
+        self.fckc.FileUpload(Type, CurrentFolder, NewFile)
+        self.fckc.FileUpload(Type, CurrentFolder, NewFile)
         self.logout()
 
         expected = [ 'blank.foo.hey.pdf'

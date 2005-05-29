@@ -5,7 +5,7 @@ packaging
     === DONE ===
     replace hasattr with getattr
     store FCKeditor proper in a separate svn repo/project - no; cause we want this in the collective
-    include FCKeditor via svn:externals - no
+        include FCKeditor via svn:externals - no
     prolly drop CPS skin
     QI skins in reverse order
 plone -- wysiwyg_support
@@ -16,13 +16,10 @@ plone -- wysiwyg_support
     needs to support different storage formats (html, plain, stx)
 documentation
 factor out a TestCase for speed
+=== DONE ===
 test connector ttw
 rename fckm to fckc in tests
 factor out name collision logic
-get FileUpload working TTW
-
-
-=== DONE ===
 base2zope should clean up '</' in Javascript in HTML
 add compile templates test to tests/
 python
@@ -53,3 +50,4 @@ fckconnector
         FileUpload
     refactor
 test
+get FileUpload working TTW

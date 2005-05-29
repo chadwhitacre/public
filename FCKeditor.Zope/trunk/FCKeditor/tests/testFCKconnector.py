@@ -245,6 +245,11 @@ class Test(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
+    # _incrementFileName
+
+    # This method is tested from testPloneFCKconnector_FileUpload.py, because
+    # those tests were created before this functionality was factored out.
+
 
 ##
 # And run them!

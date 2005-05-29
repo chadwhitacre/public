@@ -61,16 +61,17 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
         # For forms with method="GET" the form action querystring is overwritten
         # by the form elements. For POSTs, however, the action querystring does
         # end up in the QUERY_STRING CGI variable. However, Zope doesn't
-        # automatically parse the querystring for form actions, so we have to do
-        # it manually for FileUploads.
+        # automatically parse this querystring for form actions, so for
+        # FileUploads we have to manually add this info the REQUEST.form
 
         if REQUEST.get('NewFile', None) is not None:
             # we are processing a FileUpload
-            qs = parse_qs(REQUEST['QUERY_STRING'])
+            qs = parse_qs(REQUEST['QUERY_STRING']) # from cgi module
             for key in qs: # values are lists
                 if len(qs[key]) == 1:
                     REQUEST.form[key] = qs[key][0]
                 else:
+                    # we always get exactly one value for each key in the QS
                     raise FCKexception, "Malformed query string: " +\
                                         REQUEST['QUERY_STRING']
 
@@ -88,10 +89,6 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
 
         logic_method = getattr(self, Command)
         data.update(logic_method(**data)) # this adds a new key or two
-
-        from pprint import pprint
-        pprint(data)
-        print
 
         response_method = getattr(self, '%s_response' % Command)
         return response_method(**data)
@@ -271,63 +268,14 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
         if error_code == 0:
 
             NewFileName = NewFile.filename
+            filenames = folder.contentIds()
 
-            if NewFileName not in folder.contentIds():
+            if NewFileName not in filenames:
                 FinalFileName = NewFileName
             else:
-                # The FCK spec calls for automatically resolving filename
-                # conflicts by incrementing filenames like so:
-                #
-                #   FileName.ext
-                #   FileName(1).ext
-                #   FileName(2).ext
-
+                # filename is already in use; take evasive action
                 error_code = 201
-
-                # Resolve the incoming filename into parts
-                #
-                #  'File.Name.ext' -> 'File.Name', 'ext'
-                #  'FileName.ext' -> 'FileName', 'ext'
-                #  'FileName' -> 'FileName', ''
-
-                parts = NewFileName.split('.')
-                l = len(parts) # guaranteed to be >= 1
-                if l > 1:
-                    name = '.'.join(parts[:-1])
-                    ext = parts[-1]
-                else:
-                    name = parts[0]
-                    ext = ''
-
-                #
-                # Find the next available int in the current folder.
-                #
-                if ext:
-                    pattern = "%s\((\d+)\)\.%s$" % (name,ext)
-                else:
-                    pattern = "%s\((\d+)\)$" % name
-                match = re.compile(pattern).match
-
-                ints = []
-                for id in folder.objectIds():
-                    candidate = match(id)
-                    if candidate is not None:
-                        ints.append(int(candidate.group(1)))
-                if ints:
-                    ints.sort()
-                    next_int = ints[-1] + 1
-                else:
-                    next_int = 1
-                next_int = str(next_int)
-
-                #
-                # Build our new filename.
-                #
-                if ext:
-                    FinalFileName = '%s(%s).%s' % (name, next_int, ext)
-                else:
-                    FinalFileName = '%s(%s)' % (name, next_int)
-
+                FinalFileName = self._incrementFileName(NewFileName, filenames)
             try:
                 # Use invokeFactory so that we trigger security.
                 folder.invokeFactory('File', FinalFileName, file=NewFile)

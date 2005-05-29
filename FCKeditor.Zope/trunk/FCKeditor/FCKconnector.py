@@ -1,3 +1,6 @@
+# Python
+import re
+
 # us
 from Products.FCKeditor import FCKexception
 
@@ -224,3 +227,70 @@ class FCKconnector:
         """Given a string, return an HTML response.
         """
         return Templates.FileUpload % param_string
+
+    def _incrementFileName(self, NewFileName, filenames):
+        """Given a filename and a list of filenames, return a filename variant.
+
+        The FCK spec calls for automatically resolving filename conflicts by
+        incrementing filenames like so:
+
+          FileName.ext
+          FileName(1).ext
+          FileName(2).ext
+
+        We've factored out the renaming logic since it is framework independent.
+        This method takes a proposed filename and a list of existing filenames,
+        and returns a properly incremented variant of NewFileName. It assumes
+        that NewFileName is in filenames.
+
+        """
+
+        # Resolve the incoming filename into parts.
+        # =========================================
+        #  'File.Name.ext' -> 'File.Name', 'ext'
+        #  'FileName.ext' -> 'FileName', 'ext'
+        #  'FileName' -> 'FileName', ''
+
+        parts = NewFileName.split('.')
+        l = len(parts)
+        if l > 1:
+            name = '.'.join(parts[:-1])
+            ext = parts[-1]
+        elif l == 1:
+            name = parts[0]
+            ext = ''
+        else: # l < 1
+            raise FCKexception, "Bad filename: %s" % NewFileName
+
+
+        # Find the next available int in the list of filenames.
+        # =====================================================
+
+        if ext:
+            pattern = "%s\((\d+)\)\.%s$" % (name,ext)
+        else:
+            pattern = "%s\((\d+)\)$" % name
+        match = re.compile(pattern).match
+
+        ints = []
+        for filename in filenames:
+            candidate = match(filename)
+            if candidate is not None:
+                ints.append(int(candidate.group(1)))
+        if ints:
+            ints.sort()
+            next_int = ints[-1] + 1
+        else:
+            next_int = 1
+        next_int = str(next_int)
+
+
+        # Build and return our new filename.
+        # ==================================
+
+        if ext:
+            FinalFileName = '%s(%s).%s' % (name, next_int, ext)
+        else:
+            FinalFileName = '%s(%s)' % (name, next_int)
+
+        return FinalFileName
