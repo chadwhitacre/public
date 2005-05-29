@@ -15,9 +15,7 @@ from Products.FCKeditor.tests.testPloneFCKconnector_FileUpload import \
 ##
 
 from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
-
-ZopeTestCase.installProduct('FCKeditor')
+from Products.FCKeditor.tests import FCKPloneTestCase
 
 
 ##
@@ -60,19 +58,7 @@ class TestData:
 </script>"""
 
 
-class Test(PloneTestCase.PloneTestCase):
-
-    def afterSetUp(self):
-        self.portal.portal_quickinstaller.installProduct('FCKeditor')
-        self.fckc = self.portal.portal_fckconnector
-
-        self.portal.acl_users._doAddUser('admin', 'secret', ['Manager'], [])
-        self.portal.acl_users._doAddUser('user', 'secret', ['Member'], [])
-
-        self.login('admin')
-        self.portal.invokeFactory('Document', 'index_html', text="foo "*1000)
-        self.portal.invokeFactory('Folder', 'Docs')
-        self.logout()
+class Test(FCKPloneTestCase.FCKPloneTestCase):
 
     def testInstallation(self):
         expected = True
