@@ -110,7 +110,6 @@ class TestData:
 class Test(FCKPloneTestCase.FCKPloneTestCase):
 
     def afterSetUp(self):
-        self._refreshSkinData()
         self.wysiwyg = self.portal.portal_skins.fckeditor_plone.wysiwyg_fckeditor
 
 
