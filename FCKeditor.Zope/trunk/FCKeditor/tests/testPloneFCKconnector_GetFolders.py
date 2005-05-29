@@ -27,7 +27,7 @@ class Test(PloneTestCase.PloneTestCase):
 
     def afterSetUp(self):
         self.portal.portal_quickinstaller.installProduct('FCKeditor')
-        self.fckm = self.portal.portal_fckconnector
+        self.fckc = self.portal.portal_fckconnector
 
         self.portal.acl_users._doAddUser('admin', 'secret', ['Manager'], [])
         self.portal.acl_users._doAddUser('user', 'secret', ['Member'], [])
@@ -44,12 +44,12 @@ class Test(PloneTestCase.PloneTestCase):
         User = self.portal.acl_users.getUser('admin')
 
         expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
         # but only KeyErrors are caught
         CurrentFolder = []
-        self.assertRaises(TypeError, self.fckm.GetFolders, Type, CurrentFolder, User)
+        self.assertRaises(TypeError, self.fckc.GetFolders, Type, CurrentFolder, User)
 
     # the rest assume the folder exists
 
@@ -62,7 +62,7 @@ class Test(PloneTestCase.PloneTestCase):
         User = self.portal.acl_users.getUser('user')
 
         expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
     def testUserDoesHavePermission(self):
@@ -71,7 +71,7 @@ class Test(PloneTestCase.PloneTestCase):
         User = self.portal.acl_users.getUser('admin')
 
         expected = {'folders': ['Docs']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
     def testWorkflowIsHonored(self):
@@ -81,7 +81,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         # now you see it...
         expected = {'folders': ['Test']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
 
@@ -100,7 +100,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         # ...now you don't
         expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
     def testRootListingForMembers(self):
@@ -115,7 +115,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         # where is it?
         expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
         # The suggested workaround is to give them permission manually.
@@ -129,7 +129,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         # there it is!
         expected = {'folders': ['Docs']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
     # the rest assume the user has permission on the folder in question
@@ -141,7 +141,7 @@ class Test(PloneTestCase.PloneTestCase):
         User = self.portal.acl_users.getUser('user')
 
         expected = {'folders': ['Test']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
         # add another Folder and an Image for kicks
@@ -151,7 +151,7 @@ class Test(PloneTestCase.PloneTestCase):
         self.logout()
 
         expected = {'folders': ['Test', 'another-folder']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
 
@@ -162,7 +162,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         # now you see it
         expected = {'folders': ['Test']}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
         # make the Test folder private so Member's can't see it
@@ -173,7 +173,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         # ...now you don't
         expected = {'folders': []}
-        actual = self.fckm.GetFolders(Type, CurrentFolder, User)
+        actual = self.fckc.GetFolders(Type, CurrentFolder, User)
         self.assertEqual(d2t(expected), d2t(actual))
 
 

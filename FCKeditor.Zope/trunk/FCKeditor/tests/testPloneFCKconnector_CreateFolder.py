@@ -27,7 +27,7 @@ class Test(PloneTestCase.PloneTestCase):
 
     def afterSetUp(self):
         self.portal.portal_quickinstaller.installProduct('FCKeditor')
-        self.fckm = self.portal.portal_fckconnector
+        self.fckc = self.portal.portal_fckconnector
 
         self.portal.acl_users._doAddUser('admin', 'secret', ['Manager'], [])
         self.portal.acl_users._doAddUser('user', 'secret', ['Member'], [])
@@ -42,12 +42,12 @@ class Test(PloneTestCase.PloneTestCase):
         NewFolderName = 'Foo'
 
         expected = {'error_code': 110}
-        actual = self.fckm.CreateFolder(Type, CurrentFolder, NewFolderName)
+        actual = self.fckc.CreateFolder(Type, CurrentFolder, NewFolderName)
         self.assertEqual(d2t(expected), d2t(actual))
 
         # but only KeyErrors are caught
         CurrentFolder = []
-        self.assertRaises( TypeError, self.fckm.CreateFolder, Type
+        self.assertRaises( TypeError, self.fckc.CreateFolder, Type
                          , CurrentFolder, NewFolderName
                           )
 
@@ -61,7 +61,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         expected = {'error_code': 103}
         self.login('user')
-        actual = self.fckm.CreateFolder(Type, CurrentFolder, NewFolderName)
+        actual = self.fckc.CreateFolder(Type, CurrentFolder, NewFolderName)
         self.logout()
         self.assertEqual(d2t(expected), d2t(actual))
 
@@ -72,7 +72,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         expected = {'error_code': 0}
         self.login('admin')
-        actual = self.fckm.CreateFolder(Type, CurrentFolder, NewFolderName)
+        actual = self.fckc.CreateFolder(Type, CurrentFolder, NewFolderName)
         self.logout()
         self.assertEqual(d2t(expected), d2t(actual))
 
@@ -86,7 +86,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         expected = {'error_code': 101}
         self.login('admin')
-        actual = self.fckm.CreateFolder(Type, CurrentFolder, NewFolderName)
+        actual = self.fckc.CreateFolder(Type, CurrentFolder, NewFolderName)
         self.logout()
         self.assertEqual(d2t(expected), d2t(actual))
 
@@ -97,7 +97,7 @@ class Test(PloneTestCase.PloneTestCase):
 
         def createFolder(NewFolderName):
             self.login('admin')
-            return self.fckm.CreateFolder(Type, CurrentFolder, NewFolderName)
+            return self.fckc.CreateFolder(Type, CurrentFolder, NewFolderName)
             self.logout()
 
         # in 2.0.5 check_id catches bad Zope id's (among other things)
