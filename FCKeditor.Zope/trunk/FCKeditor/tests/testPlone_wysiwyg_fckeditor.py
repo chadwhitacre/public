@@ -5,15 +5,9 @@ if __name__ == '__main__':
 
 # Zope/Plone
 from AccessControl import getSecurityManager
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
 
-##
-# Tweak the test fixture
-##
-
-ZopeTestCase.installProduct('FCKeditor')
-
+# us
+from Products.FCKeditor.tests import FCKPloneTestCase
 
 ##
 # Define our tests
@@ -113,19 +107,11 @@ class TestData:
             frameborder="no" scrolling="no"></iframe>
 </div>"""
 
-class Test(PloneTestCase.PloneTestCase):
+class Test(FCKPloneTestCase.FCKPloneTestCase):
 
     def afterSetUp(self):
-        self.portal.portal_quickinstaller.installProduct('FCKeditor')
         self._refreshSkinData()
         self.wysiwyg = self.portal.portal_skins.fckeditor_plone.wysiwyg_fckeditor
-
-        self.portal.acl_users._doAddUser('admin', 'secret', ['Manager'], [])
-        self.portal.acl_users._doAddUser('user', 'secret', ['Member'], [])
-
-        self.login('admin')
-        self.portal.invokeFactory('Folder', 'Docs')
-        self.logout()
 
 
     # Everyone has permission.
@@ -161,6 +147,7 @@ class Test(PloneTestCase.PloneTestCase):
         self.logout()
 
     def testAnonymousHasPermission(self):
+        self.logout()
 
         # prove we are Anonymous
         expected = True
@@ -228,17 +215,20 @@ class Test(PloneTestCase.PloneTestCase):
             'Mozilla/5.0 (X11; U; Linux i586; en-US; rv:1.3) Gecko/20030313'
 
         self.login('admin')
-        self.portal.invokeFactory('Document', 'Doc', text='Yar yar.\n\n yar yar.')
+        self.portal.Docs.Test.invokeFactory( 'Document'
+                                           , 'Doc'
+                                           , text='Yar yar.\n\n yar yar.'
+                                            )
         self.logout()
 
-        context = self.portal.restrictedTraverse('Docs/Doc')
+        context = self.portal.restrictedTraverse('Docs/Test/Doc')
 
         # structured text is the default
         expected = 'structured-text'
         actual = context.text_format
         self.assertEqual(expected, actual)
 
-        wysiwyg = self.portal.restrictedTraverse('Docs/Doc/wysiwyg_fckeditor')
+        wysiwyg = self.portal.restrictedTraverse('Docs/Test/Doc/wysiwyg_fckeditor')
         expected = TestData.STX
         actual = wysiwyg('text',context.text)
         self.assertEqual(expected, actual)
@@ -248,15 +238,18 @@ class Test(PloneTestCase.PloneTestCase):
             'Mozilla/5.0 (X11; U; Linux i586; en-US; rv:1.3) Gecko/20030313'
 
         self.login('admin')
-        self.portal.invokeFactory('Document', 'Doc', text='Yar yar.\n\n yar yar.')
+        self.portal.Docs.Test.invokeFactory( 'Document'
+                                           , 'Doc'
+                                           , text='Yar yar.\n\n yar yar.'
+                                            )
         self.logout()
 
-        context = self.portal.restrictedTraverse('Docs/Doc')
+        context = self.portal.restrictedTraverse('Docs/Test/Doc')
 
         # change text_format to plain
         context.text_format = 'plain'
 
-        wysiwyg = self.portal.restrictedTraverse('Docs/Doc/wysiwyg_fckeditor')
+        wysiwyg = self.portal.restrictedTraverse('Docs/Test/Doc/wysiwyg_fckeditor')
         expected = TestData.PLAIN
         actual = wysiwyg('text',context.text)
         self.assertEqual(expected, actual)
@@ -266,15 +259,18 @@ class Test(PloneTestCase.PloneTestCase):
             'Mozilla/5.0 (X11; U; Linux i586; en-US; rv:1.3) Gecko/20030313'
 
         self.login('admin')
-        self.portal.invokeFactory('Document', 'Doc', text='Yar yar.\n\n yar yar.')
+        self.portal.Docs.Test.invokeFactory( 'Document'
+                                           , 'Doc'
+                                           , text='Yar yar.\n\n yar yar.'
+                                            )
         self.logout()
 
-        context = self.portal.restrictedTraverse('Docs/Doc')
+        context = self.portal.restrictedTraverse('Docs/Test/Doc')
 
         # change text_format to html
         context.text_format = 'html'
 
-        wysiwyg = self.portal.restrictedTraverse('Docs/Doc/wysiwyg_fckeditor')
+        wysiwyg = self.portal.restrictedTraverse('Docs/Test/Doc/wysiwyg_fckeditor')
         expected = TestData.HTML
         actual = wysiwyg('text',context.text)
         self.assertEqual(expected, actual)

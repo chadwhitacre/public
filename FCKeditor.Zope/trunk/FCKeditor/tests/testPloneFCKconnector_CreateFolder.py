@@ -3,38 +3,18 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-# Zope/Plone
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
-
 # us
-from Products.FCKeditor.tests import dict2tuple as d2t
-from Products.FCKeditor.PloneFCKconnector import PloneFCKconnector
-
-
-##
-# Tweak the test fixture
-##
-
-ZopeTestCase.installProduct('FCKeditor')
+from Products.FCKeditor.tests import FCKPloneTestCase, dict2tuple as d2t
 
 
 ##
 # Define our tests
 ##
 
-class Test(PloneTestCase.PloneTestCase):
+class Test(FCKPloneTestCase.FCKPloneTestCase):
 
     def afterSetUp(self):
-        self.portal.portal_quickinstaller.installProduct('FCKeditor')
         self.fckc = self.portal.portal_fckconnector
-
-        self.portal.acl_users._doAddUser('admin', 'secret', ['Manager'], [])
-        self.portal.acl_users._doAddUser('user', 'secret', ['Member'], [])
-
-        self.login('admin')
-        self.portal.invokeFactory('Folder', 'Docs')
-        self.logout()
 
     def testCurrentFolderDoesntExist(self):
         Type = ''

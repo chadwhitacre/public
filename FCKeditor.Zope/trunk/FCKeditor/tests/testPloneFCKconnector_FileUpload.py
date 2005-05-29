@@ -3,51 +3,19 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-# Zope/Plone
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
-from ZPublisher.HTTPRequest import FileUpload as ZopeFileUpload
-#from Products.PageTemplates.tests.testZopePageTemplate import DummyFileUpload
-from cgi import FieldStorage
-
 # us
-from Products.FCKeditor.tests import dict2tuple as d2t
-from Products.FCKeditor.PloneFCKconnector import PloneFCKconnector
-
-
-##
-# Tweak the test fixture
-##
-
-ZopeTestCase.installProduct('FCKeditor')
+from Products.FCKeditor.tests import FCKPloneTestCase, DummyFileUpload, \
+                                     dict2tuple as d2t
 
 
 ##
 # Define our tests
 ##
 
-class DummyFileUpload(file):
-    filename = ''
-    headers = {'content-type':'application/octet-stream'} # whatever
-    def __init__(self, filename):
-        self.filename = filename
-        file.__init__(self, 'blank.pdf')
-    def __repr__(self):
-        return "<DummyFileUpload named '%s'>" % self.filename
-
-
-class Test(PloneTestCase.PloneTestCase):
+class Test(FCKPloneTestCase.FCKPloneTestCase):
 
     def afterSetUp(self):
-        self.portal.portal_quickinstaller.installProduct('FCKeditor')
         self.fckc = self.portal.portal_fckconnector
-
-        self.portal.acl_users._doAddUser('admin', 'secret', ['Manager'], [])
-        self.portal.acl_users._doAddUser('user', 'secret', ['Member'], [])
-
-        self.login('admin')
-        self.portal.invokeFactory('Folder', 'Docs')
-        self.logout()
 
     def testCurrentFolderDoesntExist(self):
         Type = ''
@@ -93,11 +61,11 @@ class Test(PloneTestCase.PloneTestCase):
 
 
     # The name collision tests would properly be in testFCKconnector.py, since
-    # this functionality has been factored out into a method of FCKconnector.
+   # this functionality has been factored out into a method of FCKconnector.
 
     def testBasicNameCollision(self):
         Type = ''
-        CurrentFolder = '/'
+        CurrentFolder = '/Docs/Test/'
         NewFile = DummyFileUpload('blank.pdf')
 
         # first one goes up fine, as expected
@@ -117,7 +85,7 @@ class Test(PloneTestCase.PloneTestCase):
 
     def testMultipleNameCollision(self):
         Type = ''
-        CurrentFolder = '/Docs'
+        CurrentFolder = '/Docs/Test/'
         NewFile = DummyFileUpload('blank.pdf')
 
         # upload a whole mess of files
@@ -137,13 +105,13 @@ class Test(PloneTestCase.PloneTestCase):
                    , 'blank(21).pdf', 'blank(22).pdf', 'blank(23).pdf'
                    , 'blank(24).pdf'
                     ]
-        actual = self.portal.Docs.objectIds()
+        actual = self.portal.Docs.Test.objectIds()
         self.assertEqual(expected, actual)
 
 
     def testOutOfSequenceNames(self):
         Type = ''
-        CurrentFolder = '/Docs'
+        CurrentFolder = '/Docs/Test/'
 
         self.login('admin')
 
@@ -159,12 +127,12 @@ class Test(PloneTestCase.PloneTestCase):
         self.logout()
 
         expected = ['blank.pdf', 'blank(4).pdf', 'blank(5).pdf']
-        actual = self.portal.Docs.objectIds()
+        actual = self.portal.Docs.Test.objectIds()
         self.assertEqual(expected, actual)
 
     def testBigNumberedNames(self):
         Type = ''
-        CurrentFolder = '/Docs'
+        CurrentFolder = '/Docs/Test/'
 
         self.login('admin')
 
@@ -184,12 +152,12 @@ class Test(PloneTestCase.PloneTestCase):
                    , 'blank(999923490303934890).pdf'
                    , 'blank(999923490303934891).pdf'
                     ]
-        actual = self.portal.Docs.objectIds()
+        actual = self.portal.Docs.Test.objectIds()
         self.assertEqual(expected, actual)
 
     def testEmptyParensHandledProperly(self):
         Type = ''
-        CurrentFolder = '/Docs'
+        CurrentFolder = '/Docs/Test/'
         NewFile = DummyFileUpload('blank().pdf')
 
         self.login('admin')
@@ -200,12 +168,12 @@ class Test(PloneTestCase.PloneTestCase):
         expected = [ 'blank().pdf'
                    , 'blank()(1).pdf'
                     ]
-        actual = self.portal.Docs.objectIds()
+        actual = self.portal.Docs.Test.objectIds()
         self.assertEqual(expected, actual)
 
     def testNoExtensionHandledProperly(self):
         Type = ''
-        CurrentFolder = '/Docs'
+        CurrentFolder = '/Docs/Test/'
         NewFile = DummyFileUpload('blank')
 
         self.login('admin')
@@ -216,12 +184,12 @@ class Test(PloneTestCase.PloneTestCase):
         expected = [ 'blank'
                    , 'blank(1)'
                     ]
-        actual = self.portal.Docs.objectIds()
+        actual = self.portal.Docs.Test.objectIds()
         self.assertEqual(expected, actual)
 
     def testMultipleDotsHandledProperly(self):
         Type = ''
-        CurrentFolder = '/Docs'
+        CurrentFolder = '/Docs/Test/'
         NewFile = DummyFileUpload('blank.foo.hey.pdf')
 
         self.login('admin')
@@ -232,7 +200,7 @@ class Test(PloneTestCase.PloneTestCase):
         expected = [ 'blank.foo.hey.pdf'
                    , 'blank.foo.hey(1).pdf'
                     ]
-        actual = self.portal.Docs.objectIds()
+        actual = self.portal.Docs.Test.objectIds()
         self.assertEqual(expected, actual)
 
 
