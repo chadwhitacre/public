@@ -1,6 +1,7 @@
 packaging
     decide on license (see README.stx)
         prolly do want to include with every file, since we are advocating cut/paste
+        FCKeditor is LGPL, so prolly use that (I expect I have to)
     release 0.9.0 -- first development release
     === DONE ===
     replace hasattr with getattr
@@ -15,8 +16,8 @@ plone -- wysiwyg_support
     === DONE ===
     needs to support different storage formats (html, plain, stx)
 documentation
-factor out a TestCase for speed -- before: 24, after: 6 (!)
 === DONE ===
+factor out a TestCase for speed -- before: 24, after: 6 (!)
 test connector ttw
 rename fckm to fckc in tests
 factor out name collision logic
