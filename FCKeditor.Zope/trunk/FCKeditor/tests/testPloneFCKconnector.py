@@ -6,16 +6,7 @@ if __name__ == '__main__':
 # Zope/Plone
 from AccessControl import getSecurityManager
 from Products.FCKeditor.PloneFCKconnector import PloneFCKconnector
-from Products.FCKeditor.tests.testPloneFCKconnector_FileUpload import \
-                                                                DummyFileUpload
-
-
-##
-# Tweak the test fixture
-##
-
-from Testing import ZopeTestCase
-from Products.FCKeditor.tests import FCKPloneTestCase
+from Products.FCKeditor.tests import FCKPloneTestCase, DummyFileUpload
 
 
 ##

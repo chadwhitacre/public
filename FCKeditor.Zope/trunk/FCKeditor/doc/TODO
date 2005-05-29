@@ -15,7 +15,7 @@ plone -- wysiwyg_support
     === DONE ===
     needs to support different storage formats (html, plain, stx)
 documentation
-factor out a TestCase for speed
+factor out a TestCase for speed -- before: 24, after: 6 (!)
 === DONE ===
 test connector ttw
 rename fckm to fckc in tests

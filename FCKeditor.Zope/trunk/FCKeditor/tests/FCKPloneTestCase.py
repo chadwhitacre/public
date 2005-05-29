@@ -13,13 +13,11 @@ from Products.CMFPlone.tests import PloneTestCase
 class FCKPloneTestCase(PloneTestCase.PloneTestCase):
     pass
 
-
 def customizePlone(app):
     _start = time.time(); ZopeTestCase._print('Customizing Plone Site ... ')
 
     # install ourselves in Plone-space
     app.portal.portal_quickinstaller.installProduct('FCKeditor')
-    app.fckc = app.portal.portal_fckconnector
 
     # create a couple users
     app.portal.acl_users._doAddUser('admin', 'secret', ['Manager'], [])
@@ -32,6 +30,10 @@ def customizePlone(app):
     # set up some content
     app.portal.invokeFactory('Document', 'index_html', text="foo "*1000)
     app.portal.invokeFactory('Folder', 'Docs')
+    app.portal.Docs.invokeFactory('Folder', id='Test')
+    app.portal.Docs.invokeFactory('Document', id='Doc')
+    app.portal.Docs.invokeFactory('Image', id='Img')
+    app.portal.Docs.invokeFactory('File', id='PDF')
 
     # logout and post changes
     noSecurityManager()
