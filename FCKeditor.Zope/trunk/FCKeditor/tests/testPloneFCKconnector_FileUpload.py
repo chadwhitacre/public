@@ -61,7 +61,7 @@ class Test(FCKPloneTestCase.FCKPloneTestCase):
 
 
     # The name collision tests would properly be in testFCKconnector.py, since
-   # this functionality has been factored out into a method of FCKconnector.
+    # this functionality has been factored out into a method of FCKconnector.
 
     def testBasicNameCollision(self):
         Type = ''
@@ -204,8 +204,28 @@ class Test(FCKPloneTestCase.FCKPloneTestCase):
         self.assertEqual(expected, actual)
 
 
-    def estCorrectMetaTypeCreated(self):
-        pass
+    # meta_type
+
+    def testCorrectMetaTypeCreated(self):
+        CurrentFolder = '/Docs/Test/'
+
+        self.login('admin')
+
+        Type = 'Image'
+        NewFile = DummyFileUpload('blank.pdf')
+        self.fckc.FileUpload(Type, CurrentFolder, NewFile)
+
+        Type = 'File'
+        NewFile = DummyFileUpload('blank.jpg')
+        self.fckc.FileUpload(Type, CurrentFolder, NewFile)
+
+        self.logout()
+
+        expected = ['Portal File','Portal Image']
+        actual = [o.meta_type for o in self.portal.Docs.Test.objectValues()]
+        actual.sort()
+        self.assertEqual(expected, actual)
+
 
 ##
 # Assemble into a suite and run
