@@ -40,8 +40,11 @@ class FCKeditor:
 
     def __init__(self, InstanceName='MyEditor'):
 
-        # defaults -- using instance attrs instead of class attrs so we can
-        # use self.__dict__
+        # Set defaults.
+        # =============
+        # We use instance attrs instead of class attrs so we can use
+        # self.__dict__
+
         self.InstanceName       = self._scrub(InstanceName)
         self.Width              = '100%'
         self.Height             = '200px'
@@ -49,13 +52,13 @@ class FCKeditor:
         self.Value              = ''
         self.BasePath           = '/FCKeditor/'
         self.ConfigQuerystring  = ''
-
         self.Config = {}
 
     _bad_chars = re.compile(r'[^a-zA-Z0-9-_]')
     def _scrub(self, InstanceName):
-        """given an id, make it safe for use as an InstanceName, which is used
-        as a CSS identifier. See:
+        """Given an id, make it safe for use as an InstanceName.
+
+        InstanceName is used as a CSS identifier. See:
 
             http://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
 
@@ -73,10 +76,8 @@ class FCKeditor:
         return scrubbed
 
 
-
     def Create(self):
-        """Return an HTML snippet which instantiates an FCKeditor or a plain
-        textarea.
+        """Return HTML to instantiate an FCKeditor or a plain textarea.
         """
 
         if getattr(self, 'Compatible', None) is None:
@@ -111,10 +112,19 @@ class FCKeditor:
         return (w, h)
 
 
-
     def SetCompatible(self, useragent):
         """Given a browser's user-agent string, set a boolean on self and
         return it.
+        """
+        self.Compatible = self.IsCompatible(useragent)
+        return self.Compatible
+
+    def IsCompatible(useragent):
+        """Given a browser's user-agent string, return a boolean.
+
+        This is factored out so that framework scripts can test for
+        compatibility without instantiating an object.
+
         """
 
         useragent = useragent.lower()
@@ -136,5 +146,5 @@ class FCKeditor:
     	    if version is not None:
 	            Compatible = int(version) >= 20030210
 
-        self.Compatible = Compatible
         return Compatible
+    IsCompatible = staticmethod(IsCompatible)

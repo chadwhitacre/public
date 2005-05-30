@@ -204,6 +204,9 @@ class Test(FCKPloneTestCase.FCKPloneTestCase):
         self.assertEqual(expected, actual)
 
 
+    def estCorrectMetaTypeCreated(self):
+        pass
+
 ##
 # Assemble into a suite and run
 ##
