@@ -11,6 +11,13 @@
            value="html"
            tal:condition="compatible" />
 
+
+    <!-- The following widget is taken from:
+
+            CMFPlone/skins/plone_wysiwyg/wysiwyg_support.pt
+
+    -->
+
     <div class="field"
          tal:define="tabindex tabindex/next;
                      default_text_format python: getattr( here
