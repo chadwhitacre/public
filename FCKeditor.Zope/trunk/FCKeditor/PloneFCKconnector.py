@@ -43,14 +43,11 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
 
     security.declarePublic('connector')
     def connector(self, REQUEST):
-
-        """REQUEST acts like a dict, so we could hand it directly to our
-        superclass. However, we need to set response headers based on Command,
-        so we end up overriding. We also stick the user in there so we can
-        perform security checks against it in the Get* methods.
-
+        """Override the base method to do some Zope-specific things.
         """
 
+        # Parse the querystring if necessary.
+        # ===================================
         # For GetFolders, GetFoldersAndFiles, and CreateFolder, FCKeditor issues
         # a GET and passes its parameters in the querystring. For FileUpload,
         # FCKeditor does a POST but passes all parameters except NewFile in a
@@ -61,8 +58,9 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
         # For forms with method="GET" the form action querystring is overwritten
         # by the form elements. For POSTs, however, the action querystring does
         # end up in the QUERY_STRING CGI variable. However, Zope doesn't
-        # automatically parse this querystring for form actions, so for
-        # FileUploads we have to manually add this info the REQUEST.form
+        # automatically parse this querystring for form actions (only for
+        # regular urls), so for FileUploads we have to manually add this info
+        # to REQUEST.form.
 
         if REQUEST.get('NewFile', None) is not None:
             # we are processing a FileUpload
@@ -75,7 +73,20 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
                     raise FCKexception, "Malformed query string: " +\
                                         REQUEST['QUERY_STRING']
 
+
+        # Validate the incoming dictionary.
+        # =================================
+        # We add the current user so that GetFolders and GetFoldersAndFiles
+        # can use it to perform security checks. CreateFolder and FileUpload
+        # trigger security by calling invokeFactory.
+
         data = self._validate(REQUEST)
+        data['User'] = REQUEST.get('AUTHENTICATED_USER')
+
+
+        # Set http response headers.
+        # ==========================
+
         Command = data['Command']
         if Command in ( 'GetFolders'
                       , 'GetFoldersAndFiles'
@@ -85,10 +96,15 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
         REQUEST.RESPONSE.setHeader('Cache-Control', 'no-cache')
 
 
-        data['User'] = REQUEST.get('AUTHENTICATED_USER')
+
+        # Do command-specific logic and return.
+        # =====================================
+        # The logic method returns a dictionary that contains keys specific
+        # to its response body. These are added to the main dict, and handed
+        # off to the response processor.
 
         logic_method = getattr(self, Command)
-        data.update(logic_method(**data)) # this adds a new key or two
+        data.update(logic_method(**data))
 
         response_method = getattr(self, '%s_response' % Command)
         return response_method(**data)
@@ -112,6 +128,9 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
     def GetFolders(self, Type, CurrentFolder, User, **other):
         """Get the list of the children folders of a folder."""
 
+        # Get the folder whose contents we want to list.
+        # ==============================================
+
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
             exists = True
@@ -121,6 +140,10 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
             exists = False
             folders = []
 
+
+        # Get the contents.
+        # =================
+
         if exists:
             if not User.has_permission(LIST, folder):
                 folders = []
@@ -128,6 +151,10 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
                 folders = folder.objectValues('Plone Folder')
                 folders = [o.getId() for o in folders
                                            if User.has_permission(LIST, o)]
+
+
+        # Format and return.
+        # ==================
 
         return { 'folders' : folders }
 
@@ -137,6 +164,9 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
     def GetFoldersAndFiles(self, Type, CurrentFolder, User, **other):
         """Gets the list of the children folders and files of a folder."""
 
+        # Get the folder whose contents we want to list.
+        # ==============================================
+
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
             exists = True
@@ -145,18 +175,27 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
         except KeyError: # The CurrentFolder doesn't exist.
             exists = False
             folders = files = []
+
+
+        # Get the contents.
+        # =================
+
         if exists:
             if not User.has_permission(LIST, folder):
-                # return an empty page if no permissions
+                # Return an empty list if the user doesn't have permission.
                 folders = files = []
             else:
-                # get folders
+                # Get folders.
+                # ============
                 folders = folder.objectValues('Plone Folder')
                 folders = [o.getId() for o in folders
                                            if User.has_permission(LIST, o)]
 
-                # get files
-                # map FCK Type to Zope meta_type
+
+                # Get files.
+                # ============
+
+                # Map FCK Type to Zope meta_type.
                 if Type == 'Image':
                     meta_types = ('Portal Image',)
                 else:
@@ -166,6 +205,10 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
 
                 files = [self._file_info(o) for o in files
                                                if User.has_permission(VIEW, o)]
+
+
+        # Format and return.
+        # ==================
 
         return { 'folders' : folders
                , 'files'   : files
@@ -200,12 +243,20 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
 
         error_code = 0
 
+
+        # Get the parent of our new folder.
+        # =================================
+
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
         except ConflictError: # Always raise.
             raise
         except KeyError: # The CurrentFolder doesn't exist.
             error_code = 110
+
+
+        # Attempt to create the new folder.
+        # =================================
 
         if error_code == 0:
             if NewFolderName in folder.contentIds():
@@ -230,6 +281,10 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
                     print_exc(file=cap)
                     LOG('FCKeditor', WARNING, cap.read())
                     cap.close()
+
+
+        # Format and return.
+        # ==================
 
         return { 'error_code' : error_code }
 
@@ -258,6 +313,10 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
 
         error_code = 0
 
+
+        # Get the parent of our new file.
+        # ===============================
+
         try:
             folder = self.unrestrictedTraverse('..'+CurrentFolder)
         except ConflictError: # Always raise.
@@ -266,6 +325,10 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
             error_code = 202
 
         if error_code == 0:
+
+
+            # Determine the filename to use.
+            # ==============================
 
             NewFileName = NewFile.filename
             filenames = folder.contentIds()
@@ -276,9 +339,24 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
                 # filename is already in use; take evasive action
                 error_code = 201
                 FinalFileName = self._incrementFileName(NewFileName, filenames)
+
+
+            # Map FCK Type to Zope meta_type.
+            # ===============================
+
+            #if Type == 'Image'
+            #    meta_type = 'Image'
+            #else:
+            #    meta_type = 'File'
+            meta_type = 'File'
+
+
+            # Attempt to create the new file.
+            # ===============================
+
             try:
                 # Use invokeFactory so that we trigger security.
-                folder.invokeFactory('File', FinalFileName, file=NewFile)
+                folder.invokeFactory(meta_type, FinalFileName, file=NewFile)
                 if error_code <> 201:
                     error_code = 0
             except ConflictError: # Always raise.
@@ -295,11 +373,14 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
                 LOG('FCKeditor', WARNING, cap.read())
                 cap.close()
 
+
+        # Format and return.
+        # ===============================
+
         if error_code == 201:
             param_string = "%s, '%s'" % (str(error_code), FinalFileName)
         else:
             param_string = str(error_code)
-
         return { 'param_string' : str(param_string) }
 
 InitializeClass(PloneFCKconnector)

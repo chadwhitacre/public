@@ -1,17 +1,81 @@
-<html i18n:domain="plone">
-
-<div metal:define-macro="wysiwygEditorBox">
-
-    <tal:x replace="structure python:context.wysiwyg_fckeditor( inputname
-                                                              , inputvalue
-                                                               )" />
-
-</div>
-<div metal:define-macro="textFormatSelector">
+<metal:x define-macro="wysiwygEditorBox"
+         tal:replace="structure python:context.wysiwyg_fckeditor( inputname
+                                                                , inputvalue
+                                                                 )">
+</metal:x>
+<metal:x define-macro="textFormatSelector"
+         tal:define="compatible context/wysiwyg_compatible">
 
     <input type="hidden"
            name="text_format"
-           value="html" />
+           value="html"
+           tal:condition="compatible" />
 
-</div>
-</html>
+    <div class="field"
+         tal:define="tabindex tabindex/next;
+                     default_text_format python: getattr( here
+                                                        , 'text_format'
+                                                        , 'structured-text'
+                                                         );
+                     text_format python:request.get( 'text_format'
+                                                   , default_text_format
+                                                    );"
+         tal:condition="not:compatible">
+
+        <label for="text_format" i18n:translate="label_format">
+            Format
+        </label>
+
+        <div class="formHelp" i18n:translate="help_format_wysiwyg">
+            If you are unsure of which format to use, just select Plain Text
+            and type the document as you usually do.
+        </div>
+
+        <input class="noborder"
+               type="radio"
+               name="text_format"
+               value="structured-text"
+               tabindex=""
+               id="cb_structuredtext"
+               tal:attributes="checked python:test(
+                                      text_format=='structured-text', 1, None
+                                                   );
+                               tabindex tabindex;"
+               />
+        <label for="cb_structuredtext" i18n:translate="structured_text">
+            Structured Text
+        </label> <br />
+
+        <input class="noborder"
+               type="radio"
+               name="text_format"
+               value="html"
+               tabindex=""
+               id="cb_html"
+               tal:attributes="checked python:test(
+                                      text_format=='html', 1, None
+                                                   );
+                               tabindex tabindex;"
+               />
+        <label for="cb_html" i18n:translate="html">
+            HTML
+        </label> <br />
+
+        <input class="noborder"
+               type="radio"
+               name="text_format"
+               value="plain"
+               tabindex=""
+               id="cb_plain"
+               tal:attributes="checked python:test(
+                                      text_format=='plain', 1, None
+                                                   );
+                               tabindex tabindex;"
+               />
+        <label for="cb_plain" i18n:translate="plain_text">
+            Plain Text
+        </label>
+
+    </div>
+
+</metal:x>

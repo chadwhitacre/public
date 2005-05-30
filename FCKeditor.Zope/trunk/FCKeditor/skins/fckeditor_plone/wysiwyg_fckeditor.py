@@ -47,6 +47,8 @@ elif text_format == 'plain':
     HTML = plain2html(inputvalue)
 elif text_format == 'structured-text':
     HTML = stx2html(inputvalue)
+#elif text_format == 'restructured-text':
+#    HTML = rest2html(inputvalue)
 else:
     HTML = inputvalue
 fckeditor.SetProperty('Value', HTML)
