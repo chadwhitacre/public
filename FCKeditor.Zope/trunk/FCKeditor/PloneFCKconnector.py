@@ -344,7 +344,6 @@ class PloneFCKconnector(FCKconnector, UniqueObject, PropertyManager,
             # Map FCK Type to Zope meta_type.
             # ===============================
 
-            #meta_type = 'File'
             if Type == 'Image':
                 meta_type = 'Image'
             else:
