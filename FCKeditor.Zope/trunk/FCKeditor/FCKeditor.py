@@ -6,7 +6,12 @@ from xml.sax import saxutils
 # us
 from Products.FCKeditor import FCKexception
 
-class FCKtemplates:
+class FCKeditor:
+    """Provide API for tuning and instantiating an FCKeditor DHTML widget.
+    """
+
+    # Define the templates.
+    # =====================
 
     COMPATIBLE = """\
 <div>
@@ -33,10 +38,6 @@ class FCKtemplates:
     </textarea>
 </div>"""
 
-
-class FCKeditor:
-    """Provide API for tuning and instantiating an FCKeditor DHTML widget.
-    """
 
     def __init__(self, InstanceName='MyEditor'):
 
@@ -94,12 +95,12 @@ class FCKeditor:
             # marshall config into a querystring
             self.ConfigQuerystring = urlencode(self.Config) # from urllib
 
-            return FCKtemplates.COMPATIBLE % self.__dict__
+            return self.COMPATIBLE % self.__dict__
         else:
             # escape the initial HTML value for use inside a <textarea>
             self.Value = saxutils.escape(self.Value)
 
-            return FCKtemplates.INCOMPATIBLE % self.__dict__
+            return self.INCOMPATIBLE % self.__dict__
 
     def _parse_dimensions(self, w, h):
         """Given a width and a height either as ints or strings, return a tuple
@@ -146,5 +147,6 @@ class FCKeditor:
     	    if version is not None:
 	            Compatible = int(version) >= 20030210
 
+        #return False # for testing
         return Compatible
     IsCompatible = staticmethod(IsCompatible)

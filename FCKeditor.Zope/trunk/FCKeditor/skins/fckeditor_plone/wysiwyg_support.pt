@@ -1,6 +1,7 @@
 <metal:x define-macro="wysiwygEditorBox"
          tal:replace="structure python:context.wysiwyg_fckeditor( inputname
                                                                 , inputvalue
+                                                                , tabindex
                                                                  )">
 </metal:x>
 <metal:x define-macro="textFormatSelector"
