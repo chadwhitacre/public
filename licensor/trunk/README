@@ -1,0 +1,27 @@
+(c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+This program is beerware. If you like it, buy me a beer someday.
+No warranty is expressed or implied.
+
+Contents of this distribution:
+
+    Makefile    full installation instructions
+
+    README      this file
+
+    licensor.1  manual page
+
+    licensor.py script itself
+
+
+To install:
+
+    % cd ~
+    % svn export http://svn.zetadev.com/public/licensor/trunk licensor
+    % cd licensor
+    % make install
+
+
+To uninstall:
+
+    % cd ~/licensor
+    % make uninstall
