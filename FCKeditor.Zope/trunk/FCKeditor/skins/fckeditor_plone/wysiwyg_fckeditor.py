@@ -1,4 +1,4 @@
-##parameters=inputname, inputvalue
+##parameters=inputname, inputvalue, tabindex=0
 
 # Imports
 # =======
@@ -6,14 +6,14 @@
 import AccessControl
 from Products.PythonScripts.standard import structured_text as stx2html, \
                                             newline_to_br   as plain2html
-from Products.FCKeditor import ZopeFCKeditor
+from Products.FCKeditor import PloneFCKeditor
 
 
 
 # Instantiate an FCKeditor.
 # =========================
 
-fckeditor = ZopeFCKeditor(inputname)
+fckeditor = PloneFCKeditor(inputname)
 
 
 
@@ -23,6 +23,7 @@ fckeditor = ZopeFCKeditor(inputname)
 fckeditor.SetConfig('CustomConfigurationsPath', '/fckcustom.js')
 fckeditor.SetCompatible(context.REQUEST['HTTP_USER_AGENT'])
 fckeditor.SetProperty('Height', 500) # default is 200 -- too small
+fckeditor.SetProperty('tabindex', tabindex)
 
 user = AccessControl.getSecurityManager().getUser()
 if user.has_role(['Manager',]):

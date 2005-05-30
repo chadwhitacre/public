@@ -10,13 +10,16 @@ packaging
     prolly drop CPS skin
     QI skins in reverse order
 plone -- wysiwyg_support
-    needs to play nice with other editors (epoz, kupu, etc.)
-    tabindex obj not being called
-    stylesheets?
-    styles.xml?
     === DONE ===
     needs to support different storage formats (html, plain, stx)
     be smarter about showing format options or not
+    tabindex
+    === POSTPONED ===
+    inserts extra paragraphs at beginning
+    stylesheets?
+    styles.xml?
+    text vs. cooked_text?
+    needs to play nice with other editors (epoz, kupu, etc.)
 documentation
     README
     === DONE ===
