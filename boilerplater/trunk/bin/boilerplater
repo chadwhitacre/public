@@ -37,7 +37,7 @@ __author__ = 'Chad Whitacre <chad [at] zetaweb [dot] com>'
 import os
 import sys
 from sets import Set
-from Boilerplater import Boilerplater
+from Boilerplater.Boilerplater import Boilerplater
 
 if __name__ == '__main__':
 
