@@ -11,12 +11,11 @@ classifiers = [
   , 'Programming Language :: Python'
   , 'Topic :: Software Development :: Build Tools'
                 ]
-
 setup( name = 'boilerplater'
      , version = '0.1'
      , data_files=[('/usr/local/bin/', ['bin/boilerplater'])]
      , package_dir = {'':'site-packages'}
-     , packages = ['Boilerplater']
+     , packages = ['Boilerplater', 'Boilerplater.Files']
      , description = 'Boilerplater adds boilerplate to a tree of files.'
      , author = 'Chad Whitacre'
      , author_email = 'chad [at] zetaweb [dot] com'
