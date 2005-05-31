@@ -36,7 +36,7 @@ class TestData:
     <textarea name="MyEditor"
               rows="4" cols="40"
               style="width: 100%; height: 200px;"
-              wrap="virtual" />
+              wrap="virtual">
         """+"""
     </textarea>
 </div>"""
@@ -80,7 +80,7 @@ class TestData:
     <textarea name="CustomEditor"
               rows="4" cols="40"
               style="width: 80%; height: 400px;"
-              wrap="virtual" />
+              wrap="virtual">
         &lt;html&gt;
 &lt;head&gt;
     &lt;title&gt;TEST&lt;/title&gt;

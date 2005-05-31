@@ -36,15 +36,15 @@ class PloneFCKeditor(FCKeditor):
 </div>"""
 
     INCOMPATIBLE = """\
-    <div>
-        <textarea name="%(InstanceName)s"
-                  rows="4" cols="40"
-                  style="width: %(Width)s; height: %(Height)s;"
-                  wrap="virtual"
-                  tabindex="%(tabindex)s" />
-            %(Value)s
-        </textarea>
-    </div>"""
+<div>
+    <textarea name="%(InstanceName)s"
+              rows="4" cols="40"
+              style="width: %(Width)s; height: %(Height)s;"
+              wrap="virtual"
+              tabindex="%(tabindex)s">
+        %(Value)s
+    </textarea>
+</div>"""
 
 
 
