@@ -18,24 +18,30 @@
 #  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                #
 #                                                                             #
 ###################################################################BOILERPLATE#
+
 """This script walks the tree at ../skins/fckeditor_base/FCKeditor and compiles
-all of files with extension .pt as page templates. With no arguments it prints
-out a summary of errors and warnings for all files. Files with errors are
+all of the files with extension .pt as page templates. With no arguments it
+prints out a summary of errors and warnings for all files. Files with errors are
 indexed in the summary. Pass one of those integers to the script for details on
 that file. Examples:
 
-  % python testTemplates.py
+  $ python testTemplates.py
    #  File                                                          Err  Warn
   ===========================================================================
    1  editor/fckdialog.html.pt                                       x
    2  editor/fckdebug.html.pt                                        x
    3  editor/dialog/fck_about.html.pt                                x
   ...
-  % python testTemplates.py
+  $ python testTemplates.py 8
   file: editor/filemanager/browser/default/frmresourceslist.html.pt
 
   error: ['Compilation failed', 'TAL.HTMLTALParser.NestingError: Open tags
   ...
+
+Note that there appear to be some red herrings, especially with XML page
+templates. I.e., files that throw an error in this script, although they appear
+to work fine in real life. I didn't take the time to track down what was going
+on.
 
 """
 
