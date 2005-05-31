@@ -10,7 +10,7 @@ from ConfigParser import RawConfigParser
 
 
 class EOLToolkit:
-    """toolkit for cleaning up line endings in a tree
+    """This is a toolkit for cleaning up line endings in a tree.
     """
 
     __version__ = '0.9'
@@ -19,12 +19,16 @@ class EOLToolkit:
         pass
 
 
-    def __call__(self, subcommand, path):
-        getattr(self, subcommand)(path)
+    def __call__(self, subcommand, path, to_windows):
+        method = getattr(self, subcommand)
+        if subcommand == 'clean':
+            method(path, to_windows)
+        else:
+            method(path)
 
 
     def _confglobs(self):
-        """get a list of patterns that match text files from the svn config
+        """Get a list of patterns that match text files from the svn config.
         """
 
         config = RawConfigParser()
@@ -32,7 +36,7 @@ class EOLToolkit:
 
         config.read(os.path.expanduser('~/.subversion/config'))
         if not config.has_section('auto-props'):
-            print 'your subversion config file has no auto-props section'
+            print 'Your subversion config file has no auto-props section.'
             sys.exit(1)
 
         autoprops = config.options('auto-props')
@@ -45,8 +49,8 @@ class EOLToolkit:
 
 
     def confgen(self, top):
-        """given a tree root, walk the tree and generate an auto-props section
-        based on the filenames found
+        """Given a tree root, walk the tree and generate an auto-props section
+        based on the filenames found.
         """
 
         globs = Set()
@@ -59,9 +63,12 @@ class EOLToolkit:
                     pattern = parts[-1]
                 globs.add(pattern)
 
-            # skip svn directories
-            if '.svn' in dirs: dirs.remove('.svn')
-        globs = list(globs); globs.sort()
+            # Skip svn directories.
+            if '.svn' in dirs:
+                dirs.remove('.svn')
+
+        globs = list(globs)
+        globs.sort()
 
         print '[miscellany]'
         print 'enable-auto-props = yes'
@@ -71,23 +78,32 @@ class EOLToolkit:
             print "%s = svn:eol-style=native" % pattern.ljust(12)
 
 
-    def clean(self, top):
-        """given a tree root, clean up newlines in all text files
+    def clean(self, top, to_windows):
+        """Given a tree root, clean up newlines in all text files.
         """
 
         filepaths = self.find(top, raw=1)
+        nix = re.compile(r'(?<!\r)\n')
         win = re.compile(r'\r\n')
-        mac = re.compile(r'\r')
+        mac = re.compile(r'\r(?!\n)')
         j = 0; sys.stdout.write('scrubbing newlines ...')
 
         for path in filepaths:
             # do the replacements
             textfile = file(path, 'r+')
             tmp = textfile.read()
-            tmp, k = win.subn('\n', tmp)
-            tmp, l = mac.subn('\n', tmp)
-            textfile.seek(0); textfile.truncate()
-            textfile.write(tmp); textfile.close()
+
+            if to_windows:
+                tmp, k = nix.subn('\r\n', tmp)
+                tmp, l = mac.subn('\r\n', tmp)
+            else:
+                tmp, k = win.subn('\n', tmp)
+                tmp, l = mac.subn('\n', tmp)
+
+            textfile.seek(0)
+            textfile.truncate()
+            textfile.write(tmp)
+            textfile.close()
 
             # indicate progress
             if k + l > 0:
@@ -100,7 +116,7 @@ class EOLToolkit:
 
 
     def find(self, top, raw=0):
-        """given a tree root, walk the tree and find all text files
+        """Given a tree root, walk the tree and find all text files.
         """
 
         textfiles = Set()
@@ -112,15 +128,16 @@ class EOLToolkit:
                 fullpattern = '%s/%s' % (path, pattern)
                 for textfile in glob(fullpattern):
                     if raw:
-                        # indicate progress
+                        # Indicate progress.
                         i += 1
                         if i % 50 == 0:
                             sys.stdout.write('.')
                             sys.stdout.flush()
                     textfiles.add(textfile)
 
-            # skip svn directories
-            if '.svn' in dirs: dirs.remove('.svn')
+            # Skip Subversion directories.
+            if '.svn' in dirs:
+                dirs.remove('.svn')
 
         textfiles = tuple(textfiles)
 
@@ -139,7 +156,10 @@ class EOLToolkit:
 
 if __name__ == '__main__':
 
-    # get our subcommand
+
+    # Get our subcommand.
+    # ===================
+
     subcommand = sys.argv[1:2]
     if not subcommand:
         print "see man 1 svneol for usage"
@@ -151,12 +171,32 @@ if __name__ == '__main__':
     else:
         subcommand = subcommand[0]
 
-    # determine the root of the tree
+
+
+    # Decide if we want to convert to windows newlines.
+    # =================================================
+
+    to_windows = False
+    if '-w' in sys.argv:
+        to_windows = True
+        sys.argv.remove('-w')
+
+
+
+    # Determine the root of the tree.
+    # ===============================
+
     arg = sys.argv[2:3]
-    if arg: path = arg[0]
-    else:   path = '.'
+    if arg:
+        path = arg[0]
+    else:
+        path = '.'
     path = os.path.realpath(path)
 
-    # instantiate and invoke the toolkit
+
+
+    # Instantiate and invoke the toolkit.
+    # ===================================
+
     toolkit = EOLToolkit()
-    toolkit(subcommand, path)
+    toolkit(subcommand, path, to_windows)

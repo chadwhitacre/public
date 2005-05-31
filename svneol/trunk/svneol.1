@@ -1,4 +1,4 @@
-.Dd April 1, 2005
+.Dd May 31, 2005
 .Os
 .Dt SVNEOL 1 LOCAL
 .\"
@@ -17,6 +17,7 @@
 .Sh SYNOPSIS
 .Nm
 .Ar subcommand
+.Op Ar -w
 .Op Ar path
 .\"
 .\"
@@ -50,7 +51,9 @@ depending on
 .\"
 .\"
 .It Nm clean
-cleans up the line endings in all text files
+cleans up the line endings in all text files; if the
+.Ar -w
+argument is provided then Windows newlines are used, otherwise Unix newlines are used
 .\"
 .\"
 .It Nm confgen
@@ -126,15 +129,15 @@ Subversion 1.1.0
 .\"
 .Sh EXAMPLES
 .Bd -literal
-% cd ~/FooProject/
-% svneol confgen > ~/.subversion/config
-% vi ~/.subversion/config # manually remove extensions for binary files
-% svneol find | less
+$ cd ~/FooProject/
+$ svneol confgen > ~/.subversion/config
+$ vi ~/.subversion/config # manually remove extensions for binary files
+$ svneol find | less
 \&... # assuage any paranoia that binary files will be broken
-% svneol clean
+$ svneol clean
 locating text files ...................... 952 found
 scrubbing newlines ..................... 945 files cleaned
-%
+$
 .Ed
 .\"
 .\"
@@ -178,7 +181,11 @@ No warranty is expressed or implied.
 .Sh TODO
 .Bl -dash
 .It
-refactor for getopt/optparse and add an argument: path to config file
+add a -w arg to clean; standardizes on crlf rather than lf
+.It
+refactor for getopt/optparse
+.It
+add an argument: path to config file
 .It
 big enough that it could use some unit tests
 .It
