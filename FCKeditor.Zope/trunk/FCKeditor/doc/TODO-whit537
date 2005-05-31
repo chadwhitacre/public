@@ -4,7 +4,6 @@ packaging
         create a project in the Collective
         import FCKeditor -> _storage/
         do final checkin on svn.zeta/FCK
-        === DONE ===
         import FCKeditor.Zope w/o history -> trunk/
             update props
         tag a release 0.9.0
@@ -20,6 +19,7 @@ packaging
                 trunk/
                     FCKeditor/
         bump version number in 0.9.0/version.txt & Makefile
+        === DONE ===
         generate archives
     === DONE ===
     license
