@@ -6,28 +6,28 @@ prefix=/usr/local
 
 configure:
 # delete and recreate the script to be installed
-	rm -f licensor
-	cp licensor.py licensor
-	chmod 555 licensor
+	rm -f boilerplater
+	cp boilerplater.py boilerplater
+	chmod 555 boilerplater
 
 # delete and recreate the man page to be installed
-	rm -f licensor.1.gz
-	gzip -c -9 licensor.1 > licensor.1.gz
-	chmod 444 licensor.1.gz
+	rm -f boilerplater.1.gz
+	gzip -c -9 boilerplater.1 > boilerplater.1.gz
+	chmod 444 boilerplater.1.gz
 
 clean:
 # delete the script and man page to be installed
-	rm -rf licensor licensor.1.gz
+	rm -rf boilerplater boilerplater.1.gz
 
 install: configure
 # after deleting and recreating the script and man page, install them
-	install -C -o root -g wheel -m 555 licensor ${prefix}/bin
-	install -C -o root -g wheel -m 444 licensor.1.gz ${prefix}/man/man1
+	install -C -o root -g wheel -m 555 boilerplater ${prefix}/bin
+	install -C -o root -g wheel -m 444 boilerplater.1.gz ${prefix}/man/man1
 
 uninstall:
 # delete the script and man page from their installed locations
-	rm -f ${prefix}/bin/licensor
-	rm -f ${prefix}/man/man1/licensor.1.gz
+	rm -f ${prefix}/bin/boilerplater
+	rm -f ${prefix}/man/man1/boilerplater.1.gz
 
 test:
 	./test.py
