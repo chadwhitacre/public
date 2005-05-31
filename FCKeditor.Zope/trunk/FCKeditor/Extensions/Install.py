@@ -18,6 +18,7 @@
 #  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                #
 #                                                                             #
 ###################################################################BOILERPLATE#
+
 # Python
 import os
 from StringIO import StringIO
@@ -29,7 +30,7 @@ from Products.StandardCacheManagers.AcceleratedHTTPCacheManager \
                              import AcceleratedHTTPCacheManager
 
 # us
-from Products.FCKeditor import FCKglobals
+from Products.FCKeditor import FCKexception, FCKglobals
 
 
 
@@ -98,14 +99,18 @@ def install_subskin(self, out, skin_name, globals=FCKglobals):
 def install(self):
     out = StringIO()
 
-    print >> out, "Installing FCKeditor.Zope 0.1"
+    print >> out, "Installing FCKeditor.Zope"
 
     # check to see if base2zope has been run
     def fail():
-        raise "It looks like you haven't yet run utils/base2zope.py"
+        raise FCKexception, "It looks like you haven't yet run " +\
+                            "utils/base2zope.py. See doc/README.txt " +\
+                            "for more info."
     fckeditor_base = os.path.join('..', 'skins', 'fckeditor_base', 'FCKeditor')
-    if not os.path.isdir(fckeditor_base): fail()
-    if len(os.listdir(fckeditor_base)) <= 1: fail() # account for .svn
+    if not os.path.isdir(fckeditor_base):
+        fail()
+    if len(os.listdir(fckeditor_base)) <= 1: # 1 because we account for .svn
+        fail()
 
     # do the installation
     install_cache(self, out)
