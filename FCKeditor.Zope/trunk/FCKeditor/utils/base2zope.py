@@ -67,7 +67,7 @@ def metadata(filepath):
     mdfile.close()
 
 cache_me  = ('css','gif','html','js','xml')
-dont_want = ('asp','aspx','cfc','cfm','cgi','exe','htc','php','pl')
+dont_want = ('asp','aspx','cfc','cfm','cgi','exe','htaccess','htc','php','pl')
 
 for path, dirs, files in os.walk(SRC_ROOT):
 
