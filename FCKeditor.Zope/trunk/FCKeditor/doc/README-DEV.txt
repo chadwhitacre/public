@@ -34,7 +34,7 @@ Notes:
     This package makes use of the following utilites:
 
         boilerplater -- adds boilerplate to a tree of files
-        http://svn.zetadev.com/repos/public/boilerplater/trunk/
+          http://svn.zetadev.com/repos/public/boilerplater/trunk/
 
         svneol -- a line endings toolkit for Subversion
-        http://svn.zetadev.com/repos/public/svneol/trunk/
+          http://svn.zetadev.com/repos/public/svneol/trunk/
