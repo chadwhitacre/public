@@ -46,11 +46,10 @@ on.
 
 """
 
-import os, sys, time
-from pprint import pprint
-
+import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], '..', 'tests', 'framework.py'))
+
 
 from Products.PageTemplates.PageTemplate import PageTemplate
 
@@ -58,7 +57,7 @@ fileindex = sys.argv[1:2]
 if fileindex:
     fileindex = fileindex[0]
 
-top = os.path.join('..','skins','fckeditor_base','FCKeditor')
+top = os.path.join(sys.path[0],'..','skins','fckeditor_base','FCKeditor')
 baddies = {}; i=0
 
 # walk the tree looking for bad page templates

@@ -39,10 +39,9 @@ import sys
 # Initialize some variables.
 ##
 
-PRODUCT_ROOT = os.path.realpath(os.path.join('.','..'))
+PRODUCT_ROOT = os.path.realpath(os.path.join(sys.path[0],'..'))
 SRC_ROOT     = os.path.join(PRODUCT_ROOT, 'src')
 DEST_ROOT    = os.path.join(PRODUCT_ROOT, 'skins', 'fckeditor_base', 'FCKeditor')
-
 
 
 ##
