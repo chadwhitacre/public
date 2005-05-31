@@ -14,7 +14,7 @@ classifiers = [
 
 setup( name = 'boilerplater'
      , version = '0.1'
-     , data_files=[('/usr/local/bin/', ['bin/boilerplater.py'])]
+     , data_files=[('/usr/local/bin/', ['bin/boilerplater'])]
      , package_dir = {'':'site-packages'}
      , packages = ['Boilerplater']
      , description = 'Boilerplater adds boilerplate to a tree of files.'
