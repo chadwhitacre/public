@@ -1,7 +1,7 @@
 #BOILERPLATE###################################################################
 #                                                                             #
 #  This package wraps FCKeditor for use in the Zope web application server.   #
-#  Copyright (C) 2005 Chad Whitacre <http://www.zetadev.com/>                 #
+#  Copyright (C) 2005 Chad Whitacre < http://www.zetadev.com/ >               #
 #                                                                             #
 #  This library is free software; you can redistribute it and/or modify it    #
 #  under the terms of the GNU Lesser General Public License as published by   #
@@ -16,6 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License   #
 #  along with this library; if not, write to the Free Software Foundation,    #
 #  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                #
+#                                                                             #
 #                                                                             #
 ###################################################################BOILERPLATE#
 # Python
