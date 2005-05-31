@@ -1,7 +1,9 @@
-support config
+support config via ~/.boilerplater
+    [ignore] [plugin-mapping]
 more flexible about newlines around boilerplate
 tests
 documentation
-release
+automatically reflow text
+support binary files? metadata?
 === DONE ===
-rename Files to plugins
+rename Files to Plugins
