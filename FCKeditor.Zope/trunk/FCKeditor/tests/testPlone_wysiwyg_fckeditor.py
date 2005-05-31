@@ -27,7 +27,8 @@ class TestData:
     <iframe id="text___Frame"
             src="/FCKeditor/editor/fckeditor.html?InstanceName=text&Toolbar=Basic"
             width="100%" height="500px"
-            frameborder="no" scrolling="no"></iframe>
+            frameborder="no" scrolling="no"
+            tabindex="0"></iframe>
 </div>"""
 
     COMPATIBLE = COMPATIBLE_BASIC
@@ -44,7 +45,8 @@ class TestData:
     <iframe id="text___Frame"
             src="/FCKeditor/editor/fckeditor.html?InstanceName=text&Toolbar=Default"
             width="100%" height="500px"
-            frameborder="no" scrolling="no"></iframe>
+            frameborder="no" scrolling="no"
+            tabindex="0"></iframe>
 </div>"""
 
     INCOMPATIBLE = """\
@@ -52,7 +54,8 @@ class TestData:
     <textarea name="text"
               rows="4" cols="40"
               style="width: 100%; height: 500px;"
-              wrap="virtual" />
+              wrap="virtual"
+              tabindex="0">
         """+"""
     </textarea>
 </div>"""
@@ -73,7 +76,8 @@ class TestData:
     <iframe id="text___Frame"
             src="/FCKeditor/editor/fckeditor.html?InstanceName=text&Toolbar=Basic"
             width="100%" height="500px"
-            frameborder="no" scrolling="no"></iframe>
+            frameborder="no" scrolling="no"
+            tabindex="0"></iframe>
 </div>"""
 
 
@@ -89,7 +93,8 @@ class TestData:
     <iframe id="text___Frame"
             src="/FCKeditor/editor/fckeditor.html?InstanceName=text&Toolbar=Basic"
             width="100%" height="500px"
-            frameborder="no" scrolling="no"></iframe>
+            frameborder="no" scrolling="no"
+            tabindex="0"></iframe>
 </div>"""
 
     HTML = """\
@@ -104,7 +109,8 @@ class TestData:
     <iframe id="text___Frame"
             src="/FCKeditor/editor/fckeditor.html?InstanceName=text&Toolbar=Basic"
             width="100%" height="500px"
-            frameborder="no" scrolling="no"></iframe>
+            frameborder="no" scrolling="no"
+            tabindex="0"></iframe>
 </div>"""
 
 class Test(FCKPloneTestCase.FCKPloneTestCase):

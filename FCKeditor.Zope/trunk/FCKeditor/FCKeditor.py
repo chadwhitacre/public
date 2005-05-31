@@ -33,7 +33,7 @@ class FCKeditor:
     <textarea name="%(InstanceName)s"
               rows="4" cols="40"
               style="width: %(Width)s; height: %(Height)s;"
-              wrap="virtual" />
+              wrap="virtual">
         %(Value)s
     </textarea>
 </div>"""
