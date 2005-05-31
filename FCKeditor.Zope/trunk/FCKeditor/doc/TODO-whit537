@@ -1,21 +1,26 @@
 packaging
     release 0.9.0 -- first development release
-        write a Makefile to support make release
-            find . -name \*.pyc | xargs rm
+        write a Makefile to support make dist
         create a project in the Collective
+        import FCKeditor -> _storage/
+        do final checkin on svn.zeta/FCK
+        === DONE ===
+        import FCKeditor.Zope w/o history -> trunk/
+            update props
+        tag a release 0.9.0
+        final layout:
             FCKeditor/
                 _storage/
                     FCKeditor/
                         2.0-FC/
                 branches/
                 tags/
+                    0.9.0/
+                        FCKeditor/
                 trunk/
-        export svn.zeta/FCK to collective WC
-        checkin to collective trunk/
-        tag a release 0.9.0
-        generate tarball/zip
-            export the release
-            run make release
+                    FCKeditor/
+        bump version number in 0.9.0/version.txt & Makefile
+        generate archives
     === DONE ===
     license
     replace hasattr with getattr

@@ -2,10 +2,11 @@
     QUICK START
 ========================================
 
-This package includes pure-Python base classes, and a full integration for a
-stock Plone 2.0.5 portal. If you are not using stock Plone 2.0.5 content types,
-then you will need to use the base classes and the Plone example to build a
-custom integration for your Zope-based application.
+This package wraps FCKeditor version 2.0-FC for use with Zope. It includes pure-
+Python base classes, and a full integration for a stock Plone 2.0.5 portal. If
+you are not using stock Plone 2.0.5 content types, then you will need to use the
+base classes and the Plone example to build a custom integration for your Zope-
+based application.
 
 Here's how to test-drive the bundled Plone integration:
 
@@ -19,12 +20,8 @@ Here's how to test-drive the bundled Plone integration:
 
     4. Install FCKeditor using portal_quickinstaller.
 
-    5. Browse to /index_html/document_edit_form. The body field should be an
-       FCKeditor widget.
-
-
-FCKeditor.Zope is (c) Chad Whitacre <http://www.zetadev.com/>, and is licensed
-under the LGPL.
+    5. Browse to <plone>/index_html/document_edit_form. The body field should
+       be an FCKeditor widget.
 
 
 
@@ -59,10 +56,47 @@ we've managed to find a workable situation in this Product.
 
 
 ========================================
-    INTEGRATION NOTES
+    TWO ZOPE INTEGRATIONS?
 ========================================
 
-There are two two main points of integration for FCKeditor:
+This package is the second attempt at integrating FCKeditor with Zope. Jean-Mat
+Grimaldi <http://www.macadames.com/> did the first integration, which is listed
+on fckeditor.net under FCKeditor.Plone but is also called FCKeditor.ZopeCMF.
+IMO, Jean-Mat's package is closer in culture to FCKeditor than to Zope/Plone:
+
+    - no version control
+
+    - no unit tests
+
+    - released primarily as a Windows ZIP file
+
+    - uses VBScript
+
+    - single maintainer (Jean-Mat prefers not to host in the Collective)
+
+
+There are other issues as well:
+
+    - no server-side FCKeditor object
+
+    - no integration with FCKeditor's file browser
+
+    - no clean interface with the FCKeditor base distribution
+
+    - I can't read French. :-(
+
+
+For all of these reasons, I decided to start from scratch with FCKeditor.Zope. I
+used some of Jean-Mat's ideas in Install.py, but other than that pretty much all
+of the code is new.
+
+
+
+========================================
+    IMPLEMENTATION DETAILS
+========================================
+
+There are two main points of integration for FCKeditor:
 
     1. An FCKeditor object that creates instances of the editor.
 
@@ -120,43 +154,6 @@ Collective:
 
 
 ========================================
-    TWO ZOPE INTEGRATIONS?
-========================================
-
-This package is the second attempt at integrating FCKeditor with Zope. Jean-Mat
-Grimaldi <http://www.macadames.com/> did the first integration, which is listed
-on fckeditor.net under FCKeditor.Plone but is also called FCKeditor.ZopeCMF.
-IMO, Jean-Mat's package is closer in culture to FCKeditor than to Zope/Plone:
-
-    - no version control
-
-    - no unit tests
-
-    - released primarily as a Windows ZIP file
-
-    - uses VBScript
-
-    - single maintainer (Jean-Mat prefers not to host in the Collective)
-
-
-There are other issues as well:
-
-    - no server-side FCKeditor object
-
-    - no integration with FCKeditor's file browser
-
-    - no clean interface with the FCKeditor base distribution
-
-    - I can't read French. :-(
-
-
-For all of these reasons, I decided to start from scratch with FCKeditor.Zope. I
-used some of Jean-Mat's ideas in Install.py, but other than that pretty much all
-of the code is new.
-
-
-
-========================================
     CUSTOMIZATION
 ========================================
 
@@ -167,9 +164,10 @@ Customizations can be performed at two levels:
         If your Zope application doesn't use the stock Plone 2.0.5 content types
         then you will need to write a subclass of FCKconnector. The FCKeditor
         file browser reproduces fundamental CMS functionality, and decisions
-        regarding content types and permissions are very application-specific.
-        Rather than developing what would amount to a mini-language to describe
-        this interface, it is easier and safer to just do it in Python.
+        regarding content type mapping and permissions are very application-
+        specific. Rather than developing what would amount to a mini-language to
+        describe this interface, it is easier and safer to just let you do it in
+        Python.
 
     2. Plone-space
 
@@ -179,8 +177,9 @@ Customizations can be performed at two levels:
         scripts in portal_skins.
 
 
-For both of these types of customization, please refer to the bundled Plone
-integration for examples, and to the FCKeditor documentation for API:
+For both of these types of customization, please refer to the source of the
+bundled Plone integration for examples, and to the FCKeditor documentation for
+API:
 
     http://fckeditor.wikiwikiweb.de/
 
@@ -190,13 +189,47 @@ integration for examples, and to the FCKeditor documentation for API:
     FEEDBACK
 ========================================
 
-Please direct inquiries regarding FCKeditor.Zope to the following locations:
+Please direct support requests regarding FCKeditor.Zope to one of:
 
     FCKeditor forums on SourceForge:
-    http://sourceforge.net/forum/?group_id=75348
+      http://sourceforge.net/forum/?group_id=75348
 
     plone-users mailing list:
-    http://plone.org/contact/#users
+      http://plone.org/contact/#users
 
     #plone chatroom
-    http://plone.org/contact/chat
+      http://plone.org/contact/chat
+
+
+Bug reports and feature requests should go to:
+
+    FCKeditor tracker on SourceForge
+      http://sourceforge.net/tracker/?group_id=75348
+
+
+
+========================================
+    COPYRIGHT & LICENSE
+========================================
+
+#BOILERPLATE###################################################################
+#                                                                             #
+#  This package wraps FCKeditor for use in the Zope web application server.   #
+#  Copyright (C) 2005 Chad Whitacre < http://www.zetadev.com/ >               #
+#                                                                             #
+#  This library is free software; you can redistribute it and/or modify it    #
+#  under the terms of the GNU Lesser General Public License as published by   #
+#  the Free Software Foundation; either version 2.1 of the License, or (at    #
+#  your option) any later version.                                            #
+#                                                                             #
+#  This library is distributed in the hope that it will be useful, but        #
+#  WITHOUT ANY WARRANTY; without even the implied warranty of                 #
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser    #
+#  General Public License for more details.                                   #
+#                                                                             #
+#  You should have received a copy of the GNU Lesser General Public License   #
+#  along with this library; if not, write to the Free Software Foundation,    #
+#  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                #
+#                                                                             #
+#                                                                             #
+###################################################################BOILERPLATE#
