@@ -1,14 +1,29 @@
 packaging
-    decide on license (see README.stx)
-        prolly do want to include with every file, since we are advocating cut/paste
-        FCKeditor is LGPL, so prolly use that (I expect I have to)
     release 0.9.0 -- first development release
+        write a Makefile to support make release
+            find . -name \*.pyc | xargs rm
+        create a project in the Collective
+            FCKeditor/
+                _storage/
+                    FCKeditor/
+                        2.0-FC/
+                branches/
+                tags/
+                trunk/
+        export svn.zeta/FCK to collective WC
+        checkin to collective trunk/
+        tag a release 0.9.0
+        generate tarball/zip
+            export the release
+            run make release
     === DONE ===
+    license
     replace hasattr with getattr
     store FCKeditor proper in a separate svn repo/project - no; cause we want this in the collective
         include FCKeditor via svn:externals - no
     prolly drop CPS skin
     QI skins in reverse order
+=== DONE ===
 plone -- wysiwyg_support
     === DONE ===
     needs to support different storage formats (html, plain, stx)
@@ -21,10 +36,9 @@ plone -- wysiwyg_support
     text vs. cooked_text?
     needs to play nice with other editors (epoz, kupu, etc.)
 documentation
-    README
     === DONE ===
+    README
     code comments
-=== DONE ===
 factor out a TestCase for speed -- before: 24, after: 6 (!)
 test connector ttw
 rename fckm to fckc in tests
