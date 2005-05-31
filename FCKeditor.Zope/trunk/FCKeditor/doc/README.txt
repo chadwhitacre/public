@@ -13,6 +13,8 @@ application. Here's how to use the Plone integration:
 
     3. Restart Zope.
 
+    4. Add a Plone Site.
+
     4. Install FCKeditor using portal_quickinstaller.
 
     5.
