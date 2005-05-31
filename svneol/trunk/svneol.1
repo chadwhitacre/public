@@ -8,7 +8,7 @@
 .\"
 .Sh NAME
 .Nm svneol
-.Nd line endings toolkit for Subversion
+.Nd a line endings toolkit for Subversion
 .\"
 .\"
 .\"
@@ -85,9 +85,11 @@ configuration file, which is assumed to be at:
 
 Text files are those with filenames matching any
 .Xr glob 1
-in the [auto-props]
-section for which the 'svn:eol-style' property is set. All Windows and legacy
-Macintosh newlines in these files are converted to Unix newlines.
+in the [auto-props] section for which the 'svn:eol-style' property is set. All
+newlines in these files are standarized to Unix newlines by default, or to
+Windows newlines if the
+.Ar -w
+argument is given.
 
 Note that
 .Ar path
