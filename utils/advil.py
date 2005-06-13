@@ -36,6 +36,10 @@ Once connected, you have three ways to prepare for and execute your migration:
 If advil receives no arguments, more than one argument, '-h', or '--help', then
 it prints this help message.
 
+TIP: To repeatedly run your script (for debugging, e.g.) without repeatedly
+loading Zope, simply use the Python built-in function `execfile' from within an
+interactive session.
+
 """
 
 __version__ = '0.2'
