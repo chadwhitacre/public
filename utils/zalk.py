@@ -11,18 +11,25 @@
         an implementation of os.walk for Zope
 
     isdir
-        an example function for determining whether an object is a directory
+        example logic for determining whether an object is a directory
 
     demo
         a demonstration of zalk usage
 
-"""
 
+The intention is that you override the isdir function with something that makes
+sense for your application, and then expose the zalk function within your Zope
+as an External Method. (Note that the yield statement is not available in
+restricted Python.)
+
+"""
 from DateTime import DateTime
 from StringIO import StringIO
 
-out = StringIO()
 
+
+# Define zalk.
+# ============
 
 def zalk(top, topdown=True):
     """Implement os.walk for Zope.
@@ -71,8 +78,8 @@ def zalk(top, topdown=True):
 def isdir(obj):
     """Given an object, return a boolean indicating whether it is a directory.
 
-    The definition of a directory in Zope is application-specific, so this
-    function will need to be overriden for most cases.
+    Zope doesn't have a single consistent notion of a directory, so this
+    function will need to be overriden for most actual use cases.
 
     """
     if obj.meta_type == 'Folder':
@@ -86,7 +93,7 @@ def isdir(obj):
 # =========
 
 def demo(self):
-    """Zalk the tree rooted at '/' and reporting on what we find.
+    """Zalk the tree rooted at '/' and report on what we find.
     """
 
     # Obtain the object at the root of our tree.
@@ -98,6 +105,7 @@ def demo(self):
     # Walk the tree with zalk, printing paths and subobject paths.
     # ============================================================
 
+    out = StringIO()
     for obj, dirs, files in zalk(root):
         path = '/'.join(obj.getPhysicalPath()) or '/'
         print >> out, path
