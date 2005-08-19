@@ -2,30 +2,28 @@
 This program is beerware. If you like it, buy me a beer someday.
 No warranty is expressed or implied.
 
-svneol is a toolkit that simplifies the task of cleaning up line endings on a
-large tree of files. The primary use case is preparing a large, non-versioned
-tree to be imported into a Subversion repository.
+svndeploy is a tool for pushing changes out to a production server
 
 Contents of this distribution:
 
-    Makefile    full installation instructions
+    Makefile        full installation instructions
 
-    README      this file
+    README          this file
 
-    svneol.1    manual page
+    svndeploy.1     manual page
 
-    svneol.py   script itself
+    svndeploy.py    script itself
 
 
 To install:
 
     % cd ~
-    % svn export http://svn.zetadev.com/public/svneol/trunk svneol
-    % cd svneol
+    % svn export http://www.zetadev.com/svn/public/svndeploy/trunk svndeploy
+    % cd svndeploy
     % make install
 
 
 To uninstall:
 
-    % cd ~/svneol
+    % cd ~/svndeploy
     % make uninstall
