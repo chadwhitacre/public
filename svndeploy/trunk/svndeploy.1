@@ -1,13 +1,13 @@
 .Dd May 31, 2005
 .Os
-.Dt SVNEOL 1 LOCAL
+.Dt SVNDEPLOY 1 LOCAL
 .\"
 .\"
 .\"
 .\"
 .\"
 .Sh NAME
-.Nm svneol
+.Nm svndeploy
 .Nd a line endings toolkit for Subversion
 .\"
 .\"
@@ -96,7 +96,7 @@ Note that
 does not have to be an
 .Xr svn 1
 working copy. In fact,
-.Nm svneol Ns 's
+.Nm svndeploy Ns 's
 primary use case is preparing a large, non-versioned tree for initial import
 into a Subversion repository.
 .\"
@@ -132,11 +132,11 @@ Subversion 1.1.0
 .Sh EXAMPLES
 .Bd -literal
 $ cd ~/FooProject/
-$ svneol confgen > ~/.subversion/config
+$ svndeploy confgen > ~/.subversion/config
 $ vi ~/.subversion/config # manually remove extensions for binary files
-$ svneol find | less
+$ svndeploy find | less
 \&... # assuage any paranoia that binary files will be broken
-$ svneol clean
+$ svndeploy clean
 locating text files ...................... 952 found
 scrubbing newlines ..................... 945 files cleaned
 $
@@ -191,5 +191,5 @@ add an argument: path to config file
 .It
 big enough that it could use some unit tests
 .It
-nice to have svneol count, output like svneol clean but w/o changing files
+nice to have svndeploy count, output like svndeploy clean but w/o changing files
 .El
