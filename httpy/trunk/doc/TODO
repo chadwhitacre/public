@@ -8,22 +8,39 @@ interpreted. I am much more concerned about:
     speed/robustness
 
 
-
-0.2
-==========
-add app_paths and dev_mode to configuration
-document app_paths and dev_mode
-factor out medusa goofiness if possible
+========================================
+    0.2 -- PT & STATIC
+========================================
+do something smart with DOC_TYPE
+get frame macro instead of template
 solidify and document the API -- this will have to be backwards-compatible!
 mention daemontools for robust daemonization & logging
 convert doc to man page
-make file
+write a make file
 unit tests
-setup.py?
 
 
+========================================
+    0.4 -- STATE
+========================================
+factor out medusa goofiness if possible
+support POST
+manage sessions, post, querystring, cookies
 
-0.4
-==========
+
+========================================
+    0.6 -- APPS
+========================================
+supporting on-the-fly reloading of apps in dev mode
+add apps to configuration
+document apps
+tests
+
+
+========================================
+    0.8 -- BELLS & WHISTLES
+========================================
 sensible error handling
+precompile templates (in place)
+    httpy -f httpy.conf -c
 
