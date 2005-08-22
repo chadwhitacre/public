@@ -1,89 +1,5 @@
 #!/usr/bin/env python
-"""This is an http server for uncomplicated, Python-based websites.
-
-httpy recognizes serves three different kinds of resources:
-
-    - Files with names ending in .pt are interpreted as page templates and are
-      compiled using SimpleTAL.
-
-    - Files named app.py are considered to be applications and are handed the
-      current request to do with as they please.
-
-    - All other files are served as-is from the filesystem.
-
-
-httpy requires one option with one required argument, -f, which specifies the
-configuration file to use in starting the server. The configuration file is in
-the style of Windows INI files, with two sections and five possible values. Here
-is a complete sample configuration file showing the default options:
-
-    [network]
-    ip          =
-    port        = 8080
-
-    [filesystem]
-    root        = ./root
-    defaults    = index.html index.pt
-    log         =
-
-
-The names of the configuration options are case-insensitive, and the values are
-case-preserved. Here are explanations of the options:
-
-    ip -- The IP address to listen on. If left blank, httpy will listen on all
-    available addresses.
-
-    port -- The TCP port of the specified network interface to listen on.
-
-    root -- The path to the directory to use as the root of httpy's URL-space.
-
-    defaults -- A whitespace-separated list of filenames to default to when a
-    directory is requested directly.
-
-    log -- The path to a file to which messages should be logged.
-
-
-httpy has two modes of operation: development and deployment. In development mode,
-
-
-    - the publisher does three things:
-
-        - serves page templates through simpletal, with two hooks:
-
-            - root/__/frame.pt will be added to the context as a global macro
-
-            - root/__/state.py will be execfile'd before compilation
-
-        - hands off control flow to applications when called to
-
-        - serves static files
-
-    - should the publisher manage sessions, cookies, post, querystring?
-
-    - the publisher should have two modes: development and deployment
-
-        - development mode:
-
-            - all templates are compiled on the fly (trivial)
-
-            - all modules are reimported on the fly (non-trivial)
-
-            - the point is that we want to change a file on the fs and hit f5 in
-            the browser w/o restarting the server process
-
-        - deployment mode:
-
-            - all templates are compiled only at startup (non-trivial)
-
-            - modules are not reimported (trivial)
-
-            - pre-compiling templates is necessary for performance reasons
-
-
-    - deployment should mean compiling all of our page templates to html and
-    only serving the static versions. there's no good reason to do all that
-    processing on every fritten request.
-
+"""httpy is an uncomplicated Python webserver. `man 1 httpy' for details.
 """
 
 # Declare some metadata.
@@ -152,23 +68,24 @@ class handler:
 
     # these at least appear in this file
     valid_commands = ['GET', 'HEAD']
-    default_file_producer = producers.simple_producer
+    producer = producers.simple_producer
 
-    def __init__(self, root='.', defaults=(), app_paths=(), dev_mode=False):
+    def __init__(self, root='.', defaults=()): #, app_paths=(), dev_mode=False):
 
         # Clean up incoming paths and save values.
         # ========================================
 
         self.root = os.path.realpath(root)
         self.defaults = defaults
-        _app_paths = ()
-        for p in app_paths:
-            p = p.lstrip('/')
-            p = os.path.join(self.root, p)
-            p = os.path.realpath(p)
-            _app_paths += (p,)
-        self.app_paths = _app_paths
-        self.dev_mode = os.environ.get('DEV_MODE','').lower() == 'true'
+#        _app_paths = ()
+#        for p in app_paths:
+#            p = p.lstrip('/')
+#            p = os.path.join(self.root, p)
+#            p = os.path.realpath(p)
+#            _app_paths += (p,)
+#        self.app_paths = _app_paths
+        self.dev_mode = os.environ.get('HTTPY_MODE','').lower() == 'development'
+
 
 
         # Look for a __ directory in the publishing root.
@@ -181,21 +98,27 @@ class handler:
         else:
             self.__ = ''
 
+
+
+        # Set up a template cache.
+        # ========================
+
         self.templates = simpleTALUtils.TemplateCache()
 
 
-        # Pre-load any applications.
-        # ==========================
 
-        apps = {}
-        for p in self.app_paths:
-            try:
-                app = self._import_app(p)
-            except ImportError:
-                raise Exception, "No module 'app.py' in %s" % p
-            else:
-                apps[p] = app(p)
-        self.apps = apps
+#        # Pre-load any applications.
+#        # ==========================
+#
+#        apps = {}
+#        for p in self.app_paths:
+#            try:
+#                app = self._import_app(p)
+#            except ImportError:
+#                raise Exception, "No module 'app.py' in %s" % p
+#            else:
+#                apps[p] = app(p)
+#        self.apps = apps
 
 
         self.DOC_TYPE = '' # yes we make this global to the server
@@ -205,11 +128,11 @@ class handler:
         """Handle an HTTP request.
         """
 
-        # Re-init for dev mode.
-        # =====================
-
-        if self.dev_mode and 0:
-            self.__pre__()
+#        # Re-init for dev mode.
+#        # =====================
+#
+#        if self.dev_mode and 0:
+#            self.__pre__()
 
 
         # Command
@@ -234,16 +157,16 @@ class handler:
 
 
 
-        # Applications
-        # ============
-        # determine if the url belongs to one of our apps
-        # if so then hand off control flow to the application
-
-        for p in self.app_paths:
-            if path.startswith(p):
-                app = self.apps[p]
-                app(request)
-                return
+#        # Applications
+#        # ============
+#        # determine if the url belongs to one of our apps
+#        # if so then hand off control flow to the application
+#
+#        for p in self.app_paths:
+#            if path.startswith(p):
+#                app = self.apps[p]
+#                app(request)
+#                return
 
 
 
@@ -273,7 +196,7 @@ class handler:
                 request.error(404)
                 return
 
-        # save this for later use in state.py -- hack atm
+        # save this for later use in state.py
         request.path = path
 
 
@@ -318,7 +241,6 @@ class handler:
         if path.endswith('.pt'):
 
             template = self.templates.getXMLTemplate(path)
-            #self.log(self.templates.hits)
             content = self._render_pt(request, template)
 
             #request['Last-Modified'] = http_date.build_http_date(mtime)
@@ -326,7 +248,7 @@ class handler:
             request['Content-Type'] = 'text/html'
 
             if request.command == 'GET':
-                request.push(self.default_file_producer(content))
+                request.push(self.producer(content))
 
             request.done()
             return
@@ -341,7 +263,7 @@ class handler:
             self.set_content_type(path, request)
 
             if request.command == 'GET':
-                request.push(self.default_file_producer(content))
+                request.push(self.producer(content))
 
             request.done()
             return
@@ -367,7 +289,7 @@ class handler:
     def _render_pt(self, request, template):
         """Render a page template.
 
-        We pass in request so that it is in state.py's namespace.
+        We pass in request so that we can put it in state.py's namespace.
 
         """
 
@@ -379,11 +301,9 @@ class handler:
 
         state_path = os.path.join(self.__, 'state.py')
         if os.path.isfile(state_path):
-            execfile(state_path, locals())
-
-
-        # if it is the call to expand that is taking so much time, then we could
-        # try caching globals here (keyed to an MD5 of a pickle?)
+            execfile(state_path, { 'request':request
+                                 , 'context':context
+                                  })
 
 
         # Expand and return the template.
@@ -398,31 +318,31 @@ class handler:
         return out.getvalue()
 
 
-    def _import_app(self, app_path):
-        """Manual import lifted from the docs.
-        """
-
-        NAME = 'app'
-
-        # Fast path: see if the module has already been imported.
-        try:
-            return sys.modules[NAME]
-        except KeyError:
-            pass
-
-        fp, pathname, description = imp.find_module(NAME, [app_path])
-
-        try:
-            app = imp.load_module(NAME, fp, pathname, description)
-        finally:
-            # Since we may exit via an exception, close fp explicitly.
-            if fp:
-                fp.close()
-
-        if not hasattr(app, 'Application'):
-            raise Exception, "No 'Application' class in %s/app.py" % app_path
-
-        return app.Application
+#    def _import_app(self, app_path):
+#        """Manual import lifted from the docs.
+#        """
+#
+#        NAME = 'app'
+#
+#        # Fast path: see if the module has already been imported.
+#        try:
+#            return sys.modules[NAME]
+#        except KeyError:
+#            pass
+#
+#        fp, pathname, description = imp.find_module(NAME, [app_path])
+#
+#        try:
+#            app = imp.load_module(NAME, fp, pathname, description)
+#        finally:
+#            # Since we may exit via an exception, close fp explicitly.
+#            if fp:
+#                fp.close()
+#
+#        if not hasattr(app, 'Application'):
+#            raise Exception, "No 'Application' class in %s/app.py" % app_path
+#
+#        return app.Application
 
 
 # Goofiness from medusa.default_handler
@@ -493,47 +413,32 @@ def main(argv=None):
             config.read(path)
 
 
-            # network section
+            # server section
 
-            network = {}
-            network['ip'] = ''
-            network['port'] = '8080'
-            if config.has_section('network'):
-                network.update(dict(config.items('network')))
+            server = {}
+            server['ip'] = ''
+            server['port'] = '8080'
+            if config.has_section('server'):
+                server.update(dict(config.items('server')))
 
-            if isinstance(network['port'], types.StringType) and \
-               network['port'].isdigit():
-                network['port'] = int(network['port'])
-            elif isinstance(network['port'], types.IntType):
+            if isinstance(server['port'], types.StringType) and \
+               server['port'].isdigit():
+                server['port'] = int(server['port'])
+            elif isinstance(server['port'], types.IntType):
                 pass # already an int for some reason (called interactively?)
             else:
                 raise Usage("Configuration error: port must be an integer")
 
 
-            # filesystem section
+            # handler section
 
-            filesystem = {}
-            filesystem['root'] = './root'
-            filesystem['defaults'] = 'index.html, index.pt'
-            filesystem['log'] = sys.stdout
-            if config.has_section('filesystem'):
-                filesystem.update(dict(config.items('filesystem')))
+            handler = {}
+            handler['root'] = './root'
+            handler['defaults'] = 'index.html, index.pt'
+            if config.has_section('handler'):
+                handler.update(dict(config.items('handler')))
 
-            filesystem['defaults'] = tuple(filesystem['defaults'].split())
-
-            if 'log' in filesystem: # always True
-                # Conceptually, this fits in filesystem, so that's where we
-                # want it in the end-user config file. However, our callables
-                # want it in network, and we allow that placement in the
-                # config file as well.
-                network['log'] = filesystem['log']
-                del filesystem['log']
-            if 'log' in network: # always True
-                # And actually, we want to wrap this in an object.
-                if not network['log']:
-                    network['log'] = sys.stdout
-                network['logger_object'] = logger.file_logger(network['log'])
-                del network['log']
+            handler['defaults'] = tuple(handler['defaults'].split())
 
         except ConfigParser.Error, msg:
             raise Usage("Configuration error: %s" % msg)
