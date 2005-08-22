@@ -1,0 +1,29 @@
+Notes
+
+I don't care what language httpy is written in, or if it is compiled or
+interpreted. I am much more concerned about:
+
+    the API it exposes to the site developer
+    ease of installation (on Win though?)
+    speed/robustness
+
+
+
+0.2
+==========
+add app_paths and dev_mode to configuration
+document app_paths and dev_mode
+factor out medusa goofiness if possible
+solidify and document the API -- this will have to be backwards-compatible!
+mention daemontools for robust daemonization & logging
+convert doc to man page
+make file
+unit tests
+setup.py?
+
+
+
+0.4
+==========
+sensible error handling
+
