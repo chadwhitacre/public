@@ -44,11 +44,11 @@ from simpletal import simpleTALUtils
 class RequestError(Exception):
     """An error with a request.
     """
-    def __init__(self, errcode):
-        self.errcode = errcode
+    def __init__(self, code):
+        self.code = code
     def __str__(self):
-        msg = http_server.http_request.responses.get(self.errcode)
-        return '%s %s' % (str(self.errcode), msg)
+        msg = http_server.http_request.responses.get(self.code)
+        return '%s %s' % (str(self.code), msg)
 
 
 # Define our request handler.
@@ -128,7 +128,7 @@ class handler:
                 self.handle_static(request)
 
         except RequestError, err:
-            request.error(err.errcode)
+            request.error(err.code)
             return
 
 
@@ -158,10 +158,15 @@ class handler:
             path = urllib.unquote(path)
         path = os.path.join(self.root, path.lstrip('/'))
         path = os.path.realpath(path)
+        if not path.startswith(self.root):
+            # protect against '../../../../../../../../../../etc/master.passwd'
+            raise RequestError(400)
 
 
-        # If the path points to a directory, look for a default object.
+        # Determine if the requested directory or file can be served.
         # =============================================================
+        # If the path points to a directory, look for a default object.
+        # If it points to a file, see if the file exists.
 
         if os.path.isdir(path):
             found = False
@@ -172,21 +177,14 @@ class handler:
                     path = _path
                     break
             if not found:
-                raise RequestError(403)
+                raise RequestError(403) # Forbidden
+        else:
+            if not os.path.exists(path):
+                raise RequestError(404) # Not Found
 
 
-        # See if the path is valid.
-        # =========================
-
-        if not os.path.exists(path):
-            raise RequestError(404)
-        elif not path.startswith(self.root):
-            # protect against ./../../../
-            raise RequestError(400)
-
-
-        # Set the variables on request.
-        # =============================
+        # We made it! Set the variables on request.
+        # =========================================
 
         request.path = path
         request.urlpath = urlpath
@@ -194,7 +192,7 @@ class handler:
 
 
     def handle_template(self, request):
-        """Given a path to a page template, serve it.
+        """Given a request for a page template, serve it.
         """
 
         # Build the context.
@@ -234,7 +232,7 @@ class handler:
 
 
     def handle_static(self, request):
-        """Given a path to a static resource, serve it.
+        """Given a request for a static resource, serve it.
         """
 
         # Serve a 304 if appropriate.
