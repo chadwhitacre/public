@@ -7,9 +7,11 @@ import os
 import socket
 from popen2 import Popen4
 from xmlrpclib import ServerProxy
+from urlparse import urlsplit
 
 path = os.path.realpath('.')
 server_url = 'http://josemaria:5370'
+scheme, hostname, port, query, frag = urlsplit(server_url)
 
 def _popen(command):
     process = Popen4(command)
@@ -23,7 +25,7 @@ if output == "svn: '.' is not a working copy":
     print "ERROR: The current directory is not a subversion working copy."
     raise SystemExit
 
-if output:
+if output: # note that this will bork when there are svn:externals
     print "ERROR: Please commit all changes before deploying."
     raise SystemExit
 
@@ -31,4 +33,5 @@ result, output = _popen('svn info')
 svn_url = output.split(os.linesep)[1][5:]
 
 server = ServerProxy(server_url)
+print "Deploying %s on %s ..." % (svn_url, server_url)
 print server.deploy(svn_url)
