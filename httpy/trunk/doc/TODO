@@ -12,6 +12,8 @@ interpreted. I am much more concerned about:
     0.2 -- PT & STATIC
 ========================================
 do something smart with DOC_TYPE
+    make it a config option
+    with smart names xhtml transitional
 get frame macro instead of template
 solidify and document the API -- this will have to be backwards-compatible!
 mention daemontools for robust daemonization & logging
@@ -24,6 +26,7 @@ unit tests
     0.4 -- STATE
 ========================================
 factor out medusa goofiness if possible
+support something sane like CGI to provide state.py with it's API
 support POST
 manage sessions, post, querystring, cookies
 

@@ -12,6 +12,7 @@ __version__ = (0,1)
 # Import from the standard library.
 # =================================
 
+import ConfigParser
 import asyncore
 import getopt
 import imp
@@ -24,33 +25,30 @@ import sys
 import types
 import urlparse
 import urllib
-from StringIO import StringIO
-import ConfigParser
 
 
 
 # Import from non-standard libraries.
 # ===================================
 
-from medusa import producers
-from medusa import http_server
 from medusa import http_date
+from medusa import http_server
 from medusa import logger
-from simpletal import simpleTAL, simpleTALES, simpleTALUtils
+from medusa import producers
+from simpletal import simpleTAL
+from simpletal import simpleTALES
+from simpletal import simpleTALUtils
 
 
 
-# A development hook
-# ==================
-
-if 0: # turn this on to disable caching for profile testing
-    def getXMLTemplateNoCache(self, name):
-    	""" Name should be the path of an XML template file.
-    	"""
-    	#<snip>cache checking</snip>
-    	return self._cacheTemplate_(name, None, xmlTemplate=1)
-    simpleTALUtils.TemplateCache.getXMLTemplate = getXMLTemplateNoCache
-
+class RequestError(Exception):
+    """An error with a request.
+    """
+    def __init__(self, errcode):
+        self.errcode = errcode
+    def __str__(self):
+        msg = http_server.http_request.responses.get(self.errcode)
+        return '%s %s' % (str(self.errcode), msg)
 
 
 # Define our request handler.
@@ -70,22 +68,19 @@ class handler:
     valid_commands = ['GET', 'HEAD']
     producer = producers.simple_producer
 
-    def __init__(self, root='.', defaults=()): #, app_paths=(), dev_mode=False):
+    def __init__(self, root, defaults, extensions, mode): #, app_paths=()):
 
         # Clean up incoming paths and save values.
         # ========================================
 
         self.root = os.path.realpath(root)
         self.defaults = defaults
-#        _app_paths = ()
-#        for p in app_paths:
-#            p = p.lstrip('/')
-#            p = os.path.join(self.root, p)
-#            p = os.path.realpath(p)
-#            _app_paths += (p,)
-#        self.app_paths = _app_paths
-        self.dev_mode = os.environ.get('HTTPY_MODE','').lower() == 'development'
-
+        self.extensions = extensions
+        if mode:
+            self.mode = mode
+        else:
+            self.mode = os.environ.get('HTTPY_MODE','').lower()
+        self.dev_mode = self.mode == 'development'
 
 
         # Look for a __ directory in the publishing root.
@@ -99,92 +94,76 @@ class handler:
             self.__ = ''
 
 
-
         # Set up a template cache.
         # ========================
 
         self.templates = simpleTALUtils.TemplateCache()
 
 
-
-#        # Pre-load any applications.
-#        # ==========================
-#
-#        apps = {}
-#        for p in self.app_paths:
-#            try:
-#                app = self._import_app(p)
-#            except ImportError:
-#                raise Exception, "No module 'app.py' in %s" % p
-#            else:
-#                apps[p] = app(p)
-#        self.apps = apps
-
-
-        self.DOC_TYPE = '' # yes we make this global to the server
-
-
     def handle_request(self, request):
         """Handle an HTTP request.
         """
 
-#        # Re-init for dev mode.
-#        # =====================
-#
-#        if self.dev_mode and 0:
-#            self.__pre__()
+        try:
+
+            # Command
+            # =======
+
+            if request.command not in self.valid_commands:
+                raise RequestError(400) # bad request
 
 
-        # Command
-        # =======
+            # Add path info to request.
+            # =========================
+            self.path_info(request)
 
-        if request.command not in self.valid_commands:
-            request.error(400) # bad request
+
+            # Serve content.
+            # ==============
+
+            if '.' in request.path:
+                if request.path.split('.')[-1] in self.extensions:
+                    self.handle_template(request)
+            else:
+                self.handle_static(request)
+
+        except RequestError, err:
+            request.error(err.errcode)
             return
 
 
-        # Path
-        # ====
+    def path_info(self, request):
+        """Given a request, add two attributes.
 
-        # parse the uri -- only ever contains path and query(?)
-        scheme, name, path, query, fragment = urlparse.urlsplit(request.uri)
+        The requested path is stored in `urlpath', and the resolved path in
+        `path'.
 
-        # tidy up the path
+        """
+
+        # Parse the URI.
+        # ==============
+        # Afaict this only ever contains path and query.
+
+        scheme, name, urlpath, query, fragment = urlparse.urlsplit(request.uri)
+
+
+        # Tidy up the path.
+        # =================
+
+        if not urlpath:
+            # this catches, e.g., '//foo'
+            raise RequestError(400)
+        path = urlpath
         if '%' in path:
             path = urllib.unquote(path)
         path = os.path.join(self.root, path.lstrip('/'))
         path = os.path.realpath(path)
 
 
+        # If the path points to a directory, look for a default object.
+        # =============================================================
 
-#        # Applications
-#        # ============
-#        # determine if the url belongs to one of our apps
-#        # if so then hand off control flow to the application
-#
-#        for p in self.app_paths:
-#            if path.startswith(p):
-#                app = self.apps[p]
-#                app(request)
-#                return
-
-
-
-        # Pages & Static Content
-        # ======================
-
-        # see if the path is valid
-        if not os.path.exists(path):
-            request.error(404)
-            return
-        elif not path.startswith(self.root):
-            # protect against ./../../../
-            request.error(400)
-            return
-
-        # if the path points to a directory, look for a default obj
         if os.path.isdir(path):
-            # look for a default object
             found = False
             for name in self.defaults:
                 _path = os.path.join(path, name)
@@ -192,20 +171,77 @@ class handler:
                     found = True
                     path = _path
                     break
-            if not found: # no default object
-                request.error(404)
-                return
+            if not found:
+                raise RequestError(403)
 
-        # save this for later use in state.py
+
+        # See if the path is valid.
+        # =========================
+
+        if not os.path.exists(path):
+            raise RequestError(404)
+        elif not path.startswith(self.root):
+            # protect against ./../../../
+            raise RequestError(400)
+
+
+        # Set the variables on request.
+        # =============================
+
         request.path = path
+        request.urlpath = urlpath
 
 
 
-        # Decide if the content has changed recently.
-        # ===========================================
+    def handle_template(self, request):
+        """Given a path to a page template, serve it.
+        """
 
-        mtime = os.stat(path)[stat.ST_MTIME]
-        content_length = os.stat(path)[stat.ST_SIZE]
+        # Build the context.
+        # ==================
+
+        context = simpleTALES.Context()
+        context.addGlobal("frame", self.frame())
+        _path = os.path.join(self.__, 'context.py')
+        if os.path.isfile(_path):
+            execfile(_path, { 'request':request
+                            , 'context':context
+                             })
+
+
+        # Expand and return the template.
+        # ===============================
+
+        out = simpleTALUtils.FastStringOutput()
+        template = self.templates.getXMLTemplate(request.path)
+        template.expand( context
+                       , out
+                       , docType = self.DOC_TYPE # this doesn't appear to work with PyXML
+                       , suppressXMLDeclaration = True
+                        )
+
+
+        # Set headers and return.
+        # =======================
+
+        request['Content-Type'] = 'text/html'
+
+        if request.command == 'GET':
+            request.push(self.producer(out.getvalue()))
+
+        request.done()
+        return
+
+
+    def handle_static(self, request):
+        """Given a path to a static resource, serve it.
+        """
+
+        # Serve a 304 if appropriate.
+        # ===========================
+
+        mtime = os.stat(request.path)[stat.ST_MTIME]
+        content_length = os.stat(request.path)[stat.ST_SIZE]
 
         if not self.dev_mode:
 
@@ -233,40 +269,20 @@ class handler:
                     return
 
 
+        # Serve the resource.
+        # ===================
 
-        # Actually serve the content.
-        # ===========================
+        content = file(request.path, 'rb').read()
 
-        # pages
-        if path.endswith('.pt'):
+        request['Last-Modified'] = http_date.build_http_date(mtime)
+        request['Content-Length'] = content_length
+        self.set_content_type(request.path, request)
 
-            template = self.templates.getXMLTemplate(path)
-            content = self._render_pt(request, template)
+        if request.command == 'GET':
+            request.push(self.producer(content))
 
-            #request['Last-Modified'] = http_date.build_http_date(mtime)
-            #request['Content-Length'] = len(content)
-            request['Content-Type'] = 'text/html'
-
-            if request.command == 'GET':
-                request.push(self.producer(content))
-
-            request.done()
-            return
-
-        # static content
-        else:
-
-            content = file(path, 'rb').read()
-
-            request['Last-Modified'] = http_date.build_http_date(mtime)
-            request['Content-Length'] = content_length
-            self.set_content_type(path, request)
-
-            if request.command == 'GET':
-                request.push(self.producer(content))
-
-            request.done()
-            return
+        request.done()
+        return
 
 
     def set_content_type (self, path, request):
@@ -286,67 +302,9 @@ class handler:
             return self.templates.getXMLTemplate(frame_path)
 
 
-    def _render_pt(self, request, template):
-        """Render a page template.
 
-        We pass in request so that we can put it in state.py's namespace.
-
-        """
-
-        # Start building context and hand off to local hook.
-        # ==================================================
-
-        context = simpleTALES.Context()
-        context.addGlobal("frame", self.frame())
-
-        state_path = os.path.join(self.__, 'state.py')
-        if os.path.isfile(state_path):
-            execfile(state_path, { 'request':request
-                                 , 'context':context
-                                  })
-
-
-        # Expand and return the template.
-        # ===============================
-
-        out = simpleTALUtils.FastStringOutput()
-        template.expand( context
-                       , out
-                       , docType = self.DOC_TYPE # this doesn't appear to work with PyXML
-                       , suppressXMLDeclaration = True
-                        )
-        return out.getvalue()
-
-
-#    def _import_app(self, app_path):
-#        """Manual import lifted from the docs.
-#        """
-#
-#        NAME = 'app'
-#
-#        # Fast path: see if the module has already been imported.
-#        try:
-#            return sys.modules[NAME]
-#        except KeyError:
-#            pass
-#
-#        fp, pathname, description = imp.find_module(NAME, [app_path])
-#
-#        try:
-#            app = imp.load_module(NAME, fp, pathname, description)
-#        finally:
-#            # Since we may exit via an exception, close fp explicitly.
-#            if fp:
-#                fp.close()
-#
-#        if not hasattr(app, 'Application'):
-#            raise Exception, "No 'Application' class in %s/app.py" % app_path
-#
-#        return app.Application
-
-
-# Goofiness from medusa.default_handler
-# =====================================
+# Request parsers from medusa.default_handler
+# ===========================================
 
 # HTTP/1.0 doesn't say anything about the "; length=nnnn" addition
 # to this header.  I suppose its purpose is to avoid the overhead
@@ -376,13 +334,72 @@ def get_extension (path):
 
 
 
-# main() a la Guido.
-# ==================
+# main() a la Guido
+# =================
 # http://www.artima.com/weblogs/viewpost.jsp?thread=4829
 
 class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
+
+
+def parse_config(path):
+    """Given a path to a configuration file, return two dictionaries.
+    """
+
+    # Set defaults.
+    # =============
+
+    server = {}
+    server['ip'] = ''
+    server['port'] = '8080'
+
+    handler = {}
+    handler['root'] = './root'
+    handler['defaults'] = 'index.html index.pt'
+    handler['extensions'] = 'pt'
+    handler['mode'] = 'development'
+
+
+    if not path:
+        server['port'] = int(server['port'])
+        handler['defaults'] = tuple(handler['defaults'].split())
+        handler['extensions'] = tuple(handler['extensions'].split())
+        return (server, handler)
+
+    config = ConfigParser.RawConfigParser()
+    config.read(path)
+
+
+    # Parse the server section.
+    # =========================
+
+    if config.has_section('server'):
+        server.update(dict(config.items('server')))
+
+    if isinstance(server['port'], types.StringType) and \
+       server['port'].isdigit():
+        server['port'] = int(server['port'])
+    elif isinstance(server['port'], types.IntType):
+        pass # already an int for some reason (called interactively?)
+    else:
+        raise Usage("Configuration error: port must be an integer")
+
+
+    # Parse the handler section.
+    # ==========================
+
+    if config.has_section('handler'):
+        handler.update(dict(config.items('handler')))
+
+    handler['defaults'] = tuple(handler['defaults'].split())
+    handler['extensions'] = tuple(handler['extensions'].split())
+    if handler['mode'].lower() not in ('development', 'deployment'):
+        raise Usage("Configuration error: mode must be one of `development' " +\
+                    "and `deployment'.")
+
+    return (server, handler)
+
 
 def main(argv=None):
     if argv is None:
@@ -392,64 +409,34 @@ def main(argv=None):
         # Identify our configuration file.
         # ================================
 
-        if len(argv) < 2:
-            raise Usage("Configuration error: no file specified.")
-        try:
-            opts, args = getopt.getopt(argv[1:], "f:")
-            opts = dict(opts)
-            path = os.path.realpath(opts.get('-f'))
-            if not os.path.isfile(path):
-                raise Usage("Configuration error: %s does not exist." % path)
-        except getopt.error, msg:
-            raise Usage(msg)
-
+        if argv[1:]:
+            try:
+                opts, args = getopt.getopt(argv[1:], "f:")
+                opts = dict(opts)
+                path = os.path.realpath(opts.get('-f'))
+                if not os.path.isfile(path):
+                    raise Usage("Configuration error: %s does not " +\
+                                "exist." % path)
+            except getopt.error, msg:
+                raise Usage(msg)
+        else:
+            path = None
 
 
         # Parse our configuration file.
         # =============================
 
-        config = ConfigParser.RawConfigParser()
         try:
-            config.read(path)
-
-
-            # server section
-
-            server = {}
-            server['ip'] = ''
-            server['port'] = '8080'
-            if config.has_section('server'):
-                server.update(dict(config.items('server')))
-
-            if isinstance(server['port'], types.StringType) and \
-               server['port'].isdigit():
-                server['port'] = int(server['port'])
-            elif isinstance(server['port'], types.IntType):
-                pass # already an int for some reason (called interactively?)
-            else:
-                raise Usage("Configuration error: port must be an integer")
-
-
-            # handler section
-
-            handler = {}
-            handler['root'] = './root'
-            handler['defaults'] = 'index.html, index.pt'
-            if config.has_section('handler'):
-                handler.update(dict(config.items('handler')))
-
-            handler['defaults'] = tuple(handler['defaults'].split())
-
+            _server, _handler = parse_config(path)
         except ConfigParser.Error, msg:
             raise Usage("Configuration error: %s" % msg)
-
 
 
         # Stop, drop, and roll.
         # =====================
 
-        server = http_server.http_server(**network)
-        server.install_handler(handler(**filesystem))
+        server = http_server.http_server(**_server)
+        server.install_handler(handler(**_handler))
         asyncore.loop()
 
 
@@ -457,6 +444,7 @@ def main(argv=None):
         print >> sys.stderr, err.msg
         print >> sys.stderr, "`man 1 httpy' for usage."
         return 2
+
 
 if __name__ == "__main__":
     sys.exit(main())

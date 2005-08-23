@@ -21,6 +21,7 @@ configure:
 clean:
 # delete the script and man page to be installed
 	rm -rf httpy httpy.1.gz httpy.conf.5.gz
+	find . -name \*.pyc -exec rm -f {} \;
 
 install: configure
 # after deleting and recreating the script and man page, install them
