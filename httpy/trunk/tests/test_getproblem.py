@@ -15,7 +15,7 @@ if __name__ == '__main__':
 import httpy
 import stat
 import unittest
-from httpy import RequestProblem
+from httpy import RequestError, Redirect
 from medusa import http_server, http_date
 from httpyTestCase import httpyTestCase
 from simpletal import simpleTAL
@@ -43,7 +43,7 @@ dummy_error_302 = """\
 <body>
     <h1>Error response</h1>
     <p>Error code 302.</p>
-    <p>Message: Moved Temporarily.</p>
+    <p>Message: Found.</p>
     Resource now resides at <a href="http://www.example.com/">http://www.example.com/</a>."""+"""
 </body>"""
 
@@ -85,7 +85,7 @@ dummy_error_404 = """\
 
 
 dummy_context = """\
-raise RequestProblem(302, new_location="http://www.example.com/")
+raise Redirect("http://www.example.com/")
 """
 
 dummy_tal = """\
@@ -160,10 +160,10 @@ class TestGetTemplate(httpyTestCase):
         self.request.uri = '/about'
         try:
             self.handler.setpath(self.request)
-        except RequestProblem, problem:
+        except Redirect, error:
             pass
         expected = dummy_error_301
-        actual = self.handler.getproblem(self.request, problem)
+        actual = self.handler.geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 216L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
@@ -173,12 +173,12 @@ class TestGetTemplate(httpyTestCase):
         self.handler.setpath(self.request)
         try:
             self.handler.gettemplate(self.request)
-        except RequestProblem, problem:
+        except Redirect, error:
             pass
         expected = dummy_error_302
-        actual = self.handler.getproblem(self.request, problem)
+        actual = self.handler.geterror(self.request, error)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 248L)
+        self.assertEqual(self.request['Content-Length'], 236L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 302)
 
@@ -191,10 +191,10 @@ class TestGetTemplate(httpyTestCase):
         self.request.header.insert(len(self.request.header), ims)
         try:
             self.handler.getstatic(self.request)
-        except RequestProblem, problem:
+        except RequestError, error:
             pass
         expected = dummy_error_304
-        actual = self.handler.getproblem(self.request, problem)
+        actual = self.handler.geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request.reply_code, 304)
 
@@ -202,10 +202,10 @@ class TestGetTemplate(httpyTestCase):
         self.request.uri = '../../../../../../../etc/master.passwd'
         try:
             self.handler.setpath(self.request)
-        except RequestProblem, problem:
+        except RequestError, error:
             pass
         expected = dummy_error_400
-        actual = self.handler.getproblem(self.request, problem)
+        actual = self.handler.geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 156L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
@@ -215,10 +215,10 @@ class TestGetTemplate(httpyTestCase):
         self.request.uri = '/about/'
         try:
             self.handler.setpath(self.request)
-        except RequestProblem, problem:
+        except RequestError, error:
             pass
         expected = dummy_error_403
-        actual = self.handler.getproblem(self.request, problem)
+        actual = self.handler.geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 154L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
@@ -228,10 +228,10 @@ class TestGetTemplate(httpyTestCase):
         self.request.uri = '/not-there'
         try:
             self.handler.setpath(self.request)
-        except RequestProblem, problem:
+        except RequestError, error:
             pass
         expected = dummy_error_404
-        actual = self.handler.getproblem(self.request, problem)
+        actual = self.handler.geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 154L)
         self.assertEqual(self.request['Content-Type'], 'text/html')

@@ -20,6 +20,7 @@ do something smart with DOC_TYPE
     with smart names -- `xhtml transitional'
 get frame macro instead of template
 solidify and document the API -- this will have to be backwards-compatible!
+    error handling -- raise NotFound()?
     config api
     context.py api -- CGI?
     app.py api -- CGI + StringIO?
@@ -53,4 +54,5 @@ tests
 sensible error handling
 precompile templates (in place)
     httpy -f httpy.conf -c
+server string -> httpy
 
