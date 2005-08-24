@@ -326,7 +326,7 @@ class handler:
         elif problem.code == 304: # Not Modified
             pass
 
-        request.reply_code == problem.code
+        request.reply_code = problem.code
 
 
         # Generate a problem page if we need to.

@@ -167,6 +167,7 @@ class TestGetTemplate(httpyTestCase):
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 216L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 301)
 
     def test302(self):
         self.handler.setpath(self.request)
@@ -179,6 +180,7 @@ class TestGetTemplate(httpyTestCase):
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 248L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 302)
 
     def test304(self):
         self.request.uri = '/index.html'
@@ -194,6 +196,7 @@ class TestGetTemplate(httpyTestCase):
         expected = dummy_error_304
         actual = self.handler.getproblem(self.request, problem)
         self.assertEqual(expected, actual)
+        self.assertEqual(self.request.reply_code, 304)
 
     def test400(self):
         self.request.uri = '../../../../../../../etc/master.passwd'
@@ -206,6 +209,7 @@ class TestGetTemplate(httpyTestCase):
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 156L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 400)
 
     def test403(self):
         self.request.uri = '/about/'
@@ -218,6 +222,7 @@ class TestGetTemplate(httpyTestCase):
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 154L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 403)
 
     def test404(self):
         self.request.uri = '/not-there'
@@ -230,6 +235,7 @@ class TestGetTemplate(httpyTestCase):
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 154L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 404)
 
     def testErrorTemplate(self):
         pass
