@@ -15,16 +15,13 @@ __version__ = (0,1)
 import ConfigParser
 import asyncore
 import getopt
-import imp
-import mimetypes
 import os
 import re
 import stat
-import string
 import sys
-import types
-import urlparse
-import urllib
+from mimetypes import guess_type
+from urllib import unquote
+from urlparse import urlsplit
 
 
 
@@ -106,89 +103,81 @@ class handler:
 
         try:
 
-            # Command
-            # =======
+            # Validate the command and add `path' to the request.
+            # ===================================================
 
             if request.command not in self.valid_commands:
-                raise RequestError(400) # bad request
+                raise RequestError(400) # Bad Request
+
+            self.setpath(request) # This can raise 400, 403, or 404.
 
 
-            # Add path info to request.
-            # =========================
-            self.path_info(request)
+            # Serve the resource.
+            # ===================
 
-
-            # Serve content.
-            # ==============
-
+            ext = None
             if '.' in request.path:
-                if request.path.split('.')[-1] in self.extensions:
-                    self.handle_template(request)
-            else:
+                ext = request.path.split('.')[-1]
+
+            if ext not in self.extensions:
                 self.handle_static(request)
+            else:
+                self.handle_template(request)
+
 
         except RequestError, err:
             request.error(err.code)
-            return
 
 
-    def path_info(self, request):
-        """Given a request, add two attributes.
-
-        The requested path is stored in `urlpath', and the resolved path in
-        `path'.
-
+    def handle_static(self, request):
+        """Given a request for a static resource, serve it.
         """
 
-        # Parse the URI.
-        # ==============
-        # Afaict this only ever contains path and query.
+        # Serve a 304 if appropriate.
+        # ===========================
 
-        scheme, name, urlpath, query, fragment = urlparse.urlsplit(request.uri)
+        mtime = os.stat(request.path)[stat.ST_MTIME]
+        content_length = os.stat(request.path)[stat.ST_SIZE]
 
+        if not self.dev_mode:
 
-        # Tidy up the path.
-        # =================
+            ims = get_header_match(IF_MODIFIED_SINCE, request.header)
 
-        if not urlpath:
-            # this catches, e.g., '//foo'
-            raise RequestError(400)
-        path = urlpath
-        if '%' in path:
-            path = urllib.unquote(path)
-        path = os.path.join(self.root, path.lstrip('/'))
-        path = os.path.realpath(path)
-        if not path.startswith(self.root):
-            # protect against '../../../../../../../../../../etc/master.passwd'
-            raise RequestError(400)
+            length_match = True
+            if ims:
+                length = ims.group(4)
+                if length:
+                    try:
+                        length = int(length)
+                        if length != content_length:
+                            length_match = False
+                    except:
+                        pass
 
+            ims_date = False
+            if ims:
+                ims_date = http_date.parse_http_date(ims.group(1))
 
-        # Determine if the requested directory or file can be served.
-        # =============================================================
-        # If the path points to a directory, look for a default object.
-        # If it points to a file, see if the file exists.
-
-        if os.path.isdir(path):
-            found = False
-            for name in self.defaults:
-                _path = os.path.join(path, name)
-                if os.path.isfile(_path):
-                    found = True
-                    path = _path
-                    break
-            if not found:
-                raise RequestError(403) # Forbidden
-        else:
-            if not os.path.exists(path):
-                raise RequestError(404) # Not Found
+            if length_match and ims_date:
+                if mtime <= ims_date:
+                    request.reply_code = 304
+                    request.done()
+                    return
 
 
-        # We made it! Set the variables on request.
-        # =========================================
+        # Serve the resource.
+        # ===================
 
-        request.path = path
-        request.urlpath = urlpath
+        content = file(request.path, 'rb').read()
 
+        request['Last-Modified'] = http_date.build_http_date(mtime)
+        request['Content-Length'] = content_length
+        request['Content-Type'] = guess_type(request.path) or 'text/plain'
+
+        if request.command == 'GET':
+            request.push(self.producer(content))
+
+        request.done()
 
 
     def handle_template(self, request):
@@ -228,68 +217,6 @@ class handler:
             request.push(self.producer(out.getvalue()))
 
         request.done()
-        return
-
-
-    def handle_static(self, request):
-        """Given a request for a static resource, serve it.
-        """
-
-        # Serve a 304 if appropriate.
-        # ===========================
-
-        mtime = os.stat(request.path)[stat.ST_MTIME]
-        content_length = os.stat(request.path)[stat.ST_SIZE]
-
-        if not self.dev_mode:
-
-            ims = get_header_match(IF_MODIFIED_SINCE, request.header)
-
-            length_match = True
-            if ims:
-                length = ims.group(4)
-                if length:
-                    try:
-                        length = string.atoi(length)
-                        if length != content_length:
-                            length_match = False
-                    except:
-                        pass
-
-            ims_date = False
-            if ims:
-                ims_date = http_date.parse_http_date(ims.group(1))
-
-            if length_match and ims_date:
-                if mtime <= ims_date:
-                    request.reply_code = 304
-                    request.done()
-                    return
-
-
-        # Serve the resource.
-        # ===================
-
-        content = file(request.path, 'rb').read()
-
-        request['Last-Modified'] = http_date.build_http_date(mtime)
-        request['Content-Length'] = content_length
-        self.set_content_type(request.path, request)
-
-        if request.command == 'GET':
-            request.push(self.producer(content))
-
-        request.done()
-        return
-
-
-    def set_content_type (self, path, request):
-        ext = string.lower(get_extension(path))
-        typ, encoding = mimetypes.guess_type(path)
-        if typ is not None:
-            request['Content-Type'] = typ
-        else:
-            request['Content-Type'] = 'text/plain'
 
 
     def frame(self):
@@ -298,6 +225,59 @@ class handler:
         frame_path = os.path.join(self.__, 'frame.pt')
         if os.path.exists(frame_path):
             return self.templates.getXMLTemplate(frame_path)
+
+
+    def setpath(self, request):
+        """Given a request, translate the URI and store it on `path'.
+        """
+
+        # Parse the URI.
+        # ==============
+        # Afaict this only ever contains path and query.
+
+        scheme, name, urlpath, query, fragment = urlsplit(request.uri)
+
+
+        # Tidy up the path.
+        # =================
+
+        if not urlpath:
+            # this catches, e.g., '//foo'
+            raise RequestError(400)
+        path = urlpath
+        if '%' in path:
+            path = unquote(path)
+        path = os.path.join(self.root, path.lstrip('/'))
+        path = os.path.realpath(path)
+        if not path.startswith(self.root):
+            # protect against '../../../../../../../../../../etc/master.passwd'
+            raise RequestError(400)
+
+
+        # Determine if the requested directory or file can be served.
+        # =============================================================
+        # If the path points to a directory, look for a default object.
+        # If it points to a file, see if the file exists.
+
+        if os.path.isdir(path):
+            found = False
+            for name in self.defaults:
+                _path = os.path.join(path, name)
+                if os.path.isfile(_path):
+                    found = True
+                    path = _path
+                    break
+            if not found:
+                raise RequestError(403) # Forbidden
+        else:
+            if not os.path.exists(path):
+                raise RequestError(404) # Not Found
+
+
+        # We made it!
+        # ===========
+
+        request.path = path
 
 
 
@@ -321,14 +301,6 @@ CONTENT_TYPE = re.compile (
 
 get_header = http_server.get_header
 get_header_match = http_server.get_header_match
-
-def get_extension (path):
-    dirsep = string.rfind (path, '/')
-    dotsep = string.rfind (path, '.')
-    if dotsep > dirsep:
-        return path[dotsep+1:]
-    else:
-        return ''
 
 
 
@@ -375,10 +347,10 @@ def parse_config(path):
     if config.has_section('server'):
         server.update(dict(config.items('server')))
 
-    if isinstance(server['port'], types.StringType) and \
+    if isinstance(server['port'], basestring) and \
        server['port'].isdigit():
         server['port'] = int(server['port'])
-    elif isinstance(server['port'], types.IntType):
+    elif isinstance(server['port'], int):
         pass # already an int for some reason (called interactively?)
     else:
         raise Usage("Configuration error: port must be an integer")
