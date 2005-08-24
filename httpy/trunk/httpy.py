@@ -173,11 +173,13 @@ class handler:
         # Set headers and return content.
         # ===============================
 
+        content = open(request.path, 'rb').read()
+
         request['Last-Modified'] = http_date.build_http_date(mtime)
         request['Content-Length'] = content_length
         request['Content-Type'] = guess_type(request.path)[0] or 'text/plain'
 
-        return open(request.path, 'rb').read()
+        return content
 
 
     def gettemplate(self, request):
@@ -203,7 +205,8 @@ class handler:
         template = self.templates.getXMLTemplate(request.path)
         template.expand( context
                        , out
-                       , docType = self.DOC_TYPE # this doesn't appear to work with PyXML
+                       , docType = '' # It appears that this argument is
+                                      # ignored when PyXML is installed.
                        , suppressXMLDeclaration = True
                         )
 
@@ -211,9 +214,12 @@ class handler:
         # Set headers and return the content.
         # ===================================
 
+        content = out.getvalue()
+
+        request['Content-Length'] = long(len(content))
         request['Content-Type'] = 'text/html'
 
-        content = out.getvalue()
+        return content
 
 
     def getframe(self):
@@ -268,6 +274,7 @@ class handler:
                 raise RequestError(403) # Forbidden
         else:
             if not os.path.exists(path):
+                import pdb; pdb.set_trace()
                 raise RequestError(404) # Not Found
 
 
@@ -326,7 +333,6 @@ def parse_config(path):
     handler['defaults'] = 'index.html index.pt'
     handler['extensions'] = 'pt'
     handler['mode'] = 'development'
-
 
     if not path:
         server['port'] = int(server['port'])

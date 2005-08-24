@@ -35,10 +35,12 @@ handler_config = httpy.parse_config('')[1]
 
 def buildTestSite():
     os.mkdir('root')
-    file('root/index.html','w')
+    file('root/index.html', 'w')
     os.mkdir('root/about')
     os.mkdir('root/My Documents')
-    file('root/My Documents/index.html','w')
+    file('root/My Documents/index.html', 'w')
+    os.mkdir('root/content')
+    file('root/content/index.pt', 'w')
 
 
 # Define our testing class.
@@ -62,24 +64,29 @@ class TestSetPath(httpyTestCase):
     def testBasic(self):
         self.request.uri = '/index.html'
         self.handler.setpath(self.request)
-        expected = (os.path.realpath('root/index.html'), '/index.html')
-        actual = (self.request.path, self.request.uri)
+        expected = os.path.realpath('root/index.html')
+        actual = self.request.path
         self.assertEqual(expected, actual)
 
-    def testDefaultDocument(self):
+    def testStaticDefaultDocument(self):
         self.request.uri = '/'
         self.handler.setpath(self.request)
-        expected = (os.path.realpath('root/index.html'), '/')
-        actual = (self.request.path, self.request.uri)
+        expected = os.path.realpath('root/index.html')
+        actual = self.request.path
+        self.assertEqual(expected, actual)
+
+    def testTemplateDefaultDocument(self):
+        self.request.uri = '/content'
+        self.handler.setpath(self.request)
+        expected = os.path.realpath('root/content/index.pt')
+        actual = self.request.path
         self.assertEqual(expected, actual)
 
     def testEncodedURIGetsUnencoded(self):
         self.request.uri = '/My%20Documents'
         self.handler.setpath(self.request)
-        expected = (os.path.realpath( 'root/My Documents/index.html')
-                                   , '/My%20Documents'
-                                     )
-        actual = (self.request.path, self.request.uri)
+        expected = os.path.realpath( 'root/My Documents/index.html')
+        actual = self.request.path
         self.assertEqual(expected, actual)
 
     def testDoubleRootRaisesBadRequest(self):
