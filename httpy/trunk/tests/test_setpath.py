@@ -82,57 +82,57 @@ class TestSetPath(httpyTestCase):
 
     def testDoubleRootRaisesBadRequest(self):
         self.request.uri = '//index.html'
-        self.assertRaises( httpy.RequestProblem
+        self.assertRaises( httpy.RequestError
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestProblem, err:
+        except httpy.RequestError, err:
             self.assertEqual(err.code, 400)
 
     def testNoDefaultRaisesForbidden(self):
         self.request.uri = '/about/'
-        self.assertRaises( httpy.RequestProblem
+        self.assertRaises( httpy.RequestError
                          , self.handler.setpath
                         , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestProblem, err:
+        except httpy.RequestError, err:
             self.assertEqual(err.code, 403)
 
     def testNotThereRaisesNotFound(self):
         self.request.uri = '/not-there'
-        self.assertRaises( httpy.RequestProblem
+        self.assertRaises( httpy.RequestError
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestProblem, err:
+        except httpy.RequestError, err:
             self.assertEqual(err.code, 404)
 
     def testOutsideRootRaisesBadRequest(self):
         self.request.uri = '/../../../../../../../etc/master.passwd'
-        self.assertRaises( httpy.RequestProblem
+        self.assertRaises( httpy.RequestError
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestProblem, err:
+        except httpy.RequestError, err:
             self.assertEqual(err.code, 400)
 
     def testMagicDirectoryReturnsNotFound(self):
         self.request.uri = '/__/frame.pt'
-        self.assertRaises( httpy.RequestProblem
+        self.assertRaises( httpy.RequestError
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestProblem, err:
+        except httpy.RequestError, err:
             self.assertEqual(err.code, 404)
 
     def testNoMagicDirectoryDoesntReturnNotFound(self):
@@ -147,13 +147,13 @@ class TestSetPath(httpyTestCase):
 
     def testNoTrailingSlashIsRedirected(self):
         self.request.uri = '/about'
-        self.assertRaises( httpy.RequestProblem
+        self.assertRaises( httpy.Redirect
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestProblem, err:
+        except httpy.Redirect, err:
             self.assertEqual(err.code, 301)
 
     def tearDown(self):

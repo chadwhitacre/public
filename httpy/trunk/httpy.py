@@ -37,12 +37,15 @@ from simpletal import simpleTALES
 from simpletal import simpleTALUtils
 
 
-# Patch http_request to use raise.
-# ================================
+# Set up some error handling artifacts.
+# =====================================
 
 def _error (self, code_):
-    raise RequestProblem(code_)
+    raise RequestError(code_)
 http_server.http_request.error = _error
+
+http_server.http_request.responses[302] = 'Found'
+
 http_server.http_request.DEFAULT_ERROR_MESSAGE = """\
 <head>
     <title>Error response</title>
@@ -54,22 +57,21 @@ http_server.http_request.DEFAULT_ERROR_MESSAGE = """\
     %s
 </body>"""
 
-
-
-# Define a problem class.
-# =======================
-
-class RequestProblem(Exception):
-    """A problem with a request.
+class RequestError(Exception):
+    """An error with a request.
     """
-    def __init__(self, code_, **kw):
+    def __init__(self, code_):
         self.code = code_
         self.msg = http_server.http_request.responses.get(code_)
         self.message = ''
 
-        # Store any problem-specific values.
-        for key, val in kw.items():
-            setattr(self, key, val)
+class Redirect(RequestError):
+    """A convenience class for triggering redirects.
+    """
+    def __init__(self, new_location='/', permanent=False):
+        self.new_location = new_location
+        code_ = permanent and 301 or 302
+        RequestError.__init__(self, code_)
 
 
 # Define our request handler.
@@ -91,17 +93,13 @@ class handler:
 
     def __init__(self, root, defaults, extensions, mode): #, app_paths=()):
 
-        # Clean up incoming paths and save values.
-        # ========================================
+        # Initialize values.
+        # ==================
 
         self.root = root
         self.defaults = defaults
         self.extensions = extensions
-        if mode:
-            self.mode = mode
-        else:
-            self.mode = os.environ.get('HTTPY_MODE','').lower()
-        self.dev_mode = self.mode == 'development'
+        self.mode = mode
 
 
         # Look for a __ directory in the publishing root.
@@ -131,7 +129,7 @@ class handler:
             # ===================================================
 
             if request.command not in self.valid_commands:
-                raise RequestProblem(400) # Bad Request (should be 405?)
+                raise RequestError(400) # Bad Request (should be 405?)
 
             self.setpath(request) # This can raise 301, 400, 403, or 404.
 
@@ -150,9 +148,9 @@ class handler:
                                               # sites have a hook.
             content = getcontent(request)
 
-        except RequestProblem, problem:
+        except RequestError, error:
 
-            content = self.getproblem(request, problem)
+            content = self.geterror(request, error)
 
 
         if content and (request.command == 'GET'):
@@ -177,7 +175,7 @@ class handler:
 
         if not urlpath:
             # this catches, e.g., '//foo'
-            raise RequestProblem(400)
+            raise RequestError(400)
         path = urlpath
         if '%' in path:
             path = unquote(path)
@@ -185,10 +183,10 @@ class handler:
         path = os.path.realpath(path)
         if not path.startswith(self.root):
             # protect against '../../../../../../../../../../etc/master.passwd'
-            raise RequestProblem(400)
+            raise RequestError(400)
         if self.__ and path.startswith(self.__):
             # disallow access to our magic directory
-            raise RequestProblem(404)
+            raise RequestError(404)
 
 
         # Determine if the requested directory or file can be served.
@@ -200,9 +198,9 @@ class handler:
             if not request.uri.endswith('/'):
                 # redirect directory requests to trailing slash
                 new_location = '%s/' % request.uri
-                raise RequestProblem( 301 # Moved Permanently
-                                    , new_location=new_location
-                                     )
+                raise Redirect( new_location
+                              , permanent=True # 301
+                               )
             found = False
             for name in self.defaults:
                 _path = os.path.join(path, name)
@@ -211,10 +209,10 @@ class handler:
                     path = _path
                     break
             if not found:
-                raise RequestProblem(403) # Forbidden
+                raise RequestError(403) # Forbidden
         else:
             if not os.path.exists(path):
-                raise RequestProblem(404) # Not Found
+                raise RequestError(404) # Not Found
 
 
         # We made it!
@@ -233,7 +231,7 @@ class handler:
         mtime = os.stat(request.path)[stat.ST_MTIME]
         content_length = os.stat(request.path)[stat.ST_SIZE]
 
-        if not self.dev_mode:
+        if self.mode == 'deployment':
 
             ims = get_header_match(IF_MODIFIED_SINCE, request.header)
 
@@ -254,7 +252,7 @@ class handler:
 
             if length_match and ims_date:
                 if mtime <= ims_date:
-                    raise RequestProblem(304)
+                    raise RequestError(304)
 
 
         # Set headers and return content.
@@ -282,7 +280,8 @@ class handler:
         if os.path.isfile(_path):
             execfile(_path, { 'request':request
                             , 'context':context
-                            , 'RequestProblem':RequestProblem
+                            , 'Redirect':Redirect
+                            , 'RequestError':RequestError
                              })
 
 
@@ -310,29 +309,29 @@ class handler:
         return content
 
 
-    def getproblem(self, request, problem):
-        """Given a request and a problem, set headers and return content.
+    def geterror(self, request, error):
+        """Given a request and an error, set headers and return content.
         """
 
-        # Do problem-specific processing.
-        # ===============================
+        # Do error-specific processing.
+        # =============================
 
-        if problem.code in (301, 302): # Moved Permanently, Found
-            request['Location'] = problem.new_location
-            problem.message = 'Resource now resides at ' +\
-                              '<a href="%s">%s</a>.' % ( problem.new_location
-                                                       , problem.new_location
+        if error.code in (301, 302): # Moved Permanently, Found
+            request['Location'] = error.new_location
+            error.message = 'Resource now resides at ' +\
+                              '<a href="%s">%s</a>.' % ( error.new_location
+                                                       , error.new_location
                                                         )
-        elif problem.code == 304: # Not Modified
+        elif error.code == 304: # Not Modified
             pass
 
-        request.reply_code = problem.code
+        request.reply_code = error.code
 
 
-        # Generate a problem page if we need to.
-        # ======================================
+        # Generate an error page if we need to.
+        # =====================================
 
-        if (request.command == 'HEAD') or (problem.code == 304):
+        if (request.command == 'HEAD') or (error.code == 304):
 
             content = ''
 
@@ -343,13 +342,13 @@ class handler:
             if not template:
 
                 errmsg = request.DEFAULT_ERROR_MESSAGE
-                content = errmsg % (problem.code, problem.msg, problem.message)
+                content = errmsg % (error.code, error.msg, error.message)
 
             else:
 
                 context = simpleTALES.Context()
                 context.addGlobal("request", request)
-                context.addGlobal("problem", problem)
+                context.addGlobal("error", error)
                 out = simpleTALUtils.FastStringOutput()
                 template.expand( context
                                , out
@@ -377,7 +376,7 @@ class handler:
     def _geterrortemplate(self):
         """Wrap the call to getXMLTemplate to avoid a 'not found' error.
         """
-        _path = os.path.join(self.__, 'problem.pt')
+        _path = os.path.join(self.__, 'error.pt')
         if os.path.exists(_path):
             return self.templates.getXMLTemplate(_path)
 
@@ -473,6 +472,12 @@ def parse_config(path):
     if not os.path.isdir(handler['root']):
         raise Usage("Configuration error: site root is not a directory:" +
                     handler['root'])
+
+    if mode:
+        self.mode = mode
+    else:
+        self.mode = os.environ.get('HTTPY_MODE','').lower()
+
 
     return (server, handler)
 
