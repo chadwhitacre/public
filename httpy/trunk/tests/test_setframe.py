@@ -17,6 +17,7 @@ from medusa import http_server
 from httpyTestCase import httpyTestCase
 from simpletal import simpleTAL
 
+
 # Set up some a dummy request and handler.
 # ========================================
 
@@ -63,14 +64,14 @@ class TestFrame(httpyTestCase):
     def testHasFrame(self):
         file_ = open('root/__/frame.pt','r')
         expected = simpleTAL.compileXMLTemplate(file_)
-        actual = self.handler.frame()
+        actual = self.handler.getframe()
         self.assertEqual(type(expected), type(actual))
         self.assertEqual(str(expected), str(actual))
 
     def testNoFrame(self):
         os.remove('root/__/frame.pt')
         expected = None
-        actual = self.handler.frame()
+        actual = self.handler.getframe()
         self.assertEqual(expected, actual)
 
     def tearDown(self):
