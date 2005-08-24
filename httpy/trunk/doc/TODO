@@ -11,22 +11,29 @@ interpreted. I am much more concerned about:
 ========================================
     0.2 -- PT & STATIC
 ========================================
+configuration
+    think through relationship of cli options, config, and env variables
+    check to make sure site root exists on filesystem
+    push all config checking up and out of init
 do something smart with DOC_TYPE
     make it a config option
-    with smart names xhtml transitional
+    with smart names -- `xhtml transitional'
 get frame macro instead of template
 solidify and document the API -- this will have to be backwards-compatible!
+    config api
+    context.py api -- CGI?
+    app.py api -- CGI + StringIO?
 mention daemontools for robust daemonization & logging
 convert doc to man page
 write a make file
-unit tests
+continue with unit tests
 
 
 ========================================
     0.4 -- STATE
 ========================================
 factor out medusa goofiness if possible
-support something sane like CGI to provide state.py with it's API
+support something sane like CGI to provide context.py with it's API
 support POST
 manage sessions, post, querystring, cookies
 
