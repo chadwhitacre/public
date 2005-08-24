@@ -185,7 +185,7 @@ class TestGetTemplate(httpyTestCase):
     def test304(self):
         self.request.uri = '/index.html'
         self.handler.setpath(self.request)
-        self.handler.dev_mode = False
+        self.handler.mode = 'deployment'
         mtime = os.stat(self.request.path)[stat.ST_MTIME]
         ims = 'If-Modified-Since: %s' % http_date.build_http_date(mtime)
         self.request.header.insert(len(self.request.header), ims)
