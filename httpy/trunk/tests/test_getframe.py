@@ -54,14 +54,14 @@ class TestFrame(httpyTestCase):
     def testHasFrame(self):
         file_ = open('root/__/frame.pt','r')
         expected = simpleTAL.compileXMLTemplate(file_).macros['frame']
-        actual = self.handler.getframe()
+        actual = self.handler._getframe()
         self.assertEqual(type(expected), type(actual))
         self.assertEqual(str(expected), str(actual))
 
     def testNoFrame(self):
         os.remove('root/__/frame.pt')
         expected = None
-        actual = self.handler.getframe()
+        actual = self.handler._getframe()
         self.assertEqual(expected, actual)
 
     def tearDown(self):
