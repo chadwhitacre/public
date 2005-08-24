@@ -43,6 +43,17 @@ from simpletal import simpleTALUtils
 def _error (self, code_):
     raise RequestProblem(code_)
 http_server.http_request.error = _error
+http_server.http_request.DEFAULT_ERROR_MESSAGE = """\
+<head>
+    <title>Error response</title>
+</head>
+<body>
+    <h1>Error response</h1>
+    <p>Error code %d.</p>
+    <p>Message: %s.</p>
+    %s
+</body>"""
+
 
 
 # Define a problem class.
@@ -53,14 +64,12 @@ class RequestProblem(Exception):
     """
     def __init__(self, code_, **kw):
         self.code = code_
+        self.msg = http_server.http_request.responses.get(code_)
+        self.message = ''
 
         # Store any problem-specific values.
         for key, val in kw.items():
             setattr(self, key, val)
-
-    def __str__(self):
-        short_msg = http_server.http_request.responses.get(self.code)
-        return '%s %s' % (str(self.code), short_msg)
 
 
 # Define our request handler.
@@ -135,11 +144,11 @@ class handler:
                 ext = request.path.split('.')[-1]
 
             if ext not in self.extensions:
-                getcontent = self.getstatic
+                getcontent = self.getstatic # This can raise 304.
             else:
-                getcontent = self.gettemplate
-            content = getcontent(request) # This can raise anything since it
-                                          # provides site-specific hooks
+                getcontent = self.gettemplate # This can raise anything since
+                                              # sites have a hook.
+            content = getcontent(request)
 
         except RequestProblem, problem:
 
@@ -150,156 +159,6 @@ class handler:
             request.push(self.producer(content))
 
         request.done()
-
-
-
-
-    def getstatic(self, request):
-        """Given a request for a static resource, set headers & return content.
-        """
-
-        # Serve a 304 if appropriate.
-        # ===========================
-
-        mtime = os.stat(request.path)[stat.ST_MTIME]
-        content_length = os.stat(request.path)[stat.ST_SIZE]
-
-        if not self.dev_mode:
-
-            ims = get_header_match(IF_MODIFIED_SINCE, request.header)
-
-            length_match = True
-            if ims:
-                length = ims.group(4)
-                if length:
-                    try:
-                        length = int(length)
-                        if length != content_length:
-                            length_match = False
-                    except:
-                        pass
-
-            ims_date = False
-            if ims:
-                ims_date = http_date.parse_http_date(ims.group(1))
-
-            if length_match and ims_date:
-                if mtime <= ims_date:
-                    raise RequestProblem(304)
-
-
-        # Set headers and return content.
-        # ===============================
-
-        content = open(request.path, 'rb').read()
-
-        request['Last-Modified'] = http_date.build_http_date(mtime)
-        request['Content-Length'] = content_length
-        request['Content-Type'] = guess_type(request.path)[0] or 'text/plain'
-
-        return content
-
-
-    def gettemplate(self, request):
-        """Given a request for a page template, set headers and return content.
-        """
-
-        # Build the context.
-        # ==================
-
-        context = simpleTALES.Context()
-        context.addGlobal("frame", self.getframe())
-        _path = os.path.join(self.__, 'context.py')
-        if os.path.isfile(_path):
-            execfile(_path, { 'request':request
-                            , 'context':context
-                             })
-
-
-        # Expand the template.
-        # ====================
-
-        out = simpleTALUtils.FastStringOutput()
-        template = self.templates.getXMLTemplate(request.path)
-        template.expand( context
-                       , out
-                       , docType = '' # It appears that this argument is
-                                      # ignored when PyXML is installed.
-                       , suppressXMLDeclaration = True
-                        )
-
-
-        # Set headers and return the content.
-        # ===================================
-
-        content = out.getvalue()
-
-        request['Content-Length'] = long(len(content))
-        request['Content-Type'] = 'text/html'
-
-        return content
-
-
-    def getproblem(self, request, problem):
-        """Given a request and an problem, set headers and return content.
-        """
-
-        # Do problem-specific processing.
-        # ===============================
-
-        if problem.code == 301: # Moved Permanently
-            request['Location'] = problem.new_location
-        if problem.code == 302: # Moved Permanently
-            request['Location'] = problem.new_location
-        elif problem.code == 304: # Not Modified
-            pass
-
-        request.reply_code == problem.code
-
-
-        # Generate a problem page if we need to.
-        # ======================================
-
-        if (request.method == 'HEAD') or (problem.code == 304):
-
-            content = ''
-
-        else:
-
-            template = self.getproblemtemplate()
-            context = simpleTALES.Context()
-            context.addGlobal("request", request)
-            context.addGlobal("problem", problem)
-            out = simpleTALUtils.FastStringOutput()
-            template.expand( context
-                           , out
-                           , docType = '' # It appears that this argument is
-                                          # ignored when PyXML is installed.
-                           , suppressXMLDeclaration = True
-                            )
-            content = out.getvalue()
-
-            request['Content-Length'] = long(len(content))
-            request['Content-Type'] = 'text/html'
-
-        return content
-
-
-    def getframe(self):
-        """Wrap the call to getXMLTemplate to avoid a 'not found' error.
-        """
-        frame_path = os.path.join(self.__, 'frame.pt')
-        if os.path.exists(frame_path):
-            template = self.templates.getXMLTemplate(frame_path)
-            return template.macros.get('frame', None)
-
-
-    def getproblemtemplate(self):
-        """Wrap the call to getXMLTemplate to avoid a 'not found' error.
-        """
-        frame_path = os.path.join(self.__, 'problem.pt')
-        if os.path.exists(frame_path):
-            return self.templates.getXMLTemplate(frame_path)
 
 
     def setpath(self, request):
@@ -363,6 +222,164 @@ class handler:
 
         request.path = path
 
+
+    def getstatic(self, request):
+        """Given a request for a static resource, set headers & return content.
+        """
+
+        # Serve a 304 if appropriate.
+        # ===========================
+
+        mtime = os.stat(request.path)[stat.ST_MTIME]
+        content_length = os.stat(request.path)[stat.ST_SIZE]
+
+        if not self.dev_mode:
+
+            ims = get_header_match(IF_MODIFIED_SINCE, request.header)
+
+            length_match = True
+            if ims:
+                length = ims.group(4)
+                if length:
+                    try:
+                        length = int(length)
+                        if length != content_length:
+                            length_match = False
+                    except:
+                        pass
+
+            ims_date = False
+            if ims:
+                ims_date = http_date.parse_http_date(ims.group(1))
+
+            if length_match and ims_date:
+                if mtime <= ims_date:
+                    raise RequestProblem(304)
+
+
+        # Set headers and return content.
+        # ===============================
+
+        content = open(request.path, 'rb').read()
+
+        request['Last-Modified'] = http_date.build_http_date(mtime)
+        request['Content-Length'] = content_length
+        request['Content-Type'] = guess_type(request.path)[0] or 'text/plain'
+
+        return content
+
+
+    def gettemplate(self, request):
+        """Given a request for a page template, set headers and return content.
+        """
+
+        # Build the context.
+        # ==================
+
+        context = simpleTALES.Context()
+        context.addGlobal("frame", self._getframe())
+        _path = os.path.join(self.__, 'context.py')
+        if os.path.isfile(_path):
+            execfile(_path, { 'request':request
+                            , 'context':context
+                            , 'RequestProblem':RequestProblem
+                             })
+
+
+        # Expand the template.
+        # ====================
+
+        out = simpleTALUtils.FastStringOutput()
+        template = self.templates.getXMLTemplate(request.path)
+        template.expand( context
+                       , out
+                       , docType = '' # It appears that this argument is
+                                      # ignored when PyXML is installed.
+                       , suppressXMLDeclaration = True
+                        )
+
+
+        # Set headers and return the content.
+        # ===================================
+
+        content = out.getvalue()
+
+        request['Content-Length'] = long(len(content))
+        request['Content-Type'] = 'text/html'
+
+        return content
+
+
+    def getproblem(self, request, problem):
+        """Given a request and a problem, set headers and return content.
+        """
+
+        # Do problem-specific processing.
+        # ===============================
+
+        if problem.code in (301, 302): # Moved Permanently, Found
+            request['Location'] = problem.new_location
+            problem.message = 'Resource now resides at ' +\
+                              '<a href="%s">%s</a>.' % ( problem.new_location
+                                                       , problem.new_location
+                                                        )
+        elif problem.code == 304: # Not Modified
+            pass
+
+        request.reply_code == problem.code
+
+
+        # Generate a problem page if we need to.
+        # ======================================
+
+        if (request.command == 'HEAD') or (problem.code == 304):
+
+            content = ''
+
+        else:
+
+            template = self._geterrortemplate()
+
+            if not template:
+
+                errmsg = request.DEFAULT_ERROR_MESSAGE
+                content = errmsg % (problem.code, problem.msg, problem.message)
+
+            else:
+
+                context = simpleTALES.Context()
+                context.addGlobal("request", request)
+                context.addGlobal("problem", problem)
+                out = simpleTALUtils.FastStringOutput()
+                template.expand( context
+                               , out
+                               , docType = '' # It appears that this argument is
+                                              # ignored when PyXML is installed.
+                               , suppressXMLDeclaration = True
+                                )
+                content = out.getvalue()
+
+            request['Content-Length'] = long(len(content))
+            request['Content-Type'] = 'text/html'
+
+        return content
+
+
+    def _getframe(self):
+        """Wrap the call to getXMLTemplate to avoid a 'not found' error.
+        """
+        _path = os.path.join(self.__, 'frame.pt')
+        if os.path.exists(_path):
+            template = self.templates.getXMLTemplate(_path)
+            return template.macros.get('frame', None)
+
+
+    def _geterrortemplate(self):
+        """Wrap the call to getXMLTemplate to avoid a 'not found' error.
+        """
+        _path = os.path.join(self.__, 'problem.pt')
+        if os.path.exists(_path):
+            return self.templates.getXMLTemplate(_path)
 
 
 # Request parsers from medusa.default_handler
