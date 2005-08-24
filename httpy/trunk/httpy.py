@@ -70,7 +70,7 @@ class handler:
         # Clean up incoming paths and save values.
         # ========================================
 
-        self.root = os.path.realpath(root)
+        self.root = root
         self.defaults = defaults
         self.extensions = extensions
         if mode:
@@ -274,7 +274,6 @@ class handler:
                 raise RequestError(403) # Forbidden
         else:
             if not os.path.exists(path):
-                import pdb; pdb.set_trace()
                 raise RequestError(404) # Not Found
 
 
@@ -329,7 +328,7 @@ def parse_config(path):
     server['port'] = '8080'
 
     handler = {}
-    handler['root'] = './root'
+    handler['root'] = os.path.realpath('./root')
     handler['defaults'] = 'index.html index.pt'
     handler['extensions'] = 'pt'
     handler['mode'] = 'development'
@@ -338,6 +337,9 @@ def parse_config(path):
         server['port'] = int(server['port'])
         handler['defaults'] = tuple(handler['defaults'].split())
         handler['extensions'] = tuple(handler['extensions'].split())
+        if not os.path.isdir(handler['root']):
+            raise Usage("Configuration error: site root is not a directory:" +
+                        handler['root'])
         return (server, handler)
 
     config = ConfigParser.RawConfigParser()
@@ -368,8 +370,11 @@ def parse_config(path):
     handler['defaults'] = tuple(handler['defaults'].split())
     handler['extensions'] = tuple(handler['extensions'].split())
     if handler['mode'].lower() not in ('development', 'deployment'):
-        raise Usage("Configuration error: mode must be one of `development' " +\
+        raise Usage("Configuration error: mode must be one of `development' " +
                     "and `deployment'.")
+    if not os.path.isdir(handler['root']):
+        raise Usage("Configuration error: site root is not a directory:" +
+                    handler['root'])
 
     return (server, handler)
 
@@ -388,7 +393,7 @@ def main(argv=None):
                 opts = dict(opts)
                 path = os.path.realpath(opts.get('-f'))
                 if not os.path.isfile(path):
-                    raise Usage("Configuration error: %s does not " +\
+                    raise Usage("Configuration error: %s does not " +
                                 "exist." % path)
             except getopt.error, msg:
                 raise Usage(msg)
