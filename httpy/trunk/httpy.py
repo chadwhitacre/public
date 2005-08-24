@@ -227,7 +227,8 @@ class handler:
         """
         frame_path = os.path.join(self.__, 'frame.pt')
         if os.path.exists(frame_path):
-            return self.templates.getXMLTemplate(frame_path)
+            template = self.templates.getXMLTemplate(frame_path)
+            return template.macros.get('frame', None)
 
 
     def setpath(self, request):
@@ -255,6 +256,9 @@ class handler:
         if not path.startswith(self.root):
             # protect against '../../../../../../../../../../etc/master.passwd'
             raise RequestError(400)
+        if self.__ and path.startswith(self.__):
+            # disallow access to our magic directory
+            raise RequestError(404)
 
 
         # Determine if the requested directory or file can be served.
