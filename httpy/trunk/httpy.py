@@ -37,15 +37,30 @@ from simpletal import simpleTALES
 from simpletal import simpleTALUtils
 
 
+# Patch http_request to use raise.
+# ================================
 
-class RequestError(Exception):
-    """An error with a request.
+def _error (self, code_):
+    raise RequestProblem(code_)
+http_server.http_request.error = _error
+
+
+# Define a problem class.
+# =======================
+
+class RequestProblem(Exception):
+    """A problem with a request.
     """
-    def __init__(self, code):
-        self.code = code
+    def __init__(self, code_, **kw):
+        self.code = code_
+
+        # Store any problem-specific values.
+        for key, val in kw.items():
+            setattr(self, key, val)
+
     def __str__(self):
-        msg = http_server.http_request.responses.get(self.code)
-        return '%s %s' % (str(self.code), msg)
+        short_msg = http_server.http_request.responses.get(self.code)
+        return '%s %s' % (str(self.code), short_msg)
 
 
 # Define our request handler.
@@ -107,9 +122,9 @@ class handler:
             # ===================================================
 
             if request.command not in self.valid_commands:
-                raise RequestError(400) # Bad Request
+                raise RequestProblem(400) # Bad Request (should be 405?)
 
-            self.setpath(request) # This can raise 400, 403, or 404.
+            self.setpath(request) # This can raise 301, 400, 403, or 404.
 
 
             # Serve the resource.
@@ -123,16 +138,20 @@ class handler:
                 getcontent = self.getstatic
             else:
                 getcontent = self.gettemplate
-            content = getcontent(request)
+            content = getcontent(request) # This can raise anything since it
+                                          # provides site-specific hooks
 
-            if content and (request.command == 'GET'):
-                request.push(self.producer(content))
+        except RequestProblem, problem:
 
-            request.done()
+            content = self.getproblem(request, problem)
 
 
-        except RequestError, err:
-            request.error(err.code)
+        if content and (request.command == 'GET'):
+            request.push(self.producer(content))
+
+        request.done()
+
+
 
 
     def getstatic(self, request):
@@ -166,8 +185,7 @@ class handler:
 
             if length_match and ims_date:
                 if mtime <= ims_date:
-                    request.reply_code = 304
-                    return
+                    raise RequestProblem(304)
 
 
         # Set headers and return content.
@@ -222,6 +240,51 @@ class handler:
         return content
 
 
+    def getproblem(self, request, problem):
+        """Given a request and an problem, set headers and return content.
+        """
+
+        # Do problem-specific processing.
+        # ===============================
+
+        if problem.code == 301: # Moved Permanently
+            request['Location'] = problem.new_location
+        if problem.code == 302: # Moved Permanently
+            request['Location'] = problem.new_location
+        elif problem.code == 304: # Not Modified
+            pass
+
+        request.reply_code == problem.code
+
+
+        # Generate a problem page if we need to.
+        # ======================================
+
+        if (request.method == 'HEAD') or (problem.code == 304):
+
+            content = ''
+
+        else:
+
+            template = self.getproblemtemplate()
+            context = simpleTALES.Context()
+            context.addGlobal("request", request)
+            context.addGlobal("problem", problem)
+            out = simpleTALUtils.FastStringOutput()
+            template.expand( context
+                           , out
+                           , docType = '' # It appears that this argument is
+                                          # ignored when PyXML is installed.
+                           , suppressXMLDeclaration = True
+                            )
+            content = out.getvalue()
+
+            request['Content-Length'] = long(len(content))
+            request['Content-Type'] = 'text/html'
+
+        return content
+
+
     def getframe(self):
         """Wrap the call to getXMLTemplate to avoid a 'not found' error.
         """
@@ -229,6 +292,14 @@ class handler:
         if os.path.exists(frame_path):
             template = self.templates.getXMLTemplate(frame_path)
             return template.macros.get('frame', None)
+
+
+    def getproblemtemplate(self):
+        """Wrap the call to getXMLTemplate to avoid a 'not found' error.
+        """
+        frame_path = os.path.join(self.__, 'problem.pt')
+        if os.path.exists(frame_path):
+            return self.templates.getXMLTemplate(frame_path)
 
 
     def setpath(self, request):
@@ -247,7 +318,7 @@ class handler:
 
         if not urlpath:
             # this catches, e.g., '//foo'
-            raise RequestError(400)
+            raise RequestProblem(400)
         path = urlpath
         if '%' in path:
             path = unquote(path)
@@ -255,10 +326,10 @@ class handler:
         path = os.path.realpath(path)
         if not path.startswith(self.root):
             # protect against '../../../../../../../../../../etc/master.passwd'
-            raise RequestError(400)
+            raise RequestProblem(400)
         if self.__ and path.startswith(self.__):
             # disallow access to our magic directory
-            raise RequestError(404)
+            raise RequestProblem(404)
 
 
         # Determine if the requested directory or file can be served.
@@ -267,6 +338,12 @@ class handler:
         # If it points to a file, see if the file exists.
 
         if os.path.isdir(path):
+            if not request.uri.endswith('/'):
+                # redirect directory requests to trailing slash
+                new_location = '%s/' % request.uri
+                raise RequestProblem( 301 # Moved Permanently
+                                    , new_location=new_location
+                                     )
             found = False
             for name in self.defaults:
                 _path = os.path.join(path, name)
@@ -275,10 +352,10 @@ class handler:
                     path = _path
                     break
             if not found:
-                raise RequestError(403) # Forbidden
+                raise RequestProblem(403) # Forbidden
         else:
             if not os.path.exists(path):
-                raise RequestError(404) # Not Found
+                raise RequestProblem(404) # Not Found
 
 
         # We made it!
