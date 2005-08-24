@@ -5,7 +5,8 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.realpath('..'))
+if __name__ == '__main__':
+    sys.path.insert(0, os.path.realpath('..'))
 
 
 # Import some modules.
@@ -19,23 +20,10 @@ from simpletal import simpleTAL
 from xml.sax import SAXParseException
 
 
-# Set up some a dummy request and handler.
-# ========================================
-
-request = ( None
-          , 'GET / HTTP/1.1'
-          , 'GET'
-          , '/index.pt'
-          , '1.1'
-          , ['Host: josemaria:8080', 'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.10) Gecko/20050716 Firefox/1.0.6', 'Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5', 'Accept-Language: en-us,en;q=0.7,ar;q=0.3', 'Accept-Encoding: gzip,deflate', 'Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7', 'Keep-Alive: 300', 'Connection: keep-alive']
-           )
-handler_config = httpy.parse_config('')[1]
-
-
 # Define the site to test against.
 # ================================
 
-dummy_html = """\
+dummy_tal = """\
 <html>
   <head>
     <title>Foo</title>
@@ -45,12 +33,48 @@ dummy_html = """\
   </body>
 </html>"""
 
+dummy_frame = """\
+<html metal:define-macro="frame">
+  <head>
+    <title>Foo</title>
+  </head>
+  <body metal:define-slot="body">
+    Bar
+  </body>
+</html>"""
+
+dummy_metal = """\
+<html metal:use-macro="frame">
+  <body metal:fill-slot="body">
+    Baz
+  </body>
+</html>"""
+
+dummy_expanded = """\
+<html>
+  <head>
+    <title>Foo</title>
+  </head>
+  <body>
+    Baz
+  </body>
+</html>"""
+
+
 def buildTestSite():
     os.mkdir('root')
     file_ = open('root/index.pt','w')
-    file_.write(dummy_html)
+    file_.write(dummy_tal)
     file_.close()
     file('root/empty', 'w')
+    os.mkdir('root/__')
+    file_ = open('root/__/frame.pt','w')
+    file_.write(dummy_frame)
+    file_.close()
+    file_ = open('root/framed.pt','w')
+    file_.write(dummy_metal)
+    file_.close()
+
 
 
 # Define our testing class.
@@ -65,12 +89,13 @@ class TestGetTemplate(httpyTestCase):
         buildTestSite()
 
         # handler
-        self.request = http_server.http_request(*request)
+        self.request = http_server.http_request(*self._request)
+        handler_config = httpy.parse_config('')[1]
         self.handler = httpy.handler(**handler_config)
         self.handler.setpath(self.request)
 
     def testBasic(self):
-        expected = dummy_html
+        expected = dummy_tal
         actual = self.handler.gettemplate(self.request)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 83L)
@@ -84,11 +109,26 @@ class TestGetTemplate(httpyTestCase):
                          , self.request
                           )
 
+    def testTemplateUsingFrame(self):
+        self.request.uri = '/framed.pt'
+        self.handler.setpath(self.request)
+        expected = dummy_expanded
+        actual = self.handler.gettemplate(self.request)
+        self.assertEqual(expected, actual)
+        self.assertEqual(self.request['Content-Length'], 83L)
+        self.assertEqual(self.request['Content-Type'], 'text/html')
+
     def tearDown(self):
         self.removeTestSite()
         pass
 
 
+
+def test_suite():
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(TestGetTemplate))
+    return suite
 
 if __name__ == '__main__':
     unittest.main()
