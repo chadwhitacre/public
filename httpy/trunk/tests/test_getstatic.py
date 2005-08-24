@@ -34,10 +34,7 @@ handler_config = httpy.parse_config('')[1]
 # Define the site to test against.
 # ================================
 
-def buildTestSite():
-    os.mkdir('root')
-    file_ = open('root/index.html','w')
-    file_.write("""\
+dummy_html = """\
 <html>
   <head>
     <title>Foo</title>
@@ -46,8 +43,14 @@ def buildTestSite():
     Bar
   </body>
 </html>
-""")
+"""
+
+def buildTestSite():
+    os.mkdir('root')
+    file_ = open('root/index.html','w')
+    file_.write(dummy_html)
     file_.close()
+    file('root/empty', 'w')
 
 
 # Define our testing class.
@@ -66,9 +69,21 @@ class TestHandleStatic(httpyTestCase):
         self.handler = httpy.handler(**handler_config)
         self.handler.setpath(self.request)
 
-    def testBase(self):
-        self.handler.handle_static(self.request)
-        import pdb; pdb.set_trace()
+    def testBasic(self):
+        expected = dummy_html
+        actual = self.handler.getstatic(self.request)
+        self.assertEqual(expected, actual)
+        self.assertEqual(self.request['Content-Length'], 84L)
+        self.assertEqual(self.request['Content-Type'], 'text/html')
+
+    def testEmptyFile(self):
+        self.request.uri = '/empty'
+        self.handler.setpath(self.request)
+        expected = ''
+        actual = self.handler.getstatic(self.request)
+        self.assertEqual(expected, actual)
+        self.assertEqual(self.request['Content-Length'], 0)
+        self.assertEqual(self.request['Content-Type'], 'text/plain')
 
     def tearDown(self):
         self.removeTestSite()

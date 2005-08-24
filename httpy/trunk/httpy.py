@@ -120,17 +120,23 @@ class handler:
                 ext = request.path.split('.')[-1]
 
             if ext not in self.extensions:
-                self.handle_static(request)
+                getcontent = self.getstatic
             else:
-                self.handle_template(request)
+                getcontent = self.gettemplate
+            content = getcontent(request)
+
+            if content and (request.command == 'GET'):
+                request.push(self.producer(content))
+
+            request.done()
 
 
         except RequestError, err:
             request.error(err.code)
 
 
-    def handle_static(self, request):
-        """Given a request for a static resource, serve it.
+    def getstatic(self, request):
+        """Given a request for a static resource, set headers & return content.
         """
 
         # Serve a 304 if appropriate.
@@ -161,34 +167,28 @@ class handler:
             if length_match and ims_date:
                 if mtime <= ims_date:
                     request.reply_code = 304
-                    request.done()
                     return
 
 
-        # Serve the resource.
-        # ===================
-
-        content = file(request.path, 'rb').read()
+        # Set headers and return content.
+        # ===============================
 
         request['Last-Modified'] = http_date.build_http_date(mtime)
         request['Content-Length'] = content_length
-        request['Content-Type'] = guess_type(request.path) or 'text/plain'
+        request['Content-Type'] = guess_type(request.path)[0] or 'text/plain'
 
-        if request.command == 'GET':
-            request.push(self.producer(content))
-
-        request.done()
+        return open(request.path, 'rb').read()
 
 
-    def handle_template(self, request):
-        """Given a request for a page template, serve it.
+    def gettemplate(self, request):
+        """Given a request for a page template, set headers and return content.
         """
 
         # Build the context.
         # ==================
 
         context = simpleTALES.Context()
-        context.addGlobal("frame", self.frame())
+        context.addGlobal("frame", self.getframe())
         _path = os.path.join(self.__, 'context.py')
         if os.path.isfile(_path):
             execfile(_path, { 'request':request
@@ -196,8 +196,8 @@ class handler:
                              })
 
 
-        # Expand and return the template.
-        # ===============================
+        # Expand the template.
+        # ====================
 
         out = simpleTALUtils.FastStringOutput()
         template = self.templates.getXMLTemplate(request.path)
@@ -208,18 +208,15 @@ class handler:
                         )
 
 
-        # Set headers and return.
-        # =======================
+        # Set headers and return the content.
+        # ===================================
 
         request['Content-Type'] = 'text/html'
 
-        if request.command == 'GET':
-            request.push(self.producer(out.getvalue()))
-
-        request.done()
+        content = out.getvalue()
 
 
-    def frame(self):
+    def getframe(self):
         """Wrap the call to getXMLTemplate to avoid a 'not found' error.
         """
         frame_path = os.path.join(self.__, 'frame.pt')
