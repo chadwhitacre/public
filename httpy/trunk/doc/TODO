@@ -13,21 +13,23 @@ interpreted. I am much more concerned about:
 ========================================
 configuration
     think through relationship of cli options, config, and env variables
+        defaults -- can start httpy with no options, etc. and get something
     check to make sure site root exists on filesystem
     push all config checking up and out of init
 do something smart with DOC_TYPE
     make it a config option
     with smart names -- `xhtml transitional'
-get frame macro instead of template
 solidify and document the API -- this will have to be backwards-compatible!
     error handling -- raise NotFound()?
     config api
     context.py api -- CGI?
     app.py api -- CGI + StringIO?
-mention daemontools for robust daemonization & logging
+figure out daemontools
 convert doc to man page
 write a make file
 continue with unit tests
+=====DONE=====
+get frame macro instead of template
 
 
 ========================================

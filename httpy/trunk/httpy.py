@@ -12,14 +12,14 @@ __version__ = (0,1)
 # Import from the standard library.
 # =================================
 
-import ConfigParser
 import asyncore
-import getopt
 import os
 import re
 import stat
 import sys
+from ConfigParser import RawConfigParser
 from mimetypes import guess_type
+from optparse import OptionParser
 from urllib import unquote
 from urlparse import urlsplit
 
@@ -408,78 +408,197 @@ get_header_match = http_server.get_header_match
 # =================
 # http://www.artima.com/weblogs/viewpost.jsp?thread=4829
 
-class Usage(Exception):
+class ConfigError(Exception):
     def __init__(self, msg):
         self.msg = msg
 
 
-def parse_config(path):
-    """Given a path to a configuration file, return two dictionaries.
+class Configuration:
+    """Determine the config for an httpy server from four sources:
+
+        - defaults -- a set of defaults
+        - env -- environment variables
+        - file_ -- a configuration file
+        - opts -- command line options
+
+    For each context, a dictionary is built from that context, and then
+    validated: if possible, values are coerced to the requisite types; if not,
+    ConfigurationError is raised. These dictionaries are combined in the order
+    given above, such that environment variables override defaults, etc.
+    Finally, the combined dictionary is split into two, one representing server
+    configuration, and one handler configuration.
+
     """
 
-    # Set defaults.
-    # =============
+    def __init__(self, argv):
 
-    server = {}
-    server['ip'] = ''
-    server['port'] = '8080'
+        # Read them in reverse order because any file path is in opts.
 
-    handler = {}
-    handler['root'] = os.path.realpath('./root')
-    handler['defaults'] = 'index.html index.pt'
-    handler['extensions'] = 'pt'
-    handler['mode'] = 'development'
+        opts, path = self._opts(argv)
+        file_ = self._file(path)
+        env = self._env()
+        defaults = self._defaults()
 
-    if not path:
-        server['port'] = int(server['port'])
+        # If we make it this far without an exception then we have clean data.
+
+        total = {}
+        total.update(defaults)
+        total.update(env)
+        total.update(file_)
+        total.update(opts)
+
+        self.server = {}
+        self.server['ip'] = total['ip']
+        self.server['port'] = total['port']
+
+        self.handler = {}
+        self.handler['root'] = total['root']
+        self.handler['defaults'] = total['defaults']
+        self.handler['extensions'] = total['extensions']
+        self.handler['mode'] = total['mode']
+
+
+    def _defaults(self):
+
+        d = {}
+        d['ip'] = ''
+        d['port'] = 8080
+        d['root'] = os.path.realpath('.')
+        d['defaults'] = 'index.html index.pt'
+        d['extensions'] = 'pt'
+        d['mode'] = 'development'
+
+        return self._validate('defaults', d)
+
+
+    def _env(self):
+
+        d = {}
+
+        if os.environ.has_key('HTTPY_IP'):
+            d['ip'] = os.environ.get('HTTPY_IP')
+        if os.environ.has_key('HTTPY_PORT'):
+            d['port'] = os.environ.get('HTTPY_PORT')
+        if os.environ.has_key('HTTPY_ROOT'):
+            d['root'] = os.environ.get('HTTPY_ROOT')
+        if os.environ.has_key('HTTPY_DEFAULTS'):
+            d['defaults'] = os.environ.get('HTTPY_DEFAULTS')
+        if os.environ.has_key('HTTPY_EXTENSIONS'):
+            d['extensions'] = os.environ.get('HTTPY_EXTENSIONS')
+        if os.environ.has_key('HTTPY_MODE'):
+            d['mode'] = os.environ.get('HTTPY_MODE')
+
+        return self._validate('env', d)
+
+
+    def _opts(self, argv):
+        """Special case: return a valid dictionary *and* a config file path.
+        """
+
+        d = {}
+        path = ''
+
+        if not argv[1:]:
+            return d, path
+
+        usage = "for details, `man 1 httpy'."
+
+        parser_ = OptionParser(usage=usage)
+        parser_.add_option("-f", "--file", dest="path",
+                           help="The path to a configuration file. [none]")
+        parser_.add_option("-i", "--ip", dest="ip",
+                           help="The IP address to listen on. [all]")
+        parser_.add_option("-p", "--port", dest="port",
+                           help="The TCP port to listen on. [8080]")
+        parser_.add_option("-r", "--root", dest="root",
+                           help="The path to the website root. [.]")
+        parser_.add_option("-d", "--defaults", dest="defaults",
+                           help="Attempt to serve these files when a " +
+                                "directory is requested. [index.html " +
+                                "index.pt]")
+        parser_.add_option("-e", "--extensions", dest="extensions",
+                           help="File extensions that indicate page " +
+                                "templates. [pt]")
+        parser_.add_option("-m", "--mode", dest="mode",
+                           help="`development' or `deployment'. [deployment]")
+        opts, args = parser_.parse_args()
+
+        path = os.path.realpath(opts.path)
+        if not os.path.isfile(path):
+            raise ConfigError("The path %s does not point to a file." % path)
+
+        d = {}
+
+        return (self._validate('opts', d), path)
+
+
+    def _file(self, path):
+
+        d = {}
+
+        parser_ = RawConfigParser()
+        parser_.read(path)
+
+        if parser_.has_section('server'):
+            d.update(dict(parser_.items('server')))
+        if parser_.has_section('handler'):
+            d.update(dict(parser_.items('handler')))
+
+        return self._validate('file', d)
+
+
+    def _validate(self, context, d):
+        """Given a config context and a dictionary, validate the values.
+
+        Some type coercion is performed. If the value can't be coerced, then
+        ConfigurationError is raised. Superfluous keys are deleted.
+
+        """
+
+        # port
+        # ====
+        # Coerce to int. Must be between 0 and 65535.
+
+        errmsg = "[%s] Port must be an integer between 0 and 65535." % context
+
+        if isinstance(d['port'], basestring) and \
+           d['port'].isdigit():
+            d['port'] = int(d['port'])
+        elif isinstance(d['port'], int):
+            pass # already an int for some reason (called interactively?)
+        else:
+            raise ConfigError(errmsg)
+
+        if not(0 <= d['port'] <= 65535):
+            raise ConfigError(errmsg)
+
+
+        # Made it!
+        # ========
+
+        return d
+
+        """
+        ### just code storage atm
+
+
         handler['defaults'] = tuple(handler['defaults'].split())
         handler['extensions'] = tuple(handler['extensions'].split())
+        if handler['mode'].lower() not in ('development', 'deployment'):
+            raise Usage("Configuration error: mode must be one of `development' " +
+                        "and `deployment'.")
         if not os.path.isdir(handler['root']):
             raise Usage("Configuration error: site root is not a directory:" +
                         handler['root'])
-        return (server, handler)
 
-    config = ConfigParser.RawConfigParser()
-    config.read(path)
+            handler['defaults'] = tuple(handler['defaults'].split())
+            handler['extensions'] = tuple(handler['extensions'].split())
+            if not os.path.isdir(handler['root']):
+                raise Usage("Configuration error: site root is not a directory:" +
+                            handler['root'])
+            return (server, handler)
 
-
-    # Parse the server section.
-    # =========================
-
-    if config.has_section('server'):
-        server.update(dict(config.items('server')))
-
-    if isinstance(server['port'], basestring) and \
-       server['port'].isdigit():
-        server['port'] = int(server['port'])
-    elif isinstance(server['port'], int):
-        pass # already an int for some reason (called interactively?)
-    else:
-        raise Usage("Configuration error: port must be an integer")
-
-
-    # Parse the handler section.
-    # ==========================
-
-    if config.has_section('handler'):
-        handler.update(dict(config.items('handler')))
-
-    handler['defaults'] = tuple(handler['defaults'].split())
-    handler['extensions'] = tuple(handler['extensions'].split())
-    if handler['mode'].lower() not in ('development', 'deployment'):
-        raise Usage("Configuration error: mode must be one of `development' " +
-                    "and `deployment'.")
-    if not os.path.isdir(handler['root']):
-        raise Usage("Configuration error: site root is not a directory:" +
-                    handler['root'])
-
-    if mode:
-        self.mode = mode
-    else:
-        self.mode = os.environ.get('HTTPY_MODE','').lower()
-
-
-    return (server, handler)
+        """
 
 
 def main(argv=None):
@@ -487,41 +606,21 @@ def main(argv=None):
         argv = sys.argv
     try:
 
-        # Identify our configuration file.
-        # ================================
-
-        if argv[1:]:
-            try:
-                opts, args = getopt.getopt(argv[1:], "f:")
-                opts = dict(opts)
-                path = os.path.realpath(opts.get('-f'))
-                if not os.path.isfile(path):
-                    raise Usage("Configuration error: %s does not " +
-                                "exist." % path)
-            except getopt.error, msg:
-                raise Usage(msg)
-        else:
-            path = None
-
-
         # Parse our configuration file.
         # =============================
 
-        try:
-            _server, _handler = parse_config(path)
-        except ConfigParser.Error, msg:
-            raise Usage("Configuration error: %s" % msg)
+        config = Configuration(argv)
 
 
         # Stop, drop, and roll.
         # =====================
 
-        server = http_server.http_server(**_server)
-        server.install_handler(handler(**_handler))
+        server = http_server.http_server(**config.server)
+        server.install_handler(handler(**config.handler))
         asyncore.loop()
 
 
-    except Usage, err:
+    except ConfigError, err:
         print >> sys.stderr, err.msg
         print >> sys.stderr, "`man 1 httpy' for usage."
         return 2

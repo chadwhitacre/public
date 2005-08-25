@@ -15,7 +15,6 @@ if __name__ == '__main__':
 import httpy
 import stat
 import unittest
-from httpy import RequestError
 from medusa import http_server, http_date
 from httpyTestCase import httpyTestCase
 from simpletal import simpleTAL
@@ -38,7 +37,6 @@ def buildTestSite():
     file_.close()
 
 
-
 # Define our testing class.
 # =========================
 
@@ -54,6 +52,9 @@ class TestGetTemplate(httpyTestCase):
         self.request = http_server.http_request(*self._request)
         handler_config = httpy.parse_config('')[1]
         self.handler = httpy.handler(**handler_config)
+
+    def testBasic(self):
+        httpy.parse_config
 
 
     def tearDown(self):
