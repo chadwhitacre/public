@@ -28,7 +28,7 @@ figure out daemontools
 convert doc to man page
 write a make file
 continue with unit tests
-refactor into multiple modules, distutils instead of make
+refactor into multiple modules, distutils + make
 test on Windows!!!
 =====DONE=====
 get frame macro instead of template

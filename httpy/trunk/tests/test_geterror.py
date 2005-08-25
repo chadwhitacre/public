@@ -1,29 +1,15 @@
 #!/usr/bin/env python
 
-# Make sure we can find the module we want to test.
-# =================================================
-
 import os
-import sys
-if __name__ == '__main__':
-    sys.path.insert(0, os.path.realpath('..'))
-
-
-# Import some modules.
-# ====================
-
-import httpy
 import stat
 import unittest
-from httpy import RequestError, Redirect
-from medusa import http_server, http_date
-from httpyTestCase import httpyTestCase
-from simpletal import simpleTAL
-from xml.sax import SAXParseException
 
+from medusa import http_date
 
-# Define the site to test against.
-# ================================
+from httpy.Handler import Redirect
+from httpy.Handler import RequestError
+from HandlerTestCase import HandlerTestCase
+
 
 dummy_error_301 = """\
 <head>
@@ -126,35 +112,19 @@ dummy_expanded = """\
 </html>"""
 
 
-def buildTestSite():
-    os.mkdir('root')
-    file('root/index.html', 'w')
-    os.mkdir('root/about')
-    os.mkdir('root/__')
-    file_ = open('root/__/context.py', 'w')
-    file_.write(dummy_context)
-    file_.close()
-    file_ = open('root/foo.pt', 'w')
-    file_.write(dummy_tal)
-    file_.close()
+class TestGetTemplate(HandlerTestCase):
 
-
-
-# Define our testing class.
-# =========================
-
-class TestGetTemplate(httpyTestCase):
-
-    def setUp(self):
-
-        # [re]build a temporary website tree in ./root
-        self.removeTestSite()
-        buildTestSite()
-
-        # handler
-        self.request = http_server.http_request(*self._request)
-        handler_config = httpy.parse_config('')[1]
-        self.handler = httpy.Handler(**handler_config)
+    def buildTestSite(self):
+        os.mkdir('root')
+        file('root/index.html', 'w')
+        os.mkdir('root/about')
+        os.mkdir('root/__')
+        file_ = open('root/__/context.py', 'w')
+        file_.write(dummy_context)
+        file_.close()
+        file_ = open('root/foo.pt', 'w')
+        file_.write(dummy_tal)
+        file_.close()
 
     def test301(self):
         self.request.uri = '/about'

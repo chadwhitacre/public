@@ -1,53 +1,31 @@
 #!/usr/bin/env python
 
-# Make sure we can find the module we want to test.
-# =================================================
-
 import os
-import sys
-if __name__ == '__main__':
-    sys.path.insert(0, os.path.realpath('..'))
-
-
-# Import some modules.
-# ====================
-
-import httpy
 import unittest
+
 from medusa import http_server
-from httpyTestCase import httpyTestCase
+
+from httpy.Handler import Handler
+from httpy.Handler import RequestError
+from httpy.Handler import Redirect
+from httpy.Configuration import Configuration
+from HandlerTestCase import HandlerTestCase
 
 
-# Define the site to test against.
-# ================================
+class TestSetPath(HandlerTestCase):
 
-def buildTestSite():
-    os.mkdir('root')
-    file('root/index.html', 'w')
-    os.mkdir('root/__')
-    file('root/__/frame.pt', 'w')
-    os.mkdir('root/about')
-    os.mkdir('root/My Documents')
-    file('root/My Documents/index.html', 'w')
-    os.mkdir('root/content')
-    file('root/content/index.pt', 'w')
+    setpath = False
 
-
-# Define our testing class.
-# =========================
-
-class TestSetPath(httpyTestCase):
-
-    def setUp(self):
-
-        # [re]build a temporary website tree in ./root
-        self.removeTestSite()
-        buildTestSite()
-
-        # handler
-        self.request = http_server.http_request(*self._request)
-        handler_config = httpy.parse_config('')[1]
-        self.handler = httpy.Handler(**handler_config)
+    def buildTestSite(self):
+        os.mkdir('root')
+        file('root/index.html', 'w')
+        os.mkdir('root/__')
+        file('root/__/frame.pt', 'w')
+        os.mkdir('root/about')
+        os.mkdir('root/My Documents')
+        file('root/My Documents/index.html', 'w')
+        os.mkdir('root/content')
+        file('root/content/index.pt', 'w')
 
     def testRootIsSetAsExpected(self):
         self.assertEqual(self.handler.root, os.path.realpath('./root'))
@@ -82,64 +60,64 @@ class TestSetPath(httpyTestCase):
 
     def testDoubleRootRaisesBadRequest(self):
         self.request.uri = '//index.html'
-        self.assertRaises( httpy.RequestError
+        self.assertRaises( RequestError
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestError, err:
+        except RequestError, err:
             self.assertEqual(err.code, 400)
 
     def testNoDefaultRaisesForbidden(self):
         self.request.uri = '/about/'
-        self.assertRaises( httpy.RequestError
+        self.assertRaises( RequestError
                          , self.handler.setpath
                         , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestError, err:
+        except RequestError, err:
             self.assertEqual(err.code, 403)
 
     def testNotThereRaisesNotFound(self):
         self.request.uri = '/not-there'
-        self.assertRaises( httpy.RequestError
+        self.assertRaises( RequestError
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestError, err:
+        except RequestError, err:
             self.assertEqual(err.code, 404)
 
     def testOutsideRootRaisesBadRequest(self):
         self.request.uri = '/../../../../../../../etc/master.passwd'
-        self.assertRaises( httpy.RequestError
+        self.assertRaises( RequestError
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestError, err:
+        except RequestError, err:
             self.assertEqual(err.code, 400)
 
     def testMagicDirectoryReturnsNotFound(self):
         self.request.uri = '/__/frame.pt'
-        self.assertRaises( httpy.RequestError
+        self.assertRaises( RequestError
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.RequestError, err:
+        except RequestError, err:
             self.assertEqual(err.code, 404)
 
     def testNoMagicDirectoryDoesntReturnNotFound(self):
         os.remove('root/__/frame.pt')
         os.rmdir('root/__')
-        handler_config = httpy.parse_config('')[1]
-        self.handler = httpy.Handler(**handler_config)
+        config = Configuration(['-rroot'])
+        self.handler = Handler(**config.handler)
         self.handler.setpath(self.request)
         expected = os.path.realpath('root/index.html')
         actual = self.request.path
@@ -147,18 +125,14 @@ class TestSetPath(httpyTestCase):
 
     def testNoTrailingSlashIsRedirected(self):
         self.request.uri = '/about'
-        self.assertRaises( httpy.Redirect
+        self.assertRaises( Redirect
                          , self.handler.setpath
                          , self.request
                           )
         try:
             self.handler.setpath(self.request)
-        except httpy.Redirect, err:
+        except Redirect, err:
             self.assertEqual(err.code, 301)
-
-    def tearDown(self):
-        self.removeTestSite()
-
 
 
 def test_suite():
