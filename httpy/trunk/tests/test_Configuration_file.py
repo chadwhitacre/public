@@ -5,7 +5,6 @@ import unittest
 from ConfigParser import ParsingError
 
 from ConfigurationTestCase import ConfigurationTestCase
-from httpy.Configuration import Configuration
 
 
 default_conf = """\
@@ -73,6 +72,18 @@ extensions = pt
 mode = deployment
 """
 
+extra_options = """\
+[server]
+ip =
+port = 8080
+cheese = yummy
+
+[handler]
+root = .
+defaults = index.html index.pt
+extensions = pt
+mode = deployment
+"""
 
 class TestConfigurationFile(ConfigurationTestCase):
 
@@ -133,11 +144,19 @@ class TestConfigurationFile(ConfigurationTestCase):
         actual = self.dict2tuple(self.config._file('httpy.conf'))
         self.assertEqual(expected, actual)
 
+    def testExtraOptionsAreIgnored(self):
+        conf = open('httpy.conf', 'w')
+        conf.write(extra_options)
+        conf.close()
+        expected = self.dict2tuple(self.d.copy())
+        actual = self.dict2tuple(self.config._file('httpy.conf'))
+        self.assertEqual(expected, actual)
+
 
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigurationDefaults))
+    suite.addTest(makeSuite(TestConfigurationFile))
     return suite
 
 if __name__ == '__main__':

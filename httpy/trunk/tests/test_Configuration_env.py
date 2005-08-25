@@ -45,7 +45,7 @@ class TestConfigurationEnv(ConfigurationTestCase):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigurationDefaults))
+    suite.addTest(makeSuite(TestConfigurationEnv))
     return suite
 
 if __name__ == '__main__':
