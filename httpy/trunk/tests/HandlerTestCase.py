@@ -54,5 +54,18 @@ class HandlerTestCase(unittest.TestCase):
                   ]
                 )
 
+    def neuter_traceback(self, tb):
+        """Given a traceback, return just the system-independent lines.
+        """
+        tb_list = tb.split(os.linesep)
+        if not tb_list[-1]:
+            tb_list = tb_list[:-1]
+        neutered = []
+        for i in range(0,len(tb_list),2):
+            neutered.append(tb_list[i])
+        neutered.append(tb_list[-1])
+        return os.linesep.join(neutered)
+
+
     def tearDown(self):
         self.removeTestSite()
