@@ -47,7 +47,7 @@ class TestSetPath(httpyTestCase):
         # handler
         self.request = http_server.http_request(*self._request)
         handler_config = httpy.parse_config('')[1]
-        self.handler = httpy.handler(**handler_config)
+        self.handler = httpy.Handler(**handler_config)
 
     def testRootIsSetAsExpected(self):
         self.assertEqual(self.handler.root, os.path.realpath('./root'))
@@ -139,7 +139,7 @@ class TestSetPath(httpyTestCase):
         os.remove('root/__/frame.pt')
         os.rmdir('root/__')
         handler_config = httpy.parse_config('')[1]
-        self.handler = httpy.handler(**handler_config)
+        self.handler = httpy.Handler(**handler_config)
         self.handler.setpath(self.request)
         expected = os.path.realpath('root/index.html')
         actual = self.request.path

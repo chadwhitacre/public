@@ -77,7 +77,7 @@ class Redirect(RequestError):
 # Define our request handler.
 # ===========================
 
-class handler:
+class Handler:
     """This is copied, pasted, and modified from medusa.default_handler.
     """
 
@@ -548,7 +548,7 @@ class Configuration:
 
 
     def _validate(self, context, d):
-        """Given a config context and a dictionary, validate the values.
+        """Given a string and a dictionary, return a validated dictionary.
 
         Some type coercion is performed. If the value can't be coerced, then
         ConfigurationError is raised. Superfluous keys are deleted.
@@ -559,18 +559,37 @@ class Configuration:
         # ====
         # Coerce to int. Must be between 0 and 65535.
 
-        errmsg = "[%s] Port must be an integer between 0 and 65535." % context
+        if d.has_key('port'):
 
-        if isinstance(d['port'], basestring) and \
-           d['port'].isdigit():
-            d['port'] = int(d['port'])
-        elif isinstance(d['port'], int):
-            pass # already an int for some reason (called interactively?)
-        else:
-            raise ConfigError(errmsg)
+            errmsg = "[%s] Port must be an integer between 0 and 65535." % context
 
-        if not(0 <= d['port'] <= 65535):
-            raise ConfigError(errmsg)
+            if isinstance(d['port'], basestring) and \
+               d['port'].isdigit():
+                d['port'] = int(d['port'])
+            elif isinstance(d['port'], int):
+                pass # already an int for some reason (called interactively?)
+            else:
+                raise ConfigError(errmsg)
+
+            if not(0 <= d['port'] <= 65535):
+                raise ConfigError(errmsg)
+
+
+        # defaults
+        # ========
+        # Coerce to a tuple.
+
+        if d.has_key('defaults'):
+
+            errmsg = "[%s] Defaults must be a white-space " % context +\
+                     "separated list of filenames."
+
+            if isinstance(d['defaults'], basestring):
+                d['defaults'] = tuple(d['defaults'].split())
+            elif isinstance(d['defaults'], tuple):
+                pass # already a tuple for some reason (called interactively?)
+            else:
+                raise ConfigError(errmsg)
 
 
         # Made it!
@@ -616,7 +635,7 @@ def main(argv=None):
         # =====================
 
         server = http_server.http_server(**config.server)
-        server.install_handler(handler(**config.handler))
+        server.install_handler(Handler(**config.handler))
         asyncore.loop()
 
 
