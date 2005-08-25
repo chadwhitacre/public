@@ -38,6 +38,12 @@ class TestFrame(HandlerTestCase):
         actual = self.handler._getframe()
         self.assertEqual(expected, actual)
 
+    def testEmptyFrame(self):
+        file('root/__/frame.pt', 'w') # overwrite with empty file
+        expected = None
+        actual = self.handler._getframe()
+        self.assertEqual(expected, actual)
+
 
 def test_suite():
     from unittest import TestSuite, makeSuite

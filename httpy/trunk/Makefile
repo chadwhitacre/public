@@ -13,14 +13,16 @@ configure:
 # Delete and recreate the man page to be installed.
 	rm -f httpy.1.gz
 	rm -f httpy.conf.5.gz
-	gzip -c -9 httpy.1 > httpy.1.gz
-	gzip -c -9 httpy.conf.5 > httpy.conf.5.gz
+	gzip -c -9 doc/man/httpy.1 > httpy.1.gz
+	gzip -c -9 doc/man/httpy.conf.5 > httpy.conf.5.gz
 	chmod 444 httpy.1.gz
 	chmod 444 httpy.conf.5.gz
 
 clean:
 # Delete the script and man page to be installed.
 	rm -rf httpy httpy.1.gz httpy.conf.5.gz
+	rm -rf build
+	rm -rf dist
 	find . -name \*.pyc -exec rm -f {} \;
 
 install: configure
