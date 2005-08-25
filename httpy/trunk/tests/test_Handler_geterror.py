@@ -161,6 +161,17 @@ dummy_error_template_expanded = """\
 </html>"""
 
 
+dummy_last_resort = """\
+<head>
+    <title>Error response</title>
+</head>
+<body>
+    <h1>Error response</h1>
+    <p>Error code 500.</p>
+    <p>Message: There was a dire error serving your request.</p>
+</body>"""
+
+
 
 class TestGetError(HandlerTestCase):
 
@@ -314,6 +325,25 @@ class TestGetError(HandlerTestCase):
         self.assertEqual(self.request['Content-Length'], 154L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 404)
+
+    def testLastResort(self):
+        def bad_geterror(request, error):
+            raise Exception("Muahahahaha!!!!")
+        self.handler._geterror = bad_geterror
+        self.request.uri = '/not-there'
+        try:
+            self.handler._setpath(self.request)
+        except Exception, error:
+            pass
+        expected = dummy_last_resort
+        actual = self.handler._handle_request_safely(self.request)
+        self.assertEqual(expected, actual)
+        self.assertEqual(self.request['Content-Length'], 183L)
+        self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 500)
+
+
+
 
 def test_suite():
     from unittest import TestSuite, makeSuite

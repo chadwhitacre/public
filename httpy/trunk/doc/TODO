@@ -23,7 +23,7 @@ figure out daemontools
 convert doc to man page
 write html docs
 test on Windows!!!
-ignore empty error template
+put tracebacks in error messages when in development mode
 =====DONE=====
 get frame macro instead of template
 configuration
@@ -38,6 +38,8 @@ if frame.pt is empty, then frame should just be none
 handle 500 better
 400 -> 501
 test error templates
+ignore empty error template
+test last resort
 
 
 ========================================
