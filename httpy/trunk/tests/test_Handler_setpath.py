@@ -32,28 +32,28 @@ class TestSetPath(HandlerTestCase):
 
     def testBasic(self):
         self.request.uri = '/index.html'
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
         expected = os.path.realpath('root/index.html')
         actual = self.request.path
         self.assertEqual(expected, actual)
 
     def testStaticDefaultDocument(self):
         self.request.uri = '/'
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
         expected = os.path.realpath('root/index.html')
         actual = self.request.path
         self.assertEqual(expected, actual)
 
     def testTemplateDefaultDocument(self):
         self.request.uri = '/content/'
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
         expected = os.path.realpath('root/content/index.pt')
         actual = self.request.path
         self.assertEqual(expected, actual)
 
     def testEncodedURIGetsUnencoded(self):
         self.request.uri = '/My%20Documents/'
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
         expected = os.path.realpath( 'root/My Documents/index.html')
         actual = self.request.path
         self.assertEqual(expected, actual)
@@ -61,55 +61,55 @@ class TestSetPath(HandlerTestCase):
     def testDoubleRootRaisesBadRequest(self):
         self.request.uri = '//index.html'
         self.assertRaises( RequestError
-                         , self.handler.setpath
+                         , self.handler._setpath
                          , self.request
                           )
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except RequestError, err:
             self.assertEqual(err.code, 400)
 
     def testNoDefaultRaisesForbidden(self):
         self.request.uri = '/about/'
         self.assertRaises( RequestError
-                         , self.handler.setpath
+                         , self.handler._setpath
                         , self.request
                           )
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except RequestError, err:
             self.assertEqual(err.code, 403)
 
     def testNotThereRaisesNotFound(self):
         self.request.uri = '/not-there'
         self.assertRaises( RequestError
-                         , self.handler.setpath
+                         , self.handler._setpath
                          , self.request
                           )
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except RequestError, err:
             self.assertEqual(err.code, 404)
 
     def testOutsideRootRaisesBadRequest(self):
         self.request.uri = '/../../../../../../../etc/master.passwd'
         self.assertRaises( RequestError
-                         , self.handler.setpath
+                         , self.handler._setpath
                          , self.request
                           )
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except RequestError, err:
             self.assertEqual(err.code, 400)
 
     def testMagicDirectoryReturnsNotFound(self):
         self.request.uri = '/__/frame.pt'
         self.assertRaises( RequestError
-                         , self.handler.setpath
+                         , self.handler._setpath
                          , self.request
                           )
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except RequestError, err:
             self.assertEqual(err.code, 404)
 
@@ -118,7 +118,7 @@ class TestSetPath(HandlerTestCase):
         os.rmdir('root/__')
         config = Configuration(['-rroot'])
         self.handler = Handler(**config.handler)
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
         expected = os.path.realpath('root/index.html')
         actual = self.request.path
         self.assertEqual(expected, actual)
@@ -126,11 +126,11 @@ class TestSetPath(HandlerTestCase):
     def testNoTrailingSlashIsRedirected(self):
         self.request.uri = '/about'
         self.assertRaises( Redirect
-                         , self.handler.setpath
+                         , self.handler._setpath
                          , self.request
                           )
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except Redirect, err:
             self.assertEqual(err.code, 301)
 

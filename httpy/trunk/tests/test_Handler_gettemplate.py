@@ -64,24 +64,24 @@ class TestGetTemplate(HandlerTestCase):
 
     def testBasic(self):
         expected = dummy_tal
-        actual = self.handler.gettemplate(self.request)
+        actual = self.handler._gettemplate(self.request)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 83L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
 
     def testEmptyFile(self):
         self.request.uri = '/empty'
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
         self.assertRaises( SAXParseException
-                         , self.handler.gettemplate
+                         , self.handler._gettemplate
                          , self.request
                           )
 
     def testTemplateUsingFrame(self):
         self.request.uri = '/framed.pt'
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
         expected = dummy_expanded
-        actual = self.handler.gettemplate(self.request)
+        actual = self.handler._gettemplate(self.request)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 83L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
