@@ -27,20 +27,20 @@ class TestGetStatic(HandlerTestCase):
         file('root/empty', 'w')
 
     def setUp2(self):
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
 
     def testBasic(self):
         expected = dummy_html
-        actual = self.handler.getstatic(self.request)
+        actual = self.handler._getstatic(self.request)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 83L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
 
     def testEmptyFile(self):
         self.request.uri = '/empty'
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
         expected = ''
-        actual = self.handler.getstatic(self.request)
+        actual = self.handler._getstatic(self.request)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 0)
         self.assertEqual(self.request['Content-Type'], 'text/plain')

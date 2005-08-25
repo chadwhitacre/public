@@ -11,7 +11,6 @@ interpreted. I am much more concerned about:
 ========================================
     0.2 -- PT & STATIC
 ========================================
-
 do something smart with DOC_TYPE
     make it a config option
     with smart names -- `xhtml transitional'
@@ -24,7 +23,7 @@ figure out daemontools
 convert doc to man page
 write html docs
 test on Windows!!!
-handle 500 better
+test error templates
 =====DONE=====
 get frame macro instead of template
 configuration
@@ -36,6 +35,8 @@ write a make file
 continue with unit tests
 refactor into multiple modules, distutils + make
 if frame.pt is empty, then frame should just be none
+handle 500 better
+400 -> 501
 
 
 ========================================

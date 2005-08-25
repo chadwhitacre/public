@@ -68,10 +68,35 @@ dummy_error_404 = """\
     """+"""
 </body>"""
 
+dummy_error_500 = """\
+<head>
+    <title>Error response</title>
+</head>
+<body>
+    <h1>Error response</h1>
+    <p>Error code 500.</p>
+    <p>Message: Internal Server Error.</p>
+    """+"""
+</body>"""
+
+dummy_error_501 = """\
+<head>
+    <title>Error response</title>
+</head>
+<body>
+    <h1>Error response</h1>
+    <p>Error code 501.</p>
+    <p>Message: Not Implemented.</p>
+    """+"""
+</body>"""
 
 
-dummy_context = """\
+dummy_context_302 = """\
 raise Redirect("http://www.example.com/")
+"""
+
+dummy_context_500 = """\
+raise Exception("Whoa there!")
 """
 
 dummy_tal = """\
@@ -84,32 +109,57 @@ dummy_tal = """\
   </body>
 </html>"""
 
-dummy_frame = """\
-<html metal:define-macro="frame">
-  <head>
-    <title>Foo</title>
-  </head>
-  <body metal:define-slot="body">
-    Bar
-  </body>
-</html>"""
-
-dummy_metal = """\
-<html metal:use-macro="frame">
-  <body metal:fill-slot="body">
-    Baz
-  </body>
-</html>"""
-
-dummy_expanded = """\
+dummy_error_template = """\
 <html>
   <head>
-    <title>Foo</title>
+    <title>ERROR!!!!!!!</title>
   </head>
   <body>
-    Baz
+    <table>
+      <tr>
+        <th>Resource</th>
+        <td tal:content="request/uri"></td>
+      </tr>
+      <tr>
+        <th>Error</th>
+        <td tal:content="error/msg"></td>
+      </tr>
+      <tr>
+        <th>Code</th>
+        <td tal:content="error/code"></td>
+      </tr>
+      <tr tal:condition="message">
+        <th>Message</th>
+        <td tal:content="error/message"></td>
+      </tr>
+    </table>
   </body>
 </html>"""
+
+dummy_error_template_expanded = """\
+<html>
+  <head>
+    <title>ERROR!!!!!!!</title>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <th>Resource</th>
+        <td>/not-there</td>
+      </tr>
+      <tr>
+        <th>Error</th>
+        <td>Not Found</td>
+      </tr>
+      <tr>
+        <th>Code</th>
+        <td>404</td>
+      </tr>
+      """+"""
+    </table>
+  </body>
+</html>"""
+
 
 
 class TestGetTemplate(HandlerTestCase):
@@ -119,34 +169,32 @@ class TestGetTemplate(HandlerTestCase):
         file('root/index.html', 'w')
         os.mkdir('root/about')
         os.mkdir('root/__')
-        file_ = open('root/__/context.py', 'w')
-        file_.write(dummy_context)
-        file_.close()
-        file_ = open('root/foo.pt', 'w')
-        file_.write(dummy_tal)
-        file_.close()
+        file('root/foo.pt', 'w')
 
     def test301(self):
         self.request.uri = '/about'
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except Redirect, error:
             pass
         expected = dummy_error_301
-        actual = self.handler.geterror(self.request, error)
+        actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 216L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 301)
 
     def test302(self):
-        self.handler.setpath(self.request)
+        file_ = open('root/__/context.py', 'w')
+        file_.write(dummy_context_302)
+        file_.close()
+        self.handler._setpath(self.request)
         try:
-            self.handler.gettemplate(self.request)
+            self.handler._gettemplate(self.request)
         except Redirect, error:
             pass
         expected = dummy_error_302
-        actual = self.handler.geterror(self.request, error)
+        actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 236L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
@@ -154,28 +202,28 @@ class TestGetTemplate(HandlerTestCase):
 
     def test304(self):
         self.request.uri = '/index.html'
-        self.handler.setpath(self.request)
+        self.handler._setpath(self.request)
         self.handler.mode = 'deployment'
         mtime = os.stat(self.request.path)[stat.ST_MTIME]
         ims = 'If-Modified-Since: %s' % http_date.build_http_date(mtime)
         self.request.header.insert(len(self.request.header), ims)
         try:
-            self.handler.getstatic(self.request)
+            self.handler._getstatic(self.request)
         except RequestError, error:
             pass
         expected = dummy_error_304
-        actual = self.handler.geterror(self.request, error)
+        actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request.reply_code, 304)
 
     def test400(self):
         self.request.uri = '../../../../../../../etc/master.passwd'
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except RequestError, error:
             pass
         expected = dummy_error_400
-        actual = self.handler.geterror(self.request, error)
+        actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 156L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
@@ -184,11 +232,11 @@ class TestGetTemplate(HandlerTestCase):
     def test403(self):
         self.request.uri = '/about/'
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except RequestError, error:
             pass
         expected = dummy_error_403
-        actual = self.handler.geterror(self.request, error)
+        actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 154L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
@@ -197,23 +245,61 @@ class TestGetTemplate(HandlerTestCase):
     def test404(self):
         self.request.uri = '/not-there'
         try:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
         except RequestError, error:
             pass
         expected = dummy_error_404
-        actual = self.handler.geterror(self.request, error)
+        actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
         self.assertEqual(self.request['Content-Length'], 154L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 404)
 
+    def test500(self):
+        self.request.uri = '/foo.pt'
+        self.handler._setpath(self.request)
+        file_ = open('root/__/context.py', 'w')
+        file_.write(dummy_context_500)
+        file_.close()
+        try:
+            self.handler._handle_request_unsafely(self.request)
+        except RequestError, error:
+            pass
+        expected = dummy_error_500
+        actual = self.handler._geterror(self.request, error)
+        self.assertEqual(expected, actual)
+        self.assertEqual(self.request['Content-Length'], 166L)
+        self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 500)
+
+    def test501(self):
+        self.request.command = 'POST' # :-(
+        try:
+            self.handler._handle_request_unsafely(self.request)
+        except RequestError, error:
+            pass
+        expected = dummy_error_501
+        actual = self.handler._geterror(self.request, error)
+        self.assertEqual(expected, actual)
+        self.assertEqual(self.request['Content-Length'], 160L)
+        self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 501)
+
     def testErrorTemplate(self):
-        pass
-
-    def tearDown(self):
-        self.removeTestSite()
-        pass
-
+        file_ = open('root/__/error.pt', 'w')
+        file_.write(dummy_error_template)
+        file_.close()
+        self.request.uri = '/not-there'
+        try:
+            self.handler._setpath(self.request)
+        except RequestError, error:
+            pass
+        expected = dummy_error_template_expanded
+        actual = self.handler._geterror(self.request, error)
+        self.assertEqual(expected, actual)
+        self.assertEqual(self.request['Content-Length'], 332L)
+        self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 404)
 
 
 def test_suite():

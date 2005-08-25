@@ -21,13 +21,13 @@ class HandlerTestCase(unittest.TestCase):
         # request and handler
         self.request = http_server.http_request(*self._request)
         try:
-            config = Configuration(['-rroot'])
+            config = Configuration(['--r','root','--mode','development'])
         except ConfigError, error:
             print error.msg
         self.handler = Handler(**config.handler)
 
         if self.setpath:
-            self.handler.setpath(self.request)
+            self.handler._setpath(self.request)
 
     def removeTestSite(self):
         if not os.path.isdir('root'):
