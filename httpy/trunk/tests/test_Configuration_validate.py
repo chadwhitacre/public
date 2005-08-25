@@ -6,11 +6,7 @@ import unittest
 from ConfigurationTestCase import ConfigurationTestCase
 from httpy.Configuration import ConfigError
 
-class TestConfiguration(ConfigurationTestCase):
-
-    def buildTestSite(self):
-        os.mkdir('root')
-        file('root/index.html', 'w')
+class TestConfigurationValidate(ConfigurationTestCase):
 
     # Basic functions
     # ===============
@@ -344,7 +340,7 @@ class TestConfiguration(ConfigurationTestCase):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfiguration))
+    suite.addTest(makeSuite(TestConfigurationValidate))
     return suite
 
 if __name__ == '__main__':

@@ -8,19 +8,8 @@ from httpy.Configuration import Configuration
 class ConfigurationTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.removeTestSite()
-        self.buildTestSite()
+        self.scrubenv()
         self.config = Configuration()
-
-    def removeTestSite(self):
-        if not os.path.isdir('root'):
-            return
-        for root, dirs, files in os.walk('root', topdown=False):
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
-            for name in files:
-                os.remove(os.path.join(root, name))
-        os.rmdir('root')
 
     def dict2tuple(d):
         out = []
@@ -29,5 +18,21 @@ class ConfigurationTestCase(unittest.TestCase):
         return sorted(out)
     dict2tuple = staticmethod(dict2tuple)
 
+    def scrubenv(self):
+        save = {}
+        for opt in Configuration.options:
+            envvar = 'HTTPY_%s' % opt.upper()
+            if os.environ.has_key(envvar):
+                save[envvar] = os.environ[envvar]
+                del os.environ[envvar]
+        self.env = save
+
+    def restoreenv(self):
+        for k, v in self.env.items():
+            os.environ[k] = v
+        self.env = {}
+
     def tearDown(self):
-        self.removeTestSite()
+        self.restoreenv()
+        if os.path.isfile('httpy.conf'):
+            os.remove('httpy.conf')

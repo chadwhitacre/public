@@ -3,34 +3,25 @@
 import os
 import unittest
 
-from httpy.Configuration import Configuration
 from ConfigurationTestCase import ConfigurationTestCase
 
 
-class TestConfigurationDefaults(unittest.TestCase):
-
-    dict2tuple = staticmethod(ConfigurationTestCase.dict2tuple)
-
-    def buildTestSite(self):
-        os.mkdir('root')
-        file('root/index.html', 'w')
+class TestConfigurationDefaults(ConfigurationTestCase):
 
     def testDefaults(self):
-        server = {}
-        server['ip'] = ''
-        server['port'] = 8080
-        server = self.dict2tuple(server)
 
-        handler = {}
-        handler['root'] = os.path.realpath('.')
-        handler['defaults'] = ('index.html', 'index.pt')
-        handler['extensions'] = ('pt',)
-        handler['mode'] = 'development'
-        handler = self.dict2tuple(handler)
+        d = {}
+        d['ip'] = ''
+        d['port'] = 8080
+        d['root'] = os.path.realpath('.')
+        d['defaults'] = ('index.html', 'index.pt')
+        d['extensions'] = ('pt',)
+        d['mode'] = 'deployment'
 
-        actual = Configuration()
-        self.assertEqual(server, self.dict2tuple(actual.server))
-        self.assertEqual(handler, self.dict2tuple(actual.handler))
+        expected = self.dict2tuple(d)
+        actual = self.dict2tuple(self.config._defaults())
+
+        self.assertEqual(expected, actual)
 
 
 def test_suite():
