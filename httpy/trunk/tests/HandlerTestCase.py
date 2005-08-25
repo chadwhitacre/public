@@ -1,7 +1,33 @@
 import os
 import unittest
 
-class httpyTestCase(unittest.TestCase):
+from medusa import http_server
+
+from httpy.Configuration import ConfigError
+from httpy.Configuration import Configuration
+from httpy.Handler import Handler
+
+
+class HandlerTestCase(unittest.TestCase):
+
+    setpath = True
+
+    def setUp(self):
+
+        # [re]build a temporary website tree in ./root
+        self.removeTestSite()
+        self.buildTestSite()
+
+        # request and handler
+        self.request = http_server.http_request(*self._request)
+        try:
+            config = Configuration(['-rroot'])
+        except ConfigError, error:
+            print error.msg
+        self.handler = Handler(**config.handler)
+
+        if self.setpath:
+            self.handler.setpath(self.request)
 
     def removeTestSite(self):
         if not os.path.isdir('root'):
@@ -28,3 +54,5 @@ class httpyTestCase(unittest.TestCase):
                   ]
                 )
 
+    def tearDown(self):
+        self.removeTestSite()
