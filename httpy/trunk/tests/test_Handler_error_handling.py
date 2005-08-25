@@ -17,8 +17,8 @@ dummy_error_301 = """\
 </head>
 <body>
     <h1>Error response</h1>
-    <p>Error code 301.</p>
-    <p>Message: Moved Permanently.</p>
+    <p>Error code: 301</p>
+    <p>Message: Moved Permanently</p>
     Resource now resides at <a href="/about/">/about/</a>."""+"""
 </body>"""
 
@@ -28,8 +28,8 @@ dummy_error_302 = """\
 </head>
 <body>
     <h1>Error response</h1>
-    <p>Error code 302.</p>
-    <p>Message: Found.</p>
+    <p>Error code: 302</p>
+    <p>Message: Found</p>
     Resource now resides at <a href="http://www.example.com/">http://www.example.com/</a>."""+"""
 </body>"""
 
@@ -41,8 +41,8 @@ dummy_error_400 = """\
 </head>
 <body>
     <h1>Error response</h1>
-    <p>Error code 400.</p>
-    <p>Message: Bad Request.</p>
+    <p>Error code: 400</p>
+    <p>Message: Bad Request</p>
     """+"""
 </body>"""
 
@@ -52,8 +52,8 @@ dummy_error_403 = """\
 </head>
 <body>
     <h1>Error response</h1>
-    <p>Error code 403.</p>
-    <p>Message: Forbidden.</p>
+    <p>Error code: 403</p>
+    <p>Message: Forbidden</p>
     """+"""
 </body>"""
 
@@ -63,8 +63,8 @@ dummy_error_404 = """\
 </head>
 <body>
     <h1>Error response</h1>
-    <p>Error code 404.</p>
-    <p>Message: Not Found.</p>
+    <p>Error code: 404</p>
+    <p>Message: Not Found</p>
     """+"""
 </body>"""
 
@@ -74,8 +74,8 @@ dummy_error_500 = """\
 </head>
 <body>
     <h1>Error response</h1>
-    <p>Error code 500.</p>
-    <p>Message: Internal Server Error.</p>
+    <p>Error code: 500</p>
+    <p>Message: Internal Server Error</p>
     """+"""
 </body>"""
 
@@ -85,8 +85,8 @@ dummy_error_501 = """\
 </head>
 <body>
     <h1>Error response</h1>
-    <p>Error code 501.</p>
-    <p>Message: Not Implemented.</p>
+    <p>Error code: 501</p>
+    <p>Message: Not Implemented</p>
     """+"""
 </body>"""
 
@@ -167,10 +167,22 @@ dummy_last_resort = """\
 </head>
 <body>
     <h1>Error response</h1>
-    <p>Error code 500.</p>
-    <p>Message: There was a dire error serving your request.</p>
+    <p>Error code: 500</p>
+    <p>Message: Internal Server Error [critical]</p>
+    """+"""
 </body>"""
 
+
+dummy_traceback = """\
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.4/site-packages/httpy/Handler.py", line 200, in _handle_request_unsafely
+    return getter(request)
+  File "/usr/local/lib/python2.4/site-packages/httpy/Handler.py", line 342, in _gettemplate
+    execfile(_path, { \'request\':request
+  File "/home/whit537/sandbox/httpy/tests/root/__/context.py", line 1, in ?
+    raise Exception("Whoa there!")
+Exception: Whoa there!
+"""
 
 
 class TestGetError(HandlerTestCase):
@@ -191,7 +203,7 @@ class TestGetError(HandlerTestCase):
         expected = dummy_error_301
         actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 216L)
+        self.assertEqual(self.request['Content-Length'], 215L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 301)
 
@@ -207,7 +219,7 @@ class TestGetError(HandlerTestCase):
         expected = dummy_error_302
         actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 236L)
+        self.assertEqual(self.request['Content-Length'], 235L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 302)
 
@@ -236,7 +248,7 @@ class TestGetError(HandlerTestCase):
         expected = dummy_error_400
         actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 156L)
+        self.assertEqual(self.request['Content-Length'], 155L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 400)
 
@@ -249,7 +261,7 @@ class TestGetError(HandlerTestCase):
         expected = dummy_error_403
         actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 154L)
+        self.assertEqual(self.request['Content-Length'], 153L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 403)
 
@@ -262,11 +274,12 @@ class TestGetError(HandlerTestCase):
         expected = dummy_error_404
         actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 154L)
+        self.assertEqual(self.request['Content-Length'], 153L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 404)
 
     def test500(self):
+        self.handler.mode = 'deployment' # turns of traceback to avoid processing
         self.request.uri = '/foo.pt'
         self.handler._setpath(self.request)
         file_ = open('root/__/context.py', 'w')
@@ -279,7 +292,7 @@ class TestGetError(HandlerTestCase):
         expected = dummy_error_500
         actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 166L)
+        self.assertEqual(self.request['Content-Length'], 165L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 500)
 
@@ -292,7 +305,7 @@ class TestGetError(HandlerTestCase):
         expected = dummy_error_501
         actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 160L)
+        self.assertEqual(self.request['Content-Length'], 159L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 501)
 
@@ -322,7 +335,7 @@ class TestGetError(HandlerTestCase):
         expected = dummy_error_404
         actual = self.handler._geterror(self.request, error)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 154L)
+        self.assertEqual(self.request['Content-Length'], 153L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 404)
 
@@ -331,11 +344,12 @@ class TestGetError(HandlerTestCase):
         expected = dummy_error_501
         actual = self.handler._handle_request_safely(self.request)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 160L)
+        self.assertEqual(self.request['Content-Length'], 159L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 501)
 
     def testLastResort(self):
+        self.handler.mode = 'deployment' # turns of traceback to avoid processing
         def bad_geterror(request, error):
             raise Exception("Muahahahaha!!!!")
         self.handler._geterror = bad_geterror
@@ -347,11 +361,42 @@ class TestGetError(HandlerTestCase):
         expected = dummy_last_resort
         actual = self.handler._handle_request_safely(self.request)
         self.assertEqual(expected, actual)
-        self.assertEqual(self.request['Content-Length'], 183L)
+        self.assertEqual(self.request['Content-Length'], 176L)
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 500)
 
+    def test500GivesUsTraceback(self):
+        self.request.uri = '/foo.pt'
+        self.handler._setpath(self.request)
+        file_ = open('root/__/context.py', 'w')
+        file_.write(dummy_context_500)
+        file_.close()
+        try:
+            self.handler._handle_request_unsafely(self.request)
+        except RequestError, error:
+            pass
+        self.assertEqual(error.code, 500)
 
+        expected = self.neuter_traceback(dummy_traceback)
+        actual = self.neuter_traceback(error.message)
+        self.assertEqual(expected, actual)
+
+    def testLastResortGivesUsTraceback(self):
+        self.request.uri = '/foo.pt'
+        self.handler._setpath(self.request)
+        file_ = open('root/__/context.py', 'w')
+        file_.write(dummy_context_500)
+        file_.close()
+        content = self.handler._handle_request_safely(self.request)
+
+        # Get the traceback out of the content.
+        traceback_ = os.linesep.join(content.split(os.linesep)[7:-2])
+        traceback_ = traceback_.lstrip()
+
+        # Process the traceback to remove system-dependent variables.
+        expected = self.neuter_traceback(dummy_traceback)
+        actual = self.neuter_traceback(traceback_)
+        self.assertEqual(expected, actual)
 
 
 def test_suite():

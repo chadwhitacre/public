@@ -23,6 +23,7 @@ figure out daemontools
 convert doc to man page
 write html docs
 test on Windows!!!
+check casing of configuration
 put tracebacks in error messages when in development mode
 =====DONE=====
 get frame macro instead of template
