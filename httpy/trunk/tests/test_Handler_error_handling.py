@@ -326,6 +326,15 @@ class TestGetError(HandlerTestCase):
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 404)
 
+    def testHandleSafely(self):
+        self.request.command = 'POST' # :-(
+        expected = dummy_error_501
+        actual = self.handler._handle_request_safely(self.request)
+        self.assertEqual(expected, actual)
+        self.assertEqual(self.request['Content-Length'], 160L)
+        self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 501)
+
     def testLastResort(self):
         def bad_geterror(request, error):
             raise Exception("Muahahahaha!!!!")
