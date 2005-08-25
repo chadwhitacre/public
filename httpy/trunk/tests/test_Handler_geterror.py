@@ -162,7 +162,7 @@ dummy_error_template_expanded = """\
 
 
 
-class TestGetTemplate(HandlerTestCase):
+class TestGetError(HandlerTestCase):
 
     def buildTestSite(self):
         os.mkdir('root')
@@ -301,11 +301,24 @@ class TestGetTemplate(HandlerTestCase):
         self.assertEqual(self.request['Content-Type'], 'text/html')
         self.assertEqual(self.request.reply_code, 404)
 
+    def testEmptyErrorTemplateIgnored(self):
+        file('root/__/error.pt', 'w') # empty file
+        self.request.uri = '/not-there'
+        try:
+            self.handler._setpath(self.request)
+        except RequestError, error:
+            pass
+        expected = dummy_error_404
+        actual = self.handler._geterror(self.request, error)
+        self.assertEqual(expected, actual)
+        self.assertEqual(self.request['Content-Length'], 154L)
+        self.assertEqual(self.request['Content-Type'], 'text/html')
+        self.assertEqual(self.request.reply_code, 404)
 
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestGetTemplate))
+    suite.addTest(makeSuite(TestGetError))
     return suite
 
 if __name__ == '__main__':

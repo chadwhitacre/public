@@ -23,7 +23,7 @@ figure out daemontools
 convert doc to man page
 write html docs
 test on Windows!!!
-test error templates
+ignore empty error template
 =====DONE=====
 get frame macro instead of template
 configuration
@@ -37,6 +37,7 @@ refactor into multiple modules, distutils + make
 if frame.pt is empty, then frame should just be none
 handle 500 better
 400 -> 501
+test error templates
 
 
 ========================================
