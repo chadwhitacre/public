@@ -51,10 +51,10 @@ class TestGetTemplate(httpyTestCase):
         # handler
         self.request = http_server.http_request(*self._request)
         handler_config = httpy.parse_config('')[1]
-        self.handler = httpy.handler(**handler_config)
+        self.handler = httpy.Handler(**handler_config)
 
     def testBasic(self):
-        httpy.parse_config
+        pass
 
 
     def tearDown(self):
