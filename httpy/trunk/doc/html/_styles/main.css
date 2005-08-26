@@ -9,6 +9,23 @@ body {
     padding: 0;
     }
 
+#byline {
+    font: bold 10pt Trebuchet, sans-serif;
+    }
+
+#nav {
+    background: #EEEEEE;
+    list-style: none;
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    border: 1px solid black;
+    }
+#nav li {
+    display: inline;
+    font: bold 10pt Trebuchet, sans-serif;
+    padding: 0 0.5em;
+    }
+
 h1 {
     font: normal 24pt Trebuchet, sans-serif;
     color: #00A359;
@@ -37,3 +54,4 @@ a:visited:hover
     { color:#00A359; }
 a:active
     { color:#FF0000; }
+

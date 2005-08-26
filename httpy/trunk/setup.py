@@ -3,5 +3,5 @@ from distutils.core import setup
 setup( name='httpy'
      , version='0.1'
      , package_dir={'':'site-packages'}
-     , packages=['httpy']
+     , packages=['httpy', 'simpletal', 'medusa']
       )
