@@ -23,8 +23,12 @@ figure out daemontools
 convert doc to man page
 write html docs
 test on Windows!!!
-check casing of configuration
-put tracebacks in error messages when in development mode
+test our processing of different cases of configuration options
+500 traceback should be in pre -- hardwire this into the message?
+    the problem is that we also use message for redirects, which we don't
+      necessarily want in pre, but it doesn't matter cause noone ever sees that
+      payload
+add cli options to dump config and exit
 =====DONE=====
 get frame macro instead of template
 configuration
@@ -41,6 +45,7 @@ handle 500 better
 test error templates
 ignore empty error template
 test last resort
+put tracebacks in error messages when in development mode
 
 
 ========================================
