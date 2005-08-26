@@ -1,0 +1,92 @@
+<html>
+<head>
+  <title>httpy documentation</title>
+  <style>@import url("/_styles/main.css");</style>
+</head>
+
+<body><div id="hack">
+
+  <h1>httpy</h1>
+  <h2>a straightforward Python webserver</h2>
+
+  <p><strong>by <a href="http://www.zetadev.com/" target="_blank">Chad
+  Whitacre</a></strong></p>
+
+  <p>Once you decide to use Python to develop a website, the next two pieces of
+  technology you need to choose are:</p>
+
+  <dl>
+
+    <dt>an http server</dt>
+
+    <dd>There are both compiled options (Apache, lighttpd), and pure-Python
+    options (BaseHTTPServer, Medusa, Zserver, twisted.internet).</dd>
+
+
+    <dt>a request handler</dt>
+
+    <dd>The widely available ones are those that are embedded in frameworks
+    (Zope, twisted.web, CherryPy, Quixote, etc.). They are so embedded, in fact,
+    that choosing a request handler is tantamount to choosing a framework.</dd>
+
+  </dl>
+
+  <p>httpy is an http server with a request handler that is tuned for serving
+  dynamic websites built with Python. It attempts to hew closely to the UNIX
+  ideals of simplicity, modularity, reliability, and sanity. What does this look
+  like?</p>
+
+  <ul>
+
+      <li>httpy serves files off the filesystem. There is no object
+      representation of your website tree as with the frameworks.</li>
+
+      <li>httpy runs out of the box without configuration.</li>
+
+      <li>httpy exposes a simple set of configuration options.</li>
+
+      <li>httpy is easily and flexibly configured from the command-line, a
+      configuration file, and/or the environment.</li>
+
+      <li>httpy uses at most half the processes and configuration as a gateway
+      solution (CGI, etc.).</li>
+
+      <li>httpy processes are easy to get inside of and debug.</li>
+
+      <li>httpy is unencumbered by complex logging, daemonization, or uid/gid
+      manipulations &#8212; functions much better handled by <a
+      href="http://cr.yp.to/daemontools.html">daemontools</a>.</li>
+
+      <li>httpy provides a sane API.</li>
+
+   </ul>
+
+  <p>So what do you actually get, then?</p>
+
+           Page Templates
+           Files with a pt extension (by default; this is configurable) are
+           compiled and expanded with SimpleTAL.
+
+           Two Hooks for Page Templates
+           httpy looks for a subdirectory of the publishing root named __.  If
+           present, httpy looks for two files in this directory, frame.pt and
+           state.py.  httpy looks for a macro named `frame' in the former; if
+           found, this macro will be available to all page templates as
+           `frame'.  httpy executes the latter before expanding any page tem-
+           plates. The state.py script has access to the Medusa request object
+           as `request' and to the SimpleTAL context object as `context'.
+
+           Serving of Static Content
+           Non-page-template files are served untouched from the filesystem.
+           The "304 Not Modified" Status-Code is used when appropriate.
+
+           Development and Deployment Modes
+           Support for the "304 Not Modified" Status-Code is turned off in
+           development mode. The mode can be set in the configuration file
+           (see httpy.conf(5)) or in an environment variable, HTTPY_MODE. The
+           configuration option overrides the environment variable.
+
+
+
+</div></body>
+</html>

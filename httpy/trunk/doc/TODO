@@ -29,6 +29,7 @@ test our processing of different cases of configuration options
       necessarily want in pre, but it doesn't matter cause noone ever sees that
       payload
 add cli options to dump config and exit
+figure out character encoding issues
 =====DONE=====
 get frame macro instead of template
 configuration
