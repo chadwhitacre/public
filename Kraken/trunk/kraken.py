@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
+import os
+import sys
+
 from kraken.Kraken import Kraken
+
 
 class Usage(Exception):
     def __init__(self, msg=''):
@@ -13,16 +17,18 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     try:
-        if len(argv) != 1:
-            raise Usage()
-        path = os.path.realpath(argv[0])
+        if len(argv) == 0:
+            path = '.'
+        elif len(argv) == 1:
+            path = argv[0]
+        else:
+            raise Usage("too many arguments")
+        path = os.path.realpath(path)
         if not os.path.isdir(path):
             raise Usage("%s does not point to a directory." % path)
 
     except Usage, err:
         print >> sys.stderr, err.msg
-        #print >> sys.stderr, "kraken takes a single argument, the path to " +\
-        #                     "an address file."
         return 2
 
     else:
