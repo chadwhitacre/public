@@ -1,5 +1,8 @@
 only support discussion lists right now
 the email address, imap server, and
+idea for auto-reply problem:
+    as part of message processing, search our archive to see if the same (or
+    very similar) message has already been received in the past 120 seconds
 
 
 
