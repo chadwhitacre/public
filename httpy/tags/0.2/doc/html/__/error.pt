@@ -1,0 +1,17 @@
+<html>
+<head>
+
+</head>
+
+<body>
+
+  <h1 tal:content="error/msg"></h1>
+
+  <p>Error code: <tal tal:replace="error/code" /></p>
+  <p>Message: <tal tal:replace="error/msg" /></p>
+  <p>Resource: <tal tal:replace="request/uri"></tal></p>
+  <pre tal:condition="error/message"
+       tal:content="error/message"></pre>
+
+</body>
+</html>
