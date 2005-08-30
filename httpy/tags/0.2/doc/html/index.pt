@@ -1,0 +1,119 @@
+<html>
+<head>
+  <title>httpy documentation</title>
+  <style>@import url("_styles/main.css");</style>
+</head>
+
+<body><div id="hack">
+
+  <h1>httpy</h1>
+  <h2>a straightforward Python webserver</h2>
+
+  <div id="byline">by <a href="http://www.zetadev.com/">Chad Whitacre</a></div>
+
+  <ul id="nav">
+
+    <li><a href="use-case.pt">Use Case</a></li>
+    <li><a href="installation.pt">Installation</a></li>
+    <li><a href="configuration.pt">Configuration</a></li>
+    <li><a href="api.pt">API</a></li>
+    <li><a href="error-handling.pt">Error Handling</a></li>
+
+  </ul>
+
+
+  <p>Once you decide to build a website in Python, the next two pieces of
+  technology you need to choose are:</p>
+
+  <dl>
+
+    <dt>1. An http server</dt>
+
+    <dd>There are both compiled options (Apache, lighttpd), and pure-Python
+    options (BaseHTTPServer, Medusa, Zserver, twisted).</dd>
+
+
+    <dt>2. A request handler</dt>
+
+    <dd>The widely available ones are those that are embedded in frameworks
+    (Zope, twisted, CherryPy, Quixote, etc.). They are so embedded, in fact,
+    that choosing a request handler is tantamount to choosing a framework.</dd>
+
+  </dl>
+
+  <p>httpy is an http server with a request handler that is tuned for serving
+  dynamic websites built with Python. It attempts to hew closely to the UNIX
+  ideals of simplicity, control, modularity, reliability, and sanity. What does
+  this look like?</p>
+
+  <ul>
+
+    <li>httpy is designed for <a href="use-case.pt">a specific use-case</a>.
+    </li>
+
+    <li>httpy serves files off the filesystem. There is no object representation
+    of your website tree as with the frameworks.</li>
+
+    <li>httpy is <a href="installation.pt">easy to install</a>.</li>
+
+    <li>httpy runs out of the box without configuration.</li>
+
+    <li>httpy exposes <a href="configuration.pt">a sane set of configuration
+    options</a>.</li>
+
+    <li>httpy is <a href="configuration.pt">easily and flexibly configured</a>
+    from the command-line, a configuration file, and/or the environment.</li>
+
+    <li>httpy uses at most half the processes and configuration as a gateway
+    solution (CGI, etc.).</li>
+
+    <li>httpy processes are easy to get inside of and debug.</li>
+
+    <li>httpy provides <a href="error-handling.pt">sane error handling</a>.</li>
+
+    <li>httpy is unencumbered by complex logging, daemonization, or uid/gid
+    manipulations -- functions much better handled by, e.g. <a
+    href="http://cr.yp.to/daemontools.html">daemontools</a>.</li>
+
+    <li>httpy provides <a href="api.pt">a sane API</a>.</li>
+
+    <li>httpy is built on <a
+    href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">http</a> and <a
+    href="http://www.python.org/">Python</a>, two of the most rock-solid
+    foundations in computing today.</li>
+
+  </ul>
+
+  <p>I hope you find success with httpy. I appreciate bug reports, feature
+  requests, patches, compliments, complaints, etc. Please direct them to <a
+  href="mailto:chad@zetaweb.com">chad@zetaweb.com</a>. Thank you.</p>
+
+  <p>So what do you actually get, then?</p>
+
+           Page Templates
+           Files with a pt extension (by default; this is configurable) are
+           compiled and expanded with SimpleTAL.
+
+           Two Hooks for Page Templates
+           httpy looks for a subdirectory of the publishing root named __.  If
+           present, httpy looks for two files in this directory, frame.pt and
+           state.py.  httpy looks for a macro named `frame' in the former; if
+           found, this macro will be available to all page templates as
+           `frame'.  httpy executes the latter before expanding any page tem-
+           plates. The state.py script has access to the Medusa request object
+           as `request' and to the SimpleTAL context object as `context'.
+
+           Serving of Static Content
+           Non-page-template files are served untouched from the filesystem.
+           The "304 Not Modified" Status-Code is used when appropriate.
+
+           Development and Deployment Modes
+           Support for the "304 Not Modified" Status-Code is turned off in
+           development mode. The mode can be set in the configuration file
+           (see httpy.conf(5)) or in an environment variable, HTTPY_MODE. The
+           configuration option overrides the environment variable.
+
+
+
+</div></body>
+</html>
