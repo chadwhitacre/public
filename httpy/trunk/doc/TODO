@@ -73,6 +73,14 @@ httpy provides a basic publication application
     simply serves static content from the filesystem
 
 
+http errata:
+    ust not
+    self- elimiting
+    ransfer-length
+    can arse it
+    varriant
+    is not be construed
+
 
 Ok, now we are talking about several components:
 
@@ -82,6 +90,13 @@ Ok, now we are talking about several components:
             __/hook.py
             __/site-packages -- prepended to sys.path if present
 
+
+    httpy
+    httpy.Configurator
+    httpy.Request
+    httpy.Response
+    httpy.Server
+    httpy.StatusCodes
 
     flynn -- toolkit on top of httpy
 
@@ -94,12 +109,14 @@ Ok, now we are talking about several components:
         flynn.http
             Request
             Response
+            StatusCodes
         flynn.tron
             security program; ideal: kerberos ticket auth
         flynn.utils
             Configurator?
                 harmonizes input from defaults, env, file, opts
             Navigator
+
 
 
 
