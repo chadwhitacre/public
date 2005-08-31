@@ -78,7 +78,7 @@ Here is the entire request handling process, represented in pseudocode
         """
 
         def __init__(self, state):
-            """Takes an httpy.State.
+            """Takes an httpy.Transaction.
             """
             self.state = state
             self.request = state.request
