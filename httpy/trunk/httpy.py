@@ -19,15 +19,13 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
     try:
-        #config = Configuration(argv)
-        config = {}
+        config = Configuration(argv)
     except ConfigError, err:
         print >> sys.stderr, err.msg
         print >> sys.stderr, "`man 1 httpy' for usage."
         return 2
     else:
-        addr = ('', 8080)
-        server = Server(addr)
+        server = Server(config)
         server.serve_forever()
 
 
