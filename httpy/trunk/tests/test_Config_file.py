@@ -14,6 +14,7 @@ port = 8080
 mode = deployment
 root = .
 apps =
+verbosity = 1
 """
 
 no_header = """\
@@ -22,6 +23,7 @@ port = 8080
 mode = deployment
 root = .
 apps =
+verbosity = 1
 """
 
 one_option = """\
@@ -36,6 +38,7 @@ port = 8080
 mode = deployment
 root = .
 apps =
+verbosity = 1
 """
 
 wacky_headers = """\
@@ -49,6 +52,8 @@ mode = deployment
 root = .
 [The Application Paths]
 apps =
+[The Verbosity Level]
+verbosity = 1
 """
 
 extra_options = """\
@@ -59,6 +64,7 @@ cheese = yummy
 mode = deployment
 root = .
 apps =
+verbosity = 1
 """
 
 class TestConfigFile(ConfigTestCase):
@@ -69,6 +75,7 @@ class TestConfigFile(ConfigTestCase):
     d['mode'] = 'deployment'
     d['root'] = os.path.realpath('.')
     d['apps'] = ()
+    d['verbosity'] = 1
 
     def testDefaultsAsFile(self):
         conf = open('httpy.conf', 'w')

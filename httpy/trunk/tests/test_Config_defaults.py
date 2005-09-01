@@ -16,6 +16,7 @@ class TestConfigDefaults(ConfigTestCase):
         d['mode'] = 'deployment'
         d['root'] = os.path.realpath('.')
         d['apps'] = ()
+        d['verbosity'] = 1
 
         expected = self.dict2tuple(d)
         actual = self.dict2tuple(self.config._defaults())

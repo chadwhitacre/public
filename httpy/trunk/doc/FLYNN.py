@@ -93,7 +93,7 @@ class Transaction(FilesystemMixin):
         try:
             self.config._validate('test', d)
         except ConfigError, err:
-            expected = "Found bad defaults 'None' in context 'test'. " +\
+            expected = "Found bad defaults `None' in context ('test'. " +\
                        "Defaults must be a whitespace- or comma-separated " +\
                        "list of filenames."
             actual = err.msg
@@ -126,7 +126,7 @@ class Transaction(FilesystemMixin):
         try:
             self.config._validate('test', d)
         except ConfigError, err:
-            expected = "Found bad defaults 'None' in context 'test'. " +\
+            expected = "Found bad defaults `None' in context ('test'. " +\
                        "Extensions must be a whitespace- or comma-" +\
                        "separated list of alphanumeric filename extensions."
             actual = err.msg
