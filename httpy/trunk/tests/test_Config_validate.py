@@ -4,7 +4,9 @@ import os
 import unittest
 
 from ConfigTestCase import ConfigTestCase
-from httpy.Config import Config, ConfigError
+from httpy.Config import Config
+from httpy.Config import ConfigError
+
 
 class TestConfigValidate(ConfigTestCase):
 
@@ -98,7 +100,7 @@ class TestConfigValidate(ConfigTestCase):
         try:
             self.config._validate('test', d)
         except ConfigError, err:
-            expected = "Found bad IP '256.68.1.1' in context 'test'. IP " +\
+            expected = "Found bad IP `256.68.1.1' in context `test'. IP " +\
                        "must be empty or a valid IPv4 address."
             actual = err.msg
             self.assertEqual(expected, actual)
@@ -181,7 +183,7 @@ class TestConfigValidate(ConfigTestCase):
         try:
             self.config._validate('test', d)
         except ConfigError, err:
-            expected = "Found bad port 'None' in context 'test'. Port " +\
+            expected = "Found bad port `None' in context `test'. Port " +\
                        "must be an integer between 0 and 65535."
             actual = err.msg
             self.assertEqual(expected, actual)
@@ -233,7 +235,7 @@ class TestConfigValidate(ConfigTestCase):
         try:
             self.config._validate('test', d)
         except ConfigError, err:
-            expected = "Found bad mode 'None' in context 'test'. " +\
+            expected = "Found bad mode `None' in context `test'. " +\
                        "Mode must be either `deployment' or `development'."
             actual = err.msg
             self.assertEqual(expected, actual)
@@ -265,7 +267,7 @@ class TestConfigValidate(ConfigTestCase):
         try:
             self.config._validate('test', d)
         except ConfigError, err:
-            expected = "Found bad root 'None' in context 'test'. Root " +\
+            expected = "Found bad root `None' in context `test'. Root " +\
                        "must point to a directory."
             actual = err.msg
             self.assertEqual(expected, actual)
@@ -305,9 +307,93 @@ class TestConfigValidate(ConfigTestCase):
         try:
             self.config._validate('test', d)
         except ConfigError, err:
-            expected = ("Found bad apps 'None' in context 'test'. Apps " +
+            expected = ("Found bad apps `None' in context `test'. Apps " +
                         "must be a colon-separated list of paths rooted in " +
                         "the website root.")
+            actual = err.msg
+            self.assertEqual(expected, actual)
+
+
+    # verbosity
+    # =========
+
+    def testGoodVerbosity(self):
+        d = {'verbosity':1}
+        expected = d.copy()
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+    def testVerbosityOutOfRangeRaisesError(self):
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'verbosity':100000}
+                          )
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'verbosity':100}
+                          )
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'verbosity':-1}
+                          )
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'verbosity':-100000}
+                          )
+
+    def testButVerbosityInRangeIsFine(self):
+        d = {'verbosity':0}
+        expected = d.copy()
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+        d = {'verbosity':1}
+        expected = d.copy()
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+        d = {'verbosity':49}
+        expected = d.copy()
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+        d = {'verbosity':99}
+        expected = d.copy()
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+    def testVerbosityDigitStringIsCoerced(self):
+        d = {'verbosity':'1'}
+        expected = {'verbosity':1}
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+    def testNonIntableVerbosityRaisesError(self):
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'verbosity':False} # considered non-intable
+                                                       # here
+                          )
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'verbosity':[]}
+                          )
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'verbosity':['foo']}
+                          )
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'verbosity':None}
+                          )
+
+    def testVerbosityErrorMessage(self):
+        d = {'verbosity':None}
+        try:
+            self.config._validate('test', d)
+        except ConfigError, err:
+            expected = ("Found bad verbosity `None' in context `test'. " +
+                        "Verbosity must be an integer between 0 and 99.")
             actual = err.msg
             self.assertEqual(expected, actual)
 

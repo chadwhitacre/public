@@ -18,6 +18,7 @@ class TestConfigDefaults(ConfigTestCase):
         d['root'] = os.path.realpath('.')
         d['mode'] = 'deployment'
         d['apps'] = ()
+        d['verbosity'] = 1
 
         expected = self.dict2tuple(d)
         actual = self.dict2tuple(self.config)
@@ -35,6 +36,7 @@ class TestConfigDefaults(ConfigTestCase):
         # set up environment
         os.environ['HTTPY_MODE'] = 'development' # should be retained
         os.environ['HTTPY_PORT'] = '9000'       # should be overriden
+        os.environ['HTTPY_VERBOSITY'] = '99'    # should be retained
 
         # set up configuration file
         conf = file('httpy.conf', 'w')
@@ -56,6 +58,7 @@ class TestConfigDefaults(ConfigTestCase):
         d['root'] = os.path.realpath('./root')  # opts
         d['mode'] = 'development'               # env
         d['apps'] = ()                          # default
+        d['verbosity'] = 99                     # env
 
         expected = self.dict2tuple(d)
         self.config.__init__(argv)

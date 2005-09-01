@@ -12,6 +12,7 @@ argv_default = [
   , '--mode=deployment'
   , '--root=.'
   , '--apps='
+  , '--verbosity=1'
    ]
 
 argv_default_plus_path = [
@@ -20,6 +21,7 @@ argv_default_plus_path = [
   , '--mode=deployment'
   , '--root=.'
   , '--apps='
+  , '--verbosity=1'
   , '--file=httpy.conf'
    ]
 
@@ -30,6 +32,7 @@ argv_short_names = [
   , '-mdeployment'
 # , '-a' -- can't specify empty with shorts
   , '-fhttpy.conf'
+  , '-v1'
    ]
 
 argv_only_one = [
@@ -42,6 +45,7 @@ argv_extra_options = [
   , '--mode=deployment'
   , '--root=.'
   , '--apps='
+  , '--verbosity=1'
   , '--file=httpy.conf'
   , '--cheese=yummy'
    ]
@@ -54,6 +58,7 @@ class TestConfigOpts(ConfigTestCase):
     d['mode'] = 'deployment'
     d['root'] = os.path.realpath('.')
     d['apps'] = ()
+    d['verbosity'] = 1
 
     def testDefaultsAsOptions(self):
         expected = self.dict2tuple(self.d.copy())
@@ -88,6 +93,7 @@ class TestConfigOpts(ConfigTestCase):
         del d['mode']
         del d['root']
         del d['apps']
+        del d['verbosity']
         expected = self.dict2tuple(d)
         opts, path = self.config._opts(argv_only_one)
         actual = self.dict2tuple(opts)

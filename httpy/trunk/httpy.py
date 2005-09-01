@@ -20,7 +20,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
     try:
-        config = Config(argv)
+        config = Config(argv).ossify()
     except ConfigError, err:
         print >> sys.stderr, err.msg
         print >> sys.stderr, "`man 1 httpy' for usage."
