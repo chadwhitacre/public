@@ -4,57 +4,35 @@ import os
 import unittest
 from ConfigParser import ParsingError
 
-from ConfigurationTestCase import ConfigurationTestCase
+from ConfigTestCase import ConfigTestCase
 
 
 default_conf = """\
-[server]
+[main]
 ip =
 port = 8080
-
-[handler]
-root = .
-defaults = index.html index.pt
-extensions = pt
 mode = deployment
+root = .
 """
 
 no_header = """\
 ip =
 port = 8080
-root = .
-defaults = index.html index.pt
-extensions = pt
 mode = deployment
+root = .
 """
 
 one_option = """\
-[server]
+[main]
 port = 8080
-
-[network]
 """
 
-one_header = """\
-[default]
+meaningless_header = """\
+[CHEESE!!!!!!!!!!1]
 ip =
 port = 8080
-root = .
-defaults = index.html index.pt
-extensions = pt
 mode = deployment
-"""
-
-meaningless_headers = """\
-[I like]
-ip =
-port = 8080
-
-[cheese.]
 root = .
-defaults = index.html index.pt
-extensions = pt
-mode = deployment
 """
 
 wacky_headers = """\
@@ -62,38 +40,28 @@ wacky_headers = """\
 ip =
 [The TCP Port]
 port = 8080
-[The Publishing Root]
-root = .
-[The Default Documents]
-defaults = index.html index.pt
-[The Page Template File Extensions]
-extensions = pt
 [The Server Mode]
 mode = deployment
+[The Publishing Root]
+root = .
 """
 
 extra_options = """\
-[server]
+[main]
 ip =
 port = 8080
 cheese = yummy
-
-[handler]
-root = .
-defaults = index.html index.pt
-extensions = pt
 mode = deployment
+root = .
 """
 
-class TestConfigurationFile(ConfigurationTestCase):
+class TestConfigFile(ConfigTestCase):
 
     d = {}
     d['ip'] = ''
     d['port'] = 8080
-    d['root'] = os.path.realpath('.')
-    d['defaults'] = ('index.html', 'index.pt')
-    d['extensions'] = ('pt',)
     d['mode'] = 'deployment'
+    d['root'] = os.path.realpath('.')
 
     def testDefaultsAsFile(self):
         conf = open('httpy.conf', 'w')
@@ -120,23 +88,15 @@ class TestConfigurationFile(ConfigurationTestCase):
                          , 'httpy.conf'
                           )
 
-    def testButTheNamesOfTheSectionHeadersDoesntMatter(self):
+    def testButTheNamesOfTheSectionHeaderDoesntMatter(self):
         conf = open('httpy.conf', 'w')
-        conf.write(meaningless_headers)
+        conf.write(meaningless_header)
         conf.close()
         expected = self.dict2tuple(self.d.copy())
         actual = self.dict2tuple(self.config._file('httpy.conf'))
         self.assertEqual(expected, actual)
 
-    def testInFactTheOptionsCanAllBeInOneSection(self):
-        conf = open('httpy.conf', 'w')
-        conf.write(one_header)
-        conf.close()
-        expected = self.dict2tuple(self.d.copy())
-        actual = self.dict2tuple(self.config._file('httpy.conf'))
-        self.assertEqual(expected, actual)
-
-    def testOrEachInTheirOwnSection(self):
+    def testAndMultipleHeadersDoesntMatter(self):
         conf = open('httpy.conf', 'w')
         conf.write(wacky_headers)
         conf.close()
@@ -156,7 +116,7 @@ class TestConfigurationFile(ConfigurationTestCase):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigurationFile))
+    suite.addTest(makeSuite(TestConfigFile))
     return suite
 
 if __name__ == '__main__':

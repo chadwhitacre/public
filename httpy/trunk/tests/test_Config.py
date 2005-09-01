@@ -3,76 +3,63 @@
 import os
 import unittest
 
-from ConfigurationTestCase import ConfigurationTestCase
+from ConfigTestCase import ConfigTestCase
 
 
-class TestConfigurationDefaults(ConfigurationTestCase):
+class TestConfigDefaults(ConfigTestCase):
     """Put it all together. These test __init__.
     """
 
     def testDefaults(self):
 
-        # expected -- these are the defaults
-        server = {}
-        server['ip'] = ''
-        server['port'] = 8080
-        handler = {}
-        handler['root'] = os.path.realpath('.')
-        handler['defaults'] = ('index.html', 'index.pt')
-        handler['extensions'] = ('pt',)
-        handler['mode'] = 'deployment'
-        server = self.dict2tuple(server)
-        handler = self.dict2tuple(handler)
+        d = {}
+        d['ip'] = ''
+        d['port'] = 8080
+        d['root'] = os.path.realpath('.')
+        d['mode'] = 'deployment'
 
-        actual = self.config
+        expected = self.dict2tuple(d)
+        actual = self.dict2tuple(self.config)
 
-        self.assertEqual(server, self.dict2tuple(actual.server))
-        self.assertEqual(handler, self.dict2tuple(actual.handler))
+        self.assertEqual(expected, actual)
 
 
     def testOverlapProperly(self):
 
         # set up website
+        if os.path.isdir('root'):
+            os.rmdir('root')
         os.mkdir('root')
 
         # set up environment
         os.environ['HTTPY_MODE'] = 'development' # should be retained
-        os.environ['HTTPY_PORT'] = '9000'        # should be overriden
+        os.environ['HTTPY_PORT'] = '9000'       # should be overriden
 
         # set up configuration file
         conf = file('httpy.conf', 'w')
         conf.write(os.linesep.join([
-            "[server]"
-          , "port: 537"                 # should be retained
-          , ""
-          , "[handler]"
-          , "root = /etc"               # should be overridden
-          , "defaults = default.asp"    # should be retained
-          , "extensions= asp"           # should be retained
+            "[main]"
+          , "port: 537"                         # should be retained
+          , "root = /etc"                       # should be overridden
            ]))
         conf.close()
 
-        argv = [ '-r','root'
-               , '-f','httpy.conf'
+        argv = [ '-r','root'                    # should be retained
+               , '-f','httpy.conf'              # should be retained
                 ]
 
         # expected
-        server = {}
-        server['ip'] = ''                               # default
-        server['port'] = 537                            # file
-        handler = {}
-        handler['root'] = os.path.realpath('./root')    # opts
-        handler['defaults'] = ('default.asp',)          # file
-        handler['extensions'] = ('asp',)                # file
-        handler['mode'] = 'development'                 # env
-        server = self.dict2tuple(server)
-        handler = self.dict2tuple(handler)
+        d = {}
+        d['ip'] = ''                            # default
+        d['port'] = 537                         # file
+        d['root'] = os.path.realpath('./root')  # opts
+        d['mode'] = 'development'               # env
 
+        expected = self.dict2tuple(d)
         self.config.__init__(argv)
-        actual = self.config
+        actual = self.dict2tuple(self.config)
 
-        self.assertEqual(server, self.dict2tuple(actual.server))
-        self.assertEqual(handler, self.dict2tuple(actual.handler))
+        self.assertEqual(expected, actual)
 
         os.rmdir('root')
 
@@ -80,7 +67,7 @@ class TestConfigurationDefaults(ConfigurationTestCase):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigurationDefaults))
+    suite.addTest(makeSuite(TestConfigDefaults))
     return suite
 
 if __name__ == '__main__':

@@ -1,15 +1,15 @@
 import os
 import unittest
 
-from httpy.Configuration import ConfigError
-from httpy.Configuration import Configuration
+from httpy.Config import ConfigError
+from httpy.Config import Config
 
 
-class ConfigurationTestCase(unittest.TestCase):
+class ConfigTestCase(unittest.TestCase):
 
     def setUp(self):
         self.scrubenv()
-        self.config = Configuration()
+        self.config = Config()
 
     def dict2tuple(d):
         out = []
@@ -20,7 +20,7 @@ class ConfigurationTestCase(unittest.TestCase):
 
     def scrubenv(self):
         save = {}
-        for opt in Configuration.options:
+        for opt in Config.options:
             envvar = 'HTTPY_%s' % opt.upper()
             if os.environ.has_key(envvar):
                 save[envvar] = os.environ[envvar]

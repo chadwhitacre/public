@@ -60,3 +60,76 @@ class Transaction(FilesystemMixin):
 
 
 
+
+
+
+
+
+
+
+    # defaults
+    # ========
+
+    def testGoodDefaults(self):
+        d = {'defaults':('index.html', 'index.pt')}
+        expected = d.copy()
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+    def testStringCoercedToTuple(self):
+        d = {'defaults':'index.html index.pt'}
+        expected = {'defaults':('index.html', 'index.pt')}
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+    def testFilenameWithPathSepsRaisesError(self):
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'defaults':'/etc/master.passwd'}
+                          )
+
+    def testDefaultsErrorMessage(self):
+        d = {'defaults':None}
+        try:
+            self.config._validate('test', d)
+        except ConfigError, err:
+            expected = "Found bad defaults 'None' in context 'test'. " +\
+                       "Defaults must be a whitespace- or comma-separated " +\
+                       "list of filenames."
+            actual = err.msg
+            self.assertEqual(expected, actual)
+
+
+    # extensions
+    # ==========
+
+    def testGoodExtensions(self):
+        d = {'extensions':('pt',)}
+        expected = d.copy()
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+    def testStringCoercedToTuple(self):
+        d = {'extensions':'html pt'}
+        expected = {'extensions':('html', 'pt')}
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+    def testNonAlphanumExtensionsRaisesError(self):
+        self.assertRaises( ConfigError
+                         , self.config._validate
+                         , 'test', {'extensions':'$pt'}
+                          )
+
+    def testExtensionsErrorMessage(self):
+        d = {'extensions':None}
+        try:
+            self.config._validate('test', d)
+        except ConfigError, err:
+            expected = "Found bad defaults 'None' in context 'test'. " +\
+                       "Extensions must be a whitespace- or comma-" +\
+                       "separated list of alphanumeric filename extensions."
+            actual = err.msg
+            self.assertEqual(expected, actual)
+
+

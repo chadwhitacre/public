@@ -3,48 +3,52 @@
 import os
 import unittest
 
-from ConfigurationTestCase import ConfigurationTestCase
+from ConfigTestCase import ConfigTestCase
 
 
 argv_default = [
     '--ip='
   , '--port=8080'
-  , '--root=.'
-  , '--defaults=index.html,index.pt'
-  , '--extensions=pt'
   , '--mode=deployment'
+  , '--root=.'
    ]
 
-argv_default_path = [
+argv_default_plus_path = [
     '--ip='
   , '--port=8080'
-  , '--root=.'
-  , '--defaults=index.html,index.pt'
-  , '--extensions=pt'
   , '--mode=deployment'
+  , '--root=.'
   , '--file=httpy.conf'
    ]
 
-
-argv_short_names = [ # can't specify empty with shorts
+argv_short_names = [
+#   '-i' -- can't specify empty with shorts
     '-p','8080'
   , '-r','.'
-  , '-d','index.html,index.pt'
-  , '-ept'
   , '-mdeployment'
   , '-fhttpy.conf'
    ]
 
+argv_only_one = [
+    '--port=8080'
+   ]
 
-class TestConfigurationOpts(ConfigurationTestCase):
+argv_extra_options = [
+    '--ip='
+  , '--port=8080'
+  , '--mode=deployment'
+  , '--root=.'
+  , '--file=httpy.conf'
+  , '--cheese=yummy'
+   ]
+
+class TestConfigOpts(ConfigTestCase):
 
     d = {}
     d['ip'] = ''
     d['port'] = 8080
-    d['root'] = os.path.realpath('.')
-    d['defaults'] = ('index.html', 'index.pt')
-    d['extensions'] = ('pt',)
     d['mode'] = 'deployment'
+    d['root'] = os.path.realpath('.')
 
     def testDefaultsAsOptions(self):
         expected = self.dict2tuple(self.d.copy())
@@ -56,7 +60,7 @@ class TestConfigurationOpts(ConfigurationTestCase):
     def testDefaultsPlusConfigFilePath(self):
         file('httpy.conf', 'w')
         expected = self.dict2tuple(self.d.copy())
-        opts, path = self.config._opts(argv_default_path)
+        opts, path = self.config._opts(argv_default_plus_path)
         actual = self.dict2tuple(opts)
         self.assertEqual(expected, actual)
         self.assertEqual(os.path.realpath('httpy.conf'), path)
@@ -71,11 +75,31 @@ class TestConfigurationOpts(ConfigurationTestCase):
         self.assertEqual(expected, actual)
         self.assertEqual(os.path.realpath('httpy.conf'), path)
 
+    def testOnlyOneOption(self):
+        file('httpy.conf', 'w')
+        d = self.d.copy()
+        del d['ip']
+        del d['mode']
+        del d['root']
+        expected = self.dict2tuple(d)
+        opts, path = self.config._opts(argv_only_one)
+        actual = self.dict2tuple(opts)
+        self.assertEqual(expected, actual)
+        self.assertEqual('', path)
+
+    def testExtraOptionsRaisesError(self):
+        file('httpy.conf', 'w')
+        expected = self.dict2tuple(self.d)
+        self.assertRaises( SystemExit
+                         , self.config._opts
+                         , argv_extra_options
+                          )
+
 
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigurationOpts))
+    suite.addTest(makeSuite(TestConfigOpts))
     return suite
 
 if __name__ == '__main__':
