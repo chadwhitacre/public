@@ -13,6 +13,7 @@ __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 import sys
 
 from httpy.Config import Config
+from httpy.Config import ConfigError
 from httpy.Server import Server
 
 
