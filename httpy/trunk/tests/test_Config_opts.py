@@ -11,6 +11,7 @@ argv_default = [
   , '--port=8080'
   , '--mode=deployment'
   , '--root=.'
+  , '--apps='
    ]
 
 argv_default_plus_path = [
@@ -18,6 +19,7 @@ argv_default_plus_path = [
   , '--port=8080'
   , '--mode=deployment'
   , '--root=.'
+  , '--apps='
   , '--file=httpy.conf'
    ]
 
@@ -26,6 +28,7 @@ argv_short_names = [
     '-p','8080'
   , '-r','.'
   , '-mdeployment'
+# , '-a' -- can't specify empty with shorts
   , '-fhttpy.conf'
    ]
 
@@ -38,6 +41,7 @@ argv_extra_options = [
   , '--port=8080'
   , '--mode=deployment'
   , '--root=.'
+  , '--apps='
   , '--file=httpy.conf'
   , '--cheese=yummy'
    ]
@@ -49,6 +53,7 @@ class TestConfigOpts(ConfigTestCase):
     d['port'] = 8080
     d['mode'] = 'deployment'
     d['root'] = os.path.realpath('.')
+    d['apps'] = ()
 
     def testDefaultsAsOptions(self):
         expected = self.dict2tuple(self.d.copy())
@@ -69,6 +74,7 @@ class TestConfigOpts(ConfigTestCase):
         file('httpy.conf', 'w')
         d = self.d.copy()
         del d['ip']
+        del d['apps']
         expected = self.dict2tuple(d)
         opts, path = self.config._opts(argv_short_names)
         actual = self.dict2tuple(opts)
@@ -81,6 +87,7 @@ class TestConfigOpts(ConfigTestCase):
         del d['ip']
         del d['mode']
         del d['root']
+        del d['apps']
         expected = self.dict2tuple(d)
         opts, path = self.config._opts(argv_only_one)
         actual = self.dict2tuple(opts)

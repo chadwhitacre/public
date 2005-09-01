@@ -15,11 +15,13 @@ class TestConfigEnv(ConfigTestCase):
         d['port'] = 8080
         d['mode'] = 'deployment'
         d['root'] = os.path.realpath('.')
+        d['apps'] = ()
 
         os.environ['HTTPY_IP'] = ''
         os.environ['HTTPY_PORT'] = '8080'
         os.environ['HTTPY_MODE'] = 'deployment'
         os.environ['HTTPY_ROOT'] = '.'
+        os.environ['HTTPY_APPS'] = ''
 
         expected = self.dict2tuple(d)
         actual = self.dict2tuple(self.config._env())

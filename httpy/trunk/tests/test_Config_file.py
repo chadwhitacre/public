@@ -13,6 +13,7 @@ ip =
 port = 8080
 mode = deployment
 root = .
+apps =
 """
 
 no_header = """\
@@ -20,6 +21,7 @@ ip =
 port = 8080
 mode = deployment
 root = .
+apps =
 """
 
 one_option = """\
@@ -33,6 +35,7 @@ ip =
 port = 8080
 mode = deployment
 root = .
+apps =
 """
 
 wacky_headers = """\
@@ -44,6 +47,8 @@ port = 8080
 mode = deployment
 [The Publishing Root]
 root = .
+[The Application Paths]
+apps =
 """
 
 extra_options = """\
@@ -53,6 +58,7 @@ port = 8080
 cheese = yummy
 mode = deployment
 root = .
+apps =
 """
 
 class TestConfigFile(ConfigTestCase):
@@ -62,6 +68,7 @@ class TestConfigFile(ConfigTestCase):
     d['port'] = 8080
     d['mode'] = 'deployment'
     d['root'] = os.path.realpath('.')
+    d['apps'] = ()
 
     def testDefaultsAsFile(self):
         conf = open('httpy.conf', 'w')

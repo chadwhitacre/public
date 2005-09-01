@@ -4,7 +4,7 @@ import os
 import unittest
 
 from ConfigTestCase import ConfigTestCase
-from httpy.Config import ConfigError
+from httpy.Config import Config, ConfigError
 
 class TestConfigValidate(ConfigTestCase):
 
@@ -267,6 +267,47 @@ class TestConfigValidate(ConfigTestCase):
         except ConfigError, err:
             expected = "Found bad root 'None' in context 'test'. Root " +\
                        "must point to a directory."
+            actual = err.msg
+            self.assertEqual(expected, actual)
+
+
+    # apps
+    # ====
+
+    def testGoodApps(self):
+        d = {'apps':('/app1', '/app2')}
+        expected = {'apps':('/app1', '/app2')}
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+    def testStringCoercedToTuple(self):
+        d = {'apps':'/app1:/app2'}
+        expected = {'apps':('/app1', '/app2')}
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+        self.config.validate_apps()
+
+    def testValidateGoodAppsReturnsNone(self):
+        self.config = Config(['-a/app1:/app2'])
+        expected = None
+        actual = self.config.validate_apps()
+        self.assertEqual(expected, actual)
+
+    def testValidateBadAppsRaisesError(self):
+        self.config = Config()
+        self.config['apps'] = ['/not-there']
+        self.assertRaises( ConfigError
+                         , self.config.validate_apps
+                          )
+
+    def testDefaultsErrorMessage(self):
+        d = {'apps':None}
+        try:
+            self.config._validate('test', d)
+        except ConfigError, err:
+            expected = ("Found bad apps 'None' in context 'test'. Apps " +
+                        "must be a colon-separated list of paths rooted in " +
+                        "the website root.")
             actual = err.msg
             self.assertEqual(expected, actual)
 

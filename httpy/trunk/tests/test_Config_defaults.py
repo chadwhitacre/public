@@ -15,6 +15,7 @@ class TestConfigDefaults(ConfigTestCase):
         d['port'] = 8080
         d['mode'] = 'deployment'
         d['root'] = os.path.realpath('.')
+        d['apps'] = ()
 
         expected = self.dict2tuple(d)
         actual = self.dict2tuple(self.config._defaults())
