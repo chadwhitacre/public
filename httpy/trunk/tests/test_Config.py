@@ -17,6 +17,7 @@ class TestConfigDefaults(ConfigTestCase):
         d['port'] = 8080
         d['root'] = os.path.realpath('.')
         d['mode'] = 'deployment'
+        d['apps'] = ()
 
         expected = self.dict2tuple(d)
         actual = self.dict2tuple(self.config)
@@ -54,6 +55,7 @@ class TestConfigDefaults(ConfigTestCase):
         d['port'] = 537                         # file
         d['root'] = os.path.realpath('./root')  # opts
         d['mode'] = 'development'               # env
+        d['apps'] = ()                          # default
 
         expected = self.dict2tuple(d)
         self.config.__init__(argv)
