@@ -3,27 +3,23 @@
 import os
 import unittest
 
-from ConfigurationTestCase import ConfigurationTestCase
-from httpy.Configuration import Configuration
+from ConfigTestCase import ConfigTestCase
+from httpy.Config import Config
 
-class TestConfigurationEnv(ConfigurationTestCase):
+class TestConfigEnv(ConfigTestCase):
 
     def testDefaultsAsEnv(self):
 
         d = {}
         d['ip'] = ''
         d['port'] = 8080
-        d['root'] = os.path.realpath('.')
-        d['defaults'] = ('index.html', 'index.pt')
-        d['extensions'] = ('pt',)
         d['mode'] = 'deployment'
+        d['root'] = os.path.realpath('.')
 
         os.environ['HTTPY_IP'] = ''
         os.environ['HTTPY_PORT'] = '8080'
-        os.environ['HTTPY_ROOT'] = '.'
-        os.environ['HTTPY_DEFAULTS'] = 'index.html index.pt'
-        os.environ['HTTPY_EXTENSIONS'] = 'pt'
         os.environ['HTTPY_MODE'] = 'deployment'
+        os.environ['HTTPY_ROOT'] = '.'
 
         expected = self.dict2tuple(d)
         actual = self.dict2tuple(self.config._env())
@@ -45,7 +41,7 @@ class TestConfigurationEnv(ConfigurationTestCase):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigurationEnv))
+    suite.addTest(makeSuite(TestConfigEnv))
     return suite
 
 if __name__ == '__main__':
