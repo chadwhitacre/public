@@ -145,6 +145,8 @@ factor out templating
 need to import rather than execfile
     guessing its faster
     need persistence, e.g. for template caching
+        import app rather than from app import Transaction
+        then app.py can run whatever and it stays in memory
 
 =====DONE=====
 sensible error handling
