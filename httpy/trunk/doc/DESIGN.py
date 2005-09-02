@@ -82,3 +82,126 @@ Here is the entire request handling process, represented in pseudocode
             """
             self.state = state
             self.request = state.request
+
+
+
+
+Notes
+
+I don't care what language httpy is written in, or if it is compiled or
+interpreted. I am much more concerned about:
+
+    the API it exposes to the site developer
+    ease of installation (on Win though?)
+    speed/robustness
+
+
+The Stack
+
+    TOP
+
+        9. style (CSS)
+        8. client-side logic (ECMAScript)
+        7. media (JPEG, Flash, etc.)
+        6. markup (XHTML)
+
+        5. response marshalling
+            cookies
+            sessioning
+            headers
+            body
+
+        4. applications
+            specific apps:
+                conversation (forums, discussion mailing lists)
+                distribution lists (announcement lists)
+                content streams (blog, news)
+                CMS (end-user-managed publications)
+                catalog (i.e., gallery/album)
+                commerce ( = catalog/calendar + credit cards)
+                calendar
+                search
+                *publication -- serving a tree of files
+            general application needs
+                data storage/persistence
+                workflow
+                security
+                user/group management
+                versioning
+                staging
+                error handling
+                templating (TAL)
+                client-server communication
+                user interface
+                    browse
+                        navigation -- e.g. tree, breadcrumbs, sitemap
+                        orderable containers
+                    find
+
+
+        3. request comprehension -- translate a raw request into an object
+            querystring
+            headers
+            cookies
+            post body
+            sessions
+
+        2. application protocol (HTTP)
+        1. transport protocol (TCP/IP)
+
+    BOTTOM
+
+
+httpy uses stdlib tools for #1
+httpy implements #2 directly
+    shooting for unconditional compliance
+    checking out Co-Advisor
+httpy provides stub request/response implementations
+httpy provides a basic publication application
+    simply serves static content from the filesystem
+
+
+http errata:
+    ust not
+    self- elimiting
+    ransfer-length
+    can arse it
+    varriant
+    is not be construed
+    section 5.1.1 of RFC 2046
+
+
+Ok, now we are talking about several components:
+
+    httpy -- uncomplicated Python webserver
+        unconditionally compliant with HTTP/1.1 (Co-Advisor?)
+        gives you hooks
+            __/hook.py
+            __/site-packages -- prepended to sys.path if present
+
+
+    httpy
+    httpy.Configurator
+    httpy.Request
+    httpy.Response
+    httpy.Server
+    httpy.StatusCodes
+
+    flynn -- toolkit on top of httpy
+
+        flynn.site
+            __/frame.pt
+            __/error.pt
+            __/context.py
+            __/apps
+            foo-app/__init__.py
+        flynn.http
+            Request
+            Response
+            StatusCodes
+        flynn.tron
+            security program; ideal: kerberos ticket auth
+        flynn.utils
+            Configurator?
+                harmonizes input from defaults, env, file, opts
+            Navigator
