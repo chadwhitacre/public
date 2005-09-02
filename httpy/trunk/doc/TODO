@@ -1,153 +1,6 @@
-Notes
-
-I don't care what language httpy is written in, or if it is compiled or
-interpreted. I am much more concerned about:
-
-    the API it exposes to the site developer
-    ease of installation (on Win though?)
-    speed/robustness
-
-
-The Stack
-
-    TOP
-
-        9. style (CSS)
-        8. client-side logic (ECMAScript)
-        7. media (JPEG, Flash, etc.)
-        6. markup (XHTML)
-
-        5. response marshalling
-            cookies
-            sessioning
-            headers
-            body
-
-        4. applications
-            specific apps:
-                conversation (forums, discussion mailing lists)
-                distribution lists (announcement lists)
-                content streams (blog, news)
-                CMS (end-user-managed publications)
-                catalog (i.e., gallery/album)
-                commerce ( = catalog/calendar + credit cards)
-                calendar
-                search
-                *publication -- serving a tree of files
-            general application needs
-                data storage/persistence
-                workflow
-                security
-                user/group management
-                versioning
-                staging
-                error handling
-                templating (TAL)
-                client-server communication
-                user interface
-                    browse
-                        navigation -- e.g. tree, breadcrumbs, sitemap
-                        orderable containers
-                    find
-
-
-        3. request comprehension -- translate a raw request into an object
-            querystring
-            headers
-            cookies
-            post body
-            sessions
-
-        2. application protocol (HTTP)
-        1. transport protocol (TCP/IP)
-
-    BOTTOM
-
-
-httpy uses stdlib tools for #1
-httpy implements #2 directly
-    shooting for unconditional compliance
-    checking out Co-Advisor
-httpy provides stub request/response implementations
-httpy provides a basic publication application
-    simply serves static content from the filesystem
-
-
-http errata:
-    ust not
-    self- elimiting
-    ransfer-length
-    can arse it
-    varriant
-    is not be construed
-    section 5.1.1 of RFC 2046
-
-
-Ok, now we are talking about several components:
-
-    httpy -- uncomplicated Python webserver
-        unconditionally compliant with HTTP/1.1 (Co-Advisor?)
-        gives you hooks
-            __/hook.py
-            __/site-packages -- prepended to sys.path if present
-
-
-    httpy
-    httpy.Configurator
-    httpy.Request
-    httpy.Response
-    httpy.Server
-    httpy.StatusCodes
-
-    flynn -- toolkit on top of httpy
-
-        flynn.site
-            __/frame.pt
-            __/error.pt
-            __/context.py
-            __/apps
-            foo-app/__init__.py
-        flynn.http
-            Request
-            Response
-            StatusCodes
-        flynn.tron
-            security program; ideal: kerberos ticket auth
-        flynn.utils
-            Configurator?
-                harmonizes input from defaults, env, file, opts
-            Navigator
-
-
-
-
 ========================================
     0.2 -- STATIC
 ========================================
-refactor for BaseHTTPServer -- no non-std lib dependencies!
-server string -> httpy
-separate error for each HTTP error? if not then why Redirect sep?
-solidify and document the API -- this will have to be backwards-compatible!
-    config api
-    context.py api -- CGI?
-    __future__ -> app.py api -- CGI + StringIO?
-convert doc to man page
-write html docs
-test on Windows!!!
-test our processing of different cases of configuration options
-500 traceback should be in pre -- hardwire this into the message?
-    the problem is that we also use message for redirects, which we don't
-      necessarily want in pre, but on another level it doesn't matter cause
-      noone ever sees that payload
-add cli options to dump config and exit
-figure out character encoding issues
-factor out templating
-need to import rather than execfile
-    guessing its faster
-    need persistence, e.g. for template caching
-        import app rather than from app import Transaction
-        then app.py can run whatever and it stays in memory
-
 =====DONE=====
 sensible error handling
 get frame macro instead of template
@@ -183,27 +36,64 @@ probably encoding issues here as well
     FORK -- flynn.app
 ========================================
 supporting on-the-fly reloading of apps in dev mode
-add apps to configuration
 document apps
 tests
 
 
 
 ========================================
-    0.4 -- STATE
+    0.4 -- DYNAMIC
 ========================================
+unittests!
+server string -> httpy
+solidify and document the API -- this will have to be backwards-compatible!
+    config api
+    context.py api -- CGI?
+    __future__ -> app.py api -- CGI + StringIO?
+convert doc to man page
+write html docs
+test on Windows!!!
+test our processing of different cases of configuration options
+figure out character encoding issues
+do we want traditional access logging? separate access and error logs?
+=====DONE=====
 support something sane like CGI to provide context.py with it's API
 manage sessions, post, querystring, cookies?
 logging -- stdout :-) -- but support different verbosities
+factor out medusa goofiness if possible
+refactor for BaseHTTPServer -- no non-std lib dependencies!
+separate error for each HTTP error? if not then why Redirect sep?
+500 traceback should be in pre -- hardwire this into the message?
+    the problem is that we also use message for redirects, which we don't
+      necessarily want in pre, but on another level it doesn't matter cause
+      noone ever sees that payload
+factor out templating
+need to import rather than execfile
+    guessing its faster
+    need persistence, e.g. for template caching
+        import app rather than from app import Transaction
+        then app.py can run whatever and it stays in memory
+add apps to configuration
+guess content type in response
+
+
+========================================
+    0.6 -- HTTP/1.1
+========================================
+keep-alive
+transfer encoding
+range requests
+
 
 
 ========================================
     0.8 -- BELLS & WHISTLES
 ========================================
-factor out medusa goofiness if possible
 precompile templates (in place)
     httpy -f httpy.conf -c
 support interactive features:
-    ctrl-s -- display configuration settings
-    ctrl-d -- enter postmortem debugger on next exception
+    ctrl-s? -- display configuration settings
+    ctrl-d? -- enter postmortem debugger on next exception
+add cli options to dump config and exit
+httpy.app.CGIMixin
 

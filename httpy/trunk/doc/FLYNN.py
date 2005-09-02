@@ -1,7 +1,7 @@
-from httpy.app import FilesystemMixin
+from httpy.app import DynamicMixin
 
 
-class Transaction(FilesystemMixin):
+class Transaction(DynamicMixin):
 
 
 
