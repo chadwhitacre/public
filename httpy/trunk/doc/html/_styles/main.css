@@ -91,7 +91,9 @@ th.heading {
 
 
 pre {
-    margin-left: 2em;
+    padding-left: 20px;
+    width: 380px;
+    overflow: auto;
     }
 
 .sidebar {
@@ -99,6 +101,7 @@ pre {
     float: right;
     font: normal 70%/100% Trebuchet, sans-serif;
     text-align: center;
+    margin: 1em 0 1em 1em;
     }
 .sidebar span {
     display: block;
