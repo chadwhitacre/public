@@ -23,16 +23,21 @@
 
     <h3 class="first">Use Case</h3>
 
-    <div class="sidebar">
+    <p>httpy exists to bridge your Python application with other HTTP
+    applications.
+
+    <span class="sidebar">
       <img src="_images/the-rock.jpg" />
       <span>"Know your damn role." &mdash
       <a href="http://www.wwe.com/superstars/raw/therock/">The Rock</a></span>
-    </div>
+    </span>
 
-    <p>httpy's primary use case is as an HTTP origin server for a cluster of
-    Python-based websites numbering into the hundreds or thousands. Therefore,
-    instances of httpy must be like toilet paper: instantly available to
-    reliably perform a single function and then be cast away without a thought.
+    Its primary use case is as an HTTP origin server for a cluster of
+    Python-based websites numbering into the hundreds or thousands.</p>
+
+    <p>Therefore, httpy shares its design aesthetic with toilet paper: instances
+    of httpy must be instantly available to solidly perform a single function
+    and then be cast away without a thought.
 
     <p>With that in mind, here's some httpy zen:</p>
 
@@ -53,8 +58,10 @@
 
     </ul>
 
-    <p>Here are some things that are explicitly not httpy's job, along with
-    links to tools that do these jobs well:</p>
+    <p>httpy's job is to get HTTP requests into your Python application, and to
+    get HTTP responses from your app back onto the network. Here are some things
+    that are explicitly not httpy's job, along with links to tools that do these
+    jobs well:</p>
 
     <dl>
 
@@ -100,6 +107,7 @@
           authentication,<br />
           authorization,<br />
           sessioning,<br />
+          storage,<br />
           templating,<br />
           etc.
         </dt>
@@ -107,6 +115,11 @@
         <dd>These are your application's responsibility. There are plenty of <a
         href="http://cheeseshop.python.org/pypi">Python packages</a> available
         to help you.</dd>
+
+      </dl>
+
+      <p>A future version of httpy is expected to be at least conditionally
+      compliant with HTTP/1.1.</p>
 
     </dl>
 
