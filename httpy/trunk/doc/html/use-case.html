@@ -21,11 +21,96 @@
 
   <div id="body">
 
-    <h3>Use Case</h3>
+    <h3 class="first">Use Case</h3>
 
-    <img src="_images/the-rock.jpg" />
+    <div class="sidebar">
+      <img src="_images/the-rock.jpg" />
+      <span>"Know your damn role." &mdash
+      <a href="http://www.wwe.com/superstars/raw/therock/">The Rock</a></span>
+    </div>
+
+    <p>httpy's primary use case is as an HTTP origin server for a cluster of
+    Python-based websites numbering into the hundreds or thousands. Therefore,
+    instances of httpy must be like toilet paper: instantly available to
+    reliably perform a single function and then be cast away without a thought.
+
+    <p>With that in mind, here's some httpy zen:</p>
+
+    <ul>
+
+      <li>httpy should make simple sites dead simple, and complex sites
+      possible.</li>
+
+      <li>Development, deployment, and upgrading should be equally easy, since
+      all will need to happen constantly.</li>
+
+      <li>The performance hit of an interpreted server will be offset by easy
+      replication.</li>
+
+      <li>Configuration should be kept to a minimum.</li>
+
+      <li>Libraries are saner than frameworks.</li>
+
+    </ul>
+
+    <p>Here are some things that are explicitly not httpy's job, along with
+    links to tools that do these jobs well:</p>
+
+    <dl>
+
+        <dt>
+          daemonization,<br />
+          complex error logging,<br />
+          uid/gid manipulations
+        </dt>
+
+        <dd>You want <a href="http://cr.yp.to/daemontools.html">Dan Bernstein's
+        daemontools</a>. httpy logs everything to the standard output, so use <a
+        href="http://cr.yp.to/daemontools/multilog.html">multilog</a> to pick up
+        from there, and use <a
+        href="http://cr.yp.to/daemontools/setuidgid.html">setuidgid</a> to run
+        httpy under a certain account.</dd>
 
 
+        <dt>
+          access logging,<br />
+          ssl encryption,<br />
+          virtual hosting,<br />
+          load-balancing
+        </dt>
+
+        <dd>Use an HTTP proxy server such as <a
+        href="http://www.apsis.ch/pound/">Pound</a>. You could also do these
+        things with a general-purpose HTTP server such as <a
+        href="http://httpd.apache.org/">Apache</a> or <a
+        href="http://www.lighttpd.net/">lighttpd</a>.</dd>
+
+
+        <dt>
+          caching<br />
+        </dt>
+
+        <dd>Use a caching proxy such as
+        <a href="http://www.squid-cache.org/">Squid</a>, or, again, <a
+        href="http://httpd.apache.org/">Apache</a>. Your application should also
+        do its own internal caching, of course.</dd>
+
+
+        <dt>
+          authentication,<br />
+          authorization,<br />
+          sessioning,<br />
+          templating,<br />
+          etc.
+        </dt>
+
+        <dd>These are your application's responsibility. There are plenty of <a
+        href="http://cheeseshop.python.org/pypi">Python packages</a> available
+        to help you.</dd>
+
+    </dl>
+
+    <br style="clear: both;" />
 
   </div>
 
