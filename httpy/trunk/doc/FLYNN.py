@@ -1,3 +1,22 @@
+========================================
+    FORK -- flynn.pub
+========================================
+do something smart with DOC_TYPE
+    make it a config option
+    with smart names -- `xhtml transitional'
+if frame.pt throws an error then the path isn't checked?
+probably encoding issues here as well
+
+
+========================================
+    FORK -- flynn.app
+========================================
+supporting on-the-fly reloading of apps in dev mode
+document apps
+tests
+
+
+
 from httpy.app import DynamicMixin
 
 
