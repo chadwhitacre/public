@@ -3,14 +3,20 @@ body {
     }
 
 #hack {
-    width: 500px;
+    width: 600px;
     text-align: left;
     margin: 0 auto;
     padding: 0;
     }
 
-#byline {
-    font: bold 10pt Trebuchet, sans-serif;
+#body {
+    border: 1px solid black;
+    padding: 5em;
+    }
+
+#body p {
+    margin: 0 0 1em;
+    padding: 0;
     }
 
 #nav {
@@ -54,4 +60,33 @@ a:visited:hover
     { color:#00A359; }
 a:active
     { color:#FF0000; }
+
+dl {
+    font: normal 80%/120% Trebuchet, sans-serif;
+    margin: 1em 0 2em 2em;
+    }
+dt {
+    font-weight: bold;
+    }
+dd {
+    margin: 0.25em 0 1em 2em;
+    }
+
+table {
+    font: normal 80%/120% Trebuchet, sans-serif;
+    margin: 1em 0 2em 2em;
+    }
+th, td {
+    vertical-align: top;
+    text-align: left;
+    padding: 0.5em 1em 0.5em 0;
+    }
+th {
+    font-weight: bold;
+    }
+th.heading {
+    padding: 2em 0 0.5em;
+    border-bottom: 1px solid black;
+    }
+
 

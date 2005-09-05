@@ -1,0 +1,270 @@
+<html>
+<head>
+  <title>httpy documentation &mdash; api</title>
+  <style>@import url("_styles/main.css");</style>
+</head>
+
+<body><div id="hack">
+
+  <h1>httpy</h1>
+  <h2>a sane Python webserver</h2>
+
+  <ul id="nav">
+
+    <li><a href="/">Introduction</a></li>
+    <li><a href="/use-case.html">Use Case</a></li>
+    <li><a href="/installation.html">Installation</a></li>
+    <li><a href="/configuration.html">Configuration</a></li>
+    <li>API</li>
+
+  </ul>
+
+  <div id="body">
+
+    <h3>API</h3>
+
+    <p>There are two kinds of websites: publications and applications. They are
+    differentiated by their organization and interface models. In a publication,
+    information is organized hierarchically into folders that one navigates by
+    browsing. Applications, on the other hand, organize information non-
+    hierarchically, and they present a search or a find interface.</p>
+
+    <p>This documentation would be an example of a simple publication website: a
+    few hypertext documents in a single folder. Gmail would be an example of a
+    pure application website. Most websites, however, are hybrids. For example,
+    some information might be organized hierarchically, but at points in that
+    hierarchy, one may meet an application, such as a site search feature, or a
+    threaded discussion forum.</p>
+
+    <p>httpy enables you to build publication, application, and hybrid websites.
+    It relies on the underlying filesystem to support a publication website's
+    hierarchical organization. For application websites or sections of websites,
+    httpy looks for certain Python files in a certain subdirectory of any
+    directories that you <a href="configuration.html">explicitly configured as
+    applications</a>. This is the <a href="#filesystem">filesystem aspect</a> of
+    its API.</p>
+
+    <p>Once your Python application has successfully made it into httpy's
+    process space, then the second, <a href="#python">Pythonic aspect</a> of
+    httpy's API comes into play.</p>
+
+    <p>Both aspects are described below.</p>
+
+
+
+    <a name="filesystem"></a>
+
+    <h3>Filesystem API</h3>
+
+    <p>On the filesystem, an httpy application looks like a directory for which
+    the following is true:</p>
+
+    <dl>
+
+      <dt>It has a subdirectory named <em>__</em>.</dt>
+      <dd>That's two underscores. This is the application's "magic
+      directory."</dd>
+
+      <dt>There is a Python module or package in __ named <em>app</em>.</dt>
+      <dd>So there is either a file named <em>app.py</em>, or a directory named
+      <em>app</em> with a file named <em>__init__.py</em>.</dd>
+
+      <dt>The app module/package contains a class named
+      <em>Transaction.</em></dt>
+      <dd>This represents a single transaction within your application.</dd>
+
+      <dt>The Transaction class's __init__ method takes a single argument.</dt>
+      <dd>The value supplied will be a dictionary of configuration
+      information.</dd>
+
+      <dt>Instances of Transaction have a method named <em>process</em> that
+      takes a single argument.</dt>
+      <dd>Given an instance of httpy.Request, it should raise an instance of
+      httpy.Response or another Exception.</dd>
+
+    </dl>
+
+    <p>The website root is always considered to be an application, but you must
+    <a href="configuration.html">explicitly configure</a> httpy to treat any
+    directory below the website root as an application.</p>
+
+
+    <a name="python"></a>
+
+    <h3>Python API</h3>
+
+    <p>As each request comes in, httpy compares the URI-path of the requested
+    resource with the URI-paths of the applications it knows about. If the
+    requested URI-path starts with the URI-path of an application, then the
+    request is handed off to that application. If no applications are properly
+    configured, then httpy uses its default application to serve the
+    request.</p>
+
+
+    <h4>The Transaction Object</h4>
+
+    <p>HTTP is a stateless protocol, where each request/response transaction
+    happens autonomously, with no direct connection to any other transaction.
+    This is what your application's Transaction object represents.</p>
+
+    <p>Your Transaction object is instantiated once for each request to your
+    application. The single argument to __init__ is a dictionary of
+    configuration information, which includes the following items by
+    default:</p>
+
+    <table>
+      <tr>
+        <th>mode</th>
+        <td>Either <em>deployment</em> or <em>development</em>; inherited from
+        the main httpy server configuration.</td>
+      </tr>
+      <tr>
+        <th>verbosity</th>
+        <td>An integer from 0 to 99, inclusive, indicating how much information
+        to log; inherited from the main httpy server configuration.</td>
+      </tr>
+      <tr>
+        <th>root</th>
+        <td>This is the filesystem path of the application's root.</td>
+      </tr>
+      <tr>
+        <th>__</th>
+        <td>This is the filesystem path of the application's magic
+        directory.</td>
+      </tr>
+    </table>
+
+
+    <p>If your application includes a module- or package-level function named
+    <em>configure</em>, then this will be invoked before instantiating your
+    Transaction. It will be passed the default dictionary just outlined, and it
+    must return a dictionary, which will then be passed to Transaction.__init__.
+    Note that <em>mode</em> and <em>verbosity</em> may be overriden from your
+    <em>configure</em> function, but <em>root</em> and <em>__</em> may not.</p>
+
+    <p>Once instantiated, httpy will pass an instance of its Request object to
+    your Transaction's <em>process</em> method, which is then free to do
+    whatever logic your application requires before raising an httpy.Response
+    object or other Exception.</p>
+
+
+    <h4>The Request Object</h4>
+
+    <p>httpy's Request object is intended to represent an HTTP request fairly
+    literally, leaving individual applications free to implement their own
+    further abstraction layers. Request objects expose the following
+    attributes:</p>
+
+    <table>
+      <tr>
+        <th colspan="2" class="heading" style="padding-top: 0;">
+          The Raw Request, in Whole and in Part
+        </th>
+      </tr>
+      <tr>
+        <th>raw</th>
+        <td>the raw Request as found on the wire</td>
+      </tr>
+      <tr>
+        <th>raw_line</th>
+        <td>the raw Request-Line</td>
+      </tr>
+      <tr>
+        <th>raw_message</th>
+        <td>the raw message</td>
+      </tr>
+      <tr>
+        <th>raw_headers</th>
+        <td>the raw message headers
+      </tr>
+      <tr>
+        <th>raw_body</th>
+        <td>the raw message body</td>
+      </tr>
+
+
+      <tr>
+        <th colspan="2" class="heading">
+          The Request-Line
+        </th>
+      </tr>
+      <tr>
+        <th>method</th>
+        <td>the method as a string; e.g.: 'GET'</td>
+      </tr>
+      <tr>
+        <th>uri</th>
+        <td>a dictionary of URI parts; the result of using the standard
+        library's
+        <a href="http://www.python.org/doc/lib/module-urlparse.html#l2h-3528">urlparse.urlsplit</a>
+        on the requested URI</td>
+      </tr>
+      <tr>
+        <th>version_string</th>
+        <td>the HTTP version as a string; e.g.: 'HTTP/1.1'</td>
+      </tr>
+
+      <tr>
+        <th colspan="2" class="heading">
+          Basic Abstractions
+        </th>
+      </tr>
+      <tr>
+        <th>path</th>
+        <td>the path part of the requested URI; e.g.: /index.html</td>
+      </tr>
+      <tr>
+        <th>querystring</th>
+        <td>the querystring part of the requested URI; e.g.: foo=bar</td>
+      </tr>
+      <tr>
+        <th>version</th>
+        <td>the HTTP version as a tuple; e.g.: (1, 1)</td>
+      </tr>
+      <tr>
+        <th>message</th>
+        <td>the message as an instance of the standard library's
+        <a href="http://www.python.org/doc/lib/module-email.Message.html">email.Message.Message</a>
+        class</td>
+      </tr>
+    </table>
+
+
+    <h4>The Response Object</h4>
+
+    <p>httpy overloads the Python <em>raise</em> statement to signal the end of an HTTP
+    transaction. The Response object is the payload for this statement, carrying
+    a representation of the HTTP response from your application back up into the
+    httpy machinery, where it will be validated, converted to a raw HTTP
+    response message, and sent back over the wire.</p>
+
+    <p>Response.__init__ has the following three parameters:</p>
+
+    <table>
+      <tr>
+        <th>code</th>
+        <td>the
+        <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP
+        Status-Code</a> as an integer; default: 200</td>
+      </tr>
+      <tr>
+        <th>headers</th>
+        <td>a dictionary of HTTP headers; default: {}</td>
+      </tr>
+      <tr>
+        <th>body</th>
+        <td>the response body as a string; default: ''</td>
+      </tr>
+    </table>
+
+    <p>All parameters are optional, and so you can also instantiate a Response
+    without arguments, and then assign directly to attributes of the same name.
+    httpy will overwrite any Content-Length header that you set, but all other
+    headers (including Server) will be honored. Also, httpy will not attempt to
+    guess a resource's Content-Type; your application must set it
+    explicitly.</p>
+
+  </div>
+
+</div></body>
+</html>
