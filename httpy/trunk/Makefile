@@ -7,7 +7,7 @@ prefix=/usr/local
 configure:
 # Delete and recreate the script to be installed.
 	rm -f httpy
-	cp httpy.py httpy
+	cp bin/httpy.py httpy
 	chmod 555 httpy
 
 # Delete and recreate the man page to be installed.
