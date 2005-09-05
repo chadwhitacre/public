@@ -21,7 +21,7 @@
 
   <div id="body">
 
-    <h3>API</h3>
+    <h3 class="first">API</h3>
 
     <p>There are two kinds of websites: publications and applications. They are
     differentiated by their organization and interface models. In a publication,
@@ -29,10 +29,10 @@
     browsing. Applications, on the other hand, organize information non-
     hierarchically, and they present a search or a find interface.</p>
 
-    <p>This documentation would be an example of a simple publication website: a
-    few hypertext documents in a single folder. Gmail would be an example of a
-    pure application website. Most websites, however, are hybrids. For example,
-    some information might be organized hierarchically, but at points in that
+    <p>This documentation is an example of a simple publication website: a few
+    hypertext documents in a single folder. Gmail would be an example of a pure
+    application website. Most websites, however, are hybrids. For example, some
+    information might be organized hierarchically, but at points in that
     hierarchy, one may meet an application, such as a site search feature, or a
     threaded discussion forum.</p>
 
@@ -97,15 +97,20 @@
     resource with the URI-paths of the applications it knows about. If the
     requested URI-path starts with the URI-path of an application, then the
     request is handed off to that application. If no applications are properly
-    configured, then httpy uses its default application to serve the
+    configured, then httpy uses its default Transaction to serve the
     request.</p>
+
+    <p>The httpy executable uses objects from an httpy package installed on its
+    PYTHONPATH. This package also contains the objects mentioned below as being
+    necessary or useful to httpy applications.</p>
 
 
     <h4>The Transaction Object</h4>
 
     <p>HTTP is a stateless protocol, where each request/response transaction
     happens autonomously, with no direct connection to any other transaction.
-    This is what your application's Transaction object represents.</p>
+    Your application's Transaction object represents just such a stateless
+    transaction.</p>
 
     <p>Your Transaction object is instantiated once for each request to your
     application. The single argument to __init__ is a dictionary of
@@ -232,11 +237,11 @@
 
     <h4>The Response Object</h4>
 
-    <p>httpy overloads the Python <em>raise</em> statement to signal the end of an HTTP
-    transaction. The Response object is the payload for this statement, carrying
-    a representation of the HTTP response from your application back up into the
-    httpy machinery, where it will be validated, converted to a raw HTTP
-    response message, and sent back over the wire.</p>
+    <p>httpy overloads the Python <em>raise</em> statement to signal the end of
+    an HTTP transaction. The httpy.Response object is the payload for this
+    statement, carrying a representation of the HTTP response from your
+    application back down into the httpy machinery, where it will be validated,
+    converted to a raw HTTP response message, and sent back over the wire.</p>
 
     <p>Response.__init__ has the following three parameters:</p>
 
@@ -261,8 +266,29 @@
     without arguments, and then assign directly to attributes of the same name.
     httpy will overwrite any Content-Length header that you set, but all other
     headers (including Server) will be honored. Also, httpy will not attempt to
-    guess a resource's Content-Type; your application must set it
-    explicitly.</p>
+    guess a resource's Content-Type; your application must set it explicitly.
+    The default application uses the standard library's
+    <a href="http://www.python.org/doc/lib/module-mimetypes.html#l2h-4006">mimetools.guess_type</a>
+    function for this purpose.</p>
+
+
+    <h4>Error Handling</h4>
+
+    <p>If your application raises an Exception other than httpy.Response, then
+    httpy will capture the Exception and format a basic "500 Internal Server
+    Error" response. The response body will contain the traceback if the httpy
+    server is in development mode.</p>
+
+    <p>You application is free to provide its own error handling. For example,
+    you might capture non-Response Exceptions and reraise them as Responses
+    wrapped in your website's templating.</p>
+
+
+    <h4>Logging</h4>
+
+    <p>httpy includes a convenience function, log, which takes an integer and a
+    log message, and writes the message to the standard output if the integer is
+    lesser than or equal to the currently configured verbosity.</p>
 
   </div>
 
