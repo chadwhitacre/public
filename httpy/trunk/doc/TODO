@@ -23,29 +23,9 @@ figure out daemontools
 
 
 ========================================
-    FORK -- flynn.pub
-========================================
-do something smart with DOC_TYPE
-    make it a config option
-    with smart names -- `xhtml transitional'
-if frame.pt throws an error then the path isn't checked?
-probably encoding issues here as well
-
-
-========================================
-    FORK -- flynn.app
-========================================
-supporting on-the-fly reloading of apps in dev mode
-document apps
-tests
-
-
-
-========================================
     0.4 -- DYNAMIC
 ========================================
 unittests!
-server string -> httpy
 solidify and document the API -- this will have to be backwards-compatible!
     config api
     context.py api -- CGI?
@@ -74,7 +54,8 @@ need to import rather than execfile
         import app rather than from app import Transaction
         then app.py can run whatever and it stays in memory
 add apps to configuration
-guess content type in response
+guess content type in response --> NO!!!!!!11
+server string -> httpy
 
 
 ========================================
