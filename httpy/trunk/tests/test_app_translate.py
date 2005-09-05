@@ -3,16 +3,14 @@
 import os
 import unittest
 
-from medusa import http_server
-
 from httpy.Handler import Handler
-from httpy.Handler import RequestError
-from httpy.Handler import Redirect
+from httpy.Handler.Response import Response
 from httpy.Configuration import Configuration
-from HandlerTestCase import HandlerTestCase
+#from AppTestCase import AppTestCase
+AppTestCase = unittest.TestCase
 
 
-class TestSetPath(HandlerTestCase):
+class TestSetPath(AppTestCase):
 
     setpath = False
 
