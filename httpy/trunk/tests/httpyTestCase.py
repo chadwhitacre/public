@@ -52,7 +52,9 @@ def receive(sock, n, timeout=20):
         raise RuntimeError, "timed out on %r" % (sock,)
 
 
-class HandlerTestCase(unittest.TestCase):
+class httpyTestCase(unittest.TestCase):
+
+    server = True
 
     def setUp(self):
 
@@ -60,8 +62,9 @@ class HandlerTestCase(unittest.TestCase):
         self.removeTestSite()
         self.buildTestSite()
 
-        self.t = ServerThread()
-        self.t.start()
+        if self.server:
+            self.t = ServerThread()
+            self.t.start()
 
     def send(self, request):
         """This is how we send requests to our TestServer over in its thread.
@@ -99,5 +102,8 @@ class HandlerTestCase(unittest.TestCase):
         return os.linesep.join(neutered)
 
     def tearDown(self):
-        self.t.join()
+        if self.server:
+            self.t.join()
         self.removeTestSite()
+
+
