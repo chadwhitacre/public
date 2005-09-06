@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from httpy.HandlerMixin import HandlerMixin
+from httpy.HandlerRequestMixin import HandlerRequestMixin
 from httpyTestCase import httpyTestCase
 
 
@@ -15,7 +15,7 @@ class TestTranslate(httpyTestCase):
 
     def setUp(self):
         httpyTestCase.setUp(self)
-        self.mixin = HandlerMixin()
+        self.mixin = HandlerRequestMixin()
 
     def buildTestSite(self):
         os.mkdir('root')
@@ -31,6 +31,15 @@ class TestTranslate(httpyTestCase):
         actual = self.mixin.translate(root, apps, path)
         self.assertEqual(expected, actual)
 
+    def testAppNotThere(self):
+        root = self.siteroot
+        apps = []
+        path = '/not-there'
+
+        expected = (self.siteroot, None)
+        actual = self.mixin.translate(root, apps, path)
+        self.assertEqual(expected, actual)
+
     def testOtherApp(self):
         root = self.siteroot
         apps = []
@@ -39,7 +48,6 @@ class TestTranslate(httpyTestCase):
         expected = (self.siteroot, None)
         actual = self.mixin.translate(root, apps, path)
         self.assertEqual(expected, actual)
-
 
 
 def test_suite():
