@@ -1,16 +1,48 @@
 import os
+import select
+import socket
+import threading
 import unittest
 
-from medusa import http_server
+from httpy.Config import Config
+from httpy.Server import Server
 
-from httpy.Configuration import ConfigError
-from httpy.Configuration import Configuration
-from httpy.Handler import Handler
+
+def receive(sock, n, timeout=20):
+    r, w, x = select.select([sock], [], [], timeout)
+    if sock in r:
+        return sock.recv(n)
+    else:
+        raise RuntimeError, "timed out on %r" % (sock,)
+
+class TestServer(Server):
+    """We want to see errors that are raised.
+    """
+
+    def handle_error(self, request, client_address):
+        self.close_request(request)
+        self.server_close()
+        raise
+
+class ServerThread(threading.Thread):
+    """In order to test the server, we instantiate it in a separate thread.
+    """
+
+    def run(self):
+
+        config = {}
+        config['mode'] = 'development'
+        config['ip'] = ''
+        config['root'] = '.'
+        config['port'] = 65370
+        config['verbosity'] = 99
+        config['apps'] = ''
+
+        server = TestServer(config)
+        server.handle_request()
 
 
 class HandlerTestCase(unittest.TestCase):
-
-    setpath = True
 
     def setUp(self):
 
@@ -18,16 +50,23 @@ class HandlerTestCase(unittest.TestCase):
         self.removeTestSite()
         self.buildTestSite()
 
-        # request and handler
-        self.request = http_server.http_request(*self._request)
-        try:
-            config = Configuration(['--r','root','--mode','development'])
-        except ConfigError, error:
-            print error.msg
-        self.handler = Handler(**config.handler)
+        self.t = ServerThread()
+        self.t.start()
 
-        if self.setpath:
-            self.handler._setpath(self.request)
+
+    def send(self, request):
+        """This is how we send requests to our TestServer over in its thread.
+        """
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('localhost', 65370))
+        s.sendall(request)
+        buf = data = receive(s, 100)
+        while data:
+            data = receive(s, 100)
+            buf += data
+        s.close()
+        return buf
+
 
     def removeTestSite(self):
         if not os.path.isdir('root'):
@@ -39,20 +78,6 @@ class HandlerTestCase(unittest.TestCase):
                 os.remove(os.path.join(root, name))
         os.rmdir('root')
 
-    _request = ( None
-               , 'GET / HTTP/1.1'
-               , 'GET'
-               , '/'
-               , '1.1'
-               , [ 'Host: josemaria:8080'
-                 , 'User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.10) Gecko/20050716 Firefox/1.0.6'
-                 , 'Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5'
-                 , 'Accept-Language: en-us,en;q=0.7,ar;q=0.3'
-                 , 'Accept-Encoding: gzip,deflate', 'Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7'
-                 , 'Keep-Alive: 300'
-                 , 'Connection: keep-alive'
-                  ]
-                )
 
     def neuter_traceback(self, tb):
         """Given a traceback, return just the system-independent lines.
@@ -68,4 +93,5 @@ class HandlerTestCase(unittest.TestCase):
 
 
     def tearDown(self):
+        self.t.join()
         self.removeTestSite()
