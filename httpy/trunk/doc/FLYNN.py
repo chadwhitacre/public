@@ -6,14 +6,12 @@ do something smart with DOC_TYPE
     with smart names -- `xhtml transitional'
 if frame.pt throws an error then the path isn't checked?
 probably encoding issues here as well
+figure out character encoding issues
 
 
 ========================================
     FORK -- flynn.app
 ========================================
-supporting on-the-fly reloading of apps in dev mode
-document apps
-tests
 
 
 

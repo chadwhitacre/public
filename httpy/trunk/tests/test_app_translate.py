@@ -18,7 +18,6 @@ class TestSetPath(AppTestCase):
         os.mkdir('root')
         file('root/index.html', 'w')
         os.mkdir('root/__')
-        file('root/__/frame.pt', 'w')
         os.mkdir('root/about')
         os.mkdir('root/My Documents')
         file('root/My Documents/index.html', 'w')
@@ -42,13 +41,6 @@ class TestSetPath(AppTestCase):
         actual = self.request.path
         self.assertEqual(expected, actual)
 
-    def testTemplateDefaultDocument(self):
-        self.request.uri = '/content/'
-        self.handler._setpath(self.request)
-        expected = os.path.realpath('root/content/index.pt')
-        actual = self.request.path
-        self.assertEqual(expected, actual)
-
     def testEncodedURIGetsUnencoded(self):
         self.request.uri = '/My%20Documents/'
         self.handler._setpath(self.request)
@@ -58,7 +50,7 @@ class TestSetPath(AppTestCase):
 
     def testDoubleRootRaisesBadRequest(self):
         self.request.uri = '//index.html'
-        self.assertRaises( RequestError
+        self.assertRaises( Response
                          , self.handler._setpath
                          , self.request
                           )

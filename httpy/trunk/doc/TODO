@@ -25,18 +25,8 @@ figure out daemontools
 ========================================
     0.4 -- DYNAMIC
 ========================================
-unittests!
-solidify and document the API -- this will have to be backwards-compatible!
-    config api
-    context.py api -- CGI?
-    __future__ -> app.py api -- CGI + StringIO?
-convert doc to man page
-write html docs
-test on Windows!!!
-test our processing of different cases of configuration options
-figure out character encoding issues
-do we want traditional access logging? separate access and error logs?
 =====DONE=====
+write html docs
 support something sane like CGI to provide context.py with it's API
 manage sessions, post, querystring, cookies?
 logging -- stdout :-) -- but support different verbosities
@@ -59,7 +49,30 @@ server string -> httpy
 
 
 ========================================
-    0.6 -- HTTP/1.1
+    0.6 -- zope.server
+========================================
+unittests!
+solidify and document the API -- this will have to be backwards-compatible!
+    request
+    config
+    context (flynn ... i.e., what the app is responsible for itself)
+need to figure out how to sanely provide for alternate py libs
+    per-site lib
+    per-app lib
+    sys.path is not a simple solution since we have multiple apps -- what is the import order?
+convert doc to man page
+test on Windows!!!
+test our processing of different cases of configuration options
+do we want traditional access logging? separate access and error logs?
+supporting on-the-fly reloading of apps in dev mode
+document apps
+tests
+
+
+
+
+========================================
+    0.8 -- HTTP/1.1
 ========================================
 keep-alive
 transfer encoding
@@ -68,7 +81,7 @@ range requests
 
 
 ========================================
-    0.8 -- BELLS & WHISTLES
+    1.0 -- BELLS & WHISTLES
 ========================================
 precompile templates (in place)
     httpy -f httpy.conf -c

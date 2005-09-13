@@ -56,22 +56,6 @@ if 0: # turn this on to disable caching for profile testing
 # Define our request handler.
 # ===========================
 
-class handler:
-    """This is copied, pasted, and modified from medusa.default_handler.
-    """
-
-    # I assume these are Medusa boilerplate
-    IDENT = 'Default HTTP Request Handler'
-    # always match, since this is a default
-    def match (self, request):
-        return 1
-
-    # these at least appear in this file
-    valid_commands = ['GET', 'HEAD']
-    producer = producers.simple_producer
-
-    def __init__(self, root='.', defaults=()): #, app_paths=(), dev_mode=False):
-
         # Clean up incoming paths and save values.
         # ========================================
 
@@ -85,18 +69,6 @@ class handler:
 #            _app_paths += (p,)
 #        self.app_paths = _app_paths
         self.dev_mode = os.environ.get('HTTPY_MODE','').lower() == 'development'
-
-
-
-        # Look for a __ directory in the publishing root.
-        # ===============================================
-
-        __ = os.path.join(self.root, '__')
-        if os.path.isdir(__):
-            self.__ = __
-            sys.path.insert(0, __)
-        else:
-            self.__ = ''
 
 
 
@@ -124,113 +96,7 @@ class handler:
         self.DOC_TYPE = '' # yes we make this global to the server
 
 
-    def handle_request(self, request):
-        """Handle an HTTP request.
-        """
 
-#        # Re-init for dev mode.
-#        # =====================
-#
-#        if self.dev_mode and 0:
-#            self.__pre__()
-
-
-        # Command
-        # =======
-
-        if request.command not in self.valid_commands:
-            request.error(400) # bad request
-            return
-
-
-        # Path
-        # ====
-
-        # parse the uri -- only ever contains path and query(?)
-        scheme, name, path, query, fragment = urlparse.urlsplit(request.uri)
-
-        # tidy up the path
-        if '%' in path:
-            path = urllib.unquote(path)
-        path = os.path.join(self.root, path.lstrip('/'))
-        path = os.path.realpath(path)
-
-
-
-#        # Applications
-#        # ============
-#        # determine if the url belongs to one of our apps
-#        # if so then hand off control flow to the application
-#
-#        for p in self.app_paths:
-#            if path.startswith(p):
-#                app = self.apps[p]
-#                app(request)
-#                return
-
-
-
-        # Pages & Static Content
-        # ======================
-
-        # see if the path is valid
-        if not os.path.exists(path):
-            request.error(404)
-            return
-        elif not path.startswith(self.root):
-            # protect against ./../../../
-            request.error(400)
-            return
-
-        # if the path points to a directory, look for a default obj
-        if os.path.isdir(path):
-            # look for a default object
-            found = False
-            for name in self.defaults:
-                _path = os.path.join(path, name)
-                if os.path.isfile(_path):
-                    found = True
-                    path = _path
-                    break
-            if not found: # no default object
-                request.error(404)
-                return
-
-        # save this for later use in state.py
-        request.path = path
-
-
-
-        # Decide if the content has changed recently.
-        # ===========================================
-
-        mtime = os.stat(path)[stat.ST_MTIME]
-        content_length = os.stat(path)[stat.ST_SIZE]
-
-        if not self.dev_mode:
-
-            ims = get_header_match(IF_MODIFIED_SINCE, request.header)
-
-            length_match = True
-            if ims:
-                length = ims.group(4)
-                if length:
-                    try:
-                        length = string.atoi(length)
-                        if length != content_length:
-                            length_match = False
-                    except:
-                        pass
-
-            ims_date = False
-            if ims:
-                ims_date = http_date.parse_http_date(ims.group(1))
-
-            if length_match and ims_date:
-                if mtime <= ims_date:
-                    request.reply_code = 304
-                    request.done()
-                    return
 
 
 
