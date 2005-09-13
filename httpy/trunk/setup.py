@@ -6,6 +6,12 @@ setup( name='httpy'
      , packages=[ 'httpy'
                 , 'zope'
                 , 'zope.interface'
+                , 'zope.interface.common'
                 , 'zope.server'
+                , 'zope.server.ftp'
+                , 'zope.server.http'
+                , 'zope.server.interfaces'
+                , 'zope.server.linereceiver'
+                , 'zope.server.logger'
                  ]
       )
