@@ -18,7 +18,7 @@ MKHOWTO = $(PYTHON_SRC)/Doc/tools/mkhowto
 #
 # Change this to the name of your source file (without extension).
 #
-SRC_NAME=index
+SRC_NAME=manual
 
 
 TARGETS = $(SRC_NAME).html
@@ -36,4 +36,4 @@ $(SRC_NAME).html: $(SRC_NAME).tex
 clean:
 	rm -f *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \
 *.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi
-	rm -rf html
+	rm -rf ../html
