@@ -1,0 +1,48 @@
+\chapter{Introduction}
+
+httpy exists to bridge your Python application with other HTTP applications. Its
+primary use case is as an HTTP origin server for a cluster of Python-based
+websites numbering into the hundreds or thousands.
+
+Therefore, httpy shares its design aesthetic with toilet paper: instances of
+httpy must be instantly available to solidly perform a single function and then
+be cast away without a thought.
+
+With that in mind, here's some httpy zen:
+
+    * httpy should make simple sites dead simple, and complex sites possible.
+
+    * Development, deployment, and upgrading should be equally easy, since all will need to happen constantly.
+
+    * The performance hit of an interpreted server will be offset by easy replication.
+
+    * Configuration should be kept to a minimum.
+
+    * Libraries are saner than frameworks.
+
+httpy's job is to get HTTP requests into your Python application, and to get HTTP responses from your app back onto the network. Here are some things that are explicitly not httpy's job, along with links to tools that do these jobs well:
+
+daemonization,
+complex error logging,
+uid/gid manipulations
+    You want Dan Bernstein's daemontools. httpy logs everything to the standard output, so use multilog to pick up from there, and use setuidgid to run httpy under a certain account.
+access logging,
+ssl encryption,
+virtual hosting,
+load-balancing
+    Use an HTTP proxy server such as Pound. You could also do these things with a general-purpose HTTP server such as Apache or lighttpd.
+caching
+    Use a caching proxy such as Squid, or, again, Apache. Your application should also do its own internal caching, of course.
+authentication,
+authorization,
+sessioning,
+storage,
+templating,
+etc.
+    These are your application's responsibility. There are plenty of Python packages available to help you.
+
+A future version of httpy is expected to be at least conditionally compliant with HTTP/1.1. However, the following features are not currently implemented:
+
+    * Keep-Alive
+    * Transfer-Encoding
+    * Range requests

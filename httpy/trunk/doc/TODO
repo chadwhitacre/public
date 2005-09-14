@@ -56,18 +56,21 @@ solidify and document the API -- this will have to be backwards-compatible!
     request
     config
     context (flynn ... i.e., what the app is responsible for itself)
-need to figure out how to sanely provide for alternate py libs
-    per-site lib
-    per-app lib
-    sys.path is not a simple solution since we have multiple apps -- what is the import order?
 convert doc to man page
 test on Windows!!!
 test our processing of different cases of configuration options
 do we want traditional access logging? separate access and error logs?
-supporting on-the-fly reloading of apps in dev mode
 document apps
 tests
-
+refactor docs in Python style
+=====DONE=====
+httpy.app.CGIMixin
+supporting on-the-fly reloading of apps in dev mode
+need to figure out how to sanely provide for alternate py libs
+    answer: PYTHONPATH per daemontools -- configurable per site
+    per-site lib
+    per-app lib
+    sys.path is not a simple solution since we have multiple apps -- what is the import order?
 
 
 
@@ -89,5 +92,5 @@ support interactive features:
     ctrl-s? -- display configuration settings
     ctrl-d? -- enter postmortem debugger on next exception
 add cli options to dump config and exit
-httpy.app.CGIMixin
+
 
