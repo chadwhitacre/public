@@ -10,39 +10,57 @@ be cast away without a thought.
 
 With that in mind, here's some httpy zen:
 
-    * httpy should make simple sites dead simple, and complex sites possible.
-
-    * Development, deployment, and upgrading should be equally easy, since all will need to happen constantly.
-
-    * The performance hit of an interpreted server will be offset by easy replication.
-
-    * Configuration should be kept to a minimum.
-
-    * Libraries are saner than frameworks.
+\begin{itemize}
+\item
+httpy should make simple sites dead simple, and complex sites possible.
+\item
+Development, deployment, and upgrading should be equally easy, since all will need to happen constantly.
+\item
+The performance hit of an interpreted server will be offset by easy replication.
+\item
+Configuration should be kept to a minimum.
+\item
+Libraries are saner than frameworks.
+\end{itemize}
 
 httpy's job is to get HTTP requests into your Python application, and to get HTTP responses from your app back onto the network. Here are some things that are explicitly not httpy's job, along with links to tools that do these jobs well:
 
-daemonization,
-complex error logging,
-uid/gid manipulations
-    You want Dan Bernstein's daemontools. httpy logs everything to the standard output, so use multilog to pick up from there, and use setuidgid to run httpy under a certain account.
-access logging,
-ssl encryption,
-virtual hosting,
-load-balancing
-    Use an HTTP proxy server such as Pound. You could also do these things with a general-purpose HTTP server such as Apache or lighttpd.
-caching
-    Use a caching proxy such as Squid, or, again, Apache. Your application should also do its own internal caching, of course.
-authentication,
-authorization,
-sessioning,
-storage,
-templating,
-etc.
-    These are your application's responsibility. There are plenty of Python packages available to help you.
+\begin{description}
 
-A future version of httpy is expected to be at least conditionally compliant with HTTP/1.1. However, the following features are not currently implemented:
+\item[daemonization, complex error logging, uid/gid manipulations]
+    {You want \ulink{Dan Bernstein's
+    daemontools}{http://cr.yp.to/daemontools.html}. httpy logs everything to the
+    standard output, so use
+    \ulink{multilog}{http://cr.yp.to/daemontools/multilog.html} to pick up from
+    there, and use \ulink{setuidgid}{http://cr.yp.to/daemontools/setuidgid.html}
+    to run httpy under a certain account.}
 
-    * Keep-Alive
-    * Transfer-Encoding
-    * Range requests
+\item[access logging, ssl encryption, virtual hosting, load-balancing]
+    {Use an HTTP proxy server such as \ulink{Pound}{http://www.apsis.ch/pound/}.
+    You could also do these things with a general-purpose HTTP server such as
+    \ulink{Apache}{http://httpd.apache.org/} or
+    \ulink{lighttpd}{http://www.lighttpd.net/}.}
+
+\item[caching]
+    {Use a caching proxy such as \ulink{Squid}{http://www.squid-cache.org/}, or,
+    again, \ulink{Apache}{http://httpd.apache.org/}. Your application should
+    also do its own internal caching, of course.}
+
+\item[authentication, authorization, sessioning, storage, templating, etc.]
+    {These are your application's responsibility. There are plenty of
+    \ulink{Python packages}{http://cheeseshop.python.org/pypi} available to help
+    you.}
+
+\end{description}
+
+
+A future version of httpy is expected to be at least conditionally compliant
+with \ulink{HTTP/1.1}{http://www.w3.org/Protocols/rfc2616/rfc2616.html}.
+However, the following features are not currently implemented:
+
+\begin{itemize}
+\item
+Keep-Alive\item
+Transfer-Encoding\item
+Range requests
+\end{itemize}
