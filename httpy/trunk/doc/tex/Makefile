@@ -30,7 +30,7 @@ html:	$(TARGETS)
 
 $(SRC_NAME).html: $(SRC_NAME).tex
 	$(MKHOWTO) $(HTMLFLAGS) $(SRC_NAME).tex
-	cp -r ../icons ../html/icons
+	cp -r ../icons ../html/
 
 
 clean:

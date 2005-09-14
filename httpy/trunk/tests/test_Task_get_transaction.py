@@ -5,7 +5,7 @@ import os
 import unittest
 
 import httpy.app
-from httpy.HandlerRequestMixin import HandlerRequestMixin
+from httpy.Task import Task
 from httpy.Response import Response
 from httpyTestCase import httpyTestCase
 
@@ -25,6 +25,11 @@ class Transaction:
         raise Response(200)
 """
 
+DUMMY_TASK = Task
+def __stub__(self):
+    pass
+DUMMY_TASK.__init__ = __stub__
+
 
 class TestTranslate(httpyTestCase):
 
@@ -33,7 +38,7 @@ class TestTranslate(httpyTestCase):
 
     def setUp(self):
         httpyTestCase.setUp(self)
-        self.mixin = HandlerRequestMixin()
+        self.task = DUMMY_TASK()
         self.config = {}
         self.config['apps'] = [ '/app1'
                               , '/app2'
@@ -58,14 +63,14 @@ class TestTranslate(httpyTestCase):
     def test0Basic(self):
         path = '/'
         expected = httpy.app.Transaction
-        actual = self.mixin.get_transaction(self.config, path)
+        actual = self.task.get_transaction(self.config, path)
         self.assert_(isinstance(actual, expected))
 
     def test1NoMagicDir(self):
         os.mkdir('root/app1')
         path = '/app1'
         expected = httpy.app.Transaction
-        actual = self.mixin.get_transaction(self.config, path)
+        actual = self.task.get_transaction(self.config, path)
         self.assert_(isinstance(actual, expected))
 
     def test2MagicDirButNoApp(self):
@@ -73,7 +78,7 @@ class TestTranslate(httpyTestCase):
         os.mkdir('root/app2/__')
         path = '/app2'
         expected = httpy.app.Transaction
-        actual = self.mixin.get_transaction(self.config, path)
+        actual = self.task.get_transaction(self.config, path)
         self.assert_(isinstance(actual, expected))
 
     def test3MagicDirAndAppButNoTransaction(self):
@@ -82,7 +87,7 @@ class TestTranslate(httpyTestCase):
         file('root/app3/__/app.py', 'w')
         path = '/app3'
         expected = httpy.app.Transaction
-        actual = self.mixin.get_transaction(self.config, path)
+        actual = self.task.get_transaction(self.config, path)
         self.assert_(isinstance(actual, expected))
 
     def test4MagicDirAndAppAndTransactionButNoProcess(self):
@@ -91,7 +96,7 @@ class TestTranslate(httpyTestCase):
         file('root/app4/__/app.py', 'w').write(DUMMY_APP_BAD)
         path = '/app4'
         expected = httpy.app.Transaction
-        actual = self.mixin.get_transaction(self.config, path)
+        actual = self.task.get_transaction(self.config, path)
         self.assert_(isinstance(actual, expected))
 
     def test5MagicDirAndAppAndTransactionAndProcess(self):
@@ -104,7 +109,7 @@ class TestTranslate(httpyTestCase):
         #expected = imp.load_module('app', fp, pathname, description).Transaction
         # THIS DIDN'T WORK
 
-        actual = self.mixin.get_transaction(self.config, path)
+        actual = self.task.get_transaction(self.config, path)
         self.assert_(not isinstance(actual, httpy.app.Transaction))
 
     def test6GoodAppAsPackage(self):
@@ -114,7 +119,7 @@ class TestTranslate(httpyTestCase):
         file('root/app6/__/app/__init__.py', 'w').write(DUMMY_APP)
         path = '/app6'
 
-        actual = self.mixin.get_transaction(self.config, path)
+        actual = self.task.get_transaction(self.config, path)
         self.assert_(not isinstance(actual, httpy.app.Transaction))
 
 
