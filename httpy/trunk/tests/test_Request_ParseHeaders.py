@@ -35,8 +35,8 @@ class TestRequestParseHeadersCRLF(RequestParseHeadersTests,unittest.TestCase):
         self.rr = Request(default_adj)
         newline='\r\n'
         self.IE_CRAP,self.LINE,self.HEADERS,self.BODY,self.POST=PARTS(newline)
-        self.rr.recieved(self.LINE)
-        self.rr.recieved(self.HEADERS)
+        self.rr.received(self.LINE)
+        self.rr.received(self.HEADERS)
         self.message = self.rr.message
         
 class TestRequestParseHeadersCR(RequestParseHeadersTests,unittest.TestCase):
@@ -44,8 +44,8 @@ class TestRequestParseHeadersCR(RequestParseHeadersTests,unittest.TestCase):
         self.rr = Request(default_adj)
         newline='\r'
         self.IE_CRAP,self.LINE,self.HEADERS,self.BODY,self.POST=PARTS(newline)
-        self.rr.recieved(self.LINE)
-        self.rr.recieved(self.HEADERS)
+        self.rr.received(self.LINE)
+        self.rr.received(self.HEADERS)
         self.message = self.rr.message
         
 class TestRequestParseHeadersLF(RequestParseHeadersTests,unittest.TestCase):
@@ -53,8 +53,8 @@ class TestRequestParseHeadersLF(RequestParseHeadersTests,unittest.TestCase):
         self.rr = Request(default_adj)
         newline='\n'
         self.IE_CRAP,self.LINE,self.HEADERS,self.BODY,self.POST=PARTS(newline)
-        self.rr.recieved(self.LINE)
-        self.rr.recieved(self.HEADERS)
+        self.rr.received(self.LINE)
+        self.rr.received(self.HEADERS)
         self.message = self.rr.message
 
 def test_suite():

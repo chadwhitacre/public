@@ -10,7 +10,7 @@ from RequestTestCase import PARTS
 
 class RequestParsesLineTests:
     def testExactLine(self):
-        self.rr.recieved(self.LINE)
+        self.rr.received(self.LINE)
         things={
         'raw_line':self.LINE.strip(),
         'method':'POST',

@@ -10,45 +10,45 @@ from zope.server.adjustments import default_adj
 
 class RequestGetHeadersTests:
     def testExactLine(self):
-        self.rr.recieved(self.LINE)
-        self.rr.recieved(self.HEADERS)
+        self.rr.received(self.LINE)
+        self.rr.received(self.HEADERS)
         self.assert_(self.rr.raw_line==self.LINE.strip())
         self.assert_(self.rr.raw_headers==self.HEADERS.strip())
-        
+
     def testLineHeadersAtOnce(self):
-        self.rr.recieved(self.LINE+self.HEADERS)
+        self.rr.received(self.LINE+self.HEADERS)
         self.assert_(self.rr.raw_line==self.LINE.strip())
         self.assert_(self.rr.raw_headers==self.HEADERS.strip())
-    
+
     def testPartialHeaders(self):
-        self.rr.recieved(self.LINE+self.HEADERS[:30])
+        self.rr.received(self.LINE+self.HEADERS[:30])
         self.assert_(self.rr.raw_line==self.LINE.strip())
         self.assert_(self.rr._tmp==self.HEADERS[:30])
         self.assert_(self.rr.raw_headers==None)
-        
+
     def testDividedHeaders(self):
-        self.rr.recieved(self.LINE+self.HEADERS[:30])
-        self.rr.recieved(self.HEADERS[30:])
+        self.rr.received(self.LINE+self.HEADERS[:30])
+        self.rr.received(self.HEADERS[30:])
         self.assert_(self.rr.raw_line==self.LINE.strip())
         self.assert_(self.rr.raw_headers==self.HEADERS.strip())
-        
+
     def testExtraStuff(self):
-        self.rr.recieved(self.POST)
+        self.rr.received(self.POST)
         self.assert_(self.rr.raw_line==self.LINE.strip())
         self.assert_(self.rr.raw_headers==self.HEADERS.strip())
 
     def testDividedHeadersAndExtra(self):
-        self.rr.recieved(self.LINE+self.HEADERS[:30])
-        self.rr.recieved(self.HEADERS[30:]+self.BODY)
+        self.rr.received(self.LINE+self.HEADERS[:30])
+        self.rr.received(self.HEADERS[30:]+self.BODY)
         self.assert_(self.rr.raw_line==self.LINE.strip())
         self.assert_(self.rr.raw_headers==self.HEADERS.strip())
-        
+
 class TestRequestGetHeadersCRLF(RequestGetHeadersTests,unittest.TestCase):
     def setUp(self):
         self.rr = Request(default_adj)
         newline='\r\n'
         (self.IE_CRAP,self.LINE,self.HEADERS,self.BODY,self.POST)=PARTS(newline)
-        
+
 class TestRequestGetsHeadersCR(RequestGetHeadersTests,unittest.TestCase):
     def setUp(self):
         self.rr = Request(default_adj)

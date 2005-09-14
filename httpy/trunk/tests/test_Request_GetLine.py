@@ -9,36 +9,36 @@ from RequestTestCase import PARTS
 
 class RequestGetsLineTests:
     def testExactLine(self):
-        self.rr.recieved(self.LINE)
+        self.rr.received(self.LINE)
         self.assert_(self.rr.raw_line==self.LINE.strip())
         
     def testShortLine(self):
         short = self.LINE[:4]
-        self.rr.recieved(short)
+        self.rr.received(short)
         self.assert_(self.rr.raw_line==None)
         self.assert_(self.rr._tmp==short)
         
     def testDividedLine(self):
         beginning=self.LINE[:4]
         end=self.LINE[4:]
-        self.rr.recieved(beginning)
-        self.rr.recieved(end)
+        self.rr.received(beginning)
+        self.rr.received(end)
         self.assert_(self.rr.raw_line==self.LINE.strip())
         
     def testCrappyIELine(self):
-        self.rr.recieved(self.IE_CRAP+self.LINE)
+        self.rr.received(self.IE_CRAP+self.LINE)
         self.assert_(self.rr.raw_line==self.LINE.strip())
         
     def testExtraStuffOnEnd(self):
-        self.rr.recieved(self.IE_CRAP+self.LINE+self.HEADERS[:-1])
+        self.rr.received(self.IE_CRAP+self.LINE+self.HEADERS[:-1])
         self.assert_(self.rr.raw_line==self.LINE.strip())
         self.assert_(self.rr._tmp==self.HEADERS[:-1])
         
     def testAll(self):
         beginning=self.LINE[:4]
         end=self.LINE[4:]
-        self.rr.recieved(self.IE_CRAP+beginning)
-        self.rr.recieved(end+self.HEADERS[:-1])
+        self.rr.received(self.IE_CRAP+beginning)
+        self.rr.received(end+self.HEADERS[:-1])
         self.assert_(self.rr.raw_line==self.LINE.strip())
         self.assert_(self.rr._tmp==self.HEADERS[:-1])
 
