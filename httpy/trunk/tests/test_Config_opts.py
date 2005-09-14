@@ -105,12 +105,12 @@ class TestConfigOpts(ConfigTestCase):
         expected = self.dict2tuple(self.d)
         import sys
         from StringIO import StringIO
-        sys.stdout = StringIO()
+        sys.stderr = StringIO()
         self.assertRaises( SystemExit
                          , self.config._opts
                          , argv_extra_options
                           )
-        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
 
 
 
