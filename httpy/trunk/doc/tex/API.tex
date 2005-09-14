@@ -1,6 +1,41 @@
 \chapter{API}
 
-\section{Filesystem Layout}
+There are two kinds of websites: publications and applications. They are
+differentiated by their organization and interface models. In a
+\dfn{publication}, information is organized hierarchically into folders that one
+navigates by browsing. An \dfn{application} website, on the other hand,
+organizes information non-hierarchically, and presents a non-browsing interface
+such as a search box.
 
-\section{Python Layout}
+The HTML version of this documentation is an example of a publication website: a
+few hypertext documents organized into sections. If we weren't using \LaTeX, the
+sections would probably be encoded in folders.
+\ulink{Gmail}{http://mail.google.com/mail} would be an example of a pure
+application website. Most websites, however, are hybrids. For example, some
+information might be organized hierarchically, but at points in that hierarchy,
+one may meet an application, such as a site search feature, or a threaded
+discussion forum.
+
+httpy enables you to build publication, application, and hybrid websites. It
+relies on the underlying filesystem to support a publication website's
+hierarchical organization. For application websites or sections of websites,
+httpy looks for certain Python files in a certain subdirectory of any
+directories that you explicitly configured as applications. This is the
+\strong{filesystem} aspect of its API.
+
+Once your Python application has successfully made it into httpy's process
+space, then httpy's \strong{Python} API comes into play.
+
+Both aspects are described below.
+
+\section{Filesystem}
+
+\section{Python}
+
+\begin{classdesc}{Server}{config}
+
+foo
+
+\end{classdesc}
+
 

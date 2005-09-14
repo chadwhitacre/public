@@ -10,7 +10,6 @@ PYTHON_SRC = /home/whit537/sandbox/Python-2.4.1
 #
 # Change these flags for your purposes.
 #
-#HTMLFLAGS= --image-type png --html -s 0 --favicon ../icons/pyfav.gif
 HTMLFLAGS= --iconserver icons --html -s 0 --favicon icons/pyfav.gif \
 --dir html
 
@@ -38,8 +37,4 @@ $(SRC_NAME).html: $(SRC_NAME).tex
 clean:
 	rm -f *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \
 *.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi
-	-rm -f $(SRC_NAME).tex
-	-rm -f $(SRC_NAME)/*
-	-rmdir $(SRC_NAME)
-	-rm -f $(SRC_NAME).tex
 	rm -rf html
