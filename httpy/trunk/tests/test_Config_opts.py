@@ -103,10 +103,15 @@ class TestConfigOpts(ConfigTestCase):
     def testExtraOptionsRaisesError(self):
         file('httpy.conf', 'w')
         expected = self.dict2tuple(self.d)
+        import sys
+        from StringIO import StringIO
+        sys.stdout = StringIO()
         self.assertRaises( SystemExit
                          , self.config._opts
                          , argv_extra_options
                           )
+        sys.stdout = sys.__stdout__
+
 
 
 def test_suite():
