@@ -1,0 +1,13 @@
+manual: httpy
+
+introduction
+installation
+configuration
+API
+    filesystem
+    python
+examples
+    basic site
+    root app
+    non-root app
+    custom contig
