@@ -31,6 +31,7 @@ html:	$(TARGETS)
 $(SRC_NAME).html: $(SRC_NAME).tex
 	$(MKHOWTO) $(HTMLFLAGS) $(SRC_NAME).tex
 	cp -r ../icons ../html/
+	rm -rf ../html/icons/.svn
 
 
 clean:
