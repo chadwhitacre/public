@@ -3,42 +3,44 @@
 httpy exposes the following configuration parameters:
 
 
-\begin{tableiii}{l|l|l}{var}{Parameter}{Description}{Default}
+\begin{tableiii}{l|l|l}{var}{Parameter}{Description}{Default Behavior/Value}
 
 \lineiii{apps}
     {A colon-separated list of paths that should be considered applications. The
     paths should be given as if they were in URL-space, or from the filesystem's
-    perspective, as if they were rooted in the website's filesystem root. So
-    they should begin with a slash but should not include the filesystem path to
-    the root of the website. The website root is always implicitly considered an
+    perspective, as if they were rooted in the website's filesystem root (but
+    always using the forward-slash as the path separator). So they should begin
+    with a forward-slash but should not include the filesystem path to the root
+    of the website. The website root is always implicitly considered an
     application.}
-    {[no explicit applications]}
+    {Walk the tree rooted in \var{root} and collect all directories with a
+    subdirectory named __ (that's two underscores).}
 
 \lineiii{ip}
     {The IP address that httpy should listen on. This must either be a valid
     IPv4 address or a null value, in which case httpy will listen on all
     available addresses.}
-    {[listen on all addresses]}
+    {Listen on all available addresses.}
 
 \lineiii{mode}
     {Either of the strings deployment or development. This affects various
     aspects of httpy's behavior.}
-    {deployment}
+    {\code{deployment}}
 
 \lineiii{port}
     {The TCP port that httpy should bind to. This must be an integer between 0
     and 65535, inclusive.}
-    {8080}
+    {\code{8080}}
 
 \lineiii{root}
     {The path to a directory on the filesystem which will serve as the root of
     the website.}
-    {. [i.e., the current working directory]}
+    {Use the current working directory.}
 
 \lineiii{verbosity}
     {An integer from 0 to 99, inclusive, indicating how much information to
     log.}
-    {1}
+    {\code{1}}
 
 \end{tableiii}
 
@@ -67,7 +69,8 @@ In addition, the path to any configuration file is specified with the
 \programopt{-f}/\longprogramopt{file} argument.
 
 \begin{seealso}
-\seetitle [http://www.python.org/doc/lib/module-optparse.html] {optparse}
+\seetitle [http://www.python.org/doc/lib/module-optparse.html]
+          {optparse}
           {httpy uses the standard library's optparse module.}
 \end{seealso}
 
@@ -78,11 +81,11 @@ In addition, the path to any configuration file is specified with the
 
 httpy uses the standard library's RawConfigParser class to represent its
 configuration file. This means that the file is in the style of a Windows INI
-file, with section headers in brackets, and name=value pairs on successive
-lines. Use the names as given above. The number and names of any sections are
-irrelevant, but RawConfigParser requires that there be at least one section. As
-an example, a configuration file with the following contents would set the
-verbosity of an httpy instance:
+file, with section headers in brackets, and \code{name=value} pairs on
+successive lines. Use the parameter names as given earlier. The number and names
+of any sections are irrelevant, but RawConfigParser requires that there be at
+least one section. As an example, a configuration file with the following
+contents would set the verbosity of an httpy instance:
 
 \begin{verbatim}
 [main]
@@ -90,7 +93,8 @@ verbosity = 99
 \end{verbatim}
 
 \begin{seealso}
-\seetitle [http://www.python.org/doc/lib/RawConfigParser-objects.html] {RawConfigParser}
+\seetitle [http://www.python.org/doc/lib/RawConfigParser-objects.html]
+          {RawConfigParser}
           {httpy uses the standard library's RawConfigParser class.}
 \end{seealso}
 
@@ -103,4 +107,4 @@ The names of the environment variables recognized by httpy are derived by
 uppercasing the above names, and prepending them with HTTPY_. So, for example,
 to configure a server so that all instances of httpy on that server are run in
 development mode instead of deployment mode, one would simply set the
-environment variable \envvar{HTTPY_MODE} to \constant{development}.
+environment variable \envvar{HTTPY_MODE} to \code{development}.
