@@ -302,6 +302,15 @@ class TestConfigValidate(ConfigTestCase):
                          , self.config.validate_apps
                           )
 
+    def testAppWithoutMagicDirectoryRaisesError(self):
+        os.rmdir(os.path.join('app1', '__'))
+        self.config = Config()
+        self.config['apps'] = ['/app1']
+        self.assertRaises( ConfigError
+                         , self.config.validate_apps
+                          )
+
+
     def testDefaultsErrorMessage(self):
         d = {'apps':None}
         try:

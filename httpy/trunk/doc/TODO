@@ -51,18 +51,19 @@ server string -> httpy
 ========================================
     0.6 -- zope.server
 ========================================
-unittests!
 solidify and document the API -- this will have to be backwards-compatible!
     request
     config
     context (flynn ... i.e., what the app is responsible for itself)
 convert doc to man page
-test on Windows!!!
 test our processing of different cases of configuration options
 do we want traditional access logging? separate access and error logs?
 document apps
 tests
-refactor docs in Python style
+make apps implicit rather than explicit
+    change Config to auto-find apps by default -- can still be overriden
+    also update Config tests to reflect the change
+    shouldn't need to touch Server or Task since their input won't change
 =====DONE=====
 httpy.app.CGIMixin
 supporting on-the-fly reloading of apps in dev mode
@@ -71,6 +72,8 @@ need to figure out how to sanely provide for alternate py libs
     per-site lib
     per-app lib
     sys.path is not a simple solution since we have multiple apps -- what is the import order?
+unittests!
+refactor docs in Python style
 
 
 
@@ -78,9 +81,9 @@ need to figure out how to sanely provide for alternate py libs
     0.8 -- HTTP/1.1
 ========================================
 keep-alive
-transfer encoding
 range requests
-
+=====DONE=====
+transfer encoding
 
 
 ========================================
@@ -91,6 +94,18 @@ precompile templates (in place)
 support interactive features:
     ctrl-s? -- display configuration settings
     ctrl-d? -- enter postmortem debugger on next exception
+signal handling
+    TERM -- nice shutdown
+    HUP -- reload config
 add cli options to dump config and exit
+smarter module caching?
 
+
+
+========================================
+    1.2 -- EXPAND OUR TERRITORY
+========================================
+play nice on Windows
+    GUI?
+    pyexe?
 
