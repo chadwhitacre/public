@@ -22,7 +22,7 @@ class TestServer(unittest.TestCase):
         actual = self.server.http_version_string
         self.assertEqual(expected, actual)
 
-        expected = "httpy/0.3"
+        expected = "httpy/0.5"
         actual = self.server.response_header
         self.assertEqual(expected, actual)
 

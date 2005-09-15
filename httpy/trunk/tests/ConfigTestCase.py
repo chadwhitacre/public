@@ -11,9 +11,12 @@ class ConfigTestCase(unittest.TestCase):
         self.scrubenv()
         self.config = Config()
         for app in ('app1', 'app2'):
+            if os.path.isdir(os.path.join(app, '__')):
+                os.rmdir(os.path.join(app, '__'))
             if os.path.isdir(app):
                 os.rmdir(app)
             os.mkdir(app)
+            os.mkdir(os.path.join(app, '__'))
 
     def dict2tuple(d):
         return tuple(sorted(d.iteritems()))
@@ -38,5 +41,7 @@ class ConfigTestCase(unittest.TestCase):
         if os.path.isfile('httpy.conf'):
             os.remove('httpy.conf')
         for app in ('app1', 'app2'):
+            if os.path.isdir(os.path.join(app, '__')):
+                os.rmdir(os.path.join(app, '__'))
             if os.path.isdir(app):
                 os.rmdir(app)
