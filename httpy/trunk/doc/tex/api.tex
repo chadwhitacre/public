@@ -1,54 +1,21 @@
 \chapter{API}
 
-There are two kinds of websites: publications and applications. They are
-differentiated by their organization and interface models. In a
-\dfn{publication}, information is organized hierarchically into folders that one
-navigates by browsing. An \dfn{application} website, on the other hand,
-organizes information non-hierarchically, and presents a non-browsing interface
-such as a search box.
+\section{\module{httpy.Request} --- an HTTP Request}
 
-The HTML version of this documentation is an example of a publication website: a
-few hypertext documents organized into sections. If we weren't using \LaTeX, the
-sections would probably be encoded in folders.
-\ulink{Gmail}{http://mail.google.com/mail} would be an example of a pure
-application website. Most websites, however, are hybrids. For example, some
-information might be organized hierarchically, but at points in that hierarchy,
-one may meet an application, such as a site search feature, or a threaded
-discussion forum.
-
-httpy enables you to build publication, application, and hybrid websites. It
-relies on the underlying filesystem to support a publication website's
-hierarchical organization. For application websites or sections of websites,
-httpy looks for certain Python files in a certain subdirectory of any
-directories that you explicitly configured as applications. This is the
-\strong{filesystem} aspect of its API.
-
-Once your Python application has successfully made it into httpy's process
-space, then httpy's \strong{Python} API comes into play.
-
-Both aspects are described below.
-
-\section{Filesystem}
-
-\section{Python}
-
-\subsection{\module{httpy.Request} ---
-            An HTTP Request}
-
-\subsection{\module{httpy.Response} ---
-            An HTTP Response}
-
-\subsection{\module{httpy.Server} ---
-            An httpy server}
-
-\begin{classdesc}{Server}{config}
+\begin{classdesc}{Response}{config}
 
 foo
 \end{classdesc}
 
-\subsection{\module{httpy.app} ---
-            The default application used to process requests}
 
-\subsection{\module{httpy.helpers} ---
-            Useful mixins for custom applications}
+
+\section{\module{httpy.Response} --- an HTTP Response}
+
+\begin{classdesc}{Response}{config}
+
+foo
+\end{classdesc}
+
+
+\section{\module{httpy.utils} --- utilities for custom applications}
 
