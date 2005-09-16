@@ -14,12 +14,12 @@ class RequestGetsLineTests:
 
     def testExactLine(self):
         self.request.received(self.LINE)
-        self.assertEqual(self.request.line, self.LINE.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
 
     def testShortLine(self):
         short = self.LINE[:4]
         self.request.received(short)
-        self.assertEqual(self.request.line, None)
+        self.assertEqual(self.request.raw_line, None)
         self.assertEqual(self.request._tmp, short)
 
     def testDividedLine(self):
@@ -27,15 +27,15 @@ class RequestGetsLineTests:
         end=self.LINE[4:]
         self.request.received(beginning)
         self.request.received(end)
-        self.assertEqual(self.request.line, self.LINE.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
 
     def testCrappyIELine(self):
         self.request.received(self.IE_CRAP+self.LINE)
-        self.assertEqual(self.request.line, self.LINE.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
 
     def testExtraStuffOnEnd(self):
         self.request.received(self.IE_CRAP+self.LINE+self.HEADERS[:-1])
-        self.assertEqual(self.request.line, self.LINE.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
         self.assertEqual(self.request._tmp, self.HEADERS[:-1])
 
     def testAll(self):
@@ -43,7 +43,7 @@ class RequestGetsLineTests:
         end=self.LINE[4:]
         self.request.received(self.IE_CRAP+beginning)
         self.request.received(end+self.HEADERS[:-1])
-        self.assertEqual(self.request.line, self.LINE.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
         self.assertEqual(self.request._tmp, self.HEADERS[:-1])
 
 

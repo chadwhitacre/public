@@ -15,36 +15,36 @@ class RequestGetHeadersTests:
     def testExactLine(self):
         self.request.received(self.LINE)
         self.request.received(self.HEADERS)
-        self.assertEqual(self.request.line, self.LINE.strip())
-        self.assertEqual(self.request.headers, self.HEADERS.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
+        self.assertEqual(self.request.raw_headers, self.HEADERS.strip())
 
     def testLineHeadersAtOnce(self):
         self.request.received(self.LINE+self.HEADERS)
-        self.assertEqual(self.request.line, self.LINE.strip())
-        self.assertEqual(self.request.headers, self.HEADERS.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
+        self.assertEqual(self.request.raw_headers, self.HEADERS.strip())
 
     def testPartialHeaders(self):
         self.request.received(self.LINE+self.HEADERS[:30])
-        self.assertEqual(self.request.line, self.LINE.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
         self.assertEqual(self.request._tmp, self.HEADERS[:30])
-        self.assertEqual(self.request.headers, None)
+        self.assertEqual(self.request.raw_headers, None)
 
     def testDividedHeaders(self):
         self.request.received(self.LINE+self.HEADERS[:30])
         self.request.received(self.HEADERS[30:])
-        self.assertEqual(self.request.line, self.LINE.strip())
-        self.assertEqual(self.request.headers, self.HEADERS.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
+        self.assertEqual(self.request.raw_headers, self.HEADERS.strip())
 
     def testExtraStuff(self):
         self.request.received(self.POST)
-        self.assertEqual(self.request.line, self.LINE.strip())
-        self.assertEqual(self.request.headers, self.HEADERS.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
+        self.assertEqual(self.request.raw_headers, self.HEADERS.strip())
 
     def testDividedHeadersAndExtra(self):
         self.request.received(self.LINE+self.HEADERS[:30])
         self.request.received(self.HEADERS[30:]+self.BODY)
-        self.assertEqual(self.request.line, self.LINE.strip())
-        self.assertEqual(self.request.headers, self.HEADERS.strip())
+        self.assertEqual(self.request.raw_line, self.LINE.strip())
+        self.assertEqual(self.request.raw_headers, self.HEADERS.strip())
 
 
 class TestRequestGetHeadersCRLF(RequestGetHeadersTests,unittest.TestCase):
