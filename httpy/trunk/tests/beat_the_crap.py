@@ -6,9 +6,33 @@ from pprint import pprint
 import sys
 import os
 import Queue
+from optparse import OptionParser
+
+def main():
+    parser=OptionParser()
+    parser.add_option('-a','--address',dest='address', type='str')
+    parser.add_option('-p','--port',dest='port', type='int')
+    parser.add_option('-t','--threads',dest='threads', type='str')
+    parser.add_option('-n','--hits',dest='hits', type='int')
+    parser.add_option('-R','--repeats',dest='log',type='int')
+    parser.add_option('-r','--rest',dest='log',type='int')
+            
+    parser.set_defaults(address='127.0.0.1'
+                       ,port=8000
+                       ,threads='1'
+                       ,hits=100
+                       ,repeats=10
+                       ,rest=30
+                       )
+    options,args = parser.parse_args()
+    thread_opts=[int(x) for x in options.threads.split(',')]
+    SLAMIT(options.address,options.port,thread_opts,options.hits,options.repeats,options.rest)
+
 
 class crap_beater:
-    def __init__(self,threads,hits,repeats,test_num,test_total):
+    def __init__(self,address,port,threads,hits,repeats,test_num,test_total):
+        self.address = address
+        self.port = port
         self.threads = threads
         self.hits = hits
         self.repeats=repeats
@@ -65,7 +89,7 @@ class crap_beater:
             for i in range(hits):
                 self.results['hits']+=1
                 try:
-                    response = urllib.urlopen('http://localhost:9999')
+                    response = urllib.urlopen('http://%s:%s'%(self.address,self.port))
                     success=True
                     if 0:
                         headers = str(response.headers).strip().replace('\r','')
@@ -129,12 +153,27 @@ def pretty_results(allresults):
         print num,'|',line
     print 
     pprint(all_errors)
+
+def shutdown(x,y):
+    os.kill(os.getpid(),9)
     
-def SLAMIT(thread_opts,hits,repeats,rest):
+def setup_handlers():
+    import signal
+    signal.signal(signal.SIGINT,shutdown)
+    signal.signal(signal.SIGTERM,shutdown)
+    
+def SLAMIT(address,port,thread_opts,hits,repeats,rest):
+    setup_handlers()
+    url = 'http://%s:%s'%(address,port)
+    try:
+        response = urllib.urlopen(url)
+    except:
+        print "couldn't reach %s, is the server up?"%url
+        return
     configs = []
     results = []
     for thread_opt in thread_opts:
-        configs.append([thread_opt,hits,repeats])
+        configs.append([address,port,thread_opt,hits,repeats])
     i=0
     j=len(configs)
     for config in configs:
@@ -146,10 +185,6 @@ def SLAMIT(thread_opts,hits,repeats,rest):
             print 'letting the server rest for %s seconds ;-)'%rest
             time.sleep(rest)
     pretty_results(results)
+
 if __name__=='__main__':
-    thread_opts=[280]
-    #thread_opts=[300,320,340,360,380,400]
-    hits=30000
-    repeats=10
-    rest =30
-    SLAMIT(thread_opts,hits,repeats,rest)
+    main()
