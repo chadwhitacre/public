@@ -7,7 +7,7 @@ The main() function below is inspired by Guido's:
 
 """
 
-__version__ = (0,3)
+__version__ = (0, 5)
 __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 
 import sys
