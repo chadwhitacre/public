@@ -18,8 +18,11 @@ class Transaction:
 #file('root/app1/app.py', 'w').write(DUMMY_APP)
 
 DUMMY_TASK = Task
-def __stub__(self):
-    pass
+def __stub__(self, channel, request):
+    self.server = channel.server
+    self.config = self.server.config
+    self.channel = channel
+    self.request = request
 DUMMY_TASK.__init__ = __stub__
 
 
