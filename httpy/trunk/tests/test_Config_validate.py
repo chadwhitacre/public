@@ -3,9 +3,10 @@
 import os
 import unittest
 
-from ConfigTestCase import ConfigTestCase
 from httpy.Config import Config
 from httpy.Config import ConfigError
+
+from ConfigTestCase import ConfigTestCase
 
 
 class TestConfigValidate(ConfigTestCase):
@@ -287,29 +288,6 @@ class TestConfigValidate(ConfigTestCase):
         expected = {'apps':('/app1', '/app2')}
         actual = self.config._validate('test', d)
         self.assertEqual(expected, actual)
-        self.config.validate_apps()
-
-    def testValidateGoodAppsReturnsNone(self):
-        self.config = Config(['-a/app1:/app2'])
-        expected = None
-        actual = self.config.validate_apps()
-        self.assertEqual(expected, actual)
-
-    def testValidateBadAppsRaisesError(self):
-        self.config = Config()
-        self.config['apps'] = ['/not-there']
-        self.assertRaises( ConfigError
-                         , self.config.validate_apps
-                          )
-
-    def testAppWithoutMagicDirectoryRaisesError(self):
-        os.rmdir(os.path.join('app1', '__'))
-        self.config = Config()
-        self.config['apps'] = ['/app1']
-        self.assertRaises( ConfigError
-                         , self.config.validate_apps
-                          )
-
 
     def testDefaultsErrorMessage(self):
         d = {'apps':None}
