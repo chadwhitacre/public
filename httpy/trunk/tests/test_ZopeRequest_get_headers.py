@@ -7,7 +7,7 @@ from zope.server.adjustments import default_adj
 
 from httpy.Request import ZopeRequest
 
-from TestCaseRequest import PARTS
+from TestCaseZopeRequest import PARTS
 
 
 class RequestGetHeadersTests:
