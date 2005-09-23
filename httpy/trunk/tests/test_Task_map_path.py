@@ -26,7 +26,7 @@ class TestMapPath(httpyTestCase):
 
     def setUp(self):
         httpyTestCase.setUp(self)
-        self.task = DUMMY_TASK
+        self.task = DUMMY_TASK()
         self.SUCCESS = ( '/app1'
                        , os.path.join(self.siteroot, 'app1')
                        , os.path.join(self.siteroot, 'app1', '__')

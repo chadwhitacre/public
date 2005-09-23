@@ -25,4 +25,5 @@ request = ZopeRequest(default_adj)
 request.received("GET / HTTP/1.1\r\n\r\n")
 
 
-DUMMY_TASK = Task(StubChannel(), request)
+def DUMMY_TASK():
+    return Task(StubChannel(), request)
