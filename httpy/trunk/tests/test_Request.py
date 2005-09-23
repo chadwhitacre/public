@@ -3,6 +3,7 @@
 import os
 import unittest
 
+from zope.interface.exceptions import DoesNotImplement
 from zope.server.adjustments import default_adj
 
 from httpy.Request import Request, ZopeRequest
@@ -67,6 +68,9 @@ class TestRequest(unittest.TestCase):
         expected = REQUEST_API
         actual = dir(self.request)
         self.assertEqual(expected, actual)
+
+    def testBadRequestObject(self):
+        self.assertRaises(DoesNotImplement, Request, object())
 
 
 def test_suite():
