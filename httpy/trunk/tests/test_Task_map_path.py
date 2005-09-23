@@ -7,19 +7,18 @@ from httpy.Response import Response
 from httpyTestCase import httpyTestCase
 
 
-# later
 DUMMY_APP = """\
 class Transaction:
     def __init__(self, config):
         return config
     def process(self, request):
         raise "heck" """
-#file('root/app1/app.py', 'w').write(DUMMY_APP)
+
 
 from TestCaseTask import DUMMY_TASK
 
 
-class TestTranslate(httpyTestCase):
+class TestMapPath(httpyTestCase):
 
     server = False
     siteroot = os.path.join(os.path.realpath('.'),'root')
@@ -28,27 +27,32 @@ class TestTranslate(httpyTestCase):
     def setUp(self):
         httpyTestCase.setUp(self)
         self.task = DUMMY_TASK
+        self.SUCCESS = ( '/app1'
+                       , os.path.join(self.siteroot, 'app1')
+                       , os.path.join(self.siteroot, 'app1', '__')
+                        )
+
 
     def buildTestSite(self):
         os.mkdir('root')
-        file('root/index.html', 'w').write('hello world')
+        file('root/index.html', 'w').write('Greetings, program!')
         os.mkdir('root/app1')
+        os.mkdir('root/app1/__')
         os.mkdir('root/app2')
-        os.mkdir('root/app2/__')
 
 
     def testBasic(self):
         root = self.siteroot
-        apps = []
+        apps = ('/',)
         path = '/'
 
-        expected = (self.siteroot, None)
+        expected = ('/', self.siteroot, None)
         actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
     def testAppNotThereRaises404(self):
         root = self.siteroot
-        apps = ['/not-there']
+        apps = ('/not-there','/')
         path = '/not-there'
 
         try:
@@ -56,27 +60,39 @@ class TestTranslate(httpyTestCase):
         except Response, response:
             self.assertEqual(response.code, 404)
 
+    def testNonRootAppWithNoMagicDirectoryRaises500(self):
+        root = self.siteroot
+        apps = ('/app2','/')
+        path = '/app2'
+
+        try:
+            self.task.map_path(root, apps, path)
+        except Response, response:
+            self.assertEqual(response.code, 500)
+
+    testButRootAppNeedntHaveAMagicDirectory = testBasic
+
     def testNonWebsiteRootApp(self):
         root = self.siteroot
-        apps = ['/app1']
+        apps = ('/app1','/')
         path = '/app1'
 
-        expected = (os.path.join(self.siteroot, 'app1'), None)
+        expected = self.SUCCESS
         actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
     def testOtherAppsAvailableButNotMatchedReturnsRoot(self):
         root = self.siteroot
-        apps = ['/app1']
+        apps = ('/app1','/')
         path = '/not-there'
 
-        expected = (self.siteroot, None)
+        expected = ('/', self.siteroot, None)
         actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
-    def testEtcPasswdRaises400(self):
+    def testEtcPasswdRaises403(self):
         root = self.siteroot
-        apps = []
+        apps = ('/',)
         path = '/../../../../../../../../../../etc/master.passwd'
 
         try:
@@ -86,28 +102,26 @@ class TestTranslate(httpyTestCase):
 
     def testSubdirStillMatches(self):
         root = self.siteroot
-        apps = ['/app1']
-        path = '/app1/index.html'
+        apps = ('/app1', '/')
+        path = '/app1/foo/bar.html'
 
-        expected = (os.path.join(self.siteroot, 'app1'), None)
+        expected = self.SUCCESS
         actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
     def testAppHasMagicDirectory(self):
         root = self.siteroot
-        apps = ['/app2']
-        path = '/app2'
+        apps = ('/app1', '/')
+        path = '/app1'
 
-        expected = ( os.path.join(self.siteroot, 'app2')
-                   , os.path.join(self.siteroot, 'app2', '__')
-                    )
+        expected = self.SUCCESS
         actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
     def testButDirectlyAccessingItRaises404(self):
         root = self.siteroot
-        apps = ['/app2']
-        path = '/app2/__'
+        apps = ('/app1', '/')
+        path = '/app1/__'
 
         try:
             self.task.map_path(root, apps, path)
@@ -116,8 +130,8 @@ class TestTranslate(httpyTestCase):
 
     def testSubdirsToo(self):
         root = self.siteroot
-        apps = ['/app2']
-        path = '/app2/__/app.py' # Doesn't actually exist, proving we are
+        apps = ('/app1', '/')
+        path = '/app1/__/app.py' # Doesn't actually exist, proving we are
                                  # catching it here.
         try:
             self.task.map_path(root, apps, path)
@@ -128,7 +142,7 @@ class TestTranslate(httpyTestCase):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestTranslate))
+    suite.addTest(makeSuite(TestMapPath))
     return suite
 
 if __name__ == '__main__':

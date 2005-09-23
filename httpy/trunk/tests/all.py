@@ -9,6 +9,8 @@ suite = unittest.TestSuite()
 tests = os.listdir(os.curdir)
 tests = [n[:-3] for n in tests if n.startswith('test') and n.endswith('.py')]
 
+os.environ['HTTPY_VERBOSITY'] = '0'
+
 def cleanup():
     pycs = os.listdir(os.curdir)
     pycs = [n for n in pycs if n.endswith('.pyc')]
