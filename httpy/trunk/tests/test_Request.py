@@ -51,7 +51,6 @@ REQUEST_API = [ '__doc__'
                ]
 
 
-
 class TestRequest(unittest.TestCase):
 
     def setUp(self):
