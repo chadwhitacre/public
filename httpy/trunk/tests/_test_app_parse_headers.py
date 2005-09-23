@@ -5,7 +5,7 @@ import unittest
 
 from httpy.Request import Request
 from zope.server.adjustments import default_adj
-from RequestTestCase import PARTS
+from TestCaseRequest import PARTS
 from email.Message import Message
 
 class RequestParseHeadersTests:
