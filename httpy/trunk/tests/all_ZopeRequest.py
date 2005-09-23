@@ -7,7 +7,7 @@ TestRunner = unittest.TextTestRunner
 suite = unittest.TestSuite()
 
 tests = os.listdir(os.curdir)
-tests = [n[:-3] for n in tests if n.startswith('test_Request') and n.endswith('.py')]
+tests = [n[:-3] for n in tests if n.startswith('test_ZopeRequest') and n.endswith('.py')]
 
 def cleanup():
     pycs = os.listdir(os.curdir)
