@@ -5,7 +5,7 @@ import unittest
 
 from zope.server.adjustments import default_adj
 
-from httpy.Request import Request
+from httpy.Request import ZopeRequest
 
 from TestCaseRequest import PARTS
 
@@ -31,7 +31,7 @@ from zope.server.http.chunking import ChunkedReceiver
 from zope.server.buffers import OverflowableBuffer
 
 class RequestSetReceiversTests:
-    
+
     def testNoLengthNoEncoding(self):
         length=0
         encoding=''
@@ -39,43 +39,43 @@ class RequestSetReceiversTests:
         self.assertEqual(self.request._receiver,None)
         self.assert_(self.request.completed)
         self.assertEqual(self.request.raw_body,'')
-        
+
     def testNoLengthEncoding(self):
         length=0
         encoding='chunked'
         self.request.received(self.LINE+self.TE_HEADERS%(length,encoding)+' ')
         self.assert_(isinstance(self.request._receiver,ChunkedReceiver))
-        
+
     def testLengthNoEncoding(self):
         length=8
         encoding=''
         self.request.received(self.LINE+self.TE_HEADERS%(length,encoding)+' ')
         self.assert_(isinstance(self.request._receiver,FixedStreamReceiver))
-        
+
     def testLengthEncoding(self):
         length=8
         encoding='chunked'
         self.request.received(self.LINE+self.TE_HEADERS%(length,encoding)+' ')
         self.assert_(isinstance(self.request._receiver,ChunkedReceiver))
-        
-    
+
+
 class TestRequestSetReceiversCRLF(RequestSetReceiversTests,unittest.TestCase):
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
         self.newline='\r\n'
         (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(self.newline)
         self.TE_HEADERS = TE_HEADERS(self.newline)
 
 class TestRequestGetsHeadersCR(RequestSetReceiversTests,unittest.TestCase):
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
         self.newline='\r'
         (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(self.newline)
         self.TE_HEADERS = TE_HEADERS(self.newline)
 
 class TestRequestGetsHeadersLF(RequestSetReceiversTests,unittest.TestCase):
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
         self.newline='\n'
         (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(self.newline)
         self.TE_HEADERS = TE_HEADERS(self.newline)

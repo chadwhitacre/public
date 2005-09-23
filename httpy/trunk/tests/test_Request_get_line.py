@@ -5,7 +5,7 @@ import unittest
 
 from zope.server.adjustments import default_adj
 
-from httpy.Request import Request
+from httpy.Request import ZopeRequest
 
 from TestCaseRequest import PARTS
 
@@ -49,19 +49,19 @@ class RequestGetsLineTests:
 
 class TestRequestGetsLineCRLF(RequestGetsLineTests,unittest.TestCase):
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
         newline='\r\n'
         (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(newline)
 
 class TestRequestGetsLineCR(RequestGetsLineTests,unittest.TestCase):
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
         newline='\r'
         (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(newline)
 
 class TestRequestGetsLineLF(RequestGetsLineTests,unittest.TestCase):
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
         newline='\n'
         (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(newline)
 

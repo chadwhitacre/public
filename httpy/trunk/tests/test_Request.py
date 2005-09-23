@@ -5,7 +5,7 @@ import unittest
 
 from zope.server.adjustments import default_adj
 
-from httpy.Request import Request
+from httpy.Request import ZopeRequest
 
 
 class TestRequest(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestRequest(unittest.TestCase):
     """
 
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
 
 
     def testPostWithBody(self):

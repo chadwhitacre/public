@@ -4,7 +4,7 @@ import unittest
 from httpy import app
 from httpy.Config import ConfigError
 from httpy.Config import Config
-from httpy.Request import Request
+from httpy.Request import ZopeRequest
 
 class HandlerTestCase(unittest.TestCase):
 
