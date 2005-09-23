@@ -4,31 +4,51 @@ import imp
 import os
 import unittest
 
+from zope.interface.exceptions import BrokenImplementation
+from zope.interface.exceptions import BrokenMethodImplementation
+
 from httpy.AppCache import AppCache
 from httpy.NicolasLehuen import Entry
 from httpy import DefaultApp
 
 
 APP_BASE = """\
-from httpy.Response import Response
-
 class Transaction:
-
     def __init__(self, config):
         pass
-
     def process(self, request):
-        response = Response(200)
-        response.headers['Content-Type'] = 'text/plain'
-        response.body = "Greetings, program!"
-        raise response
-
+        raise "heck"
 """
 
 APP0 = APP_BASE + "appnum = 0"
 APP1 = APP_BASE + "appnum = 1"
 APP2 = APP_BASE + "appnum = 2"
 
+
+APP_NO__INIT__ = """\
+class Transaction:
+    def process(self, request):
+        raise "heck"
+"""
+APP_NO_PROCESS = """\
+class Transaction:
+    def __init__(self, config):
+        pass
+"""
+APP_BAD__INIT__ = """\
+class Transaction:
+    def __init__(self):
+        pass
+    def process(self, request):
+        raise "heck"
+"""
+APP_BAD_PROCESS = """\
+class Transaction:
+    def __init__(self, config):
+        pass
+    def process(self):
+        raise "heck"
+"""
 
 class TestAppCache(unittest.TestCase):
 
@@ -126,6 +146,59 @@ class TestAppCache(unittest.TestCase):
         os.remove('root/__/app.pyc')
         actual = self.apps.check('root/__', entry)
         self.assertEqual(expected.appnum, actual.appnum)
+
+
+
+    # build
+    # =====
+    # Since our dummy apps don't explicitly assert that they implement the
+    # required interfaces, this also tests tentative=True.
+
+    def testAppNoInit(self):
+        entry = Entry('root/__')
+        file('root/__/app.py','w').write(APP_NO__INIT__)
+        app = self.apps.get_app('root/__')
+        self.assertRaises( BrokenImplementation
+                         , self.apps.build
+                         , 'root/__'
+                         , app
+                         , entry
+                          )
+
+    def testAppNoProcess(self):
+        entry = Entry('root/__')
+        file('root/__/app.py','w').write(APP_NO_PROCESS)
+        app = self.apps.get_app('root/__')
+        self.assertRaises( BrokenImplementation
+                         , self.apps.build
+                         , 'root/__'
+                         , app
+                         , entry
+                          )
+
+    def testAppBadInit(self):
+        entry = Entry('root/__')
+        file('root/__/app.py','w').write(APP_BAD__INIT__)
+        app = self.apps.get_app('root/__')
+        self.assertRaises( BrokenMethodImplementation
+                         , self.apps.build
+                         , 'root/__'
+                         , app
+                         , entry
+                          )
+
+    def testAppBadProcess(self):
+        entry = Entry('root/__')
+        file('root/__/app.py','w').write(APP_BAD_PROCESS)
+        app = self.apps.get_app('root/__')
+        self.assertRaises( BrokenMethodImplementation
+                         , self.apps.build
+                         , 'root/__'
+                         , app
+                         , entry
+                          )
+
+
 
 
     def tearDown(self):
