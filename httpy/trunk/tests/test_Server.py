@@ -10,11 +10,11 @@ from httpy.Server import Server
 class TestServer(unittest.TestCase):
 
     def setUp(self):
-        config = Config()
+        config = Config(['-p53700']) # start on an unlikely port
         self.server = Server(config)
 
     def testBasic(self):
-        expected = (1, 1)
+        expected = (1, 0)
         actual = self.server.http_version
         self.assertEqual(expected, actual)
 
