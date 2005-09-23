@@ -5,19 +5,23 @@ import unittest
 from StringIO import StringIO
 
 from httpy.Config import Config
+from httpy.Response import Response
+from httpy.Task import Task
+
 from httpyTestCase import httpyTestCase
 
 
 DUMMY_APP = """\
+from httpy.Response import Response
 class Transaction:
     def __init__(self, config):
-        return config
+        pass
     def process(self, request):
-        raise "heck"
+        raise Response(200)
 """
 
 
-from TestCaseTask import DUMMY_TASK
+from TestCaseTask import DUMMY_TASK, StubChannel
 
 
 class TestTask(httpyTestCase):
@@ -27,6 +31,10 @@ class TestTask(httpyTestCase):
         os.mkdir('root')
 
         os.environ['HTTPY_VERBOSITY'] = '0'
+
+
+    # configure
+    # =========
 
     def testConfigure(self):
         config = Config(['-v22','-mdeployment','-rroot'])
@@ -39,6 +47,10 @@ class TestTask(httpyTestCase):
         expected['__'] = None
         actual = self.task.configure(config)
         self.assertEqual(expected, actual)
+
+
+    # fail
+    # ====
 
     def testFailInDevMode(self):
         self.task.dev_mode = True
@@ -83,9 +95,32 @@ class TestTask(httpyTestCase):
         self.assertEqual(expected, actual)
 
 
+    # process
+    # =======
+
+    def testProcessAtLeastOnceForCryingOutLoud(self):
+        expected = 403 # we don't have a site set up
+        try:
+            self.task.process()
+        except Response, response:
+            actual = response.code
+        self.assertEqual(expected, actual)
+
+    def testProcessMore(self)
+        os.mkdir('root/__')
+        file('root/__/app.py','w').write(DUMMY_APP)
+        expected = 200
+        try:
+            import pdb; pdb.set_trace()
+            self.task.process()
+        except Response, response:
+            actual = response.code
+        self.assertEqual(expected, actual)
+
+
 
     def tearDown(self):
-        os.rmdir('root')
+        os.system('rm -rf root')
 
 
 def test_suite():
