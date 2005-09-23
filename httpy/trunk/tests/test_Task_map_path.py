@@ -3,7 +3,6 @@
 import os
 import unittest
 
-from httpy.Task import Task
 from httpy.Response import Response
 from httpyTestCase import httpyTestCase
 
@@ -17,13 +16,7 @@ class Transaction:
         raise "heck" """
 #file('root/app1/app.py', 'w').write(DUMMY_APP)
 
-DUMMY_TASK = Task
-def __stub__(self, channel, request):
-    self.server = channel.server
-    self.config = self.server.config
-    self.channel = channel
-    self.request = request
-DUMMY_TASK.__init__ = __stub__
+from TestCaseTask import DUMMY_TASK
 
 
 class TestTranslate(httpyTestCase):
@@ -34,7 +27,7 @@ class TestTranslate(httpyTestCase):
 
     def setUp(self):
         httpyTestCase.setUp(self)
-        self.task = DUMMY_TASK()
+        self.task = DUMMY_TASK
 
     def buildTestSite(self):
         os.mkdir('root')
@@ -50,7 +43,7 @@ class TestTranslate(httpyTestCase):
         path = '/'
 
         expected = (self.siteroot, None)
-        actual = self.task.translate(root, apps, path)
+        actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
     def testAppNotThereRaises404(self):
@@ -59,7 +52,7 @@ class TestTranslate(httpyTestCase):
         path = '/not-there'
 
         try:
-            self.task.translate(root, apps, path)
+            self.task.map_path(root, apps, path)
         except Response, response:
             self.assertEqual(response.code, 404)
 
@@ -69,7 +62,7 @@ class TestTranslate(httpyTestCase):
         path = '/app1'
 
         expected = (os.path.join(self.siteroot, 'app1'), None)
-        actual = self.task.translate(root, apps, path)
+        actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
     def testOtherAppsAvailableButNotMatchedReturnsRoot(self):
@@ -78,7 +71,7 @@ class TestTranslate(httpyTestCase):
         path = '/not-there'
 
         expected = (self.siteroot, None)
-        actual = self.task.translate(root, apps, path)
+        actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
     def testEtcPasswdRaises400(self):
@@ -87,7 +80,7 @@ class TestTranslate(httpyTestCase):
         path = '/../../../../../../../../../../etc/master.passwd'
 
         try:
-            self.task.translate(root, apps, path)
+            self.task.map_path(root, apps, path)
         except Response, response:
             self.assertEqual(response.code, 403)
 
@@ -97,7 +90,7 @@ class TestTranslate(httpyTestCase):
         path = '/app1/index.html'
 
         expected = (os.path.join(self.siteroot, 'app1'), None)
-        actual = self.task.translate(root, apps, path)
+        actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
     def testAppHasMagicDirectory(self):
@@ -108,7 +101,7 @@ class TestTranslate(httpyTestCase):
         expected = ( os.path.join(self.siteroot, 'app2')
                    , os.path.join(self.siteroot, 'app2', '__')
                     )
-        actual = self.task.translate(root, apps, path)
+        actual = self.task.map_path(root, apps, path)
         self.assertEqual(expected, actual)
 
     def testButDirectlyAccessingItRaises404(self):
@@ -117,7 +110,7 @@ class TestTranslate(httpyTestCase):
         path = '/app2/__'
 
         try:
-            self.task.translate(root, apps, path)
+            self.task.map_path(root, apps, path)
         except Response, response:
             self.assertEqual(response.code, 404)
 
@@ -127,7 +120,7 @@ class TestTranslate(httpyTestCase):
         path = '/app2/__/app.py' # Doesn't actually exist, proving we are
                                  # catching it here.
         try:
-            self.task.translate(root, apps, path)
+            self.task.map_path(root, apps, path)
         except Response, response:
             self.assertEqual(response.code, 404)
 
