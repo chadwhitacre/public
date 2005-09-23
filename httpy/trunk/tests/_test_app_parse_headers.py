@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from httpy.Request import Request
+from httpy.Request import ZopeRequest
 from zope.server.adjustments import default_adj
 from TestCaseRequest import PARTS
 from email.Message import Message

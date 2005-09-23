@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from httpy.Request import Request
+from httpy.Request import ZopeRequest
 from httpy.Task import Task
 
 

@@ -4,7 +4,7 @@ import os
 import unittest
 
 from zope.server.adjustments import default_adj
-from httpy.Request import Request, Response
+from httpy.Request import ZopeRequest, Response
 
 from TestCaseRequest import PARTS
 
@@ -27,7 +27,7 @@ class RequestParsesLineTests:
             expected = value
             actual = getattr(self.request,key)
             self.assertEqual(expected, actual)
-            
+
     def testThinLine(self):
         line = "GET / HTTP/1.1"
         self.request.received(line+self.newline)
@@ -44,7 +44,7 @@ class RequestParsesLineTests:
             expected = value
             actual = getattr(self.request,key)
             self.assertEqual(expected, actual)
-            
+
     def testShortLine(self):
         line = "GET /"
         self.request.received(line+self.newline)
@@ -61,7 +61,7 @@ class RequestParsesLineTests:
             expected = value
             actual = getattr(self.request,key)
             self.assertEqual(expected, actual)
-            
+
     def testPOST(self):
         line = "POST / HTTP/1.1"
         self.request.received(line+self.newline)
@@ -78,7 +78,7 @@ class RequestParsesLineTests:
             expected = value
             actual = getattr(self.request,key)
             self.assertEqual(expected, actual)
-            
+
     def testHEAD(self):
         line = "HEAD / HTTP/1.1"
         self.request.received(line+self.newline)
@@ -95,7 +95,7 @@ class RequestParsesLineTests:
             expected = value
             actual = getattr(self.request,key)
             self.assertEqual(expected, actual)
-            
+
     def testBadShortLine(self):
         line = "GET"
         try:
@@ -107,7 +107,7 @@ class RequestParsesLineTests:
                             "The Request-Line `%s' appears to be " % line +
                             "malformed because it has neither two nor " +
                             "three tokens.")
-        
+
     def testBadLongLine(self):
         line = "GET / HTTP/1.1 WTF!?"
         try:
@@ -118,8 +118,8 @@ class RequestParsesLineTests:
             self.assertEqual(err.body,\
                             "The Request-Line `%s' appears to be " % line +
                             "malformed because it has neither two nor " +
-                            "three tokens.")  
-        
+                            "three tokens.")
+
     def testBadMethod(self):
         line = "BAD / HTTP/1.1"
         try:
@@ -129,7 +129,7 @@ class RequestParsesLineTests:
             self.assertEqual(err.headers,{})
             self.assertEqual(err.body,\
                 "This server does not implement the 'BAD' method.")
-            
+
     def testBadUri(self):
         line = "GET //foo HTTP/1.1"
         try:
@@ -138,7 +138,7 @@ class RequestParsesLineTests:
             self.assertEqual(err.code,400)
             self.assertEqual(err.headers,{})
             self.assertEqual(err.body,'')
-    
+
     def testBadVersion(self):
         line = "GET /foo WTF/1.1"
         try:
@@ -150,23 +150,23 @@ class RequestParsesLineTests:
                              "The HTTP-Version `WTF/1.1' appears to " +
                              "be malformed because it does not match the " +
                              "pattern `^HTTP/\d+\.\d+$'.")
-   
+
 
 class TestRequestParsesLineCRLF(RequestParsesLineTests,unittest.TestCase):
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
         self.newline='\r\n'
         (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(self.newline)
 
 class TestRequestParsesLineCR(RequestParsesLineTests,unittest.TestCase):
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
         self.newline='\r'
         (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(self.newline)
 
 class TestRequestParsesLineLF(RequestParsesLineTests,unittest.TestCase):
     def setUp(self):
-        self.request = Request(default_adj)
+        self.request = ZopeRequest(default_adj)
         self.newline='\n'
         (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(self.newline)
 
