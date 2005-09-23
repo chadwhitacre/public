@@ -27,7 +27,7 @@ class RequestGetHeadersTests:
         self.request.received(self.LINE+self.HEADERS[:30])
         self.assertEqual(self.request.raw_line, self.LINE.strip())
         self.assertEqual(self.request._tmp, self.HEADERS[:30])
-        self.assertEqual(self.request.raw_headers, None)
+        self.assertEqual(self.request.raw_headers, '')
 
     def testDividedHeaders(self):
         self.request.received(self.LINE+self.HEADERS[:30])

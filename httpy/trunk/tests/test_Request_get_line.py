@@ -19,7 +19,7 @@ class RequestGetsLineTests:
     def testShortLine(self):
         short = self.LINE[:4]
         self.request.received(short)
-        self.assertEqual(self.request.raw_line, None)
+        self.assertEqual(self.request.raw_line, '')
         self.assertEqual(self.request._tmp, short)
 
     def testDividedLine(self):

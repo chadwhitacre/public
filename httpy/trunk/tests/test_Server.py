@@ -18,7 +18,7 @@ class TestServer(unittest.TestCase):
         actual = self.server.http_version
         self.assertEqual(expected, actual)
 
-        expected = "HTTP/1.1"
+        expected = "HTTP/1.0"
         actual = self.server.http_version_string
         self.assertEqual(expected, actual)
 
