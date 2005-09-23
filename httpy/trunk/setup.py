@@ -4,7 +4,6 @@ setup( name='httpy'
      , version=(0, 3)
      , package_dir={'':'site-packages'}
      , packages=[ 'httpy'
-                , 'httpy.interfaces'
                 , 'zope'
                 , 'zope.interface'
                 , 'zope.interface.common'
