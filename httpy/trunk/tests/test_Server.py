@@ -10,21 +10,26 @@ from TestCaseHttpy import TestCaseHttpy
 
 class TestServer(TestCaseHttpy):
 
+    server = True
+
     def testBasic(self):
         config = Config(['-p53700']) # start on an unlikely port
-        self.server = Server(config)
+        server = Server(config)
 
         expected = (1, 0)
-        actual = self.server.http_version
+        actual = server.http_version
         self.assertEqual(expected, actual)
 
         expected = "HTTP/1.0"
-        actual = self.server.http_version_string
+        actual = server.http_version_string
         self.assertEqual(expected, actual)
 
         expected = "httpy/0.5"
-        actual = self.server.response_header
+        actual = server.response_header
         self.assertEqual(expected, actual)
+
+    def testRoundTrip(self):
+        pass
 
 
 
