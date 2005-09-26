@@ -30,11 +30,8 @@ from utils import DUMMY_TASK, StubChannel
 class TestTask(TestCaseHttpy):
 
     def setUp(self):
-        TestCaseHttpy.setUp(self)
         self.task = DUMMY_TASK()
-
-        # need this one here to suppress output
-        os.environ['HTTPY_VERBOSITY'] = '0'
+        TestCaseHttpy.setUp(self)
 
     def buildTestSite(self):
         os.mkdir('root')
@@ -61,7 +58,7 @@ class TestTask(TestCaseHttpy):
 
     def testFailInDevMode(self):
         self.task.dev_mode = True
-        self.task.out = StringIO()
+        self.task.channel = StubChannel()
         try:
             linenum = 48
             raise Exception("Yarrr!")
@@ -79,13 +76,13 @@ class TestTask(TestCaseHttpy):
                    # ...
                    , 'Exception: Yarrr!'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         actual = actual[:1] + actual[2:7] + actual[-1:]
         self.assertEqual(expected, actual)
 
     def testFailInDepMode(self):
         self.task.dev_mode = False
-        self.task.out = StringIO()
+        self.task.channel = StubChannel()
         try:
             raise Exception("Yarrr!")
         except:
@@ -98,7 +95,7 @@ class TestTask(TestCaseHttpy):
                    , "Internal Server Error"
                    , ""
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
 

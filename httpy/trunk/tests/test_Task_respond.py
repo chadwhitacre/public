@@ -28,7 +28,6 @@ class TestTaskRespond(TestCaseHttpy):
     def setUp(self):
         TestCaseHttpy.setUp(self)
         self.task = DUMMY_TASK()
-        self.task.out = StringIO()
         self.task.dev_mode = True
 
     def buildTestSite(self):
@@ -51,7 +50,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Greetings, program!'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
 
@@ -73,7 +72,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Cannot fulfill request.'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
     def testButReasonMessageCanBeOverriden(self):
@@ -88,7 +87,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Just leave me alone, ok!'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
 
@@ -107,7 +106,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Request fulfilled, document follows'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
     def testYouCanAddArbitraryHeaders_TheyWillBeLowerCasedButWillMakeIt(self):
@@ -126,7 +125,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Greetings, program!'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
     def testYouCanOverrideServerAndContentType(self):
@@ -143,7 +142,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Greetings, program!'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
     def testButYouCantOverrideContentLength(self):
@@ -159,7 +158,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Greetings, program!'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
     def testContentTypeDefaultsToApplicationOctetStream(self):
@@ -174,7 +173,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Greetings, program!'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
     def testExceptForNonSuccessfulRequests_InWhichCaseItIsTextPlain(self):
@@ -191,7 +190,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Greetings, program!'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
 
@@ -211,7 +210,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , 'server: stub server'
                    , ''
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
     def testBodyNotWrittenForHEADRequest(self):
@@ -228,7 +227,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , 'server: stub server'
                    , ''
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
     def testOtherwiseBodyIsWritten(self):
@@ -243,7 +242,7 @@ class TestTaskRespond(TestCaseHttpy):
                    , ''
                    , 'Greetings, program!'
                     ]
-        actual = self.task.out.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
 

@@ -19,6 +19,7 @@ class StubServer:
 class StubChannel(StringIO):
     def __init__(self):
         self.server = StubServer()
+        StringIO.__init__(self)
     def close_when_done(self):
         pass
 
