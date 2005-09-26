@@ -78,7 +78,7 @@ class TestServer(TestCaseHttpy):
     verbosity = 0
 
     def buildTestSite(self):
-        
+        os.mkdir('root')
         file('root/index.html', 'w').write("Greetings, program!")
         os.mkdir('root/foo')
         file('root/foo/index.html', 'w').write("Greetings, foo!")

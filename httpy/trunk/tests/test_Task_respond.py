@@ -30,9 +30,6 @@ class TestTaskRespond(TestCaseHttpy):
         self.task = DUMMY_TASK()
         self.task.dev_mode = True
 
-    def buildTestSite(self):
-        os.mkdir('root')
-
 
     # Demonstration
     # =============
