@@ -6,10 +6,10 @@ import unittest
 from httpy.Config import Config
 from httpy.Config import ConfigError
 
-from TestCaseConfig import TestCaseConfig
+from TestCaseHttpy import TestCaseHttpy
 
 
-class TestConfigValidate(TestCaseConfig):
+class TestConfigValidate(TestCaseHttpy):
 
     # Basic functions
     # ===============
