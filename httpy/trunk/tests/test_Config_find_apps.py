@@ -5,10 +5,10 @@ import unittest
 
 from httpy.Config import Config
 
-from ConfigTestCase import ConfigTestCase
+from TestCaseConfig import TestCaseConfig
 
 
-class TestSetApps(ConfigTestCase):
+class TestSetApps(TestCaseConfig):
 
     def testSiteHasAppsAndTheyAreFoundAutomatically(self):
         self.config = Config()

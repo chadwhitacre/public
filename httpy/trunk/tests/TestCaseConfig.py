@@ -5,7 +5,7 @@ from httpy.Config import ConfigError
 from httpy.Config import Config
 
 
-class ConfigTestCase(unittest.TestCase):
+class TestCaseConfig(unittest.TestCase):
 
     def setUp(self):
         self.scrubenv()

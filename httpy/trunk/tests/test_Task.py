@@ -23,7 +23,7 @@ class Transaction:
 """
 
 
-from TestCaseTask import DUMMY_TASK, StubChannel
+from utils import DUMMY_TASK, StubChannel
 
 
 class TestTask(unittest.TestCase):

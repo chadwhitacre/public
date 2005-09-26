@@ -18,7 +18,7 @@ class Transaction:
         raise "heck"
 """
 
-from TestCaseTask import DUMMY_TASK
+from utils import DUMMY_TASK
 
 
 class TestTaskRespond(unittest.TestCase):
