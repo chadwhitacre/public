@@ -59,7 +59,6 @@ class TestAppCache(TestCaseHttpy):
         self.apps = AppCache('development')
 
     def buildTestSite(self):
-        os.system('rm -rf root')
         os.mkdir('root')
         os.mkdir('root/__')
         file('root/__/app.py','w').write(APP0)
