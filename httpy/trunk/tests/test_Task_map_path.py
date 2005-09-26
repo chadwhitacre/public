@@ -4,8 +4,8 @@ import os
 import unittest
 
 from httpy.Response import Response
-from httpyTestCase import httpyTestCase
 
+from TestCaseHttpy import TestCaseHttpy
 
 DUMMY_APP = """\
 class Transaction:
@@ -18,14 +18,14 @@ class Transaction:
 from TestCaseTask import DUMMY_TASK
 
 
-class TestMapPath(httpyTestCase):
+class TestMapPath(TestCaseHttpy):
 
     server = False
     siteroot = os.path.join(os.path.realpath('.'),'root')
 
 
     def setUp(self):
-        httpyTestCase.setUp(self)
+        TestCaseHttpy.setUp(self)
         self.task = DUMMY_TASK()
         self.SUCCESS = ( '/app1'
                        , os.path.join(self.siteroot, 'app1')

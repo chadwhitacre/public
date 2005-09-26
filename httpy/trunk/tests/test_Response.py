@@ -2,35 +2,9 @@
 
 import os
 import unittest
-from StringIO import StringIO
-
-from httpy.Config import Config
-from httpy.Response import Response
-
-from httpyTestCase import httpyTestCase
 
 
-DUMMY_APP = """\
-class Transaction:
-   def __init__(self, config):
-        return config
-    def process(self, request):
-        raise "heck"
-"""
-
-
-from TestCaseTask import DUMMY_TASK
-
-
-class TestTaskRespond(httpyTestCase):
-
-    def setUp(self):
-        self.task = DUMMY_TASK
-        self.task.out = StringIO()
-        os.mkdir('root')
-
-        os.environ['HTTPY_VERBOSITY'] = '0'
-
+class TestResponse(unittest.TestCase):
 
     def testDontUseMutableObjectsAsDefaults(self):
         """Demonstraion of a gotcha.
@@ -83,15 +57,10 @@ class TestTaskRespond(httpyTestCase):
         self.assertEqual(foo1.bloo, foo3.bloo)      # mutable, not overriden
 
 
-
-    def tearDown(self):
-        os.rmdir('root')
-
-
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestTaskRespond))
+    suite.addTest(makeSuite(TestResponse))
     return suite
 
 if __name__ == '__main__':

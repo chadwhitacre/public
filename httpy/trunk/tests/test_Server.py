@@ -6,8 +6,9 @@ import unittest
 from httpy.Config import Config
 from httpy.Server import Server
 
+from TestCaseHttpy import TestCaseHttpy
 
-class TestServer(unittest.TestCase):
+class TestServer(TestCaseHttpy):
 
     def setUp(self):
         config = Config(['-p53700']) # start on an unlikely port
@@ -27,7 +28,6 @@ class TestServer(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
-    # not too much to test here, pretty thin wrapper around SocketServer
 
 
 

@@ -52,9 +52,9 @@ def receive(sock, n, timeout=20):
         raise RuntimeError, "timed out on %r" % (sock,)
 
 
-class httpyTestCase(unittest.TestCase):
+class TestCaseHttpy(unittest.TestCase):
 
-    server = True
+    server = True # flag determining whether or not to start a server
 
     def setUp(self):
 
@@ -67,7 +67,7 @@ class httpyTestCase(unittest.TestCase):
             self.t.start()
 
     def send(self, request):
-        """This is how we send requests to our TestServer over in its thread.
+        """Given a raw HTTP request, send it to our server over in its thread.
         """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(('localhost', 65370))

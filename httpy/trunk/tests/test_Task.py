@@ -4,11 +4,13 @@ import os
 import unittest
 from StringIO import StringIO
 
+from zope.server.adjustments import default_adj
+
 from httpy.Config import Config
+from httpy.Request import ZopeRequest
 from httpy.Response import Response
 from httpy.Task import Task
 
-from httpyTestCase import httpyTestCase
 
 
 DUMMY_APP = """\
@@ -24,7 +26,7 @@ class Transaction:
 from TestCaseTask import DUMMY_TASK, StubChannel
 
 
-class TestTask(httpyTestCase):
+class TestTask(unittest.TestCase):
 
     def setUp(self):
         self.task = DUMMY_TASK()
@@ -106,13 +108,21 @@ class TestTask(httpyTestCase):
             actual = response.code
         self.assertEqual(expected, actual)
 
-    def testProcessMore(self)
-        os.mkdir('root/__')
-        file('root/__/app.py','w').write(DUMMY_APP)
+    def testProcessMore(self):
+        os.mkdir('root/fooapp')
+        os.mkdir('root/fooapp/__')
+        file('root/fooapp/__/app.py','w').write(DUMMY_APP)
+
+        request = ZopeRequest(default_adj)
+        request.received("GET /fooapp/ HTTP/1.1\r\n\r\n")
+        task = Task(StubChannel(), request)
+
+        config = Config(['--root','root','-mdevelopment'])
+        task.config = task.configure(config)
+
         expected = 200
         try:
-            import pdb; pdb.set_trace()
-            self.task.process()
+            task.process()
         except Response, response:
             actual = response.code
         self.assertEqual(expected, actual)

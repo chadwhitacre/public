@@ -8,7 +8,6 @@ from httpy.Config import Config
 from httpy.Request import ZopeRequest
 from httpy.Response import Response
 
-from httpyTestCase import httpyTestCase
 
 
 DUMMY_APP = """\
@@ -22,7 +21,7 @@ class Transaction:
 from TestCaseTask import DUMMY_TASK
 
 
-class TestTaskRespond(httpyTestCase):
+class TestTaskRespond(unittest.TestCase):
 
     def setUp(self):
         self.task = DUMMY_TASK()
