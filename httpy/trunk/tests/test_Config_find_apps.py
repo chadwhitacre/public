@@ -25,7 +25,8 @@ class TestSetApps(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testSiteHasNoAppsAndTheyAreNotFoundAutomatically(self):
-        self.tearDown()
+        self.removeTestSite()
+        os.mkdir('root')
         config = Config()
         expected = ()
         actual = config._find_apps('root')

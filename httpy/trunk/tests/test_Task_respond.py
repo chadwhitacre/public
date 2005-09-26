@@ -8,6 +8,8 @@ from httpy.Config import Config
 from httpy.Request import ZopeRequest
 from httpy.Response import Response
 
+from TestCaseHttpy import TestCaseHttpy
+
 
 
 DUMMY_APP = """\
@@ -21,15 +23,16 @@ class Transaction:
 from utils import DUMMY_TASK
 
 
-class TestTaskRespond(unittest.TestCase):
+class TestTaskRespond(TestCaseHttpy):
 
     def setUp(self):
+        TestCaseHttpy.setUp(self)
         self.task = DUMMY_TASK()
         self.task.out = StringIO()
         self.task.dev_mode = True
-        os.mkdir('root')
 
-        os.environ['HTTPY_VERBOSITY'] = '0'
+    def buildTestSite(self):
+        os.mkdir('root')
 
 
     # Demonstration
@@ -242,10 +245,6 @@ class TestTaskRespond(unittest.TestCase):
                     ]
         actual = self.task.out.getvalue().splitlines()
         self.assertEqual(expected, actual)
-
-
-    def tearDown(self):
-        os.rmdir('root')
 
 
 def test_suite():
