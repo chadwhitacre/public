@@ -7,7 +7,7 @@ from zope.server.adjustments import default_adj
 
 from httpy.Request import ZopeRequest
 
-from TestCaseZopeRequest import PARTS
+from utils import REQUEST_PARTS
 
 def TE_HEADERS(newline):
     return newline.join([
@@ -63,21 +63,21 @@ class TestRequestSetReceiversCRLF(RequestSetReceiversTests,unittest.TestCase):
     def setUp(self):
         self.request = ZopeRequest(default_adj)
         self.newline='\r\n'
-        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(self.newline)
+        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=REQUEST_PARTS(self.newline)
         self.TE_HEADERS = TE_HEADERS(self.newline)
 
 class TestRequestGetsHeadersCR(RequestSetReceiversTests,unittest.TestCase):
     def setUp(self):
         self.request = ZopeRequest(default_adj)
         self.newline='\r'
-        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(self.newline)
+        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=REQUEST_PARTS(self.newline)
         self.TE_HEADERS = TE_HEADERS(self.newline)
 
 class TestRequestGetsHeadersLF(RequestSetReceiversTests,unittest.TestCase):
     def setUp(self):
         self.request = ZopeRequest(default_adj)
         self.newline='\n'
-        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(self.newline)
+        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=REQUEST_PARTS(self.newline)
         self.TE_HEADERS = TE_HEADERS(self.newline)
 
 def test_suite():

@@ -7,7 +7,7 @@ from zope.server.adjustments import default_adj
 
 from httpy.Request import ZopeRequest
 
-from TestCaseZopeRequest import PARTS
+from utils import REQUEST_PARTS
 
 
 class RequestGetBodyTests:
@@ -50,19 +50,19 @@ class TestRequestGetBodyCRLF(RequestGetBodyTests,unittest.TestCase):
     def setUp(self):
         self.request = ZopeRequest(default_adj)
         newline='\r\n'
-        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(newline)
+        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=REQUEST_PARTS(newline)
 
 class TestRequestGetsBodyCR(RequestGetBodyTests,unittest.TestCase):
     def setUp(self):
         self.request = ZopeRequest(default_adj)
         newline='\r'
-        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(newline)
+        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=REQUEST_PARTS(newline)
 
 class TestRequestGetsBodyLF(RequestGetBodyTests,unittest.TestCase):
     def setUp(self):
         self.request = ZopeRequest(default_adj)
         newline='\n'
-        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=PARTS(newline)
+        (self.IE_CRAP,self.LINE,self.LINE2,self.HEADERS,self.HEADERS2,self.BODY,self.POST,self.GET)=REQUEST_PARTS(newline)
 
 def test_suite():
     from unittest import TestSuite, makeSuite
