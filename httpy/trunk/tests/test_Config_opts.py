@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from ConfigTestCase import ConfigTestCase
+from TestCaseConfig import TestCaseConfig
 
 
 argv_default = [
@@ -50,7 +50,7 @@ argv_extra_options = [
   , '--cheese=yummy'
    ]
 
-class TestConfigOpts(ConfigTestCase):
+class TestConfigOpts(TestCaseConfig):
 
     d = {}
     d['ip'] = ''

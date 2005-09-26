@@ -6,10 +6,10 @@ import unittest
 from httpy.Config import Config
 from httpy.Config import ConfigError
 
-from ConfigTestCase import ConfigTestCase
+from TestCaseConfig import TestCaseConfig
 
 
-class TestSetApps(ConfigTestCase):
+class TestSetApps(TestCaseConfig):
 
     # These test the interaction between _find_apps and _validate_apps.
 

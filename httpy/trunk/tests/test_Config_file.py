@@ -4,7 +4,7 @@ import os
 import unittest
 from ConfigParser import ParsingError
 
-from ConfigTestCase import ConfigTestCase
+from TestCaseConfig import TestCaseConfig
 
 
 default_conf = """\
@@ -67,7 +67,7 @@ apps =
 verbosity = 1
 """
 
-class TestConfigFile(ConfigTestCase):
+class TestConfigFile(TestCaseConfig):
 
     d = {}
     d['ip'] = ''
