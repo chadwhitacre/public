@@ -6,12 +6,12 @@ import unittest
 
 from httpy.utils import Gaoler
 
+from TestCaseHttpy import TestCaseHttpy
 
-class TestAppCache(unittest.TestCase):
 
-    def setUp(self):
-        # [re]build a site in ./root
-        os.system('rm -rf root')
+class TestAppCache(TestCaseHttpy):
+
+    def buildTestSite(self):
         os.mkdir('root')
         os.mkdir('root/0')
         file('root/0/app.py','w').write("num = 0")
@@ -19,8 +19,6 @@ class TestAppCache(unittest.TestCase):
         file('root/1/app.py','w').write("num = 1")
         os.mkdir('root/2')
         file('root/2/app.py','w').write("num = 2")
-
-        os.environ['HTTPY_VERBOSITY'] = '0'
 
 
     def testPathBasic(self):
@@ -154,9 +152,6 @@ class TestAppCache(unittest.TestCase):
         _locals['sys'].path = []
         self.assertEqual(_locals['sys'].path, locals()['sys'].path)
 
-
-    def tearDown(self):
-        os.system('rm -rf root')
 
 
 def test_suite():

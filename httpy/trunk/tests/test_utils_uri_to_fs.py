@@ -8,19 +8,13 @@ from httpy.Config import Config
 from httpy.Response import Response
 from httpy.utils import uri_to_fs
 
+from TestCaseHttpy import TestCaseHttpy
 
-class TestUriToFs(unittest.TestCase):
+
+class TestUriToFs(TestCaseHttpy):
 
     def setUp(self):
-        os.mkdir('root')
-        file('root/index.html', 'w')
-        os.mkdir('root/__')
-        os.mkdir('root/about')
-        os.mkdir('root/My Documents')
-        file('root/My Documents/index.html', 'w')
-        os.mkdir('root/content')
-        file('root/content/index.pt', 'w')
-
+        TestCaseHttpy.setUp(self)
         config = {}
         config['mode'] = 'development'
         config['verbosity'] = 0
@@ -29,6 +23,16 @@ class TestUriToFs(unittest.TestCase):
         config['app_fs_root'] = os.path.realpath('root')
         config['__'] = None
         self.config = config
+
+    def buildTestSite(self):
+        os.mkdir('root')
+        file('root/index.html', 'w')
+        os.mkdir('root/__')
+        os.mkdir('root/about')
+        os.mkdir('root/My Documents')
+        file('root/My Documents/index.html', 'w')
+        os.mkdir('root/content')
+        file('root/content/index.pt', 'w')
 
 
     def testBasic(self):
@@ -85,10 +89,6 @@ class TestUriToFs(unittest.TestCase):
         except Response, response:
             self.assertEqual(response.code, 301)
             self.assertEqual(response.headers['Location'], '/about/')
-
-
-    def tearDown(self):
-        os.system('rm -rf root')
 
 
 def test_suite():

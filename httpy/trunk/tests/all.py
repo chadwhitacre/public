@@ -4,6 +4,8 @@ import os
 import sys
 import unittest
 
+os.environ['HTTPY_VERBOSITY'] = '0'
+
 TestRunner = unittest.TextTestRunner
 suite = unittest.TestSuite()
 
@@ -19,8 +21,6 @@ for test_ in os.listdir(os.curdir):
             print '  ', test_
         tests.append(test_[:-3])
 sys.stdout.flush()
-
-os.environ['HTTPY_VERBOSITY'] = '0'
 
 def cleanup():
     pycs = os.listdir(os.curdir)

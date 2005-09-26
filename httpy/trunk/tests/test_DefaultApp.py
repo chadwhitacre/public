@@ -9,18 +9,13 @@ from httpy.Config import Config
 from httpy.Request import Request, ZopeRequest
 from httpy.Response import Response
 
+from TestCaseHttpy import TestCaseHttpy
 
-class TestDefaultApp(unittest.TestCase):
+
+class TestDefaultApp(TestCaseHttpy):
 
     def setUp(self):
-        # [re]build a site in ./root
-        os.system('rm -rf root')
-        os.mkdir('root')
-        file('root/index.html','w')
-        file('root/foo.bar', 'w')
-        file('root/foo.png', 'w')
-        file('root/foo.html', 'w').write('Greetings, program!')
-
+        TestCaseHttpy.setUp(self)
         config = {}
         config['mode'] = 'development'
         config['verbosity'] = 0
@@ -29,10 +24,15 @@ class TestDefaultApp(unittest.TestCase):
         config['app_fs_root'] = os.path.realpath('root')
         config['__'] = None
         self.config = config
-
         self.txn = DefaultApp.Transaction(config)
 
-        os.environ['HTTPY_VERBOSITY'] = '0'
+    def buildTestSite(self):
+        os.system('rm -rf root')
+        os.mkdir('root')
+        file('root/index.html','w')
+        file('root/foo.bar', 'w')
+        file('root/foo.png', 'w')
+        file('root/foo.html', 'w').write('Greetings, program!')
 
     def make_request(self, uri, headers=None):
         if headers is None:
