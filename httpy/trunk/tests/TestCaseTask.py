@@ -9,14 +9,16 @@ from httpy.AppCache import AppCache
 
 
 class StubServer:
-    http_version_string = "HTTP/1.0"
-    response_header = "stub server"
-    config = Config()
-    apps = AppCache('development')
+    def __init__(self):
+        self.http_version_string = "HTTP/1.0"
+        self.response_header = "stub server"
+        self.config = Config()
+        self.apps = AppCache('development')
 
 
 class StubChannel(StringIO):
-    server = StubServer()
+    def __init__(self):
+        self.server = StubServer()
     def close_when_done(self):
         pass
 

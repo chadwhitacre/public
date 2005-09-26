@@ -1,13 +1,24 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import unittest
 
 TestRunner = unittest.TextTestRunner
 suite = unittest.TestSuite()
 
-tests = os.listdir(os.curdir)
-tests = [n[:-3] for n in tests if n.startswith('test') and n.endswith('.py')]
+arg = sys.argv[1:2]
+prefix = 'test'
+if arg:
+    prefix = '%s_%s' % (prefix, arg[0])
+
+tests = []
+for test_ in os.listdir(os.curdir):
+    if test_.startswith(prefix) and test_.endswith('.py'):
+        if prefix != 'test':
+            print '  ', test_
+        tests.append(test_[:-3])
+sys.stdout.flush()
 
 os.environ['HTTPY_VERBOSITY'] = '0'
 
@@ -26,6 +37,5 @@ try:
     if __name__ == '__main__':
         TestRunner().run(suite)
 
-    cleanup()
 finally:
     cleanup()
