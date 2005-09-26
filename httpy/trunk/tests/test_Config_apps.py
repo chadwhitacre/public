@@ -6,21 +6,29 @@ import unittest
 from httpy.Config import Config
 from httpy.Config import ConfigError
 
-from TestCaseConfig import TestCaseConfig
+from TestCaseHttpy import TestCaseHttpy
 
 
-class TestSetApps(TestCaseConfig):
+class TestSetApps(TestCaseHttpy):
+
+    def buildTestSite(self):
+        os.mkdir('root')
+        os.mkdir('root/app1')
+        os.mkdir('root/app1/__')
+        os.mkdir('root/app2')
+        os.mkdir('root/app2/__')
+
 
     # These test the interaction between _find_apps and _validate_apps.
 
     def testExplicitlySettingAppsOverridesMagic(self):
-        self.config = Config(['-a/app1'])
+        self.config = Config(['-a/app1', '-rroot'])
         expected = ('/app1','/') # Note root is added, however.
         actual = self.config['apps']
         self.assertEqual(expected, actual)
 
     def testRootOnlyAddedIfNotAlreadyThere(self):
-        self.config = Config(['-a/:/app1'])
+        self.config = Config(['-a/:/app1', '-rroot'])
         expected = ('/','/app1')
         actual = self.config['apps']
         self.assertEqual(expected, actual)
@@ -36,7 +44,7 @@ class TestSetApps(TestCaseConfig):
     # These test _validate_apps.
 
     def testValidateGoodAppsReturnsNone(self):
-        self.config = Config(['-a/app1:/app2'])
+        self.config = Config(['-a/app1:/app2', '-rroot'])
         expected = None
         actual = self.config._validate_apps()
         self.assertEqual(expected, actual)
@@ -49,8 +57,8 @@ class TestSetApps(TestCaseConfig):
                           )
 
     def testAppWithoutMagicDirectoryRaisesError(self):
-        os.rmdir(os.path.join('app1', '__'))
-        self.config = Config()
+        os.rmdir('root/app1/__')
+        self.config = Config(['-rroot'])
         self.config['apps'] = ['/app1']
         self.assertRaises( ConfigError
                          , self.config._validate_apps

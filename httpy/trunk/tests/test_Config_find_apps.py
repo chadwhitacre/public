@@ -5,29 +5,37 @@ import unittest
 
 from httpy.Config import Config
 
-from TestCaseConfig import TestCaseConfig
+from TestCaseHttpy import TestCaseHttpy
 
 
-class TestSetApps(TestCaseConfig):
+class TestSetApps(TestCaseHttpy):
+
+    def buildTestSite(self):
+        os.mkdir('root')
+        os.mkdir('root/app1')
+        os.mkdir('root/app1/__')
+        os.mkdir('root/app2')
+        os.mkdir('root/app2/__')
+
 
     def testSiteHasAppsAndTheyAreFoundAutomatically(self):
-        self.config = Config()
+        config = Config()
         expected = ('/app1', '/app2')
-        actual = self.config._find_apps('.')
+        actual = config._find_apps('root')
         self.assertEqual(expected, actual)
 
     def testSiteHasNoAppsAndTheyAreNotFoundAutomatically(self):
         self.tearDown()
-        self.config = Config()
+        config = Config()
         expected = ()
-        actual = self.config._find_apps('.')
+        actual = config._find_apps('root')
         self.assertEqual(expected, actual)
 
     def testWhatYouThoughtWasAnAppWasntCauseThereWasNoMagicDirectory(self):
-        os.rmdir(os.path.join('app1','__'))
-        self.config = Config()
+        os.rmdir('root/app1/__')
+        config = Config()
         expected = ('/app2',)
-        actual = self.config._find_apps('.')
+        actual = config._find_apps('root')
         self.assertEqual(expected, actual)
 
 

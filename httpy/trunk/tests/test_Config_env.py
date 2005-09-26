@@ -3,10 +3,10 @@
 import os
 import unittest
 
-from TestCaseConfig import TestCaseConfig
+from TestCaseHttpy import TestCaseHttpy
 from httpy.Config import Config
 
-class TestConfigEnv(TestCaseConfig):
+class TestConfigEnv(TestCaseHttpy):
 
     def testDefaultsAsEnv(self):
 

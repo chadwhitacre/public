@@ -3,10 +3,10 @@
 import os
 import unittest
 
-from TestCaseConfig import TestCaseConfig
+from TestCaseHttpy import TestCaseHttpy
 
 
-class TestConfigDefaults(TestCaseConfig):
+class TestConfigDefaults(TestCaseHttpy):
     """Put it all together. These test __init__.
     """
 

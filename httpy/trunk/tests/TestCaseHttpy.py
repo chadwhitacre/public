@@ -54,9 +54,13 @@ def receive(sock, n, timeout=20):
 
 class TestCaseHttpy(unittest.TestCase):
 
-    server = True # flag determining whether or not to start a server
+    # unittest.TestCase hooks
+    # =======================
 
     def setUp(self):
+
+        self.scrubenv()
+        self.config = Config()
 
         # [re]build a temporary website tree in ./root
         self.removeTestSite()
@@ -65,6 +69,18 @@ class TestCaseHttpy(unittest.TestCase):
         if self.server:
             self.t = ServerThread()
             self.t.start()
+
+    def tearDown(self):
+        if self.server:
+            self.t.join()
+        self.removeTestSite()
+        self.restoreenv()
+
+
+    # server support
+    # ==============
+
+    server = False # Override to True if you want to start a server
 
     def send(self, request):
         """Given a raw HTTP request, send it to our server over in its thread.
@@ -79,7 +95,36 @@ class TestCaseHttpy(unittest.TestCase):
         s.close()
         return buf
 
+
+    # environment
+    # ===========
+
+    def scrubenv(self):
+        save = {}
+        for opt in Config.options:
+            envvar = 'HTTPY_%s' % opt.upper()
+            if os.environ.has_key(envvar):
+                save[envvar] = os.environ[envvar]
+                del os.environ[envvar]
+        self.env = save
+
+    def restoreenv(self):
+        for k, v in self.env.items():
+            os.environ[k] = v
+        self.env = {}
+
+
+    # test site
+    # =========
+
+    def buildTestSite(self):
+        """Override me! Build it in root and it will be torn down for you.
+        """
+        pass
+
     def removeTestSite(self):
+        if os.path.isfile('httpy.conf'):
+            os.remove('httpy.conf')
         if not os.path.isdir('root'):
             return
         for root, dirs, files in os.walk('root', topdown=False):
@@ -89,7 +134,12 @@ class TestCaseHttpy(unittest.TestCase):
                 os.remove(os.path.join(root, name))
         os.rmdir('root')
 
-    def neuter_traceback(self, tb):
+
+    # utils
+    # =====
+
+    @staticmethod
+    def neuter_traceback(tb):
         """Given a traceback, return just the system-independent lines.
         """
         tb_list = tb.split(os.linesep)
@@ -101,9 +151,6 @@ class TestCaseHttpy(unittest.TestCase):
         neutered.append(tb_list[-1])
         return os.linesep.join(neutered)
 
-    def tearDown(self):
-        if self.server:
-            self.t.join()
-        self.removeTestSite()
-
-
+    @staticmethod
+    def dict2tuple(d):
+        return tuple(sorted(d.iteritems()))
