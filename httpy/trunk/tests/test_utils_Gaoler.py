@@ -148,9 +148,14 @@ class TestUtilsGaoler(TestCaseHttpy):
 
     def testWeCantJustDoThisWithExecSinceDictCopyKeepsMutableValues(self):
         import sys
+        _path = sys.path[:]
+
         _locals = locals().copy()
-        _locals['sys'].path = []
-        self.assertEqual(_locals['sys'].path, locals()['sys'].path)
+        _locals['sys'].path = expected = []
+        actual = locals()['sys'].path
+        self.assertEqual(expected, actual)
+
+        sys.path = _path
 
 
 

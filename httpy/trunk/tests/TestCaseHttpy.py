@@ -5,6 +5,7 @@ TODO: This is out of date now that we are using asyncore (via zope.server).
 
 """
 
+import asyncore
 import os
 import select
 import socket
@@ -15,14 +16,14 @@ from httpy.Config import Config
 from httpy.Server import Server
 
 
-class TestServer(Server):
-    """We want to see errors that are raised.
-    """
-
-    def handle_error(self, request, client_address):
-        self.close_request(request)
-        self.server_close()
-        raise
+#class TestServer(Server):
+#    """We want to see errors that are raised.
+#    """
+#
+#    def handle_error(self, request, client_address):
+#        self.close_request(request)
+#        self.server_close()
+#        raise
 
 class ServerThread(threading.Thread):
     """In order to test the server, we instantiate it in a separate thread.
@@ -39,7 +40,7 @@ class ServerThread(threading.Thread):
         config['apps'] = ''
 
         server = TestServer(config)
-        server.handle_request()
+        asyncore.poll(0.1)
 
 def receive(sock, n, timeout=20):
     """Receive data on our connection with the TestServer.
@@ -70,8 +71,7 @@ class TestCaseHttpy(unittest.TestCase):
         self.buildTestSite()
 
         if self._server:
-            self.t = ServerThread()
-            self.t.start()
+            self.start_server()
 
     def tearDown(self):
         if self._server:
@@ -85,6 +85,9 @@ class TestCaseHttpy(unittest.TestCase):
 
     _server = False # Override to True if you want to start a server
 
+    def start_server(self):
+        pass
+
     def send(self, request):
         """Given a raw HTTP request, send it to our server over in its thread.
         """
@@ -97,6 +100,13 @@ class TestCaseHttpy(unittest.TestCase):
             buf += data
         s.close()
         return buf
+
+    def loop(self):
+        self.thread_started.set()
+        while self.run_loop:
+            self.counter = self.counter + 1
+            #print 'loop', self.counter
+            poll(0.1)
 
 
     # environment

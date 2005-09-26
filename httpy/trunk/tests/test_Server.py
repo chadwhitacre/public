@@ -3,12 +3,14 @@
 import os
 import unittest
 
+from zope.server.tests.asyncerror import AsyncoreErrorHook
+
 from httpy.Config import Config
 from httpy.Server import Server
 
 from TestCaseHttpy import TestCaseHttpy
 
-class TestServer(TestCaseHttpy):
+class TestServer(TestCaseHttpy, AsyncoreErrorHook):
 
     server = True
 
