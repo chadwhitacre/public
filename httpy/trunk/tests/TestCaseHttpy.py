@@ -1,5 +1,8 @@
 """The idea and code for running a test server in another thread are from the
 standard library's test/test_socketserver.py.
+
+TODO: This is out of date now that we are using asyncore (via zope.server).
+
 """
 
 import os
@@ -66,12 +69,12 @@ class TestCaseHttpy(unittest.TestCase):
         self.removeTestSite()
         self.buildTestSite()
 
-        if self.server:
+        if self._server:
             self.t = ServerThread()
             self.t.start()
 
     def tearDown(self):
-        if self.server:
+        if self._server:
             self.t.join()
         self.removeTestSite()
         self.restoreenv()
@@ -80,7 +83,7 @@ class TestCaseHttpy(unittest.TestCase):
     # server support
     # ==============
 
-    server = False # Override to True if you want to start a server
+    _server = False # Override to True if you want to start a server
 
     def send(self, request):
         """Given a raw HTTP request, send it to our server over in its thread.
