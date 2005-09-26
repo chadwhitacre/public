@@ -11,6 +11,7 @@ from httpy.Request import ZopeRequest
 from httpy.Response import Response
 from httpy.Task import Task
 
+from TestCaseHttpy import TestCaseHttpy
 
 
 DUMMY_APP = """\
@@ -26,13 +27,17 @@ class Transaction:
 from utils import DUMMY_TASK, StubChannel
 
 
-class TestTask(unittest.TestCase):
+class TestTask(TestCaseHttpy):
 
     def setUp(self):
+        TestCaseHttpy.setUp(self)
         self.task = DUMMY_TASK()
-        os.mkdir('root')
 
+        # need this one here to suppress output
         os.environ['HTTPY_VERBOSITY'] = '0'
+
+    def buildTestSite(self):
+        os.mkdir('root')
 
 
     # configure

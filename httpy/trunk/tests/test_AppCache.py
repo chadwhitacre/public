@@ -11,6 +11,8 @@ from httpy.AppCache import AppCache
 from httpy.NicolasLehuen import Entry
 from httpy import DefaultApp
 
+from TestCaseHttpy import TestCaseHttpy
+
 
 APP_BASE = """\
 class Transaction:
@@ -50,12 +52,13 @@ class Transaction:
         raise "heck"
 """
 
-class TestAppCache(unittest.TestCase):
+class TestAppCache(TestCaseHttpy):
 
     def setUp(self):
+        TestCaseHttpy.setUp(self)
         self.apps = AppCache('development')
 
-        # [re]build a site in ./root
+    def buildTestSite(self):
         os.system('rm -rf root')
         os.mkdir('root')
         os.mkdir('root/__')
@@ -66,8 +69,6 @@ class TestAppCache(unittest.TestCase):
         os.mkdir('root/app2')
         os.mkdir('root/app2/__')
         file('root/app2/__/app.py','w').write(APP2)
-
-        os.environ['HTTPY_VERBOSITY'] = '0'
 
 
     # demonstration
@@ -197,12 +198,6 @@ class TestAppCache(unittest.TestCase):
                          , app
                          , entry
                           )
-
-
-
-
-    def tearDown(self):
-        os.system('rm -rf root')
 
 
 def test_suite():
