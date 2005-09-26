@@ -133,11 +133,6 @@ class TestTask(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
 
-
-    def tearDown(self):
-        os.system('rm -rf root')
-
-
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()

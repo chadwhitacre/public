@@ -156,10 +156,6 @@ class TestDefaultApp(TestCaseHttpy):
         self.assertEqual(expected.body, actual.body)
 
 
-    def tearDown(self):
-        os.system('rm -rf root')
-
-
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
