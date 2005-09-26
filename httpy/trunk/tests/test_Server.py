@@ -10,11 +10,10 @@ from TestCaseHttpy import TestCaseHttpy
 
 class TestServer(TestCaseHttpy):
 
-    def setUp(self):
+    def testBasic(self):
         config = Config(['-p53700']) # start on an unlikely port
         self.server = Server(config)
 
-    def testBasic(self):
         expected = (1, 0)
         actual = self.server.http_version
         self.assertEqual(expected, actual)

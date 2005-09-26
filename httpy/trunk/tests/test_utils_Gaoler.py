@@ -9,7 +9,7 @@ from httpy.utils import Gaoler
 from TestCaseHttpy import TestCaseHttpy
 
 
-class TestAppCache(TestCaseHttpy):
+class TestUtilsGaoler(TestCaseHttpy):
 
     def buildTestSite(self):
         os.mkdir('root')
@@ -157,7 +157,7 @@ class TestAppCache(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestAppCache))
+    suite.addTest(makeSuite(TestUtilsGaoler))
     return suite
 
 if __name__ == '__main__':
