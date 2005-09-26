@@ -1,7 +1,7 @@
-"""The idea and code for running a test server in another thread are from the
-standard library's test/test_socketserver.py.
+"""The idea and code for running a test._server in another thread are from the
+standard library's test/test_socke._server.py.
 
-TODO: This is out of date now that we are using asyncore (via zope.server).
+TODO: This is out of date now that we are using asyncore (via zope._server).
 
 """
 
@@ -10,56 +10,34 @@ import os
 import select
 import socket
 import threading
+import time
 import unittest
+
+from zope.server.taskthreads import ThreadedTaskDispatcher
+from zope.server.tests.asyncerror import AsyncoreErrorHook
 
 from httpy.Config import Config
 from httpy.Server import Server
 
 
-#class TestServer(Server):
-#    """We want to see errors that are raised.
-#    """
-#
-#    def handle_error(self, request, client_address):
-#        self.close_request(request)
-#        self.server_close()
-#        raise
-
-class ServerThread(threading.Thread):
-    """In order to test the server, we instantiate it in a separate thread.
-    """
-
-    def run(self):
-
-        config = {}
-        config['mode'] = 'development'
-        config['ip'] = ''
-        config['root'] = 'root'
-        config['port'] = 65370
-        config['verbosity'] = 99
-        config['apps'] = ''
-
-        server = TestServer(config)
-        asyncore.poll(0.1)
-
-def receive(sock, n, timeout=20):
-    """Receive data on our connection with the TestServer.
-
-    It appears that this needs to be at module-level.
-
-    """
-
-    r, w, x = select.select([sock], [], [], timeout)
-    if sock in r:
-        return sock.recv(n)
-    else:
-        raise RuntimeError, "timed out on %r" % (sock,)
+td = ThreadedTaskDispatcher()
 
 
-class TestCaseHttpy(unittest.TestCase):
+opts = [ '--mode', 'development'
+       , '--ip', ''
+       , '--root', 'root'
+       , '--port', '65370'
+       , '--verbosity', '99'
+       , '--apps', '/'
+        ]
+
+
+class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
 
     # unittest.TestCase hooks
     # =======================
+
+    verbosity = 0
 
     def setUp(self):
 
@@ -70,12 +48,15 @@ class TestCaseHttpy(unittest.TestCase):
         self.removeTestSite()
         self.buildTestSite()
 
-        if self._server:
-            self.start_server()
+        if self.server:
+            self.startServer()
+
+        os.environ['HTTPY_VERBOSITY'] = str(int(self.verbosity))
+
 
     def tearDown(self):
-        if self._server:
-            self.t.join()
+        if self.server:
+            self.stopServer()
         self.removeTestSite()
         self.restoreenv()
 
@@ -83,30 +64,48 @@ class TestCaseHttpy(unittest.TestCase):
     # server support
     # ==============
 
-    _server = False # Override to True if you want to start a server
+    server = False # Override to True if your subclass needs a server
 
-    def start_server(self):
-        pass
+    def startServer(self):
+        if len(asyncore.socket_map) != 1:
+            # Let sockets die off.
+            # TODO tests should be more careful to clear the socket map.
+            asyncore.poll(0.1)
+        self.orig_map_size = len(asyncore.socket_map)
+        #self.hook_asyncore_error()
+        self._server = Server(Config(opts), threads=4)
+        self._server.accept_connections()
+        self.port = self._server.socket.getsockname()[1]
+        self.run_loop = 1
+        self.counter = 0
+        self.thread_started = threading.Event()
+        self.thread = threading.Thread(target=self.loop)
+        self.thread.setDaemon(True)
+        self.thread.start()
+        self.thread_started.wait(10.0)
+        self.assert_(self.thread_started.isSet())
 
-    def send(self, request):
-        """Given a raw HTTP request, send it to our server over in its thread.
-        """
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('localhost', 65370))
-        s.sendall(request)
-        buf = data = receive(s, 100)
-        while data:
-            data = receive(s, 100)
-            buf += data
-        s.close()
-        return buf
+    def stopServer(self):
+        self.run_loop = 0
+        self.thread.join()
+        td.shutdown()
+        self._server.close()
+        # Make sure all sockets get closed by asyncore normally.
+        timeout = time.time() + 5
+        while 1:
+            if len(asyncore.socket_map) == self.orig_map_size:
+                # Clean!
+                break
+            if time.time() >= timeout:
+                self.fail('Leaked a socket: %s' % `asyncore.socket_map`)
+            asyncore.poll(0.1)
+        #self.unhook_asyncore_error()
 
     def loop(self):
         self.thread_started.set()
         while self.run_loop:
             self.counter = self.counter + 1
-            #print 'loop', self.counter
-            poll(0.1)
+            asyncore.poll(0.1)
 
 
     # environment

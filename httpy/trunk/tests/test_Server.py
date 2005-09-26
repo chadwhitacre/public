@@ -2,39 +2,43 @@
 
 import os
 import unittest
-
-from zope.server.tests.asyncerror import AsyncoreErrorHook
+from httplib import HTTPConnection
+from httplib import HTTPResponse as ClientHTTPResponse
 
 from httpy.Config import Config
 from httpy.Server import Server
 
 from TestCaseHttpy import TestCaseHttpy
 
-class TestServer(TestCaseHttpy, AsyncoreErrorHook):
+
+class TestServer(TestCaseHttpy):
 
     server = True
+    verbosity = 99
+
+    def buildTestSite(self):
+        os.mkdir('root')
+        file('root/index.html', 'w').write("Greetings, program!")
 
     def testBasic(self):
-        config = Config(['-p53700']) # start on an unlikely port
-        server = Server(config)
-
         expected = (1, 0)
-        actual = server.http_version
+        actual = self._server.http_version
         self.assertEqual(expected, actual)
 
         expected = "HTTP/1.0"
-        actual = server.http_version_string
+        actual = self._server.http_version_string
         self.assertEqual(expected, actual)
 
         expected = "httpy/0.5"
-        actual = server.response_header
+        actual = self._server.response_header
         self.assertEqual(expected, actual)
 
     def testRoundTrip(self):
-        pass
-
-
-
+        conn = HTTPConnection('localhost', self.port)
+        conn.request("GET", "/", '', {'Accept':'text/plain'})
+        expected = "Greetings, program!"
+        actual = conn.getresponse().read()
+        self.assertEqual(expected, actual)
 
 
 def test_suite():
