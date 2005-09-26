@@ -33,9 +33,6 @@ class TestTask(TestCaseHttpy):
         self.task = DUMMY_TASK()
         TestCaseHttpy.setUp(self)
 
-    def buildTestSite(self):
-        os.mkdir('root')
-
 
     # configure
     # =========

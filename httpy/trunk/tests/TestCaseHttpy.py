@@ -28,7 +28,7 @@ opts = [ '--mode', 'development'
        , '--root', 'root'
        , '--port', '65370'
        , '--verbosity', '99'
-       , '--apps', '/'
+       #, '--apps', '/' discover automatically
         ]
 
 
@@ -42,16 +42,16 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
     def setUp(self):
 
         self.scrubenv()
-        self.config = Config()
 
         # [re]build a temporary website tree in ./root
         self.removeTestSite()
         self.buildTestSite()
 
+        self.config = Config()
+
         if self.server:
             self.startServer()
 
-        os.environ['HTTPY_VERBOSITY'] = str(int(self.verbosity))
 
 
     def tearDown(self):
@@ -132,7 +132,7 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
     def buildTestSite(self):
         """Override me! Build it in root and it will be torn down for you.
         """
-        pass
+        os.mkdir('root')
 
     def removeTestSite(self):
         if os.path.isfile('httpy.conf'):
