@@ -5,7 +5,7 @@ import os
 import unittest
 
 from httpy import DefaultApp
-from httpy.Config import ServerConfig
+from httpy.Config import TransactionConfig
 from httpy.Request import Request, ZopeRequest
 from httpy.Response import Response
 
@@ -16,7 +16,7 @@ class TestDefaultApp(TestCaseHttpy):
 
     def setUp(self):
         TestCaseHttpy.setUp(self)
-        config = {}
+        config = TransactionConfig()
         config.mode = 'development'
         config.verbosity = 0
         config.site_fs_root = os.path.realpath('root')
