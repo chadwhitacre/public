@@ -13,13 +13,24 @@ class TestServerConfigDefaults(TestCaseHttpy):
     """
 
     def testDefaults(self):
+
+        d = {}
+        d['ip'] = ''
+        d['port'] = 8080
+        d['root'] = os.path.realpath('.')
+        d['mode'] = 'deployment'
+        d['apps'] = [None]
+        d['verbosity'] = 1
+
         config = ServerConfig()
-        self.assertEqual(config.ip, '')
-        self.assertEqual(config.port, 8080)
-        self.assertEqual(config.root, os.path.realpath('.'))
-        self.assertEqual(config.mode, 'deployment')
-        self.assertEqual([a.__ for a in config.apps], [None])
-        self.assertEqual(config.verbosity, 1)
+
+        for k, expected in d.items():
+            if k == 'apps':
+                continue
+            actual = getattr(config, k)
+            self.assertEqual(expected, actual)
+        self.assertEqual([a.__ for a in config.apps], d['apps'])
+
 
 
     def testOverlapProperly(self):
@@ -48,17 +59,17 @@ class TestServerConfigDefaults(TestCaseHttpy):
         d['port'] = 537                         # file
         d['root'] = os.path.realpath('./root')  # opts
         d['mode'] = 'development'               # env
-        d['apps'] = ('/',)                      # default
+        d['apps'] = [None]                      # default
         d['verbosity'] = 99                     # env
 
-
         config = ServerConfig(argv)
+
         for k, expected in d.items():
             if k == 'apps':
                 continue
             actual = getattr(config, k)
             self.assertEqual(expected, actual)
-        self.assertEqual([a.__ for a in config.apps], [None])
+        self.assertEqual([a.__ for a in config.apps], d['apps'])
 
 
 def test_suite():
