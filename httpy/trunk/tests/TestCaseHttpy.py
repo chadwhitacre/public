@@ -1,7 +1,7 @@
 """The idea and code for running a test._server in another thread are from the
 standard library's test/test_socke._server.py.
 
-TODO: This is out of date now that we are using asyncore (via zope._server).
+TODO: This is out of date now that we are using asyncore (via httpy._zope._server).
 
 """
 
@@ -13,8 +13,8 @@ import threading
 import time
 import unittest
 
-from zope.server.taskthreads import ThreadedTaskDispatcher
-from zope.server.tests.asyncerror import AsyncoreErrorHook
+from httpy._zope.server.taskthreads import ThreadedTaskDispatcher
+from httpy._zope.server.tests.asyncerror import AsyncoreErrorHook
 
 from httpy.Config import Config
 from httpy.Server import Server

@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from zope.server.adjustments import default_adj
+from httpy._zope.server.adjustments import default_adj
 
 from httpy.Request import ZopeRequest
 
@@ -26,9 +26,9 @@ def TE_HEADERS(newline):
         , newline
          ])
 
-from zope.server.fixedstreamreceiver import FixedStreamReceiver
-from zope.server.http.chunking import ChunkedReceiver
-from zope.server.buffers import OverflowableBuffer
+from httpy._zope.server.fixedstreamreceiver import FixedStreamReceiver
+from httpy._zope.server.http.chunking import ChunkedReceiver
+from httpy._zope.server.buffers import OverflowableBuffer
 
 class RequestSetReceiversTests:
 

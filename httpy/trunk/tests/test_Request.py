@@ -3,8 +3,8 @@
 import os
 import unittest
 
-from zope.interface.exceptions import DoesNotImplement
-from zope.server.adjustments import default_adj
+from httpy._zope.interface.exceptions import DoesNotImplement
+from httpy._zope.server.adjustments import default_adj
 
 from httpy.Request import Request, ZopeRequest
 
@@ -57,11 +57,11 @@ class TestRequest(unittest.TestCase):
     def setUp(self):
         self.zopereq = ZopeRequest(default_adj)
         self.zopereq.received("GET / HTTP/1.1\n\n")
-        self.request = Request(self.zopereq)
+        self.request = Request(self.httpy._zopereq)
 
     def testZopeRequestAPI(self):
         expected = ZOPEREQ_API
-        actual = dir(self.zopereq)
+        actual = dir(self.httpy._zopereq)
         self.assertEqual(expected, actual)
 
     def testRequestAPI(self):

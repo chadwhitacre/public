@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from zope.server.adjustments import default_adj
+from httpy._zope.server.adjustments import default_adj
 
 from httpy.Request import ZopeRequest
 
