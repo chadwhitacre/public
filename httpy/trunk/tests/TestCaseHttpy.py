@@ -16,7 +16,7 @@ import unittest
 from httpy._zope.server.taskthreads import ThreadedTaskDispatcher
 from httpy._zope.server.tests.asyncerror import AsyncoreErrorHook
 
-from httpy.Config import Config
+from httpy.Config import ServerConfig
 from httpy.Server import Server
 
 
@@ -47,7 +47,7 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
         self.removeTestSite()
         self.buildTestSite()
 
-        self.config = Config()
+        self.config = ServerConfig()
 
         if self.server:
             self.startServer()
@@ -73,7 +73,7 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
             asyncore.poll(0.1)
         self.orig_map_size = len(asyncore.socket_map)
         #self.hook_asyncore_error()
-        config = Config(opts)
+        config = ServerConfig(opts)
         self._server = Server(config, threads=4)
         self._server.accept_connections()
         self.port = self._server.socket.getsockname()[1]
@@ -114,7 +114,7 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
 
     def scrubenv(self):
         save = {}
-        for opt in Config.options:
+        for opt in ServerConfig.options:
             envvar = 'HTTPY_%s' % opt.upper()
             if os.environ.has_key(envvar):
                 save[envvar] = os.environ[envvar]

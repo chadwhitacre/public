@@ -2,7 +2,7 @@
 
 import os
 import unittest
-from ConfigParser import ParsingError
+from ServerConfigParser import ParsingError
 
 from TestCaseHttpy import TestCaseHttpy
 
@@ -67,7 +67,7 @@ apps =
 verbosity = 1
 """
 
-class TestConfigFile(TestCaseHttpy):
+class TestServerConfigFile(TestCaseHttpy):
 
     d = {}
     d['ip'] = ''
@@ -130,7 +130,7 @@ class TestConfigFile(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigFile))
+    suite.addTest(makeSuite(TestServerConfigFile))
     return suite
 
 if __name__ == '__main__':

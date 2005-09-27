@@ -6,7 +6,7 @@ from StringIO import StringIO
 
 from httpy._zope.server.adjustments import default_adj
 
-from httpy.Config import Config
+from httpy.Config import ServerConfig
 from httpy.Request import ZopeRequest
 from httpy.Response import Response
 from httpy.Task import Task
@@ -37,8 +37,8 @@ class TestTask(TestCaseHttpy):
     # configure
     # =========
 
-    def testConfigure(self):
-        config = Config(['-v22','-mdeployment','-rroot'])
+    def testServerConfigure(self):
+        config = ServerConfig(['-v22','-mdeployment','-rroot'])
         expected = {}
         expected['mode'] = 'deployment'
         expected['verbosity'] = 22
@@ -121,7 +121,7 @@ class TestTask(TestCaseHttpy):
         request.received("GET /fooapp/ HTTP/1.1\r\n\r\n")
         task = Task(StubChannel(), request)
 
-        config = Config(['--root','root','-mdevelopment'])
+        config = ServerConfig(['--root','root','-mdevelopment'])
         task.config = task.configure(config)
 
         expected = 200

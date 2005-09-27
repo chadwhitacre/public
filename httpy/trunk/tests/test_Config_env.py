@@ -4,9 +4,9 @@ import os
 import unittest
 
 from TestCaseHttpy import TestCaseHttpy
-from httpy.Config import Config
+from httpy.Config import ServerConfig
 
-class TestConfigEnv(TestCaseHttpy):
+class TestServerConfigEnv(TestCaseHttpy):
 
     def testDefaultsAsEnv(self):
 
@@ -45,7 +45,7 @@ class TestConfigEnv(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigEnv))
+    suite.addTest(makeSuite(TestServerConfigEnv))
     return suite
 
 if __name__ == '__main__':

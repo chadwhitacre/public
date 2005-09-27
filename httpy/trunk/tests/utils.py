@@ -2,7 +2,7 @@ from StringIO import StringIO
 
 from httpy._zope.server.adjustments import default_adj
 
-from httpy.Config import Config
+from httpy.Config import ServerConfig
 from httpy.Request import ZopeRequest
 from httpy.Task import Task
 from httpy.AppCache import AppCache
@@ -12,7 +12,7 @@ class StubServer:
     def __init__(self):
         self.http_version_string = "HTTP/1.0"
         self.response_header = "stub server"
-        self.config = Config()
+        self.config = ServerConfig()
         self.apps = AppCache('development')
 
 
