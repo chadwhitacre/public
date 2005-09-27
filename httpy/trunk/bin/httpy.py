@@ -15,20 +15,29 @@ import sys
 from httpy.Config import Config
 from httpy.Config import ConfigError
 from httpy.Server import Server
+from httpy.utils import Restart
 
 
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
-    try:
-        config = Config(argv).ossify()
-    except ConfigError, err:
-        print >> sys.stderr, err.msg
-        print >> sys.stderr, "`man 1 httpy' for usage."
-        return 2
-    else:
-        server = Server(config)
-        server.start()
+    while 1:
+        try:
+            try:
+                config = Config(argv).ossify()
+            except ConfigError, err:
+                print >> sys.stderr, err.msg
+                print >> sys.stderr, "`man 1 httpy' for usage."
+                return 2
+            else:
+                server = Server(config)
+                server.start()
+        except Restart:
+            continue
+        except KeyboardInterrupt:
+            break
+        except:
+            raise
 
 
 if __name__ == "__main__":
