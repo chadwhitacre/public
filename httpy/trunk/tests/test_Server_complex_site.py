@@ -3,12 +3,12 @@
 import os
 import unittest
 from httplib import HTTPConnection
-from httplib import HTTPResponse as ClientHTTPResponse
 
 from httpy.Config import ServerConfig
 from httpy.Server import Server
 
 from TestCaseHttpy import TestCaseHttpy
+from utils import DUMMY_APP
 
 
 # shared
@@ -18,13 +18,6 @@ TemplateLanguage = """\
 def fill(template, value):
     return template % value
 """
-
-App = """\
-from httpy import DefaultApp as app
-class Transaction(app.Transaction):
-    pass
-"""
-
 
 
 # Foo
@@ -84,14 +77,13 @@ class Transaction:
 class TestServer(TestCaseHttpy):
 
     server = True
-    verbosity = 0
 
     def buildTestSite(self):
         os.mkdir('root')
         file('root/index.html', 'w').write("Greetings, program!")
 
         os.mkdir('root/__')
-        file('root/__/app.py', 'w').write(App)
+        file('root/__/app.py', 'w').write(DUMMY_APP)
         os.mkdir('root/__/site-packages')
         file('root/__/site-packages/TLang.py','w').write(TemplateLanguage)
 

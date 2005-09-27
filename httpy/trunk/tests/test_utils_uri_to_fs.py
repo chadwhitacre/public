@@ -9,16 +9,16 @@ from httpy.Response import Response
 from httpy.utils import uri_to_fs
 
 from TestCaseHttpy import TestCaseHttpy
-
+from utils import StubTransactionConfig
 
 class TestUriToFs(TestCaseHttpy):
 
     def setUp(self):
         TestCaseHttpy.setUp(self)
-        config = TransactionConfig()
+        config = StubTransactionConfig()
         config.mode = 'development'
         config.verbosity = 0
-        config.site_fs_root = os.path.realpath('root')
+        config.site_root = os.path.realpath('root')
         config.app_uri_root = '/'
         config.app_fs_root = os.path.realpath('root')
         config.__ = None
@@ -42,8 +42,6 @@ class TestUriToFs(TestCaseHttpy):
                           , ()
                            )
         self.assertEqual(expected, actual)
-
-
 
     def testDefaultDocument(self):
         expected = os.path.realpath('root/index.html')
@@ -89,6 +87,15 @@ class TestUriToFs(TestCaseHttpy):
         except Response, response:
             self.assertEqual(response.code, 301)
             self.assertEqual(response.headers['Location'], '/about/')
+
+    def testEtcPasswdGoesUncaughtAtThisStage(self):
+        # This test will of course fail if you have buried deep on your fs.
+        expected = '/etc/master.passwd'
+        actual = uri_to_fs( self.config
+                          , '../../../../../../../../../../etc/master.passwd'
+                          , ()
+                           )
+        self.assertEqual(expected, actual)
 
 
 def test_suite():

@@ -29,37 +29,18 @@ from utils import DUMMY_TASK, StubChannel
 
 class TestTask(TestCaseHttpy):
 
-    def setUp(self):
-        self.task = DUMMY_TASK()
-        TestCaseHttpy.setUp(self)
-
-
-    # configure
-    # =========
-
-    def testServerConfigure(self):
-        config = ServerConfig(['-v22','-mdeployment','-rroot'])
-        expected = {}
-        expected['mode'] = 'deployment'
-        expected['verbosity'] = 22
-        expected['site_fs_root'] = os.path.realpath('root')
-        expected['app_uri_root'] = '/'
-        expected['app_fs_root'] = os.path.realpath('root')
-        expected['__'] = None
-        actual = self.task.configure(config)
-        self.assertEqual(expected, actual)
-
 
     # fail
     # ====
 
     def testFailInDevMode(self):
-        self.task.dev_mode = True
-        self.task.channel = StubChannel()
+        task = DUMMY_TASK()
+        task.dev_mode = True
+        task.channel = StubChannel()
         try:
             raise Exception("Yarrr!")
         except:
-            self.task.fail()
+            task.fail()
 
         # Traceback and content length depend on incidental circumstances.
         expected = [ "HTTP/1.0 500 Internal Server Error"
@@ -68,21 +49,22 @@ class TestTask(TestCaseHttpy):
                    , ""
                    , "Internal Server Error"
                    , ""
-                   , "Traceback (most recent call last):"
+                  , "Traceback (most recent call last):"
                    # ...
                    , 'Exception: Yarrr!'
                     ]
-        actual = self.task.channel.getvalue().splitlines()
+        actual = task.channel.getvalue().splitlines()
         actual = actual[:1] + actual[2:7] + actual[-1:]
         self.assertEqual(expected, actual)
 
     def testFailInDepMode(self):
-        self.task.dev_mode = False
-        self.task.channel = StubChannel()
+        task = DUMMY_TASK()
+        task.dev_mode = False
+        task.channel = StubChannel()
         try:
             raise Exception("Yarrr!")
         except:
-            self.task.fail()
+            task.fail()
 
         expected = [ "HTTP/1.0 500 Internal Server Error"
                    , "Content-Length: 25"
@@ -91,50 +73,32 @@ class TestTask(TestCaseHttpy):
                    , "Internal Server Error"
                    , ""
                     ]
-        actual = self.task.channel.getvalue().splitlines()
+        actual = task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
 
-    # process
+    # check_mtimes
+    # ============
+
+    def testMtimesBasic(self):
+        pass # Boooooo!
+
+
+    # service
     # =======
 
-    def testProcessAtLeastOnceForCryingOutLoud(self):
-        expected = 403 # we don't have a site set up
-        try:
-            import sys
-            _path = sys.path[:]
-            sys.path.insert(0, self.task.config.__)
-            try:
-                self.task.process()
-            finally:
-                sys.path = _path
-        except Response, response:
-            actual = response.code
-        self.assertEqual(expected, actual)
-
-    def testProcessMore(self):
-        os.mkdir('root/fooapp')
-        os.mkdir('root/fooapp/__')
-        file('root/fooapp/__/app.py','w').write(DUMMY_APP)
-
-        request = ZopeRequest(default_adj)
-        request.received("GET /fooapp/ HTTP/1.1\r\n\r\n")
-        task = Task(StubChannel(), request)
-
-        config = ServerConfig(['--root','root','-mdevelopment'])
-        task.config = task.configure(config)
-
-        expected = 200
-        try:
-            import sys
-            _path = sys.path[:]
-            sys.path.insert(0, task.config.__)
-            try:
-                task.process()
-            finally:
-                sys.path = _path
-        except Response, response:
-            actual = response.code
+    def testServiceAtLeastOnceForCryingOutLoud(self):
+        task = DUMMY_TASK()
+        task.service()
+        expected = [ "HTTP/1.0 403 Forbidden"
+                   , "content-length: 48"
+                   , "content-type: text/plain"
+                   , "server: stub server"
+                   , ""
+                   , "Request forbidden -- authorization will not help"
+                    ]
+        expected = '\r\n'.join(expected)
+        actual = task.channel.getvalue()
         self.assertEqual(expected, actual)
 
 
