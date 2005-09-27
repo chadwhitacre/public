@@ -8,6 +8,8 @@ from httpy.Config import ServerConfig
 
 class TestServerConfigEnv(TestCaseHttpy):
 
+    want_config = True
+
     def testDefaultsAsEnv(self):
 
         d = {}
