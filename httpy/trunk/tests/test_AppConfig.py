@@ -4,7 +4,7 @@ import os
 import unittest
 
 from httpy.Config import ServerConfig
-from httpy.Config import ServerConfigError
+from httpy.Config import ConfigError
 
 from TestCaseHttpy import TestCaseHttpy
 from utils import DUMMY_APP
