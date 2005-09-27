@@ -9,7 +9,7 @@ from TestCaseHttpy import TestCaseHttpy
 from utils import DUMMY_APP
 
 
-class TestSetApps(TestCaseHttpy):
+class TestFindApps(TestCaseHttpy):
 
     siteroot = os.path.realpath('root')
 
@@ -56,6 +56,17 @@ class TestSetApps(TestCaseHttpy):
         actual = ServerConfig._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
+    def testAppsBelowAMagicDirAreNotFound(self):
+        os.mkdir('root/__')
+        os.mkdir('root/__/app3')
+        os.mkdir('root/__/app3/__')
+        expected = ('/app2', '/app1', '/')
+        actual = ServerConfig._find_apps(self.siteroot)
+        self.assertEqual(expected, actual)
+
+
+    # Here are some tests from the front.
+
     def testExplicitlySettingAppsOverridesMagic(self):
         self.config = ServerConfig(['-a/app1', '-rroot'])
         expected = [os.path.realpath('root/app1/__'), None]
@@ -79,7 +90,7 @@ class TestSetApps(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestSetApps))
+    suite.addTest(makeSuite(TestFindApps))
     return suite
 
 if __name__ == '__main__':

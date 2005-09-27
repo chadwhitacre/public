@@ -5,7 +5,6 @@ from httpy._zope.server.adjustments import default_adj
 from httpy.Config import ServerConfig
 from httpy.Request import ZopeRequest
 from httpy.Task import Task
-from httpy.AppCache import AppCache
 
 
 class StubServer:
