@@ -44,7 +44,7 @@ class Transaction:
         self.config = config
 
     def process(self, request):
-        _path = os.path.join(self.config['__'], 'master.template')
+        _path = os.path.join(self.config.__, 'master.template')
         master = file(_path).read()
         response = Response(200)
         response.body = fill(master, request.path)
@@ -71,7 +71,7 @@ class Transaction:
 
     def process(self, request):
 
-        _path = os.path.join(self.config['__'], 'master.template')
+        _path = os.path.join(self.config.__, 'master.template')
         master = file(_path).read()
         response = Response(200)
         response.body = TLang.fill(master, os.name)
