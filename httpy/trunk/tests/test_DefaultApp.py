@@ -17,12 +17,12 @@ class TestDefaultApp(TestCaseHttpy):
     def setUp(self):
         TestCaseHttpy.setUp(self)
         config = {}
-        config['mode'] = 'development'
-        config['verbosity'] = 0
-        config['site_fs_root'] = os.path.realpath('root')
-        config['app_uri_root'] = '/'
-        config['app_fs_root'] = os.path.realpath('root')
-        config['__'] = None
+        config.mode = 'development'
+        config.verbosity = 0
+        config.site_fs_root = os.path.realpath('root')
+        config.app_uri_root = '/'
+        config.app_fs_root = os.path.realpath('root')
+        config.__ = None
         self.config = config
         self.txn = DefaultApp.Transaction(config)
 
@@ -118,7 +118,7 @@ class TestDefaultApp(TestCaseHttpy):
         self.assertEqual(expected.body, actual.body)
 
     def testDeployment_ModifiedSinceIsTrue(self):
-        self.config['mode'] = 'deployment'
+        self.config.mode = 'deployment'
         self.txn = DefaultApp.Transaction(self.config)
 
         headers = {'If-Modified-Since':'Fri, 01 Jan 1970 00:00:00 GMT'}
@@ -137,7 +137,7 @@ class TestDefaultApp(TestCaseHttpy):
         self.assertEqual(expected.body, actual.body)
 
     def testDeployment_ModifiedSinceIsFalse(self):
-        self.config['mode'] = 'deployment'
+        self.config.mode = 'deployment'
         self.txn = DefaultApp.Transaction(self.config)
 
         headers = {'If-Modified-Since':'Fri, 31 Dec 9999 23:59:59 GMT'}

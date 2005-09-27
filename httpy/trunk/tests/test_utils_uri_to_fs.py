@@ -16,12 +16,12 @@ class TestUriToFs(TestCaseHttpy):
     def setUp(self):
         TestCaseHttpy.setUp(self)
         config = {}
-        config['mode'] = 'development'
-        config['verbosity'] = 0
-        config['site_fs_root'] = os.path.realpath('root')
-        config['app_uri_root'] = '/'
-        config['app_fs_root'] = os.path.realpath('root')
-        config['__'] = None
+        config.mode = 'development'
+        config.verbosity = 0
+        config.site_fs_root = os.path.realpath('root')
+        config.app_uri_root = '/'
+        config.app_fs_root = os.path.realpath('root')
+        config.__ = None
         self.config = config
 
     def buildTestSite(self):

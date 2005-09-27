@@ -24,20 +24,20 @@ class TestSetApps(TestCaseHttpy):
     def testExplicitlySettingAppsOverridesMagic(self):
         self.config = Config(['-a/app1', '-rroot'])
         expected = ('/app1','/') # Note root is added, however.
-        actual = self.config['apps']
+        actual = self.config.apps
         self.assertEqual(expected, actual)
 
     def testRootOnlyAddedIfNotAlreadyThere(self):
         self.config = Config(['-a/:/app1', '-rroot'])
         expected = ('/','/app1')
-        actual = self.config['apps']
+        actual = self.config.apps
         self.assertEqual(expected, actual)
 
     def testCanExplicitlyTurnOffAllApps(self):
         file('httpy.conf', 'w').write('[m]\napps=\n')
         self.config = Config(['-fhttpy.conf'])
         expected = ('/',) # Can't turn off root app though!
-        actual = self.config['apps']
+        actual = self.config.apps
         self.assertEqual(expected, actual)
 
 
@@ -51,7 +51,7 @@ class TestSetApps(TestCaseHttpy):
 
     def testValidateBadAppsRaisesError(self):
         self.config = Config()
-        self.config['apps'] = ['/not-there']
+        self.config.apps'] = ['/not-there
         self.assertRaises( ConfigError
                          , self.config._validate_apps
                           )
@@ -59,7 +59,7 @@ class TestSetApps(TestCaseHttpy):
     def testAppWithoutMagicDirectoryRaisesError(self):
         os.rmdir('root/app1/__')
         self.config = Config(['-rroot'])
-        self.config['apps'] = ['/app1']
+        self.config.apps'] = ['/app1
         self.assertRaises( ConfigError
                          , self.config._validate_apps
                           )

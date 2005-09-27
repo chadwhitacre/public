@@ -103,7 +103,7 @@ class TestTask(TestCaseHttpy):
         try:
             import sys
             _path = sys.path[:]
-            sys.path.insert(0, self.task.config['__'])
+            sys.path.insert(0, self.task.config.__)
             try:
                 self.task.process()
             finally:
@@ -128,7 +128,7 @@ class TestTask(TestCaseHttpy):
         try:
             import sys
             _path = sys.path[:]
-            sys.path.insert(0, task.config['__'])
+            sys.path.insert(0, task.config.__)
             try:
                 task.process()
             finally:
