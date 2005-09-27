@@ -10,16 +10,17 @@ from httpy.Request import Request, ZopeRequest
 from httpy.Response import Response
 
 from TestCaseHttpy import TestCaseHttpy
+from utils import StubTransactionConfig
 
 
 class TestDefaultApp(TestCaseHttpy):
 
     def setUp(self):
         TestCaseHttpy.setUp(self)
-        config = TransactionConfig()
+        config = StubTransactionConfig()
         config.mode = 'development'
         config.verbosity = 0
-        config.site_fs_root = os.path.realpath('root')
+        config.site_root = os.path.realpath('root')
         config.app_uri_root = '/'
         config.app_fs_root = os.path.realpath('root')
         config.__ = None
@@ -33,16 +34,6 @@ class TestDefaultApp(TestCaseHttpy):
         file('root/foo.bar', 'w')
         file('root/foo.png', 'w')
         file('root/foo.html', 'w').write('Greetings, program!')
-
-    def make_request(self, uri, headers=None):
-        if headers is None:
-            headers = {}
-        request = ZopeRequest()
-        request.received("GET %s HTTP/1.1\r\n" % uri)
-        for header in headers.items():
-            request.received("%s: %s\r\n" % header)
-        request.received('\r\n')
-        return Request(request)
 
 
     def testBasic(self):

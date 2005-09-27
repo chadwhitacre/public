@@ -46,8 +46,11 @@ class TestAppConfig(TestCaseHttpy):
         os.mkdir('root')
         os.mkdir('root/app1')
         os.mkdir('root/app1/__')
-        file('root/app1/__/app.py','w').write(DUMMY_APP)
+        file('root/app1/__/app.py','w').write(DUMMY_APP + "num=1")
         os.mkdir('root/app2')
+        os.mkdir('root/app3')
+        os.mkdir('root/app3/__')
+        file('root/app3/__/app.py','w').write(DUMMY_APP + "num=3")
 
 
     siteroot = os.path.realpath('root')
@@ -120,6 +123,12 @@ class TestAppConfig(TestCaseHttpy):
                          , self.siteroot
                          , '/app1'
                           )
+
+
+    def testAppsCanCoexist(self):
+        app1 = AppConfig(self.siteroot, '/app1')
+        app3 = AppConfig(self.siteroot, '/app3')
+        self.assertNotEqual(app1.module.num, app3.module.num)
 
 
 

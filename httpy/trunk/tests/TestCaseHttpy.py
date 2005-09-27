@@ -17,6 +17,7 @@ from httpy._zope.server.taskthreads import ThreadedTaskDispatcher
 from httpy._zope.server.tests.asyncerror import AsyncoreErrorHook
 
 from httpy.Config import ServerConfig
+from httpy.Request import Request, ZopeRequest
 from httpy.Server import Server
 
 
@@ -50,10 +51,9 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
         if self.server:
             self.startServer()
 
+
         if self.want_config:
             self.config = ServerConfig()
-
-
 
     def tearDown(self):
         if self.server:
@@ -168,3 +168,17 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
     @staticmethod
     def dict2tuple(d):
         return tuple(sorted(d.iteritems()))
+
+    @staticmethod
+    def make_request(uri, headers=None, Zope=False):
+        if headers is None:
+            headers = {}
+        request = ZopeRequest()
+        request.received("GET %s HTTP/1.1\r\n" % uri)
+        for header in headers.items():
+            request.received("%s: %s\r\n" % header)
+        request.received('\r\n')
+        if Zope:
+            return request
+        else:
+            return Request(request)

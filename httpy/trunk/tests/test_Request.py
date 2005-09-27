@@ -2,6 +2,7 @@
 
 import os
 import unittest
+from email.Message import Message
 
 from httpy._zope.interface.exceptions import DoesNotImplement
 from httpy._zope.server.adjustments import default_adj
@@ -67,6 +68,11 @@ class TestRequest(unittest.TestCase):
     def testRequestAPI(self):
         expected = REQUEST_API
         actual = dir(self.request)
+        self.assertEqual(expected, actual)
+
+    def testNoBodyStillHasEmailMessageMessage(self):
+        expected = True
+        actual = isinstance(self.request.message, Message)
         self.assertEqual(expected, actual)
 
     def testBadRequestObject(self):

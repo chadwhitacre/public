@@ -11,8 +11,7 @@ class StubServer:
     def __init__(self):
         self.http_version_string = "HTTP/1.0"
         self.response_header = "stub server"
-        self.config = ServerConfig()
-        self.apps = AppCache('development')
+        self.config = ServerConfig(['-rroot'])
 
 
 class StubChannel(StringIO):
@@ -21,6 +20,10 @@ class StubChannel(StringIO):
         StringIO.__init__(self)
     def close_when_done(self):
         pass
+
+
+class StubTransactionConfig:
+    pass
 
 
 request = ZopeRequest(default_adj)
@@ -32,11 +35,17 @@ def DUMMY_TASK():
 
 
 DUMMY_APP = """\
+from httpy.Response import Response
+
 class Transaction:
     def __init__(self, config):
         pass
     def process(self, request):
-        raise "heck"
+        response = Response(200)
+        response.headers['content-type'] = 'text/plain'
+        response.body = 'Greetings, program!'
+        raise response
+
 """
 
 
