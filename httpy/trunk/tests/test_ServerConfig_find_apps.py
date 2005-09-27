@@ -6,6 +6,7 @@ import unittest
 from httpy.Config import ServerConfig
 
 from TestCaseHttpy import TestCaseHttpy
+from utils import DUMMY_APP
 
 
 class TestSetApps(TestCaseHttpy):
@@ -16,8 +17,10 @@ class TestSetApps(TestCaseHttpy):
         os.mkdir('root')
         os.mkdir('root/app1')
         os.mkdir('root/app1/__')
+        file('root/app1/__/app.py','w').write(DUMMY_APP)
         os.mkdir('root/app2')
         os.mkdir('root/app2/__')
+        file('root/app1/__/app.py','w').write(DUMMY_APP)
 
 
     def testSiteHasAppsAndTheyAreFoundAutomatically(self):
@@ -33,6 +36,7 @@ class TestSetApps(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testWhatYouThoughtWasAnAppWasntCauseThereWasNoMagicDirectory(self):
+        os.remove('root/app1/__/app.py')
         os.rmdir('root/app1/__')
         expected = ('/app2',)
         actual = ServerConfig._find_apps(self.siteroot)
@@ -52,6 +56,24 @@ class TestSetApps(TestCaseHttpy):
         actual = ServerConfig._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
+    def testExplicitlySettingAppsOverridesMagic(self):
+        self.config = ServerConfig(['-a/app1', '-rroot'])
+        expected = [os.path.realpath('root/app1/__'), None]
+        actual = [a.__ for a in self.config.apps]
+        self.assertEqual(expected, actual)
+
+    def testRootOnlyAddedIfNotAlreadyThere(self):
+        self.config = ServerConfig(['-a/:/app1', '-rroot'])
+        expected = [None, os.path.realpath('root/app1/__')]
+        actual = [a.__ for a in self.config.apps]
+        self.assertEqual(expected, actual)
+
+    def testCanExplicitlyTurnOffAllApps(self):
+        file('httpy.conf', 'w').write('[m]\napps=\n')
+        self.config = ServerConfig(['-fhttpy.conf'])
+        expected = [None] # Can't turn off root app though!
+        actual = [a.__ for a in self.config.apps]
+        self.assertEqual(expected, actual)
 
 
 def test_suite():

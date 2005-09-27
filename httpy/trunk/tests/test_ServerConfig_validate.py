@@ -11,6 +11,8 @@ from TestCaseHttpy import TestCaseHttpy
 
 class TestServerConfigValidate(TestCaseHttpy):
 
+    want_config = True
+
     # Basic functions
     # ===============
 

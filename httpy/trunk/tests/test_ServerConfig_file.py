@@ -2,7 +2,7 @@
 
 import os
 import unittest
-from ServerConfigParser import ParsingError
+from ConfigParser import ParsingError
 
 from TestCaseHttpy import TestCaseHttpy
 
@@ -68,6 +68,8 @@ verbosity = 1
 """
 
 class TestServerConfigFile(TestCaseHttpy):
+
+    want_config = True
 
     d = {}
     d['ip'] = ''

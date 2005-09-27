@@ -32,6 +32,14 @@ def DUMMY_TASK():
     return Task(StubChannel(), request)
 
 
+DUMMY_APP = """\
+class Transaction:
+    def __init__(self, config):
+        pass
+    def process(self, request):
+        raise "heck"
+"""
+
 
 def REQUEST_PARTS(newline='\r\n'):
     IE_CRAP="\r\n\n\r"

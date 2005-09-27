@@ -37,7 +37,7 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
     # unittest.TestCase hooks
     # =======================
 
-    verbosity = 0
+    want_config = False
 
     def setUp(self):
 
@@ -47,10 +47,11 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
         self.removeTestSite()
         self.buildTestSite()
 
-        self.config = ServerConfig()
-
         if self.server:
             self.startServer()
+
+        if self.want_config:
+            self.config = ServerConfig()
 
 
 

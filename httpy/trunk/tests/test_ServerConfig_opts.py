@@ -52,6 +52,8 @@ argv_extra_options = [
 
 class TestServerConfigOpts(TestCaseHttpy):
 
+    want_config = True
+
     d = {}
     d['ip'] = ''
     d['port'] = 8080

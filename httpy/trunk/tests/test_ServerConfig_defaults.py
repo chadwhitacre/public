@@ -8,6 +8,8 @@ from TestCaseHttpy import TestCaseHttpy
 
 class TestServerConfigDefaults(TestCaseHttpy):
 
+    want_config = True
+
     def testDefaults(self):
 
         d = {}

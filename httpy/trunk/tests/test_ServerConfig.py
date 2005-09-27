@@ -3,6 +3,8 @@
 import os
 import unittest
 
+from httpy.Config import ServerConfig
+
 from TestCaseHttpy import TestCaseHttpy
 
 
@@ -11,27 +13,16 @@ class TestServerConfigDefaults(TestCaseHttpy):
     """
 
     def testDefaults(self):
-
-        d = {}
-        d['ip'] = ''
-        d['port'] = 8080
-        d['root'] = os.path.realpath('.')
-        d['mode'] = 'deployment'
-        d['apps'] = ('/',)
-        d['verbosity'] = 1
-
-        expected = self.dict2tuple(d)
-        actual = self.dict2tuple(self.config)
-
-        self.assertEqual(expected, actual)
+        config = ServerConfig()
+        self.assertEqual(config.ip, '')
+        self.assertEqual(config.port, 8080)
+        self.assertEqual(config.root, os.path.realpath('.'))
+        self.assertEqual(config.mode, 'deployment')
+        self.assertEqual([a.__ for a in config.apps], [None])
+        self.assertEqual(config.verbosity, 1)
 
 
     def testOverlapProperly(self):
-
-        # set up website
-        if os.path.isdir('root'):
-            os.rmdir('root')
-        os.mkdir('root')
 
         # set up environment
         os.environ['HTTPY_MODE'] = 'development' # should be retained
@@ -60,13 +51,14 @@ class TestServerConfigDefaults(TestCaseHttpy):
         d['apps'] = ('/',)                      # default
         d['verbosity'] = 99                     # env
 
-        expected = self.dict2tuple(d)
-        self.config.__init__(argv)
-        actual = self.dict2tuple(self.config)
 
-        self.assertEqual(expected, actual)
-
-        os.rmdir('root')
+        config = ServerConfig(argv)
+        for k, expected in d.items():
+            if k == 'apps':
+                continue
+            actual = getattr(config, k)
+            self.assertEqual(expected, actual)
+        self.assertEqual([a.__ for a in config.apps], [None])
 
 
 def test_suite():

@@ -24,7 +24,7 @@ def main(argv=None):
     while 1:
         try:
             try:
-                config = ServerConfig(argv).ossify()
+                config = ServerConfig(argv)
             except ServerConfigError, err:
                 print >> sys.stderr, err.msg
                 print >> sys.stderr, "`man 1 httpy' for usage."
