@@ -6,7 +6,7 @@ import unittest
 from TestCaseHttpy import TestCaseHttpy
 
 
-class TestConfigDefaults(TestCaseHttpy):
+class TestServerConfigDefaults(TestCaseHttpy):
 
     def testDefaults(self):
 
@@ -27,7 +27,7 @@ class TestConfigDefaults(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigDefaults))
+    suite.addTest(makeSuite(TestServerConfigDefaults))
     return suite
 
 if __name__ == '__main__':

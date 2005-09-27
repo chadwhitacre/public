@@ -12,8 +12,8 @@ __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 
 import sys
 
-from httpy.Config import Config
-from httpy.Config import ConfigError
+from httpy.Config import ServerConfig
+from httpy.Config import ServerConfigError
 from httpy.Server import Server
 from httpy.utils import Restart
 
@@ -24,8 +24,8 @@ def main(argv=None):
     while 1:
         try:
             try:
-                config = Config(argv).ossify()
-            except ConfigError, err:
+                config = ServerConfig(argv).ossify()
+            except ServerConfigError, err:
                 print >> sys.stderr, err.msg
                 print >> sys.stderr, "`man 1 httpy' for usage."
                 return 2

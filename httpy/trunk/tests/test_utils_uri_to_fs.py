@@ -4,7 +4,7 @@ import imp
 import os
 import unittest
 
-from httpy.Config import Config
+from httpy.Config import ServerConfig
 from httpy.Response import Response
 from httpy.utils import uri_to_fs
 

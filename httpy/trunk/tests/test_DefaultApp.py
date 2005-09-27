@@ -5,7 +5,7 @@ import os
 import unittest
 
 from httpy import DefaultApp
-from httpy.Config import Config
+from httpy.Config import ServerConfig
 from httpy.Request import Request, ZopeRequest
 from httpy.Response import Response
 

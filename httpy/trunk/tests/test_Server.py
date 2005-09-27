@@ -5,7 +5,7 @@ import unittest
 from httplib import HTTPConnection
 from httplib import HTTPResponse as ClientHTTPResponse
 
-from httpy.Config import Config
+from httpy.Config import ServerConfig
 from httpy.Server import Server
 
 from TestCaseHttpy import TestCaseHttpy

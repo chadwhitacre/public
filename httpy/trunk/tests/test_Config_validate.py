@@ -3,13 +3,13 @@
 import os
 import unittest
 
-from httpy.Config import Config
-from httpy.Config import ConfigError
+from httpy.Config import ServerConfig
+from httpy.Config import ServerConfigError
 
 from TestCaseHttpy import TestCaseHttpy
 
 
-class TestConfigValidate(TestCaseHttpy):
+class TestServerConfigValidate(TestCaseHttpy):
 
     # Basic functions
     # ===============
@@ -37,7 +37,7 @@ class TestConfigValidate(TestCaseHttpy):
 
     def testIPOutOfRange(self):
         d = {'ip':'256.68.1.1'}
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test'
                          , d
@@ -75,22 +75,22 @@ class TestConfigValidate(TestCaseHttpy):
 
 
     def testNonFalseIPOfWrongTypeRaisesError(self):
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test'
                          , {'ip':192.16811}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test'
                          , {'ip':('192','168','1','1')}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test'
                          , {'ip':{'192':'168','1':'1'}}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test'
                          , {'ip':['192','168','1','1']}
@@ -100,7 +100,7 @@ class TestConfigValidate(TestCaseHttpy):
         d = {'ip':'256.68.1.1'}
         try:
             self.config._validate('test', d)
-        except ConfigError, err:
+        except ServerConfigError, err:
             expected = "Found bad IP `256.68.1.1' in context `test'. IP " +\
                        "must be empty or a valid IPv4 address."
             actual = err.msg
@@ -117,19 +117,19 @@ class TestConfigValidate(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testOutOfRangeRaisesError(self):
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'port':100000}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'port':65536}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'port':-1}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'port':-8080}
                           )
@@ -162,19 +162,19 @@ class TestConfigValidate(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testNonIntableRaisesError(self):
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'port':False} # considered non-intable here
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'port':[]}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'port':['foo']}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'port':None}
                           )
@@ -183,7 +183,7 @@ class TestConfigValidate(TestCaseHttpy):
         d = {'port':None}
         try:
             self.config._validate('test', d)
-        except ConfigError, err:
+        except ServerConfigError, err:
             expected = "Found bad port `None' in context `test'. Port " +\
                        "must be an integer between 0 and 65535."
             actual = err.msg
@@ -206,27 +206,27 @@ class TestConfigValidate(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testAnythingElseRaisesError(self):
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'mode':'$pt'}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'mode':0}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'mode':'developmen'}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'mode':'-*- Python -*-'}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'mode':False}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'mode':0755}
                           )
@@ -235,7 +235,7 @@ class TestConfigValidate(TestCaseHttpy):
         d = {'mode':None}
         try:
             self.config._validate('test', d)
-        except ConfigError, err:
+        except ServerConfigError, err:
             expected = "Found bad mode `None' in context `test'. " +\
                        "Mode must be either `deployment' or `development'."
             actual = err.msg
@@ -252,13 +252,13 @@ class TestConfigValidate(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testNonDirectoryRootRaisesError(self):
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'root':'./runalltests.py'}
                           )
 
     def testNonExistantRootAlsoRaisesError(self):
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'root':'./not-there'}
                           )
@@ -267,7 +267,7 @@ class TestConfigValidate(TestCaseHttpy):
         d = {'root':None}
         try:
             self.config._validate('test', d)
-        except ConfigError, err:
+        except ServerConfigError, err:
             expected = "Found bad root `None' in context `test'. Root " +\
                        "must point to a directory."
             actual = err.msg
@@ -293,7 +293,7 @@ class TestConfigValidate(TestCaseHttpy):
         d = {'apps':None}
         try:
             self.config._validate('test', d)
-        except ConfigError, err:
+        except ServerConfigError, err:
             expected = ("Found bad apps `None' in context `test'. Apps " +
                         "must be a colon-separated list of paths rooted in " +
                         "the website root.")
@@ -311,19 +311,19 @@ class TestConfigValidate(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testVerbosityOutOfRangeRaisesError(self):
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'verbosity':100000}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'verbosity':100}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'verbosity':-1}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'verbosity':-100000}
                           )
@@ -356,20 +356,20 @@ class TestConfigValidate(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testNonIntableVerbosityRaisesError(self):
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'verbosity':False} # considered non-intable
                                                        # here
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'verbosity':[]}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'verbosity':['foo']}
                           )
-        self.assertRaises( ConfigError
+        self.assertRaises( ServerConfigError
                          , self.config._validate
                          , 'test', {'verbosity':None}
                           )
@@ -378,7 +378,7 @@ class TestConfigValidate(TestCaseHttpy):
         d = {'verbosity':None}
         try:
             self.config._validate('test', d)
-        except ConfigError, err:
+        except ServerConfigError, err:
             expected = ("Found bad verbosity `None' in context `test'. " +
                         "Verbosity must be an integer between 0 and 99.")
             actual = err.msg
@@ -388,7 +388,7 @@ class TestConfigValidate(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestConfigValidate))
+    suite.addTest(makeSuite(TestServerConfigValidate))
     return suite
 
 if __name__ == '__main__':
