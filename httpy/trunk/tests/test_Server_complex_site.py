@@ -11,21 +11,32 @@ from httpy.Server import Server
 from TestCaseHttpy import TestCaseHttpy
 
 
-# Foo
-# ===
+# shared
+# ======
 
-FooTemplateLanguage = """\
+TemplateLanguage = """\
 def fill(template, value):
     return template % value
 """
 
+App = """\
+from httpy import DefaultApp as app
+class Transaction(app.Transaction):
+    pass
+"""
+
+
+
+# Foo
+# ===
+
 FooMasterTemplate = "You requested this resource: %s"
 
-Foo = """\
+FooApp = """\
 import os
 
 from httpy.Response import Response
-import TemplateLanguage
+from TLang import fill
 
 class Transaction:
 
@@ -36,26 +47,22 @@ class Transaction:
         _path = os.path.join(self.config['__'], 'master.template')
         master = file(_path).read()
         response = Response(200)
-        response.body = TemplateLanguage.fill(master, request.path)
+        response.body = fill(master, request.path)
         raise response
+
 """
 
 
 # Bar
 # ===
 
-BarTemplateLanguage = """\
-def fill(template, value):
-    return template % "MUAHAHAHAHAHHA!!!!!!!!!!!!!!1"
-"""
+BarMasterTemplate = "MUAHAHA(%s)HAHAHHA!!!!!!!!!!!!!!1"
 
-BarMasterTemplate = "You asked for this resource: %s"
-
-Bar = """\
+BarApp = """\
 import os
 
 from httpy.Response import Response
-import TemplateLanguage
+import TLang
 
 class Transaction:
 
@@ -63,11 +70,13 @@ class Transaction:
         self.config = config
 
     def process(self, request):
+
         _path = os.path.join(self.config['__'], 'master.template')
         master = file(_path).read()
         response = Response(200)
-        response.body = TemplateLanguage.fill(master, request.path)
+        response.body = TLang.fill(master, os.name)
         raise response
+
 """
 
 
@@ -80,17 +89,21 @@ class TestServer(TestCaseHttpy):
     def buildTestSite(self):
         os.mkdir('root')
         file('root/index.html', 'w').write("Greetings, program!")
+
+        os.mkdir('root/__')
+        file('root/__/app.py', 'w').write(App)
+        os.mkdir('root/__/site-packages')
+        file('root/__/site-packages/TLang.py','w').write(TemplateLanguage)
+
         os.mkdir('root/foo')
-        file('root/foo/index.html', 'w').write("Greetings, foo!")
         os.mkdir('root/foo/__')
-        file('root/foo/__/TemplateLanguage.py', 'w').write(FooTemplateLanguage)
         file('root/foo/__/master.template', 'w').write(FooMasterTemplate)
-        file('root/foo/__/app.py', 'w').write(Foo)
+        file('root/foo/__/app.py', 'w').write(FooApp)
+
         os.mkdir('root/bar')
         os.mkdir('root/bar/__')
-        file('root/bar/__/TemplateLanguage.py', 'w').write(BarTemplateLanguage)
         file('root/bar/__/master.template', 'w').write(BarMasterTemplate)
-        file('root/bar/__/app.py', 'w').write(Bar)
+        file('root/bar/__/app.py', 'w').write(BarApp)
 
 
     def testBasic(self):
@@ -110,10 +123,9 @@ class TestServer(TestCaseHttpy):
     def testBarApp(self):
         conn = HTTPConnection('localhost', self.port)
         conn.request("GET", "/bar/", '', {'Accept':'text/plain'})
-        expected = "You asked for this resource: MUAHAHAHAHAHHA!!!!!!!!!!!!!!1"
+        expected = "MUAHAHA(%s)HAHAHHA!!!!!!!!!!!!!!1" % os.name
         actual = conn.getresponse().read()
         self.assertEqual(expected, actual)
-
 
     def testThemBothAtOnce(self):
         conn1 = HTTPConnection('localhost', self.port)
@@ -125,7 +137,7 @@ class TestServer(TestCaseHttpy):
         actual = conn1.getresponse().read()
         self.assertEqual(expected, actual)
 
-        expected = "You asked for this resource: MUAHAHAHAHAHHA!!!!!!!!!!!!!!1"
+        expected = "MUAHAHA(%s)HAHAHHA!!!!!!!!!!!!!!1" % os.name
         actual = conn2.getresponse().read()
         self.assertEqual(expected, actual)
 

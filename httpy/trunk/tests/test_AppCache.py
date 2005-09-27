@@ -107,11 +107,8 @@ class TestAppCache(TestCaseHttpy):
         app2 = self.apps.get_app('root/app2/__')
         self.assertEqual(app2.appnum, 2)
 
-    def testImportErrorRaisesButGetsCleanedUp(self):
+    def testImportErrorGetsRaised(self):
         self.assertRaises(ImportError, self.apps.get_app, '/app3/__')
-        import sys
-        self.assert_('app3/__' not in sys.path)
-        self.assert_('app' not in sys.modules)
 
 
 
