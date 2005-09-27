@@ -57,11 +57,11 @@ class TestRequest(unittest.TestCase):
     def setUp(self):
         self.zopereq = ZopeRequest(default_adj)
         self.zopereq.received("GET / HTTP/1.1\n\n")
-        self.request = Request(self.httpy._zopereq)
+        self.request = Request(self.zopereq)
 
     def testZopeRequestAPI(self):
         expected = ZOPEREQ_API
-        actual = dir(self.httpy._zopereq)
+        actual = dir(self.zopereq)
         self.assertEqual(expected, actual)
 
     def testRequestAPI(self):
