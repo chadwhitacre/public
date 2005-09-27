@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import imp
 import os
+import sys
 import unittest
 
 from httpy.utils import Gaoler
@@ -9,153 +9,51 @@ from httpy.utils import Gaoler
 from TestCaseHttpy import TestCaseHttpy
 
 
-class TestUtilsGaoler(TestCaseHttpy):
-
-    def buildTestSite(self):
-        os.mkdir('root')
-        os.mkdir('root/0')
-        file('root/0/app.py','w').write("num = 0")
-        os.mkdir('root/1')
-        file('root/1/app.py','w').write("num = 1")
-        os.mkdir('root/2')
-        file('root/2/app.py','w').write("num = 2")
 
 
-    def testPathBasic(self):
-        import sys
-        self.assert_('root/0' not in sys.path)
 
-        gaoler = Gaoler()
-        gaoler.capture_path('root/0')
-        self.assert_('root/0' in sys.path)
-        gaoler.release_path()
+class TestUtilsGaoler(unittest.TestCase):
 
-        self.assert_('root/0' not in sys.path)
+    def setUp(self):
+        file('app.py','w').write("num = 0")
+
+    def tearDown(self):
+        os.remove('app.py')
+        os.remove('app.pyc')
+        del(sys.modules['app'])
 
 
-    def testModulesBasic(self):
-        import sys
+    def testWithoutGaolerModuleNotReloaded(self):
         self.assert_('app' not in sys.modules)
 
-        gaoler = Gaoler()
-        gaoler.capture('root/0')
-
         import app
+        self.assert_('app' in sys.modules)
         self.assertEqual(app.num, 0)
+
+        file('app.py','w').write("num = 1")
+        import app
+        self.assertEqual(app.num, 0)            # Still seeing the old one.
         self.assert_('app' in sys.modules)
 
-        gaoler.release()
-
-        self.assertEqual(app.num, 0)
-        self.assert_('app' not in sys.modules)
-
-
-    def testDifferentModuleAndOtherTestDoesntScrewThingsUp(self):
-        import sys
-        self.assert_('app' not in sys.modules)
-
+    def testWithGaolerModuleIsReloaded(self):
         gaoler = Gaoler()
-        gaoler.capture('root/1')
 
+        self.assert_('app' not in sys.modules)
+
+        gaoler.capture()
         import app
-        self.assertEqual(app.num, 1)
         self.assert_('app' in sys.modules)
-
+        self.assertEqual(app.num, 0)
         gaoler.release()
 
-        self.assertEqual(app.num, 1)
-        self.assert_('app' not in sys.modules)
+        self.assert_('app' not in sys.modules)  # Not there!
+        self.assertEqual(app.num, 0)            # But the name is still bound
 
-
-    def testNowTheRealTest_TwoModulesSameTest(self):
-        import sys
-        self.assert_('app' not in sys.modules)
-
-
-        # Module 0
-
-        gaoler = Gaoler()
-        gaoler.capture('root/0')
-
+        os.remove('app.pyc') # careful!
+        file('app.py','w').write("num = 1")
         import app
-        self.assertEqual(app.num, 0)
+        self.assertEqual(app.num, 1)            # Now we see the new one.
         self.assert_('app' in sys.modules)
-
-        gaoler.release()
-
-        self.assertEqual(app.num, 0)
-        self.assert_('app' not in sys.modules)
-
-
-        # Module 1
-
-        gaoler = Gaoler()
-        gaoler.capture('root/1')
-
-        import app
-        self.assertEqual(app.num, 1)
-        self.assert_('app' in sys.modules)
-
-        gaoler.release()
-
-        self.assertEqual(app.num, 1)
-        self.assert_('app' not in sys.modules)
-
-
-    def testAliasing(self):
-        import sys
-        self.assert_('app' not in sys.modules)
-
-        gaoler = Gaoler()
-        gaoler.capture('root/0')
-        import app as app0
-        gaoler.release()
-
-        gaoler = Gaoler()
-        gaoler.capture('root/1')
-        import app as app1
-        gaoler.release()
-
-        gaoler = Gaoler()
-        gaoler.capture('root/2')
-        import app as app2
-        gaoler.release()
-
-        self.assertEqual(app0.num, 0)
-        self.assertEqual(app1.num, 1)
-        self.assertEqual(app2.num, 2)
-
-
-    def testOverriding(self):
-        import sys
-        self.assert_('app' not in sys.modules)
-
-        gaoler = Gaoler()
-        gaoler.capture('root/0')
-        import app
-        gaoler.release()
-
-        self.assertEqual(app.num, 0)
-
-
-        gaoler = Gaoler()
-        gaoler.capture('root/1')
-        import app
-        gaoler.release()
-
-        self.assertEqual(app.num, 1)
-
-
-    def testWeCantJustDoThisWithExecSinceDictCopyKeepsMutableValues(self):
-        import sys
-        _path = sys.path[:]
-
-        _locals = locals().copy()
-        _locals['sys'].path = expected = []
-        actual = locals()['sys'].path
-        self.assertEqual(expected, actual)
-
-        sys.path = _path
 
 
 

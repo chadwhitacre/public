@@ -10,6 +10,8 @@ from TestCaseHttpy import TestCaseHttpy
 
 class TestSetApps(TestCaseHttpy):
 
+    siteroot = os.path.realpath('root')
+
     def buildTestSite(self):
         os.mkdir('root')
         os.mkdir('root/app1')
@@ -19,24 +21,35 @@ class TestSetApps(TestCaseHttpy):
 
 
     def testSiteHasAppsAndTheyAreFoundAutomatically(self):
-        config = Config()
-        expected = ('/app1', '/app2')
-        actual = config._find_apps('root')
+        expected = ('/app2', '/app1')
+        actual = Config._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
     def testSiteHasNoAppsAndTheyAreNotFoundAutomatically(self):
         self.removeTestSite()
         os.mkdir('root')
-        config = Config()
         expected = ()
-        actual = config._find_apps('root')
+        actual = Config._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
     def testWhatYouThoughtWasAnAppWasntCauseThereWasNoMagicDirectory(self):
         os.rmdir('root/app1/__')
-        config = Config()
         expected = ('/app2',)
-        actual = config._find_apps('root')
+        actual = Config._find_apps(self.siteroot)
+        self.assertEqual(expected, actual)
+
+    def testRootHasMagicDirectory(self):
+        os.mkdir('root/__')
+        expected = ('/app2','/app1','/')
+        actual = Config._find_apps(self.siteroot)
+        self.assertEqual(expected, actual)
+
+    def testAppsThreeLevelsDeep(self):
+        os.mkdir('root/__')
+        os.mkdir('root/app2/app3')
+        os.mkdir('root/app2/app3/__')
+        expected = ('/app2/app3', '/app2', '/app1', '/')
+        actual = Config._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
 

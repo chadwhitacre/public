@@ -73,7 +73,8 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
             asyncore.poll(0.1)
         self.orig_map_size = len(asyncore.socket_map)
         #self.hook_asyncore_error()
-        self._server = Server(Config(opts), threads=4)
+        config = Config(opts)
+        self._server = Server(config, threads=4)
         self._server.accept_connections()
         self.port = self._server.socket.getsockname()[1]
         self.run_loop = 1

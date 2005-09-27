@@ -57,7 +57,6 @@ class TestTask(TestCaseHttpy):
         self.task.dev_mode = True
         self.task.channel = StubChannel()
         try:
-            linenum = 48
             raise Exception("Yarrr!")
         except:
             self.task.fail()
@@ -102,7 +101,13 @@ class TestTask(TestCaseHttpy):
     def testProcessAtLeastOnceForCryingOutLoud(self):
         expected = 403 # we don't have a site set up
         try:
-            self.task.process()
+            import sys
+            _path = sys.path[:]
+            sys.path.insert(0, self.task.config['__'])
+            try:
+                self.task.process()
+            finally:
+                sys.path = _path
         except Response, response:
             actual = response.code
         self.assertEqual(expected, actual)
@@ -121,7 +126,13 @@ class TestTask(TestCaseHttpy):
 
         expected = 200
         try:
-            task.process()
+            import sys
+            _path = sys.path[:]
+            sys.path.insert(0, task.config['__'])
+            try:
+                task.process()
+            finally:
+                sys.path = _path
         except Response, response:
             actual = response.code
         self.assertEqual(expected, actual)
