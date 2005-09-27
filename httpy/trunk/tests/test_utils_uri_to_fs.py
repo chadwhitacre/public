@@ -4,7 +4,7 @@ import imp
 import os
 import unittest
 
-from httpy.Config import ServerConfig
+from httpy.Config import TransactionConfig
 from httpy.Response import Response
 from httpy.utils import uri_to_fs
 
@@ -15,7 +15,7 @@ class TestUriToFs(TestCaseHttpy):
 
     def setUp(self):
         TestCaseHttpy.setUp(self)
-        config = {}
+        config = TransactionConfig()
         config.mode = 'development'
         config.verbosity = 0
         config.site_fs_root = os.path.realpath('root')

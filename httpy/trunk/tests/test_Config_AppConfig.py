@@ -80,11 +80,14 @@ class TestAppConfig(TestCaseHttpy):
 
     def testNoAppToImport(self):
         os.remove('root/app1/__/app.py')
-        self.assertRaises( BrokenImplementation
+        self.assertRaises( ConfigError
                          , AppConfig
                          , self.siteroot
                          , '/app1'
                           )
+
+
+    # test our zope interface usage
 
     def testAppNoTransaction(self):
         file('root/app1/__/app.py','w').write(APP_NO_TRANSACTION)
