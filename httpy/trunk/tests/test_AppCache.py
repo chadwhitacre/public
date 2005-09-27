@@ -4,8 +4,8 @@ import imp
 import os
 import unittest
 
-from zope.interface.exceptions import BrokenImplementation
-from zope.interface.exceptions import BrokenMethodImplementation
+from httpy._zope.interface.exceptions import BrokenImplementation
+from httpy._zope.interface.exceptions import BrokenMethodImplementation
 
 from httpy.AppCache import AppCache
 from httpy.NicolasLehuen import Entry

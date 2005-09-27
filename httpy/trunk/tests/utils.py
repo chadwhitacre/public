@@ -1,6 +1,6 @@
 from StringIO import StringIO
 
-from zope.server.adjustments import default_adj
+from httpy._zope.server.adjustments import default_adj
 
 from httpy.Config import Config
 from httpy.Request import ZopeRequest
