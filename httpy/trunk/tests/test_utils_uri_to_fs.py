@@ -2,6 +2,7 @@
 
 import imp
 import os
+import sys
 import unittest
 
 from httpy.Config import TransactionConfig
@@ -24,19 +25,18 @@ class TestUriToFs(TestCaseHttpy):
         config.__ = None
         self.config = config
 
-    def buildTestSite(self):
-        os.mkdir('root')
-        file('root/index.html', 'w')
-        os.mkdir('root/__')
-        os.mkdir('root/about')
-        os.mkdir('root/My Documents')
-        file('root/My Documents/index.html', 'w')
-        os.mkdir('root/content')
-        file('root/content/index.pt', 'w')
+    testsite = [ ('index.html', '')
+               , '/__'
+               , '/about'
+               , '/My Documents'
+               , ('/My Documents/index.html', '')
+               , '/content'
+               , ('/content/index.pt', '')
+                ]
 
 
     def testBasic(self):
-        expected = os.path.realpath('root/index.html')
+        expected = os.path.realpath(self.convert_path('root/index.html'))
         actual = uri_to_fs( self.config
                           , '/index.html'
                           , ()
@@ -44,7 +44,7 @@ class TestUriToFs(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testDefaultDocument(self):
-        expected = os.path.realpath('root/index.html')
+        expected = os.path.realpath(self.convert_path('root/index.html'))
         actual = uri_to_fs( self.config
                           , '/'
                           , ('index.html',)
@@ -89,8 +89,13 @@ class TestUriToFs(TestCaseHttpy):
             self.assertEqual(response.headers['Location'], '/about/')
 
     def testEtcPasswdGoesUncaughtAtThisStage(self):
-        # This test will of course fail if you have buried deep on your fs.
-        expected = '/etc/master.passwd'
+        # This test will of course fail if you have it buried deep on your fs.
+        expected = self.convert_path('/etc/master.passwd')
+
+        if not os.path.isfile(expected):
+            # nevermind
+            return
+
         actual = uri_to_fs( self.config
                           , '../../../../../../../../../../etc/master.passwd'
                           , ()

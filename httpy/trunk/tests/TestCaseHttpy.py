@@ -130,23 +130,55 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
 
     # test site
     # =========
+    # testsite is a list of strings and tuples. If a string, it is interpreted
+    # as a path to a directory that should be created. If a tuple, the first
+    # element is a path to a file, the second is the contents of the file.
+    # We do it this way to ease cross-platform testing.
+    #
+    # siteroot is the filesystem path under which to create the test site.
+
+    siteroot = 'root'
+    testsite = []
 
     def buildTestSite(self):
         """Override me! Build it in root and it will be torn down for you.
         """
-        os.mkdir('root')
+        os.mkdir(self.siteroot)
+        for item in self.testsite:
+            if isinstance(item, basestring):
+                _parts = item.lstrip('/').split('/')
+                path = os.path.join(self.siteroot, *_parts)
+                os.mkdir(path)
+            elif isinstance(item, tuple):
+                filepath, contents = item
+                _parts = filepath.lstrip('/').split('/')
+                path = os.path.join(self.siteroot, *_parts)
+                file(path, 'w').write(contents)
+
 
     def removeTestSite(self):
         if os.path.isfile('httpy.conf'):
             os.remove('httpy.conf')
-        if not os.path.isdir('root'):
+        if not os.path.isdir(self.siteroot):
             return
-        for root, dirs, files in os.walk('root', topdown=False):
+        for root, dirs, files in os.walk(self.siteroot, topdown=False):
             for name in dirs:
                 os.rmdir(os.path.join(root, name))
             for name in files:
                 os.remove(os.path.join(root, name))
-        os.rmdir('root')
+        os.rmdir(self.siteroot)
+
+
+    def convert_path(self, path):
+        """Given a Unix path, convert it for the current platform.
+        """
+        return os.sep.join(path.split('/'))
+
+    def convert_paths(self, paths):
+        """Given a tuple of Unix paths, convert them for the current platform.
+        """
+        return tuple([self.convert_path(p) for p in paths])
+
 
 
     # utils
