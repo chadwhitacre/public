@@ -27,14 +27,11 @@ class TestDefaultApp(TestCaseHttpy):
         self.config = config
         self.txn = DefaultApp.Transaction(config)
 
-    def buildTestSite(self):
-        os.system('rm -rf root')
-        os.mkdir('root')
-        file('root/index.html','w')
-        file('root/foo.bar', 'w')
-        file('root/foo.png', 'w')
-        file('root/foo.html', 'w').write('Greetings, program!')
-
+    testsite = [ ('/index.html', '')
+               , ('/foo.bar', '')
+               , ('/foo.png', '')
+               , ('/foo.html', 'Greetings, program!')
+                ]
 
     def testBasic(self):
         request = self.make_request("/")

@@ -13,18 +13,16 @@ class TestFindApps(TestCaseHttpy):
 
     siteroot = os.path.realpath('root')
 
-    def buildTestSite(self):
-        os.mkdir('root')
-        os.mkdir('root/app1')
-        os.mkdir('root/app1/__')
-        file('root/app1/__/app.py','w').write(DUMMY_APP)
-        os.mkdir('root/app2')
-        os.mkdir('root/app2/__')
-        file('root/app1/__/app.py','w').write(DUMMY_APP)
-
+    testsite = [ '/app1'
+               , '/app1/__'
+               , ('/app1/__/app.py', DUMMY_APP)
+               , '/app2'
+               , '/app2/__'
+               , ('/app1/__/app.py', DUMMY_APP)
+                ]
 
     def testSiteHasAppsAndTheyAreFoundAutomatically(self):
-        expected = ('/app2', '/app1')
+        expected = self.convert_paths(('/app2', '/app1'))
         actual = ServerConfig._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
@@ -38,13 +36,13 @@ class TestFindApps(TestCaseHttpy):
     def testWhatYouThoughtWasAnAppWasntCauseThereWasNoMagicDirectory(self):
         os.remove('root/app1/__/app.py')
         os.rmdir('root/app1/__')
-        expected = ('/app2',)
+        expected = self.convert_paths(('/app2',))
         actual = ServerConfig._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
     def testRootHasMagicDirectory(self):
         os.mkdir('root/__')
-        expected = ('/app2','/app1','/')
+        expected = self.convert_paths(('/app2','/app1','/'))
         actual = ServerConfig._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
@@ -52,7 +50,7 @@ class TestFindApps(TestCaseHttpy):
         os.mkdir('root/__')
         os.mkdir('root/app2/app3')
         os.mkdir('root/app2/app3/__')
-        expected = ('/app2/app3', '/app2', '/app1', '/')
+        expected = self.convert_paths(('/app2/app3', '/app2', '/app1', '/'))
         actual = ServerConfig._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
@@ -60,7 +58,7 @@ class TestFindApps(TestCaseHttpy):
         os.mkdir('root/__')
         os.mkdir('root/__/app3')
         os.mkdir('root/__/app3/__')
-        expected = ('/app2', '/app1', '/')
+        expected = self.convert_paths(('/app2', '/app1', '/'))
         actual = ServerConfig._find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 

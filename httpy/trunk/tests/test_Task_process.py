@@ -12,19 +12,12 @@ from utils import DUMMY_APP, StubChannel
 
 class TestTaskProcess(TestCaseHttpy):
 
-    server = False
-    siteroot = os.path.join(os.path.realpath('.'),'root')
-
-    def setUp(self):
-        TestCaseHttpy.setUp(self)
-
-    def buildTestSite(self):
-        os.mkdir('root')
-        file('root/index.html', 'w').write('Greetings, program!')
-        os.mkdir('root/app1')
-        os.mkdir('root/app1/__')
-        file('root/app1/__/app.py','w').write(DUMMY_APP)
-        os.mkdir('root/app2')
+    testsite = [ ('/index.html', 'Greetings, program!')
+               , '/app1'
+               , '/app1/__'
+               , ('/app1/__/app.py', DUMMY_APP)
+               , '/app2'
+                ]
 
 
     def testBasic(self):
@@ -49,9 +42,9 @@ class TestTaskProcess(TestCaseHttpy):
     def testNonRootAppWithNoMagicDirectoryRaises500(self):
         request = self.make_request('/app1', Zope=True)
         task = Task(StubChannel(), request)
-        os.remove('root/app1/__/app.py')
-        os.remove('root/app1/__/app.pyc')
-        os.rmdir('root/app1/__')
+        os.remove(self.convert_path('root/app1/__/app.py'))
+        os.remove(self.convert_path('root/app1/__/app.pyc'))
+        os.rmdir(self.convert_path('root/app1/__'))
         try:
             task.process()
         except Response, response:
