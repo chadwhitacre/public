@@ -227,6 +227,29 @@ class TestTaskRespond(TestCaseHttpy):
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
+    def testBodyIsFormattedFor537(self):
+        response = Response(537)
+        response.body = ('#'*20,['#'*70])
+        self.task.dev_mode = True
+        self.task.respond(response)
+
+        expected = [ 'HTTP/1.0 537 HTTPY App Dev'
+                   , 'content-length: 101'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
+                   , "('####################',"
+                   , " ['######################################################################'])"
+                    ]
+        actual = self.task.channel.getvalue().splitlines()
+        self.assertEqual(expected, actual)
+
+    def testBut537OnlyAvailableInDevMode(self):
+        response = Response(537)
+        response.body = ('#'*20,['#'*70])
+        self.task.dev_mode = False
+        self.assertRaises(Exception, self.task.respond, response)
+
     def testOtherwiseBodyIsWritten(self):
         response = Response(200)
         response.body = "Greetings, program!"
