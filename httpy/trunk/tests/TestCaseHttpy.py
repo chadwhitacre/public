@@ -51,7 +51,6 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
         if self.server:
             self.startServer()
 
-
         if self.want_config:
             self.config = ServerConfig()
 
@@ -141,18 +140,18 @@ class TestCaseHttpy(unittest.TestCase, AsyncoreErrorHook):
     testsite = []
 
     def buildTestSite(self):
-        """Override me! Build it in root and it will be torn down for you.
+        """Build the site described in self.testsite
         """
         os.mkdir(self.siteroot)
         for item in self.testsite:
             if isinstance(item, basestring):
-                _parts = item.lstrip('/').split('/')
-                path = os.path.join(self.siteroot, *_parts)
+                path = self.convert_path(item.lstrip('/'))
+                path = os.sep.join([self.siteroot, path])
                 os.mkdir(path)
             elif isinstance(item, tuple):
                 filepath, contents = item
-                _parts = filepath.lstrip('/').split('/')
-                path = os.path.join(self.siteroot, *_parts)
+                path = self.convert_path(filepath.lstrip('/'))
+                path = os.sep.join([self.siteroot, path])
                 file(path, 'w').write(contents)
 
 

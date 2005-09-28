@@ -19,18 +19,18 @@ class TestUriToFs(TestCaseHttpy):
         config = StubTransactionConfig()
         config.mode = 'development'
         config.verbosity = 0
-        config.site_root = os.path.realpath('root')
+        config.site_root = os.path.realpath(self.siteroot)
         config.app_uri_root = '/'
-        config.app_fs_root = os.path.realpath('root')
+        config.app_fs_root = os.path.realpath(self.siteroot)
         config.__ = None
         self.config = config
 
     testsite = [ ('index.html', '')
-               , '/__'
-               , '/about'
-               , '/My Documents'
+               ,  '/__'
+               ,  '/about'
+               ,  '/My Documents'
                , ('/My Documents/index.html', '')
-               , '/content'
+               ,  '/content'
                , ('/content/index.pt', '')
                 ]
 

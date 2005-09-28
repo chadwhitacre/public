@@ -13,10 +13,10 @@ from utils import DUMMY_APP, StubChannel
 class TestTaskProcess(TestCaseHttpy):
 
     testsite = [ ('/index.html', 'Greetings, program!')
-               , '/app1'
-               , '/app1/__'
+               ,  '/app1'
+               ,  '/app1/__'
                , ('/app1/__/app.py', DUMMY_APP)
-               , '/app2'
+               ,  '/app2'
                 ]
 
 

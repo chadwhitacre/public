@@ -14,11 +14,8 @@ from TestCaseHttpy import TestCaseHttpy
 class TestServer(TestCaseHttpy):
 
     server = True
-    verbosity = 99
+    testsite = [('index.html', "Greetings, program!")]
 
-    def buildTestSite(self):
-        os.mkdir('root')
-        file('root/index.html', 'w').write("Greetings, program!")
 
     def testBasic(self):
         expected = (1, 0)
