@@ -11,17 +11,17 @@ __version__ = (0, 5)
 __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 
 import os
+import signal
 import sys
+import time
 
-from httpy.Config import ServerConfig
 from httpy.Config import ConfigError
+from httpy.Config import ServerConfig
 from httpy.Server import Server
-from httpy.utils import Restart
+from httpy.Server import RestartingServer
 
 
-def _main(argv=None):
-    """This is the real main function.
-    """
+def main(argv=None):
 
     if argv is None:
         argv = sys.argv[1:]
@@ -31,34 +31,15 @@ def _main(argv=None):
         print >> sys.stderr, err.msg
         print >> sys.stderr, "`man 1 httpy' for usage."
         return 2
-    else:
-        server = Server(config)
-        server.start()
 
+    plain_jane = (  (config.mode == 'deployment')
+                 or (sys.platform == 'win32')
+                 or ('HTTPY_PLAIN_JANE' in os.environ)
+                   )
 
-def main(args=None):
-    """This is a wrapper around _main to support restarting dynamically.
-    """
-
-    if "HTTPY_RESTART_FLAG" in os.environ:
-        return _main()
-    else:
-        while 1:
-            try:
-                if args is None:
-                    args = [sys.executable] + sys.argv
-                if sys.platform == "win32":
-                    args = ['"%s"' % arg for arg in args]
-                new_environ = os.environ.copy()
-                new_environ["HTTPY_RESTART_FLAG"] = '/me waves'
-                exit_code = os.spawnve(os.P_WAIT, sys.executable,
-                                       args, new_environ)
-                if exit_code != 3:
-                    return exit_code
-            except KeyboardInterrupt:
-                break
-            except:
-                raise
+    ServerClass = plain_jane and Server or RestartingServer
+    server = ServerClass(config)
+    server.start()
 
 
 if __name__ == "__main__":

@@ -77,13 +77,6 @@ class TestTask(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
 
-    # check_mtimes
-    # ============
-
-    def testMtimesBasic(self):
-        pass # Boooooo!
-
-
     # service
     # =======
 
