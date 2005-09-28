@@ -78,24 +78,20 @@ class TestServer(TestCaseHttpy):
 
     server = True
 
-    def buildTestSite(self):
-        os.mkdir('root')
-        file('root/index.html', 'w').write("Greetings, program!")
-
-        os.mkdir('root/__')
-        file('root/__/app.py', 'w').write(DUMMY_APP)
-        os.mkdir('root/__/site-packages')
-        file('root/__/site-packages/TLang.py','w').write(TemplateLanguage)
-
-        os.mkdir('root/foo')
-        os.mkdir('root/foo/__')
-        file('root/foo/__/master.template', 'w').write(FooMasterTemplate)
-        file('root/foo/__/app.py', 'w').write(FooApp)
-
-        os.mkdir('root/bar')
-        os.mkdir('root/bar/__')
-        file('root/bar/__/master.template', 'w').write(BarMasterTemplate)
-        file('root/bar/__/app.py', 'w').write(BarApp)
+    testsite = [ ('/index.html', "Greetings, program!")
+               ,  '/__'
+               , ('/__/app.py', DUMMY_APP)
+               ,  '/__/site-packages'
+               , ('/__/site-packages/TLang.py', TemplateLanguage)
+               ,  '/foo'
+               ,  '/foo/__'
+               , ('/foo/__/master.template', FooMasterTemplate)
+               , ('/foo/__/app.py', FooApp)
+               ,  '/bar'
+               ,  '/bar/__'
+               , ('/bar/__/master.template', BarMasterTemplate)
+               , ('/bar/__/app.py', BarApp)
+                ]
 
 
     def testBasic(self):

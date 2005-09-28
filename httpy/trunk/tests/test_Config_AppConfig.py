@@ -39,21 +39,15 @@ class Transaction:
 
 class TestAppConfig(TestCaseHttpy):
 
-    def setUp(self):
-        TestCaseHttpy.setUp(self)
+    testsite = [  '/app1'
+               ,  '/app1/__'
+               , ('/app1/__/app.py', DUMMY_APP + "num=1")
+               ,  '/app2'
+               ,  '/app3'
+               ,  '/app3/__'
+               , ('/app3/__/app.py', DUMMY_APP + "num=3")
+                ]
 
-    def buildTestSite(self):
-        os.mkdir('root')
-        os.mkdir('root/app1')
-        os.mkdir('root/app1/__')
-        file('root/app1/__/app.py','w').write(DUMMY_APP + "num=1")
-        os.mkdir('root/app2')
-        os.mkdir('root/app3')
-        os.mkdir('root/app3/__')
-        file('root/app3/__/app.py','w').write(DUMMY_APP + "num=3")
-
-
-    siteroot = os.path.realpath('root')
 
     def testBasic(self):
         config = AppConfig(self.siteroot, '/app1')
@@ -81,6 +75,14 @@ class TestAppConfig(TestCaseHttpy):
         actual = str(config)
         self.assertEqual(expected, actual)
 
+    def testMagicDirForRootGivesThatApp(self):
+        os.mkdir(os.sep.join(['root', '__']))
+        app = open(os.sep.join(['root', '__', 'app.py']), 'w')
+        app.write(DUMMY_APP + 'root = True')
+        app.close()
+        config = AppConfig(self.siteroot, '/')
+        self.assert_(config.module.root)
+
     def testNoAppToImport(self):
         os.remove('root/app1/__/app.py')
         self.assertRaises( ConfigError
@@ -89,11 +91,18 @@ class TestAppConfig(TestCaseHttpy):
                          , '/app1'
                           )
 
+    def testAppsCanCoexist(self):
+        app1 = AppConfig(self.siteroot, '/app1')
+        app3 = AppConfig(self.siteroot, '/app3')
+        self.assertNotEqual(app1.module.num, app3.module.num)
+
 
     # test our zope interface usage
 
     def testAppNoTransaction(self):
-        file('root/app1/__/app.py','w').write(APP_NO_TRANSACTION)
+        app = open(os.sep.join(['root', 'app1', '__', 'app.py']), 'w')
+        app.write(APP_NO_TRANSACTION)
+        app.close()
         self.assertRaises( BrokenImplementation
                          , AppConfig
                          , self.siteroot
@@ -101,7 +110,9 @@ class TestAppConfig(TestCaseHttpy):
                           )
 
     def testAppNoProcess(self):
-        file('root/app1/__/app.py','w').write(APP_NO_PROCESS)
+        app = open(os.sep.join(['root', 'app1', '__', 'app.py']), 'w')
+        app.write(APP_NO_PROCESS)
+        app.close()
         self.assertRaises( BrokenImplementation
                          , AppConfig
                          , self.siteroot
@@ -109,7 +120,9 @@ class TestAppConfig(TestCaseHttpy):
                           )
 
     def testAppBadInit(self):
-        file('root/app1/__/app.py','w').write(APP_BAD_INIT)
+        app = open(os.sep.join(['root', 'app1', '__', 'app.py']), 'w')
+        app.write(APP_BAD_INIT)
+        app.close()
         self.assertRaises( BrokenMethodImplementation
                          , AppConfig
                          , self.siteroot
@@ -117,7 +130,9 @@ class TestAppConfig(TestCaseHttpy):
                           )
 
     def testAppBadProcess(self):
-        file('root/app1/__/app.py','w').write(APP_BAD_PROCESS)
+        app = open(os.sep.join(['root', 'app1', '__', 'app.py']), 'w')
+        app.write(APP_BAD_PROCESS)
+        app.close()
         self.assertRaises( BrokenMethodImplementation
                          , AppConfig
                          , self.siteroot
@@ -125,10 +140,6 @@ class TestAppConfig(TestCaseHttpy):
                           )
 
 
-    def testAppsCanCoexist(self):
-        app1 = AppConfig(self.siteroot, '/app1')
-        app3 = AppConfig(self.siteroot, '/app3')
-        self.assertNotEqual(app1.module.num, app3.module.num)
 
 
 
