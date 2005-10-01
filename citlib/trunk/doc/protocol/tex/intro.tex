@@ -65,7 +65,7 @@ straightforward, as it can traverse firewalls without any special protocol
 support on the firewall except for opening the port number.
 
 
-\section{*Result Codes}
+\section{Result Codes}
 
  The server will respond to all commands with a 3-digit result code, which
 will be the first three characters on the line.  The rest of the line may
@@ -78,44 +78,81 @@ this position: ERROR, OK, MORE_DATA, LISTING_FOLLOWS, and SEND_LISTING.
  The second and third digits may provide a reason as to why a command
 succeeded or failed.  See ipcdef.h for the available codes.
 
- ERROR means the command did not complete.
- OK means the command executed successfully.
- MORE_DATA means the command executed partially.  Usually this means that
-another command needs to be executed to complete the operation.  For example,
-sending the USER command to log in a user usually results in a MORE_DATA
-result code, because the client needs to execute a PASS command to send the
-password and complete the login.
- LISTING_FOLLOWS means that after the server response, the server will
-output a listing of some sort.  The client *must* read the listing, whether
-it wants to or not.  The end of the listing is signified by the string
-"000" on a line by itself.
- SEND_LISTING is the opposite of LISTING_FOLLOWS.  It means that the client
-should begin sending a listing of some sort.  The client *must* send something,
-even if it is an empty listing.  Again, the listing ends with "000" on a line
-by itself.
- BINARY_FOLLOWS and SEND_BINARY mean that the client must immediately send
-or receive a block of binary data.  The first parameter will always be the
-number of bytes.
- ASYNC_MESSAGE_FOLLOWS means that an asynchronous, or unsolicited, message
-follows.  The next line will be one of the above codes, and if a data transfer
-is involved it must be handled immediately.  Note that the client will not
-receive this type of response unless it indicates to the server that it is
-capable of handling them; see the writeup of the ASYN command later in this
-document.
+\begin{tableiii}{l|l|l}{var}{Base Code}{Result Type}{Description}
 
-\section{*Parameterization}
+
+\lineiii{100}
+    {LISTING_FOLLOWS}
+    {After the server response, the server will output a listing of some sort.
+    The client \strong{must} read the listing, whether it wants to or not.  The
+    end of the listing is signified by the string "000" on a line by itself.}
+
+\lineiii{200}
+    {OK}
+    {The command executed successfully.}
+
+\lineiii{300}
+    {MORE_DATA}
+    {The command executed partially.  Usually this means that another command
+    needs to be executed to complete the operation.  For example, sending the
+    USER command to log in a user usually results in a MORE_DATA result code,
+    because the client needs to execute a PASS command to send the password and
+    complete the login.}
+
+\lineiii{400}
+    {SEND_LISTING}
+    {The opposite of LISTING_FOLLOWS.  It means that the client should begin
+    sending a listing of some sort.  The client *must* send something, even if
+    it is an empty listing.  Again, the listing ends with "000" on a line by
+    itself.}
+
+\lineiii{500}
+    {ERROR}
+    {The command did not complete.}
+
+\lineiii{600}
+    {BINARY_FOLLOWS}
+    {The client must immediately receive a block of binary data.  The first
+    parameter will always be the number of bytes.}
+
+\lineiii{700}
+    {SEND_BINARY}
+    {The client must immediately send a block of binary data.  The first
+    parameter will always be the number of bytes.}
+
+\lineiii{800}
+    {ASYNC_MESSAGE_FOLLOWS}
+    {An asynchronous, or unsolicited, message follows.  The next line will be
+    one of the above codes, and if a data transfer is involved it must be
+    handled immediately.  Note that the client will not receive this type of
+    response unless it indicates to the server that it is capable of handling
+    them; see the writeup of the ASYN command later in this document.}
+
+\end{tableiii}
+
+
+
+\section{Parameterization}
 
  Zero or more parameters may be passed to a command.  When more than one
 parameter is passed to a command, they should be separated by the "|"
 symbol like this:
+
+\begin{verbatim}
   SETU 80|24|260
+\end{verbatim}
+
  In this example, we're using the "SETU" command and passing three
 parameters: 80, 24, and 260.
 
  When the server spits out data that has parameters, if more than one
 parameter is returned, they will be separated by the "|" symbol like
 this:
+
+\begin{verbatim}
   200 80|24|260
+\end{verbatim}
+
  In this example, we just executed the "GETU" command, and it returned us
 an OK result code (the '2' in the 200) and three parameters: 80, 24, and
 260.

@@ -38,6 +38,47 @@ not have a directory.
 
 
 
+\subsection{NDOP (Network Download OPen file)}
+
+ Open a network spool file for downloading.  The client must have already
+identified itself as a network session using the NETP command.  If the command
+returns OK, the client may begin receiving IGnet/Open spool data using
+a series of READ commands.  When a CLOS command is issued, the spooled data
+is deleted from the server and may not be read again.  If the client has not
+authenticated itself with a NETP command, ERROR+HIGHER_ACCESS_REQUIRED will
+be returned.
+
+
+
+\subsection{NETF (NETwork send a File)}
+
+ This command is similar to MOVF, except that it attempts to send a file over
+the network to another system.  It should be passed two parameters: the name
+of the file to send, and the node name of the system to send it to.  All of
+the same return codes as MOVF may be returned, except for ERROR+NO_SUCH_ROOM.
+Instead, ERROR+NO_SUCH_SYSTEM may be returned if the name of the target
+system is invalid.
+
+ The name of the originating room will be sent along with the file.  Most
+implementations will look for a room with the same name at the receiving end
+and attempt to place the file there, otherwise it goes into a bit bucket room
+for miscellaneous files.  This is, however, beyond the scope of this document;
+see elsewhere for more details.
+
+
+
+\subsection{NUOP (Network Upload OPen file)}
+
+ Open a network spool file for uploading.  The client must have already
+identified itself as a network session using the NETP command.  If the command
+returns OK, the client may begin transmitting IGnet/Open spool data using
+a series of WRIT commands.  When a UCLS command is issued, the spooled data
+is entered into the server if the argument to UCLS is 1 or discarded if the
+argument to UCLS is 0.  If the client has not authenticated itself with a
+NETP command, ERROR+HIGHER_ACCESS_REQUIRED will be returned.
+
+
+
 \subsection{*OIMG (Open an IMaGe file)}
 
  Open an image (graphics) file for downloading.  Once opened, the file can be
