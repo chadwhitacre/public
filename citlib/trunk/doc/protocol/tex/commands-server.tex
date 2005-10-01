@@ -221,6 +221,16 @@ this.
 
 
 
+\subsection{NETP (authenticate as network session with connection NET Password)}
+
+ This command is used by client software to identify itself as a transport
+session for Citadel site-to-site networking.  It should be called with
+two arguments: the node name of the calling system, and the "shared secret"
+password for that connection.  If the authentication succeeds, NETP will
+return OK, otherwise, it returns ERROR.
+
+
+
 \subsection{NOOP (NO OPeration)}
 
  This command does nothing.  It takes no arguments and always returns

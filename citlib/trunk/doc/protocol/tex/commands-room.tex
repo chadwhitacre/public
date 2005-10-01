@@ -112,6 +112,17 @@ and the room aide associated with the current room, can access this command.
 
 
 
+\subsection{GNET/SNET (Get/Set NETwork configuration for this room)}
+
+ These commands get/set the network configuration for the current room.  Aide
+or Room Aide privileges are required, otherwise an ERROR code is returned.
+If the command succeeds, LISTING_FOLLOWS or SEND_LISTING is returned.  The
+network configuration for a specific room includes neighbor nodes with whom
+the room is shared, and mailing list recipients.  The format of the network
+configuration is described in the file "netconfigs.txt".
+
+
+
 \subsection{GOTO (GOTO a room)}
 
  This command is used to goto a new room.  When the user first logs in (login
@@ -336,6 +347,22 @@ in.
  Again, same format.  This command lists all accessible rooms, known and
 forgotten, with and without new messages.  It does not, however, list
 inaccessible private rooms.
+
+
+
+\subsection{NSYN (Network SYNchronize room)}
+
+ This command can be used to synchronize the contents of a room on the
+network.  It is only usable by Aides.  It accepts one argument: the name of
+a network node (which must be a valid one).
+
+ When NSYN is run, the *entire* contents of the current room will be spooled
+to the specified node, without regard to whether any of the messages have
+already undergone network processing.  It is up to the receiving node to
+check for duplicates (the Citadel networker does handle this) and avoid
+posting them twice.
+
+ The command returns OK upon success or ERROR if the user is not an Aide.
 
 
 
