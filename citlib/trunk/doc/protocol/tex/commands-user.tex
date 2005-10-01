@@ -210,7 +210,7 @@ use the CREU command.
 
 
 
-\subsection{*PASS (send PASSword)}
+\subsection{PASS (send PASSword)}
 
  The second step in logging in a user.  This command takes one argument: the
 password for the user we are attempting to log in.  If the password doesn't
@@ -222,13 +222,30 @@ correct, OK is returned and the user is now logged in... and most of the
 other server commands can now be executed.  Along with OK, the following
 parameters are returned:
 
- 0 - The user's name (in case the client wants the right upper/lower casing)
- 1 - The user's current access level
- 2 - Times called
- 3 - Messages posted
- 4 - Various flags (see citadel.h)
- 5 - User number
- 6 - Time of last call (UNIX timestamp)
+\begin{tableii}{l|l}{var}{Position}{Description}
+
+\lineii{0}
+    {The user's name (in case the client wants the right upperlower casing)}
+
+\lineii{1}
+    {The user's current access level}
+
+\lineii{2}
+    {Times called}
+
+\lineii{3}
+    {Messages posted}
+
+\lineii{4}
+    {Various flags (see citadel.h)}
+
+\lineii{5}
+    {User number}
+
+\lineii{6}
+    {Time of last call (UNIX timestamp)}
+
+\end{tableii}
 
 
 
