@@ -1,0 +1,69 @@
+\section{Floor Commands}
+
+
+
+\subsection{CFLR (Create a new FLooR)}
+
+ This command is used to create a new floor.  It should be passed two
+arguments: the name of the new floor to be created, and a 1 or 0 depending
+on whether the client is actually creating a floor or merely checking to
+see if it has permission to create the floor.   The user must be logged in
+and have Aide privileges to create a floor.
+
+ If the command succeeds, it will return OK followed by the floor number
+associated with the new floor.  Otherwise, it will return ERROR (plus perhaps
+HIGHER_ACCESS_REQUIRED, ALREADY_EXISTS, or INVALID_FLOOR_OPERATION)
+followed by a description of why the command failed.
+
+
+
+\subsection{EFLR (Edit a FLooR)}
+
+ Edit the parameters of a floor.  The client may pass one or more parameters
+to this command:
+
+ 1. The number of the floor to be edited
+ 2. The desired new name
+
+ More parameters may be added in the future.  Any parameters not passed to
+the server will remain unchanged.  A minimal command would be EFLR and a
+floor number -- which would do nothing.  EFLR plus the floor number plus a
+floor name would change the floor's name.
+
+ If the command succeeds, it will return OK.  Otherwise it will return
+ERROR (plus perhaps HIGHER_ACCESS_REQUIRED or INVALID_FLOOR_OPERATION)
+
+
+
+\subsection{KFLR (Kill a FLooR)}
+
+ This command is used to delete a floor.  It should be passed two
+argument: the *number* of the floor to be deleted, and a 1 or 0 depending
+on whether the client is actually deleting the floor or merely checking to
+see if it has permission to delete the floor.  The user must be logged in
+and have Aide privileges to delete a floor.
+
+ Floors that contain rooms may not be deleted.  If there are rooms on a floor,
+they must be either deleted or moved to different floors first.  This implies
+that the Main Floor (floor 0) can never be deleted, since Lobby>, Mail>, and
+Aide> all reside on the Main Floor and cannot be deleted.
+
+ If the command succeeds, it will return OK.  Otherwise it will return
+ERROR (plus perhaps HIGHER_ACCESS_REQUIRED or INVALID_FLOOR_OPERATION)
+followed by a description of why the command failed.
+
+
+
+\subsection{LFLR (List all known FLooRs)}
+
+ On systems supporting floors, this command lists all known floors.  The
+command accepts no parameters.  It will return ERROR+NOT_LOGGED_IN if no
+user is logged in.  Otherwise it returns LISTING_FOLLOWS and a list of
+the available floors, each line consisting of three fields:
+
+ 1. The floor number associated with the floor
+ 2. The name of the floor
+ 3. Reference count (number of rooms on this floor)
+
+
+
