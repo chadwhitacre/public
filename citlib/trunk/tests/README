@@ -1,0 +1,8 @@
+The unittests for citlib require a Citadel server that they can connect to, with
+a single user, test, password testing, user level 6. This user will be used to
+scrub the rest of the Citadel server at the beginning of each test. So you
+really don't want to run these tests against a live citadel server. :-)
+
+This functionality is in TestCaseCitlib. The only tests that don't use this test
+case are test_CitConn_basic.py, which test the basic functionality of connecting
+to and logging into a citadel server.
