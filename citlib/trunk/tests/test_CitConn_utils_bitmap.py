@@ -76,6 +76,16 @@ class TestUtilsBitmap(unittest.TestCase):
         actual = bitmap(21)
         self.assertEqual(expected, actual)
 
+    def testKeysOption(self):
+        expected = { 'foo': True
+                   , 'bar': False
+                   , 'baz': True
+                   , 'buz': False
+                   , 'bip': True
+                    }
+        actual = bitmap(21, keys=('foo','bar','baz','buz','bip'))
+        self.assertEqual(expected, actual)
+
     def testSizeOption(self):
         expected = {   16: True
                    ,    8: False
@@ -86,7 +96,7 @@ class TestUtilsBitmap(unittest.TestCase):
         actual = bitmap(21, size=5)
         self.assertEqual(expected, actual)
 
-    def testKeysOption(self):
+    def testBothKeysAndSizeOptionsGood(self):
         expected = { 'foo': True
                    , 'bar': False
                    , 'baz': True
@@ -96,6 +106,14 @@ class TestUtilsBitmap(unittest.TestCase):
         actual = bitmap(21, size=5, keys=('foo','bar','baz','buz','bip'))
         self.assertEqual(expected, actual)
 
+    def testBothKeysAndSizeOptionsBad(self):
+        self.assertRaises( ValueError
+                         , bitmap
+                         , 21
+                         , size=4
+                         , keys=('foo','bar','baz','buz','bip')
+                          )
+
     def testBucketOption(self):
         expected = Bucket()
         expected.foo = True
@@ -104,7 +122,7 @@ class TestUtilsBitmap(unittest.TestCase):
         expected.buz = False
         expected.bip = True
 
-        actual = bitmap(21, 5, ('foo','bar','baz','buz','bip'), bucket=True)
+        actual = bitmap(21, ('foo','bar','baz','buz','bip'), 5, bucket=True)
         self.assertEqual(expected.__dict__, actual.__dict__)
 
     def testBucketWrapper(self):
@@ -117,6 +135,16 @@ class TestUtilsBitmap(unittest.TestCase):
 
         actual = bitbucket(21, ('foo','bar','baz','buz','bip'))
         self.assertEqual(expected.__dict__, actual.__dict__)
+
+    def testOrdering(self):
+        expected = { 16: True
+                   ,  8: True
+                   ,  4: True
+                   ,  2: False
+                   ,  1: True
+                    }
+        actual = bitmap(29, size=5)
+        self.assertEqual(expected, actual)
 
     def testBucketWrapperMustHaveNames(self):
         self.assertRaises(TypeError, bitbucket, 21)
@@ -131,6 +159,15 @@ class TestUtilsBitmap(unittest.TestCase):
 
     def testIfWeCan(self):
         self.assertRaises(TypeError, bitmap, None)
+
+
+    def testIfWePassInKeysWeOnlyGetThoseBack(self):
+        expected = {'foo':True, 'bar':False}
+        actual = bitmap(2, keys=('foo','bar'))
+        self.assertEqual(expected, actual)
+
+    def testDuplicateKeysRaisesValueError(self):
+        self.assertRaises(ValueError, bitmap, 2, ('foo','bar','foo'))
 
 
 
