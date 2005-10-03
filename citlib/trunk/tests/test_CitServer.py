@@ -2,14 +2,15 @@
 
 import unittest
 
-from citlib.CitServer import CitError, CitServer
+from citlib import CitError
+from citlib.CitConn import CitConn
 
 
 
 class TestCitServer(unittest.TestCase):
 
     def setUp(self):
-        self.cit = CitServer()
+        self.cit = CitConn(listen=True)
 
     def tearDown(self):
         self.cit._sock.close()
@@ -37,7 +38,7 @@ class TestCitServer(unittest.TestCase):
 
     def test_PASS_badPassword(self):
         actual = self.cit.USER('test')
-        self.assertRaises(CitError, self.cit.USER, 'bad password!')
+        self.assertRaises(CitError, self.cit.PASS, 'bad password!')
 
 
 
