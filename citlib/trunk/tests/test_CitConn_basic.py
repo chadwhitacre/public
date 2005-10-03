@@ -2,9 +2,8 @@
 
 import unittest
 
-from citlib import CitError
+from citlib.utils import CitError
 from citlib.CitConn import CitConn
-
 
 
 class TestCitConn(unittest.TestCase):
