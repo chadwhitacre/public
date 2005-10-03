@@ -279,25 +279,48 @@ by the room listing.  Each line in the listing contains the full name of a
 room, followed by the '|' symbol, and then a number that may contain the
 following bits:
 
-\#define QR_PERMANENT	1		/* Room does not purge              */
-\#define QR_PRIVATE	4		/* Set for any type of private room */
-\#define QR_PASSWORDED	8		/* Set if there's a password too    */
-\#define QR_GUESSNAME	16		/* Set if it's a guessname room     */
-\#define QR_DIRECTORY	32		/* Directory room                   */
-\#define QR_UPLOAD	64		/* Allowed to upload                */
-\#define QR_DOWNLOAD	128		/* Allowed to download              */
-\#define QR_VISDIR	256		/* Visible directory                */
-\#define QR_ANONONLY	512		/* Anonymous-Only room              */
-\#define QR_ANON2	1024		/* Anonymous-Option room            */
-\#define QR_NETWORK	2048		/* Shared network room              */
-\#define QR_PREFONLY	4096		/* Preferred status needed to enter */
-\#define QR_READONLY	8192		/* Aide status required to post     */
+\begin{tableiii}{l|l|l}{var}{Bit}{Name}{Description}
+
+\lineiii{1}{QR_PERMANENT}{Room does not purge}
+
+\lineiii{4}{QR_PRIVATE}{Set for any type of private room}
+
+\lineiii{8}{QR_PASSWORDED}{Set if there's a password too}
+
+\lineiii{16}{QR_GUESSNAME}{Set if it's a guessname room}
+
+\lineiii{32}{QR_DIRECTORY}{Directory room}
+
+\lineiii{64}{QR_UPLOAD}{Allowed to upload}
+
+\lineiii{128}{QR_DOWNLOAD}{Allowed to download}
+
+\lineiii{256}{QR_VISDIR}{Visible directory}
+
+\lineiii{512}{QR_ANONONLY}{Anonymous-Only room}
+
+\lineiii{1024}{QR_ANON2}{Anonymous-Option room}
+
+\lineiii{2048}{QR_NETWORK}{Shared network room}
+
+\lineiii{4096}{QR_PREFONLY}{Preferred status needed to enter}
+
+\lineiii{8192}{QR_READONLY}{Aide status required to post}
+
+\end{tableiii}
 
  Then it returns another '|' symbol, followed by a second set of bits comprised
 of the following:
 
-\#define QR2_SYSTEM	1		/* System room; hide by default     */
-\#define QR2_SELFLIST	2		/* Self-service mailing list mgmt   */
+\begin{tableiii}{l|l|l}{var}{Bit}{Name}{Description}
+
+\lineiii{1}{QR2_SYSTEM}{System room; hide by default}
+
+\lineiii{2}{QR2_SELFLIST}{Self-service mailing list mgmt}
+
+\end{tableiii}
+
+
 
  Other bits may be defined in the future.  The listing terminates, as with
 all listings, with "000" on a line by itself.
@@ -318,17 +341,25 @@ listings by this value.
  The fifth field is a special bit bucket containing fields which pertain to
 room access controls:
 
-\#define UA_KNOWN                2	/* Known room */
-\#define UA_GOTOALLOWED          4	/* Access will be granted to this room
-					 * if the user calls it up by name */
-\#define UA_HASNEWMSGS           8	/* Unread messages exist in room */
-\#define UA_ZAPPED              16	/* Zapped from known rooms list */
+\begin{tableiii}{l|l|l}{var}{Bit}{Name}{Description}
+
+\lineiii{2}{UA_KNOWN}{Known room}
+
+\lineiii{4}{UA_GOTOALLOWED}{Access will be granted to this room if the user
+                            calls it up by name}
+
+\lineiii{8}{UA_HASNEWMSGS}{Unread messages exist in room}
+
+\lineiii{16}{UA_ZAPPED}{Zapped from known rooms list}
+
+\end{tableiii}
+
 
  The sixth field is the user's current view for the room. (See VIEW command)
 
 
 
-subsection{LKRO (List Known Rooms with Old [no new] messages)}
+\subsection{LKRO (List Known Rooms with Old [no new] messages)}
 
  This follows the same usage and format as LKRN.
 
