@@ -49,7 +49,7 @@ are to be saved.
 
 \subsection{ENT0 (ENTer message, mode 0)}
 
- This command is used to enter messages into the system.  It accepts four
+ This command is used to enter messages into the system.  It accepts nine
 arguments:
 
 
@@ -118,25 +118,25 @@ arguments:
     correct upper and lower case characters.  In addition, if the recipient is
     having his/her mail forwarded, the forwarding address will be returned.}
 
-\lineiii{xxx}{SEND_LISTING}
+\lineiii{400}{SEND_LISTING}
     {The request is valid.  The client should now transmit the text of the
     message (ending with a 000 on a line by itself, as usual).}
 
-\lineiii{xxx}{START_CHAT_MODE}
+\lineiii{800}{START_CHAT_MODE}
     {The request is valid.  The client should now transmit the text of the
     message, ending with a 000 on a line by itself.  After transmitting the 000
     terminator, the client MUST read in the confirmation from the server, which
     will also end with 000 on a line by itself.  The format of the confirmation
     appears below.}
 
-\lineiii{xxx}{ERROR + NOT_LOGGED_IN}
+\lineiii{520}{ERROR + NOT_LOGGED_IN}
     {Not logged in.}
 
-\lineiii{xxx}{ERROR + HIGHER_ACCESS_REQUIRED}
+\lineiii{550}{ERROR + HIGHER_ACCESS_REQUIRED}
     {Higher access is required.  An explanation follows, worded in a form that
     can be displayed to the user.}
 
-\lineiii{xxx}{ERROR + NO_SUCH_USER}
+\lineiii{570}{ERROR + NO_SUCH_USER}
     {The specified recipient does not exist.}
 
 
@@ -255,7 +255,7 @@ When a message is copied, its reference count is incremented.
 
 
 
-\subsection{*MSGS (get pointers to MeSsaGeS in this room)}
+\subsection{MSGS (get pointers to MeSsaGeS in this room)}
 
  This command obtains a listing of all the messages in the current room
 which the client may request.  This command may be passed a single parameter:
@@ -290,17 +290,20 @@ criteria, and then read the message list.
 
  Since this is somewhat complex, here are some examples:
 
- Example 1: Read all new messages
+ \strong{Example 1:} Read all new messages
 
+\begin{verbatim}
  Client:   MSGS NEW
  Server:   100 Message list...
            523218
            523293
            523295
            000
+\end{verbatim}
 
- Example 2: Read the last five messages
+ \strong{Example 2:} Read the last five messages
 
+\begin{verbatim}
  Client:   MSGS LAST|5
  Server:   100 Message list...
            523190
@@ -309,9 +312,11 @@ criteria, and then read the message list.
            523293
            523295
            000
+\end{verbatim}
 
- Example 3: Read all messages written by "IGnatius T Foobar"
+ \strong{Example 3:} Read all messages written by "IGnatius T Foobar"
 
+\begin{verbatim}
  Client:   MSGS ALL|0|1
  Server:   800 Send template then receive message list
  Client:   from|IGnatius T Foobar
@@ -327,63 +332,109 @@ criteria, and then read the message list.
            521720
            522571
            000
+\end{verbatim}
 
  Note that in "search mode" the client may specify any number of search
 criteria.  These criteria are applied with an AND logic.
 
 
 
-\subsection{*MSG0 (read MeSsaGe, mode 0)}
+\subsection{MSG0 (read MeSsaGe, mode 0)}
 
  This is a command used to read the text of a message.  "Mode 0" implies that
 other MSG commands (MSG1, MSG2, etc.) will probably be added later on to read
 messages in more robust formats.  This command should be passed two arguments.
 The first is the message number of the message being requested.  The second
 argument specifies whether the client wants headers and/or message body:
- 0 = Headers and body
- 1 = Headers only
- 2 = Body only
- 3 = Headers only, with MIME information suppressed (this runs faster)
+
+\begin{tableii}{l|l}{var}{Value}{Description}
+
+\lineii{0}{Headers and body}
+
+\lineii{1}{Headers only}
+
+\lineii{2}{Body only}
+
+\lineii{3}{Headers only, with MIME information suppressed (this runs faster)}
+
+\end{tableii}
 
  If the request is denied, ERROR + NOT_LOGGED_IN or ERROR + MESSAGE_NOT_FOUND
 will be returned.  Otherwise, LISTING_FOLLOWS will be returned, followed by
 the contents of the message.  The following fields may be sent:
 
- type=   Formatting type.  The currently defined types are:
-  0 = "traditional" Citadel formatting.  This means that newlines should be
-treated as spaces UNLESS the first character on the next line is a space.  In
-other words, only indented lines should generate a newline on the user's screen
-when the message is being displayed.  This allows a message to be formatted to
-the reader's screen width.  It also allows the use of proportional fonts.
-  1 = a simple fixed-format message.  The message should be displayed to
-the user's screen as is, preferably in a fixed-width font that will fit 80
-columns on a screen.
-  4 = MIME format message.  The message text is expected to contain a header
-with the "Content-type:" directive (and possibly others).
+\begin{description}
 
- msgn=   The message ID of this message on the system it originated on.
- path=   An e-mailable path back to the user who wrote the message.
+\item[type=]
+ Formatting type. The currently defined types are:
 
- time=   The date and time of the message, in Unix format (the number of
-seconds since midnight on January 1, 1970, GMT).
+    \begin{tableiii}{l|l|l}{var}{Value}{Name}{Description}
 
- from=   The name of the author of the message.
- rcpt=   If the message is a private e-mail, this is the recipient.
- room=   The name of the room the message originated in.
- node=   The short node name of the system this message originated on.
- hnod=   The long node name of the system this message originated on.
- zaps=   The id/node of a message which this one zaps (supersedes).
+    \lineiii{0}
+        {"traditional" Citadel formatting}
+        {This means that newlines should be treated as spaces UNLESS the first
+        character on the next line is a space.  In other words, only indented
+        lines should generate a newline on the user's screen when the message is
+        being displayed.  This allows a message to be formatted to the reader's
+        screen width. It also allows the use of proportional fonts.}
 
- part=   Information about a MIME part embedded in this message.
- pref=   Information about a multipart MIME prefix such as "multipart/mixed"
-         or "multipart/alternative".  This will be output immediately prior
-         to the various "part=" lines which make up the multipart section.
- suff=   Information about a multipart MIME suffix.  This will be output
-         immediately following the various "part=" lines which make up the
-         multipart section.
+    \lineiii{1}
+        {a simple fixed-format message}
+        {The message should be displayed to the user's screen as is, preferably
+        in a fixed-width font that will fit 80 columns on a screen.}
 
- text    Note that there is no "=" after the word "text".  This string
-signifies that the message text begins on the next line.
+    \lineiii{4}
+        {MIME format message}
+        {The message text is expected to contain a header with the "Content-
+        type:" directive (and possibly others).}
+
+    \end{tableiii}
+
+\item[msgn=]
+    The message ID of this message on the system it originated on.
+
+\item[path=]
+    An e-mailable path back to the user who wrote the message.
+
+\item[time=]
+    The date and time of the message, in Unix format (the number of seconds
+    since midnight on January 1, 1970, GMT).
+
+\item[from=]
+    The name of the author of the message.
+
+\item[rcpt=]
+    If the message is a private e-mail, this is the recipient.
+
+\item[room=]
+    The name of the room the message originated in.
+
+\item[node=]
+    The short node name of the system this message originated on.
+
+\item[hnod=]
+    The long node name of the system this message originated on.
+
+\item[zaps=]
+    The id/node of a message which this one zaps (supersedes).
+
+\item[part=]
+    Information about a MIME part embedded in this message.
+
+\item[pref=]
+    Information about a multipart MIME prefix such as "multipart/mixed" or
+    "multipart/alternative".  This will be output immediately prior to the
+    various "part=" lines which make up the multipart section.
+
+\item[suff=]
+    Information about a multipart MIME suffix.  This will be output immediately
+    following the various "part=" lines which make up the multipart section.
+
+\item[text]
+    Note that there is no "=" after the word "text".  This string signifies that
+    the message text begins on the next line.
+
+\end{description}
 
 
 
