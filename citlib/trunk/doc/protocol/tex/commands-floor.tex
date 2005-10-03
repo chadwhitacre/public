@@ -54,16 +54,22 @@ followed by a description of why the command failed.
 
 
 
-\subsection{LFLR (List all known FLooRs)}
+\subsection{*LFLR (List all known FLooRs)}
 
  On systems supporting floors, this command lists all known floors.  The
 command accepts no parameters.  It will return ERROR+NOT_LOGGED_IN if no
 user is logged in.  Otherwise it returns LISTING_FOLLOWS and a list of
 the available floors, each line consisting of three fields:
 
- 1. The floor number associated with the floor
- 2. The name of the floor
- 3. Reference count (number of rooms on this floor)
+\begin{tableii}{l|l}{var}{Position}{Description}
+
+\lineii{1}{The floor number associated with the floor}
+
+\lineii{2}{The name of the floor}
+
+\lineii{3}{Reference count (number of rooms on this floor)}
+
+\end{tableii}
 
 
 
