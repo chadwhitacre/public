@@ -5,43 +5,51 @@ import unittest
 from citlib.utils import bitmap, Bucket, bitbucket
 
 
+bitmap_32 = {
+    2147483648L: False
+  ,  1073741824: False
+  ,   536870912: False
+  ,   268435456: False
+  ,   134217728: False
+  ,    67108864: False
+  ,    33554432: False
+  ,    16777216: False
+  ,     8388608: False
+  ,     4194304: False
+  ,     2097152: False
+  ,     1048576: False
+  ,      524288: False
+  ,      262144: False
+  ,      131072: False
+  ,       65536: False
+  ,       32768: False
+  ,       16384: False
+  ,        8192: False
+  ,        4096: False
+  ,        2048: False
+  ,        1024: False
+  ,         512: False
+  ,         256: False
+  ,         128: False
+  ,          64: False
+  ,          32: False
+  ,          16: False
+  ,           8: False
+  ,           4: False
+  ,           2: False
+  ,           1: False
+               }
+
 class TestUtilsBitmap(unittest.TestCase):
 
     def testBasic(self):
-        expected = { 8192: False
-                   , 4096: False
-                   , 2048: False
-                   , 1024: False
-                   ,  512: False
-                   ,  256: False
-                   ,  128: False
-                   ,   64: False
-                   ,   32: False
-                   ,   16: False
-                   ,    8: False
-                   ,    4: False
-                   ,    2: False
-                   ,    1: True
-                    }
+        expected = bitmap_32.copy()
+        expected[1] = True
         actual = bitmap(1)
         self.assertEqual(expected, actual)
 
     def testLow(self):
-        expected = { 8192: False
-                   , 4096: False
-                   , 2048: False
-                   , 1024: False
-                   ,  512: False
-                   ,  256: False
-                   ,  128: False
-                   ,   64: False
-                   ,   32: False
-                   ,   16: False
-                   ,    8: False
-                   ,    4: False
-                   ,    2: False
-                   ,    1: False
-                    }
+        expected = bitmap_32.copy()
         actual = bitmap(0)
         self.assertEqual(expected, actual)
 
@@ -49,43 +57,22 @@ class TestUtilsBitmap(unittest.TestCase):
         self.assertRaises(ValueError, bitmap, -1)
 
     def testHigh(self):
-        expected = { 8192: True
-                   , 4096: True
-                   , 2048: True
-                   , 1024: True
-                   ,  512: True
-                   ,  256: True
-                   ,  128: True
-                   ,   64: True
-                   ,   32: True
-                   ,   16: True
-                   ,    8: True
-                   ,    4: True
-                   ,    2: True
-                   ,    1: True
-                    }
-        actual = bitmap(16383)
+        expected = bitmap_32.copy()
+        for i in expected:
+            expected[i] = True
+        actual = bitmap(4294967295L)
         self.assertEqual(expected, actual)
 
     def testHighPlusOne(self):
-        self.assertRaises(ValueError, bitmap, 16384)
+        self.assertRaises(ValueError, bitmap, 4294967297L)
 
     def testMixed(self):
-        expected = { 8192: False
-                   , 4096: False
-                   , 2048: False
-                   , 1024: False
-                   ,  512: False
-                   ,  256: False
-                   ,  128: False
-                   ,   64: False
-                   ,   32: False
-                   ,   16: True
-                   ,    8: False
-                   ,    4: True
-                   ,    2: False
-                   ,    1: True
-                    }
+        expected = bitmap_32.copy()
+        expected[16] = True
+        expected[8] = False
+        expected[4] = True
+        expected[2] = False
+        expected[1] = True
         actual = bitmap(21)
         self.assertEqual(expected, actual)
 
