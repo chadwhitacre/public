@@ -36,6 +36,59 @@ class Tests(unittest.TestCase):
             self.cit.DELE(msgnum)
 
 
+    # DELE
+
+    def test_DELE(self):
+        self.addmsgs(3)
+        for message in self.cit.MSGS():
+            self.cit.DELE(message)
+        self.assert_(len(self.cit.MSGS()) == 0)
+
+    def test_DELE_takesInt(self):
+        self.addmsgs(1)
+        for msgnum in self.cit.MSGS():
+            self.assert_(isinstance(msgnum, int))
+            self.cit.DELE(msgnum)
+        self.assert_(len(self.cit.MSGS()) == 0)
+
+    def test_DELE_takesLongInt(self):
+        self.addmsgs(1)
+        for msgnum in self.cit.MSGS():
+            msgnum = long(msgnum)
+            self.assert_(isinstance(msgnum, long))
+            self.cit.DELE(msgnum)
+        self.assert_(len(self.cit.MSGS()) == 0)
+
+    def test_DELE_otherTypesFail(self):
+        self.assertRaises(TypeError, self.cit.DELE, 'foo')
+        self.assertRaises(TypeError, self.cit.DELE, None)
+        self.assertRaises(TypeError, self.cit.DELE, [])
+        self.assertRaises(TypeError, self.cit.DELE, 4.5)
+
+
+    # ENT0
+
+    def test_ENT0(self):
+        self.cit.ENT0( 1
+                     , ''
+                     , 0
+                     , 1
+                     , 'cheese'
+                     , ''
+                     , 1
+                     , ''
+                     , ''
+                     , message = 'BLAM!!!!!!!!!!!'
+                      )
+        messages = self.cit.MSGS()
+        self.assertEqual(len(messages), 1)
+
+
+    # MSG1
+
+    def test_MSG1(self):
+        self.assertRaises(CitError, self.cit.MSG0)
+
 
     # MSGS
 
@@ -85,55 +138,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
-
-
-    # ENT0
-
-    def test_ENT0(self):
-        self.cit.ENT0( 1
-                     , ''
-                     , 0
-                     , 1
-                     , 'cheese'
-                     , ''
-                     , 1
-                     , ''
-                     , ''
-                     , message = 'BLAM!!!!!!!!!!!'
-                      )
-        messages = self.cit.MSGS()
-        self.assertEqual(len(messages), 1)
-
-
-
-    # DELE
-
-    def test_DELE(self):
-        self.addmsgs(3)
-        for message in self.cit.MSGS():
-            self.cit.DELE(message)
-        self.assert_(len(self.cit.MSGS()) == 0)
-
-    def test_DELE_takesInt(self):
-        self.addmsgs(1)
-        for msgnum in self.cit.MSGS():
-            self.assert_(isinstance(msgnum, int))
-            self.cit.DELE(msgnum)
-        self.assert_(len(self.cit.MSGS()) == 0)
-
-    def test_DELE_takesLongInt(self):
-        self.addmsgs(1)
-        for msgnum in self.cit.MSGS():
-            msgnum = long(msgnum)
-            self.assert_(isinstance(msgnum, long))
-            self.cit.DELE(msgnum)
-        self.assert_(len(self.cit.MSGS()) == 0)
-
-    def test_DELE_otherTypesFail(self):
-        self.assertRaises(TypeError, self.cit.DELE, 'foo')
-        self.assertRaises(TypeError, self.cit.DELE, None)
-        self.assertRaises(TypeError, self.cit.DELE, [])
-        self.assertRaises(TypeError, self.cit.DELE, 4.5)
 
 
 
