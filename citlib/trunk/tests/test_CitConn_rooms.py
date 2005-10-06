@@ -21,9 +21,9 @@ class TestRooms(unittest.TestCase):
         self.cit.QUIT()
 
 
-    def test_LKRN(self):
-        rooms = self.cit.LKRN()
-        mailroom = rooms[0]
+    def test_LR(self):
+        rooms = self.cit.LKRA()
+        mailroom = rooms[1]
         self.assertEqual(mailroom[0], 'Mail')
         self.assertEqual(mailroom[1].QR_PERMANENT,  True)
         self.assertEqual(mailroom[1].QR_PRIVATE,    False)
@@ -47,9 +47,43 @@ class TestRooms(unittest.TestCase):
         self.assertEqual(mailroom[5].UA_HASNEWMSGS, True)
         self.assertEqual(mailroom[5].UA_ZAPPED,     False)
 
-    def test_LKRN_notLoggedIn(self):
+    def test_LR_notLoggedIn(self):
         self.cit.LOUT()
-        self.assertRaises(CitError, self.cit.LKRN)
+        self.assertRaises(CitError, self.cit.LKRA)
+
+
+    def test_LKRA(self):
+        expected = ['Contacts', 'Mail', 'Sent Items', 'Aide',
+                    'Global Address Book', 'Lobby', 'Trashcan']
+        actual = [r[0] for r in self.cit.LKRA()]
+        self.assertEqual(expected, actual)
+
+    def test_LZRM(self):
+        expected = []
+        actual = [r[0] for r in self.cit.LZRM()]
+        self.assertEqual(expected, actual)
+
+    def test_LKRN(self):
+        expected = ['Mail', 'Aide', 'Global Address Book', 'Lobby']
+        actual = [r[0] for r in self.cit.LKRN()]
+        self.assertEqual(expected, actual)
+
+    def test_LKRO(self):
+        expected = ['Contacts', 'Sent Items', 'Trashcan']
+        actual = [r[0] for r in self.cit.LKRO()]
+        self.assertEqual(expected, actual)
+
+    def test_LPRM(self):
+        expected = ['Lobby', 'Trashcan']
+        actual = [r[0] for r in self.cit.LPRM()]
+        self.assertEqual(expected, actual)
+
+    def test_LRMS(self):
+        expected = ['Contacts', 'Mail', 'Sent Items', 'Aide',
+                    'Global Address Book', 'Lobby', 'Trashcan']
+        actual = [r[0] for r in self.cit.LRMS()]
+        self.assertEqual(expected, actual)
+
 
 
 
