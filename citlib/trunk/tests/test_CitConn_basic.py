@@ -26,7 +26,6 @@ class TestCitConn(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
-
     # login/logout
 
     def test_USER(self):
@@ -65,7 +64,6 @@ class TestCitConn(unittest.TestCase):
         actual = cit.LOUT()
         self.assertEqual(expected, actual)
         cit.QUIT()
-
 
 
 
