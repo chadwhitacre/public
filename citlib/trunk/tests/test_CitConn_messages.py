@@ -24,7 +24,7 @@ class Tests(unittest.TestCase):
         self.cit.QUIT()
 
     def addmsg(self):
-        self.cit.ENT0(1,'',0,1,'cheese','',1,'','',message = 'BLAM!!!!!!!')
+        self.cit.ENT0(subject='cheese', message = 'BLAM!!!!!!!')
 
     def addmsgs(self, r):
         for i in range(r):
@@ -69,19 +69,39 @@ class Tests(unittest.TestCase):
     # ENT0
 
     def test_ENT0(self):
-        self.cit.ENT0( 1
-                     , ''
-                     , 0
-                     , 1
-                     , 'cheese'
-                     , ''
-                     , 1
-                     , ''
-                     , ''
-                     , message = 'BLAM!!!!!!!!!!!'
-                      )
+        self.cit.ENT0(subject="cheese", message='BLAM!!!!!!!!!!!')
         messages = self.cit.MSGS()
         self.assertEqual(len(messages), 1)
+
+    def test_ENT0_badPost(self):
+        self.assertRaises( ValueError
+                         , self.cit.ENT0
+                         , post=None
+                          )
+
+    def test_ENT0_badTo(self):
+        self.assertRaises( TypeError
+                         , self.cit.ENT0
+                         , to=None
+                          )
+
+    def test_ENT0_200(self):
+        val = self.cit.ENT0(0, subject="cheese", message='BLAM!!!!!!!!!!!')
+        self.assertEqual(('',), val)
+
+    def test_ENT0_400(self):
+        val = self.cit.ENT0(subject="cheese", message='BLAM!!!!!!!!!!!')
+        self.assertEqual(None, val)
+
+    def test_ENT0_800_success(self):
+        expected = (879, 'Message accepted.', '')
+        actual = self.cit.ENT0(confirm=True, subject="cheese", message='BLAM!')
+        self.assertEqual(int, type(actual[0]))
+        self.assertEqual(expected[1:], actual[1:])
+
+    def _test_ENT0_800_failure(self):
+        # Not quite sure how to trigger this yet.
+        pass
 
 
     # MSG1
