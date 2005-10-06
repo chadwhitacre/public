@@ -89,6 +89,10 @@ class Tests(unittest.TestCase):
         val = self.cit.ENT0(0, subject="cheese", message='BLAM!!!!!!!!!!!')
         self.assertEqual(('',), val)
 
+    def _test_ENT0_200_error(self):
+        # Not quite sure how to trigger this yet.
+        pass
+
     def test_ENT0_400(self):
         val = self.cit.ENT0(subject="cheese", message='BLAM!!!!!!!!!!!')
         self.assertEqual(None, val)
@@ -102,6 +106,26 @@ class Tests(unittest.TestCase):
     def _test_ENT0_800_failure(self):
         # Not quite sure how to trigger this yet.
         pass
+
+
+    # MSGx
+
+    def test_MSG0(self):
+        self.addmsg()
+        msgnum = self.cit.MSGS()[0]
+        expected = ({ 'node': 'josemaria'
+                    , 'from': 'test'
+                    , 'room': 'Lobby'
+                    , 'hnod': 'Josemaria'
+                    , 'subj': 'cheese'
+                    , 'time': '1128617111'
+                    , 'path': 'cit2'
+                    , 'msgn': '1114@zetadev.com'
+                   #, 'type': '0'}, 'BLAM!!!!!!!\n') blemish in Citadel\UX
+                    , 'type': '0'}, 'BLAM!!!!!!! \n')
+        actual = self.cit.MSG0(msgnum)
+        self.assertEqual(expected[0]['from'], actual[0]['from'])
+        self.assertEqual(expected[1], actual[1])
 
 
     # MSG1
