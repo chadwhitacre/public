@@ -21,10 +21,10 @@ class TestCitConn(unittest.TestCase):
 
 
     def test_LFLR(self):
-        expected = ['0', 'Main Floor', '17'][:2]
+        expected = (0, 'Main Floor', 17)
         floors = self.cit.LFLR()
         self.assert_(len(floors) == 1)
-        actual = floors[0][:2]
+        actual = floors[0]
         self.assertEqual(expected, actual)
 
     def test_LFLR_notLoggedIn(self):
