@@ -7,7 +7,7 @@ from citlib.CitConn import CitConn
 
 
 
-class TestCitConn(unittest.TestCase):
+class TestRooms(unittest.TestCase):
 
 
     def setUp(self):
@@ -56,7 +56,7 @@ class TestCitConn(unittest.TestCase):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestCitConn))
+    suite.addTest(makeSuite(TestRooms))
     return suite
 
 if __name__ == '__main__':

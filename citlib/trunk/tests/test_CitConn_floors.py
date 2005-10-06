@@ -21,7 +21,7 @@ class TestCitConn(unittest.TestCase):
 
 
     def test_LFLR(self):
-        expected = ('0', 'Main Floor', '17')[:2]
+        expected = ['0', 'Main Floor', '17'][:2]
         floors = self.cit.LFLR()
         self.assert_(len(floors) == 1)
         actual = floors[0][:2]
