@@ -87,7 +87,12 @@ class Tests(unittest.TestCase):
     # MSG1
 
     def test_MSG1(self):
-        self.assertRaises(CitError, self.cit.MSG0)
+        # This mostly tests CitError actually :^)
+        self.assertRaises(CitError, self.cit.MSG1)
+        try:
+            self.cit.MSG1()
+        except CitError, err:
+            self.assertEqual(str(err), "[530] Command not supported.")
 
 
     # MSGS
