@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-from zetaserver.Client import Client
-from zetaserver.protocols import Index
+from xmlrpclib import ServerProxy()
 
-Index.Client._listen = True
-client = Client(Index.Client)
-client.scheme = 'foo'
-client._listen = True
+index = ServerProxy('localhost:5370')
+
 import code; code.interact(local=locals())
