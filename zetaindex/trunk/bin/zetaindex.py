@@ -7,15 +7,15 @@ __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 
 import sys
 
-from zetaserver.protocols import Index
-from zetaserver.Server import Server
+from zetaserver.IndexServer import IndexServer
+from zetaserver.Server import ServerManager
 
 
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
     Server._listen = True
-    server = Server(Index)
+    server = ServerManager()
     server.start()
 
 
