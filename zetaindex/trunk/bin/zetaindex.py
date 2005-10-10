@@ -14,8 +14,8 @@ from zetaserver.Server import Server
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
-    Index.Server._listen = True
-    server = Server(Index.Server)
+    Server._listen = True
+    server = Server(Index)
     server.start()
 
 
