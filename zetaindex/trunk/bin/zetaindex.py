@@ -5,20 +5,19 @@
 __version__ = (0, 1)
 __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 
-from zeta.index.Server import Server
+import sys
+
+from zetaserver.protocols import Index
+from zetaserver.Server import Server
 
 
 def main(argv=None):
-
     if argv is None:
         argv = sys.argv[1:]
-
-    server = Server()
+    Index.Server._listen = True
+    server = Server(Index.Server)
     server.start()
 
 
 if __name__ == "__main__":
     sys.exit(main())
-
-
-
