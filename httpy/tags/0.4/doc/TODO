@@ -1,0 +1,111 @@
+========================================
+    0.2 -- STATIC
+========================================
+=====DONE=====
+sensible error handling
+get frame macro instead of template
+configuration
+    think through relationship of cli options, config, and env variables
+        defaults -- can start httpy with no options, etc. and get something
+    check to make sure site root exists on filesystem
+    push all config checking up and out of init
+write a make file
+continue with unit tests
+refactor into multiple modules, distutils + make
+if frame.pt is empty, then frame should just be none
+handle 500 better
+400 -> 501
+test error templates
+ignore empty error template
+test last resort
+put tracebacks in error messages when in development mode
+figure out daemontools
+
+
+========================================
+    0.4 -- DYNAMIC
+========================================
+=====DONE=====
+write html docs
+support something sane like CGI to provide context.py with it's API
+manage sessions, post, querystring, cookies?
+logging -- stdout :-) -- but support different verbosities
+factor out medusa goofiness if possible
+refactor for BaseHTTPServer -- no non-std lib dependencies!
+separate error for each HTTP error? if not then why Redirect sep?
+500 traceback should be in pre -- hardwire this into the message?
+    the problem is that we also use message for redirects, which we don't
+      necessarily want in pre, but on another level it doesn't matter cause
+      noone ever sees that payload
+factor out templating
+need to import rather than execfile
+    guessing its faster
+    need persistence, e.g. for template caching
+        import app rather than from app import Transaction
+        then app.py can run whatever and it stays in memory
+add apps to configuration
+guess content type in response --> NO!!!!!!11
+server string -> httpy
+
+
+========================================
+    0.6 -- zope.server
+========================================
+solidify and document the API -- this will have to be backwards-compatible!
+    request
+    config
+    context (flynn ... i.e., what the app is responsible for itself)
+convert doc to man page
+test our processing of different cases of configuration options
+do we want traditional access logging? separate access and error logs?
+document apps
+tests
+make apps implicit rather than explicit
+    change Config to auto-find apps by default -- can still be overriden
+    also update Config tests to reflect the change
+    shouldn't need to touch Server or Task since their input won't change
+=====DONE=====
+httpy.app.CGIMixin
+supporting on-the-fly reloading of apps in dev mode
+need to figure out how to sanely provide for alternate py libs
+    answer: PYTHONPATH per daemontools -- configurable per site
+    per-site lib
+    per-app lib
+    sys.path is not a simple solution since we have multiple apps -- what is the import order?
+unittests!
+refactor docs in Python style
+
+
+
+========================================
+    0.8 -- HTTP/1.1
+========================================
+keep-alive
+range requests
+=====DONE=====
+transfer encoding
+
+
+========================================
+    1.0 -- BELLS & WHISTLES
+========================================
+precompile templates (in place)
+    httpy -f httpy.conf -c
+support interactive features:
+    ctrl-s? -- display configuration settings
+    ctrl-d? -- enter postmortem debugger on next exception
+signal handling
+    TERM -- nice shutdown
+    HUP -- reload config
+add cli options to dump config and exit
+smarter module caching?
+
+
+
+========================================
+    1.2 -- EXPAND OUR TERRITORY
+========================================
+play nice on Windows
+    GUI?
+    pyexe?
+
