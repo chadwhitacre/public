@@ -5,19 +5,19 @@ import os
 import unittest
 
 from httpy import DefaultApp
-from httpy.Config import TransactionConfig
+from httpy.Config import ApplicationConfig
 from httpy.Request import Request, ZopeRequest
 from httpy.Response import Response
 
 from TestCaseHttpy import TestCaseHttpy
-from utils import StubTransactionConfig
+from utils import StubApplicationConfig
 
 
 class TestDefaultApp(TestCaseHttpy):
 
     def setUp(self):
         TestCaseHttpy.setUp(self)
-        config = StubTransactionConfig()
+        config = StubApplicationConfig()
         config.mode = 'development'
         config.verbosity = 0
         config.site_root = os.path.realpath('root')
@@ -25,7 +25,7 @@ class TestDefaultApp(TestCaseHttpy):
         config.app_fs_root = os.path.realpath('root')
         config.__ = None
         self.config = config
-        self.txn = DefaultApp.Transaction(config)
+        self.txn = DefaultApp.Application(config)
 
     testsite = [ ('/index.html', '')
                , ('/foo.bar', '')
@@ -107,7 +107,7 @@ class TestDefaultApp(TestCaseHttpy):
 
     def testDeployment_ModifiedSinceIsTrue(self):
         self.config.mode = 'deployment'
-        self.txn = DefaultApp.Transaction(self.config)
+        self.txn = DefaultApp.Application(self.config)
 
         headers = {'If-Modified-Since':'Fri, 01 Jan 1970 00:00:00 GMT'}
         request = self.make_request("/foo.html", headers)
@@ -126,7 +126,7 @@ class TestDefaultApp(TestCaseHttpy):
 
     def testDeployment_ModifiedSinceIsFalse(self):
         self.config.mode = 'deployment'
-        self.txn = DefaultApp.Transaction(self.config)
+        self.txn = DefaultApp.Application(self.config)
 
         headers = {'If-Modified-Since':'Fri, 31 Dec 9999 23:59:59 GMT'}
         request = self.make_request("/foo.html", headers)

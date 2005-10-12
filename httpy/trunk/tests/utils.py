@@ -22,7 +22,7 @@ class StubChannel(StringIO):
         pass
 
 
-class StubTransactionConfig:
+class StubApplicationConfig:
     pass
 
 
@@ -37,7 +37,7 @@ def DUMMY_TASK():
 DUMMY_APP = """\
 from httpy.Response import Response
 
-class Transaction:
+class Application:
     def __init__(self, config):
         pass
     def process(self, request):
