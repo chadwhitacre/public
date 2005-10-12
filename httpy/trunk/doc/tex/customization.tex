@@ -69,16 +69,16 @@ a magic directory, httpy will raise \class{ConfigError} and exits.
 
 When httpy starts up, it attempts to import a module or package named
 \module{app} from each application's magic directory. Each \module{app}
-module/package must define a class named \class{Transaction}.
-\class{Transaction}'s constructor must take a single argument, an instance of
-\class{AppConfig}. \class{Transaction} must have at least one other method,
+module/package must define a class named \class{Application}.
+\class{Application}'s constructor must take a single argument, an instance of
+\class{AppConfig}. \class{Application} must have at least one other method,
 named \code{process}, which also takes a single argument, an instance of
 \class{Request}. If any of these conditions are not met, httpy raises
 \class{ConfigError} and exits. Therefore, here is the minimal legal
 \file{app.py}:
 
 \begin{verbatim}
-class Transaction:
+class Application:
 
     def __init__(self, config):
         pass
@@ -88,14 +88,14 @@ class Transaction:
 
 \end{verbatim}
 
-\class{Transaction.process} is expected to end the request by raising a
+\class{Application.process} is expected to end the request by raising a
 \class{Response} or other \class{Exception}. Therefore, here is the minimal
 successful \file{app.py}:
 
 \begin{verbatim}
 from httpy.Response import Response
 
-class Transaction:
+class Application:
 
     def __init__(self, config):
         pass

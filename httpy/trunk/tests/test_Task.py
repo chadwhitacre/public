@@ -16,7 +16,7 @@ from TestCaseHttpy import TestCaseHttpy
 
 DUMMY_APP = """\
 from httpy.Response import Response
-class Transaction:
+class Application:
     def __init__(self, config):
         pass
     def process(self, request):

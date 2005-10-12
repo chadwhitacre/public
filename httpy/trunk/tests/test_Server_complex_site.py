@@ -31,7 +31,7 @@ import os
 from httpy.Response import Response
 from TLang import fill
 
-class Transaction:
+class Application:
 
     def __init__(self, config):
         self.config = config
@@ -57,7 +57,7 @@ import os
 from httpy.Response import Response
 import TLang
 
-class Transaction:
+class Application:
 
     def __init__(self, config):
         self.config = config

@@ -13,7 +13,7 @@ from TestCaseHttpy import TestCaseHttpy
 
 
 DUMMY_APP = """\
-class Transaction:
+class Application:
    def __init__(self, config):
         return config
     def process(self, request):

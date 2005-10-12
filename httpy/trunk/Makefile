@@ -23,6 +23,7 @@ clean:
 	rm -rf httpy httpy.1.gz httpy.conf.5.gz
 	rm -rf build
 	rm -rf dist
+	rm -rf doc/html
 	find . -name \*.pyc -exec rm -f {} \;
 
 install: configure

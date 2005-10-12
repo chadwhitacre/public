@@ -5,18 +5,18 @@ import os
 import sys
 import unittest
 
-from httpy.Config import TransactionConfig
+from httpy.Config import ApplicationConfig
 from httpy.Response import Response
 from httpy.utils import uri_to_fs
 
 from TestCaseHttpy import TestCaseHttpy
-from utils import StubTransactionConfig
+from utils import StubApplicationConfig
 
 class TestUriToFs(TestCaseHttpy):
 
     def setUp(self):
         TestCaseHttpy.setUp(self)
-        config = StubTransactionConfig()
+        config = StubApplicationConfig()
         config.mode = 'development'
         config.verbosity = 0
         config.site_root = os.path.realpath(self.siteroot)

@@ -6,7 +6,7 @@ three things going on:
 
     2. Application -- Because HTTP is a stateless protocol, httpy expects you to
     represent each transaction within your application as an autonomous,
-    standalone unit, encapsulated in a Transaction object.
+    standalone unit, encapsulated in a Application object.
 
     3. Response -- When your application has finished processing a transaction,
     it raises a Response object. This carries a payload back up into the httpy

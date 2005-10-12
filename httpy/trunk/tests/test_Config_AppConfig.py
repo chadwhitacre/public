@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import unittest
 
 from httpy._zope.interface.exceptions import BrokenImplementation
@@ -13,23 +14,23 @@ from TestCaseHttpy import TestCaseHttpy
 from utils import DUMMY_APP
 
 
-APP_NO_TRANSACTION = """\
-class Transactien:
+APP_NO_APPLICATION = """\
+class Applicatien:
     pass
 """
 APP_NO_PROCESS = """\
-class Transaction:
+class Application:
     pass
 """
 APP_BAD_INIT = """\
-class Transaction:
+class Application:
     def __init__(self):
         pass
     def process(self, request):
         pass
 """
 APP_BAD_PROCESS = """\
-class Transaction:
+class Application:
     def __init__(self, config):
         pass
     def process(self):
@@ -48,6 +49,12 @@ class TestAppConfig(TestCaseHttpy):
                , ('/app3/__/app.py', DUMMY_APP + "num=3")
                 ]
 
+
+    def tearDown(self):
+        TestCaseHttpy.tearDown(self)
+        for app in ('/app1', '/app2'):
+            if app in sys.modules:
+                del sys.modules[app]
 
     def testBasic(self):
         config = AppConfig(self.siteroot, '/app1')
@@ -99,9 +106,9 @@ class TestAppConfig(TestCaseHttpy):
 
     # test our zope interface usage
 
-    def testAppNoTransaction(self):
+    def testAppNoApplication(self):
         app = open(os.sep.join(['root', 'app1', '__', 'app.py']), 'w')
-        app.write(APP_NO_TRANSACTION)
+        app.write(APP_NO_APPLICATION)
         app.close()
         self.assertRaises( BrokenImplementation
                          , AppConfig
@@ -116,7 +123,7 @@ class TestAppConfig(TestCaseHttpy):
         self.assertRaises( BrokenImplementation
                          , AppConfig
                          , self.siteroot
-                         , '/app1'
+                        , '/app1'
                           )
 
     def testAppBadInit(self):
@@ -138,7 +145,6 @@ class TestAppConfig(TestCaseHttpy):
                          , self.siteroot
                          , '/app1'
                           )
-
 
 
 
