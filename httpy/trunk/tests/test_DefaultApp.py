@@ -40,7 +40,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Last-Modified'] = 'blah blah blah'
         expected.headers['Content-Type'] = 'text/html'
         try:
-            self.txn.process(request)
+            self.txn.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)
@@ -55,7 +55,7 @@ class TestDefaultApp(TestCaseHttpy):
         request = self.make_request("/foo.bar")
         expected = 'text/plain'
         try:
-            self.txn.process(request)
+            self.txn.respond(request)
         except Response, response:
             actual = response.headers['Content-Type']
         self.assertEqual(expected, actual)
@@ -64,7 +64,7 @@ class TestDefaultApp(TestCaseHttpy):
         request = self.make_request("/foo.png")
         expected = 'image/png'
         try:
-            self.txn.process(request)
+            self.txn.respond(request)
         except Response, response:
             actual = response.headers['Content-Type']
         self.assertEqual(expected, actual)
@@ -82,7 +82,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Content-Type'] = 'text/html'
         expected.body = 'Greetings, program!'
         try:
-            self.txn.process(request)
+            self.txn.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)
@@ -98,7 +98,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Content-Type'] = 'text/html'
         expected.body = 'Greetings, program!'
         try:
-            self.txn.process(request)
+            self.txn.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)
@@ -117,7 +117,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Content-Type'] = 'text/html'
         expected.body = 'Greetings, program!'
         try:
-            self.txn.process(request)
+            self.txn.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)
@@ -136,7 +136,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Content-Type'] = 'text/html'
         expected.body = '' # no body for 304
         try:
-            self.txn.process(request)
+            self.txn.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)

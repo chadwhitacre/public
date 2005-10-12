@@ -19,7 +19,7 @@ from httpy.Response import Response
 class Application:
     def __init__(self, config):
         pass
-    def process(self, request):
+    def respond(self, request):
         raise Response(200)
 """
 
