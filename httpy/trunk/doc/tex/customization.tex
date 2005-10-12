@@ -1,11 +1,12 @@
 \chapter{Customization}
 
-There are two kinds of websites: publications and applications. They are
-differentiated by their organization and interface models. A \dfn{publication}
-website organizes information into individual pages within a hierarchical folder
-structure that one navigates by browsing. In an \dfn{application} website, on
-the other hand, data is not organized into hierarchical pages but is dealt with
-via a non-browsing interface such as a search box.
+httpy is built around the idea that there are two kinds of websites,
+publications and applications, which are differentiated by their organization
+and interface models. A \dfn{publication} website organizes information into
+individual pages within a hierarchical folder structure that one navigates by
+browsing. In an \dfn{application} website, on the other hand, data is not
+organized into hierarchical pages but is dealt with via a non-browsing interface
+such as a search box.
 
 The HTML version of this documentation is an example of a publication website: a
 number of hypertext documents organized into sections. If we weren't using LaTeX
@@ -23,23 +24,99 @@ present its information. Therefore, every website is fundamentally an
 application. httpy's default application implements the basic publication
 scenario: serving static files straight off the filesystem.
 
-httpy also enables you to build custom publication, application, and hybrid
-websites. It relies on the underlying filesystem to support a publication or
-hybrid website's hierarchical organization. To support applications, httpy looks
-for a certain filesystem layout with files that define certain Python objects,
-which it incorporates into the HTTP request/response process. These are
-described below.
+httpy enables you to build custom publication, application, and hybrid websites.
+It privileges the filesystem in supporting a publication or hybrid website's
+hierarchical organization. To support applications, httpy looks for a certain
+filesystem layout with files that define certain Python objects, which it
+incorporates into the HTTP request/response process. These are described below.
 
 
 
 \section{Filesystem Layout}
 
-For application websites or sections of websites, httpy looks for a \dfn{magic
-directory} named __ (that's two underscores). certain Python files in a certain
-subdirectory of any directories that you explicitly configured as applications.
-These Python files are expected to define certain objects, which are
-incorporated into the HTTP request/response process.
+When httpy starts up, it walks the tree rooted in your website's filesystem
+root, and it gathers all paths to directories below the root that have a
+subdirectory named '__' -- that's two underscores. The directory is said to be
+an \dfn{app} or \dfn{application}, and the subdirectory is that application's
+\dfn{magic directory}. \footnote{You can override this default behavior. Please
+see the section on Configuration.}
+
+For example, consider this filesystem layout:
+
+\begin{verbatim}
+/usr/local/www/
+/usr/local/www/about/
+/usr/local/www/news/
+/usr/local/www/news/__
+\end{verbatim}
+
+Assuming that \file{/usr/local/www/} is configured as your website root, httpy
+will by default find one app: /news. This app's magic directory will be
+\file{/usr/local/www/__}.
+
+On each request, httpy looks for an application that matches the beginning of
+the requested URI path. So in the above example, requests for \file{/news},
+\file{/news/archive}, \file{/news/post}, etc., would be handled by the
+\code{/news} app. All other requests would be handled by the default httpy
+application, because there is no app configured for the site root.
+
+If you manually configure the \var{apps} setting, and a given app does not have
+a magic directory, httpy will raise \class{ConfigError} and exits.
 
 
 
 \section{Expected Python Objects}
+
+When httpy starts up, it attempts to import a module or package named
+\module{app} from each application's magic directory. Each \module{app}
+module/package must define a class named \class{Transaction}.
+\class{Transaction}'s constructor must take a single argument, an instance of
+\class{AppConfig}. \class{Transaction} must have at least one other method,
+named \code{process}, which also takes a single argument, an instance of
+\class{Request}. If any of these conditions are not met, httpy raises
+\class{ConfigError} and exits. Therefore, here is the minimal legal
+\file{app.py}:
+
+\begin{verbatim}
+class Transaction:
+
+    def __init__(self, config):
+        pass
+
+    def process(self, request):
+        pass
+
+\end{verbatim}
+
+\class{Transaction.process} is expected to end the request by raising a
+\class{Response} or other \class{Exception}. Therefore, here is the minimal
+successful \file{app.py}:
+
+\begin{verbatim}
+from httpy.Response import Response
+
+class Transaction:
+
+    def __init__(self, config):
+        pass
+
+    def process(self, request):
+        response = Response(200)
+        response.headers['content-type'] = 'text/plain'
+        response.body = "Greetings, program!"
+        raise response
+
+\end{verbatim}
+
+
+
+\section{Site-Specific Libraries}
+
+If a website root has a magic directory, httpy will look when it starts up for a
+subdirectory of this magic directory named \file{site-packages}. It will prepend
+this path to \class{sys.path}, with the effect that each website can maintain a
+local Python library in \file{<site-root>/__/site-packages}. This library is
+global to the applications within a website, however, and only the root's magic
+directory is searched for \file{site-packages}.
+
+
