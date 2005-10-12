@@ -16,7 +16,7 @@ DUMMY_APP = """\
 class Application:
    def __init__(self, config):
         return config
-    def process(self, request):
+    def respond(self, request):
         raise "heck"
 """
 
@@ -38,7 +38,7 @@ class TestTaskRespond(TestCaseHttpy):
         response = Response(200)
         response.headers['content-type'] = 'text/plain'
         response.body = "Greetings, program!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 200 OK'
                    , 'content-length: 19'
@@ -60,7 +60,7 @@ class TestTaskRespond(TestCaseHttpy):
 
     def testStatusLineGetsWritten(self):
         response = Response(505)
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 505 HTTP Version not supported'
                    , 'content-length: 23'
@@ -75,7 +75,7 @@ class TestTaskRespond(TestCaseHttpy):
     def testButReasonMessageCanBeOverriden(self):
         response = Response(505)
         response.body = "Just leave me alone, ok!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 505 HTTP Version not supported'
                    , 'content-length: 24'
@@ -94,7 +94,7 @@ class TestTaskRespond(TestCaseHttpy):
     def testHeadersAreOptional(self):
         response = Response(200)
         response.headers = {} # the default
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 200 OK'
                    , 'content-length: 35'
@@ -111,7 +111,7 @@ class TestTaskRespond(TestCaseHttpy):
         response.headers['cheese'] = 'yummy'
         response.headers['FOO'] = 'Bar'
         response.body = "Greetings, program!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 200 OK'
                    , 'cheese: yummy'
@@ -130,7 +130,7 @@ class TestTaskRespond(TestCaseHttpy):
         response.headers['server'] = 'MY SERVER! MINE!'
         response.headers['content-type'] = 'cheese/yummy'
         response.body = "Greetings, program!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 200 OK'
                    , 'content-length: 19'
@@ -146,7 +146,7 @@ class TestTaskRespond(TestCaseHttpy):
         response = Response(200)
         response.headers['content-length'] = 50000
         response.body = "Greetings, program!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 200 OK'
                    , 'content-length: 19'
@@ -161,7 +161,7 @@ class TestTaskRespond(TestCaseHttpy):
     def testContentTypeDefaultsToApplicationOctetStream(self):
         response = Response(200)
         response.body = "Greetings, program!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 200 OK'
                    , 'content-length: 19'
@@ -177,7 +177,7 @@ class TestTaskRespond(TestCaseHttpy):
         response = Response(301)
         response.headers['location'] = 'http://www.google.com/'
         response.body = "Greetings, program!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 301 Moved Permanently'
                    , 'content-length: 19'
@@ -199,7 +199,7 @@ class TestTaskRespond(TestCaseHttpy):
     def testBodyNotWrittenFor304(self):
         response = Response(304)
         response.body = "Greetings, program!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 304 Not modified'
                    , 'content-length: 19'
@@ -216,7 +216,7 @@ class TestTaskRespond(TestCaseHttpy):
 
         response = Response(200)
         response.body = "Greetings, program!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 200 OK'
                    , 'content-length: 19'
@@ -231,7 +231,7 @@ class TestTaskRespond(TestCaseHttpy):
         response = Response(537)
         response.body = ('#'*20,['#'*70])
         self.task.dev_mode = True
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 537 HTTPY App Dev'
                    , 'content-length: 101'
@@ -253,7 +253,7 @@ class TestTaskRespond(TestCaseHttpy):
     def testOtherwiseBodyIsWritten(self):
         response = Response(200)
         response.body = "Greetings, program!"
-        self.task.respond(response)
+        self.task.deliver(response)
 
         expected = [ 'HTTP/1.0 200 OK'
                    , 'content-length: 19'

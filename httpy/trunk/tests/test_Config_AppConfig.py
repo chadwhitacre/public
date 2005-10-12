@@ -26,14 +26,14 @@ APP_BAD_INIT = """\
 class Application:
     def __init__(self):
         pass
-    def process(self, request):
+    def respond(self, request):
         pass
 """
 APP_BAD_PROCESS = """\
 class Application:
     def __init__(self, config):
         pass
-    def process(self):
+    def respond(self):
         pass
 """
 

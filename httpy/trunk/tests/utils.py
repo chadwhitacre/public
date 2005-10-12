@@ -40,7 +40,7 @@ from httpy.Response import Response
 class Application:
     def __init__(self, config):
         pass
-    def process(self, request):
+    def respond(self, request):
         response = Response(200)
         response.headers['content-type'] = 'text/plain'
         response.body = 'Greetings, program!'

@@ -72,7 +72,7 @@ When httpy starts up, it attempts to import a module or package named
 module/package must define a class named \class{Application}.
 \class{Application}'s constructor must take a single argument, an instance of
 \class{AppConfig}. \class{Application} must have at least one other method,
-named \code{process}, which also takes a single argument, an instance of
+named \code{respond}, which also takes a single argument, an instance of
 \class{Request}. If any of these conditions are not met, httpy raises
 \class{ConfigError} and exits. Therefore, here is the minimal legal
 \file{app.py}:
@@ -83,12 +83,12 @@ class Application:
     def __init__(self, config):
         pass
 
-    def process(self, request):
+    def respond(self, request):
         pass
 
 \end{verbatim}
 
-\class{Application.process} is expected to end the request by raising a
+\class{Application.respond} is expected to end the request by raising a
 \class{Response} or other \class{Exception}. Therefore, here is the minimal
 successful \file{app.py}:
 
@@ -100,7 +100,7 @@ class Application:
     def __init__(self, config):
         pass
 
-    def process(self, request):
+    def respond(self, request):
         response = Response(200)
         response.headers['content-type'] = 'text/plain'
         response.body = "Greetings, program!"

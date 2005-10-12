@@ -24,7 +24,7 @@ class TestTaskProcess(TestCaseHttpy):
         request = self.make_request('/index.html', Zope=True)
         task = Task(StubChannel(), request)
         try:
-            task.process()
+            task.respond()
         except Response, response:
             pass
         expected = "Greetings, program!"
@@ -35,7 +35,7 @@ class TestTaskProcess(TestCaseHttpy):
         request = self.make_request('/not-there', Zope=True)
         task = Task(StubChannel(), request)
         try:
-            task.process()
+            task.respond()
         except Response, response:
             self.assertEqual(response.code, 404)
 
@@ -46,7 +46,7 @@ class TestTaskProcess(TestCaseHttpy):
         os.remove(self.convert_path('root/app1/__/app.pyc'))
         os.rmdir(self.convert_path('root/app1/__'))
         try:
-            task.process()
+            task.respond()
         except Response, response:
             self.assertEqual(response.code, 500)
 
@@ -56,7 +56,7 @@ class TestTaskProcess(TestCaseHttpy):
         request = self.make_request('/app1/foo/bar.html', Zope=True)
         task = Task(StubChannel(), request)
         try:
-            task.process()
+            task.respond()
         except Response, response:
             self.assertEqual(response.code, 200)
 
@@ -64,7 +64,7 @@ class TestTaskProcess(TestCaseHttpy):
         request = self.make_request('/app1/__', Zope=True)
         task = Task(StubChannel(), request)
         try:
-            task.process()
+            task.respond()
         except Response, response:
             self.assertEqual(response.code, 404)
 
@@ -72,7 +72,7 @@ class TestTaskProcess(TestCaseHttpy):
         request = self.make_request('/app1/__/blah/blah/blah', Zope=True)
         task = Task(StubChannel(), request)
         try:
-            task.process()
+            task.respond()
         except Response, response:
             self.assertEqual(response.code, 404)
 

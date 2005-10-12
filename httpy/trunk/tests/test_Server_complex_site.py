@@ -36,7 +36,7 @@ class Application:
     def __init__(self, config):
         self.config = config
 
-    def process(self, request):
+    def respond(self, request):
         _path = os.path.join(self.config.__, 'master.template')
         master = file(_path).read()
         response = Response(200)
@@ -62,7 +62,7 @@ class Application:
     def __init__(self, config):
         self.config = config
 
-    def process(self, request):
+    def respond(self, request):
 
         _path = os.path.join(self.config.__, 'master.template')
         master = file(_path).read()
