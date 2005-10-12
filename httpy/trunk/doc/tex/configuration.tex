@@ -23,8 +23,8 @@ httpy exposes the following configuration parameters:
     {Listen on all available addresses.}
 
 \lineiii{mode}
-    {Either of the strings deployment or development. This affects various
-    aspects of httpy's behavior.}
+    {Either of the strings \code{deployment} or \code{development}. This affects
+    various aspects of httpy's behavior.}
     {\code{deployment}}
 
 \lineiii{port}
@@ -55,8 +55,8 @@ as given in the first column of the above table.
 
 \section{Command Line Options}
 
-httpy uses the Python standard library's optparse module to represent its
-command line arguments. The parameter names may be used for long-named
+httpy uses the Python standard library's \module{optparse} module to represent
+its command line arguments. The parameter names may be used for long-named
 arguments, or their initial letter may be used for short-named arguments. So for
 example, httpy could be started on a custom port, with a custom website root,
 using the following command:
@@ -79,12 +79,12 @@ In addition, the path to any configuration file is specified with the
 
 \section{Configuration File Settings}
 
-httpy uses the standard library's RawConfigParser class to represent its
-configuration file. This means that the file is in the style of a Windows INI
-file, with section headers in brackets, and \code{name=value} pairs on
+httpy uses the standard library's \module{RawConfigParser} class to represent
+its configuration file. This means that the file is in the style of a Windows
+INI file, with section headers in brackets, and \code{name=value} pairs on
 successive lines. Use the parameter names as given earlier. The number and names
-of any sections are irrelevant, but RawConfigParser requires that there be at
-least one section. As an example, a configuration file with the following
+of any sections are irrelevant, but \module{RawConfigParser} requires that there
+be at least one section. As an example, a configuration file with the following
 contents would set the verbosity of an httpy instance:
 
 \begin{verbatim}

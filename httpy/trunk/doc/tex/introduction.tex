@@ -2,28 +2,15 @@
 
 httpy exists to bridge your Python application with other HTTP applications. Its
 primary use case is as an HTTP origin server for a cluster of Python-based
-websites numbering into the hundreds or thousands.
+websites numbering into the hundreds or thousands. Therefore, httpy shares its
+design aesthetic with toilet paper: instances of httpy must be instantly
+available to solidly perform a single function with little or no configuration,
+and then be cast away without a thought.
 
-Therefore, httpy shares its design aesthetic with toilet paper: instances of
-httpy must be instantly available to solidly perform a single function and then
-be cast away without a thought.
-
-With that in mind, here's some httpy zen:
-
-\begin{itemize}
-\item
-httpy should make simple sites dead simple, and complex sites possible.
-\item
-Development, deployment, and upgrading should be equally easy, since all will need to happen constantly.
-\item
-The performance hit of an interpreted server will be offset by easy replication.
-\item
-Configuration should be kept to a minimum.
-\item
-Libraries are saner than frameworks.
-\end{itemize}
-
-httpy's job is to get HTTP requests into your Python application, and to get HTTP responses from your app back onto the network. Here are some things that are explicitly not httpy's job, along with links to tools that do these jobs well:
+httpy's job is to get HTTP requests into your Python application, and to get
+HTTP responses from your app back onto the network. Here are some things that
+are explicitly not httpy's job, along with links to tools that do these jobs
+well:
 
 \begin{description}
 
@@ -54,13 +41,5 @@ httpy's job is to get HTTP requests into your Python application, and to get HTT
 \end{description}
 
 
-A future version of httpy is expected to be at least conditionally compliant
-with \ulink{HTTP/1.1}{http://www.w3.org/Protocols/rfc2616/rfc2616.html}.
-However, the following features are not currently implemented:
-
-\begin{itemize}
-\item
-Keep-Alive\item
-Transfer-Encoding\item
-Range requests
-\end{itemize}
+For the interested, httpy uses the Zope 3 server under the hood. Thanks to the
+Zope team, especially for making Zope 3 so much more modular than Zope 2.
