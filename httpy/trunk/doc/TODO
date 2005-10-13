@@ -12,6 +12,8 @@ parse post to dict
 remove __init__ requirement (don't always want to configure)
 reconsider naming of Transaction given its meaning in persistence contexts
 raise Response(537, {}) should give '{}', not '<empty>'
+update to use zope 3.1.0 final
+rename Task.find_app to get_app?
 =====DONE=====
 document apps
 tests

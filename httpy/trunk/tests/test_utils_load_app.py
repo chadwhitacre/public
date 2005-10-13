@@ -4,11 +4,9 @@ import os
 import sys
 import unittest
 
+from httpy.utils import load_app
 from httpy._zope.interface.exceptions import BrokenImplementation
 from httpy._zope.interface.exceptions import BrokenMethodImplementation
-
-from httpy.Application import Application
-from httpy.Application import ConfigError
 
 from TestCaseHttpy import TestCaseHttpy
 from utils import DUMMY_APP
@@ -31,15 +29,15 @@ class Application:
 """
 
 
-class TestApplication(TestCaseHttpy):
+class Testload_app(TestCaseHttpy):
 
     testsite = [  '/app1'
                ,  '/app1/__'
-               , ('/app1/__/app.py', DUMMY_APP + "num=1")
+               , ('/app1/__/app.py', DUMMY_APP + "    num=1")
                ,  '/app2'
                ,  '/app3'
                ,  '/app3/__'
-               , ('/app3/__/app.py', DUMMY_APP + "num=3")
+               , ('/app3/__/app.py', DUMMY_APP + "    num=3")
                 ]
 
 
@@ -50,28 +48,28 @@ class TestApplication(TestCaseHttpy):
                 del sys.modules[app]
 
     def testBasic(self):
-        config = Application(self.siteroot, '/app1')
-        expected = "<httpy app @ /app1 >"
+        config = load_app(self.siteroot, '/app1')
+        expected = "</app1.Application instance at" # 0x84aa66c>"
         actual = str(config)
-        self.assertEqual(expected, actual)
+        self.assert_(actual.startswith(expected))
 
     def testNoFilesystemRoot(self):
-        self.assertRaises( ConfigError
-                         , Application
+        self.assertRaises( StandardError
+                         , load_app
                          , self.siteroot
                          , '/not-there'
                           )
 
     def testNoMagicDir(self):
-        self.assertRaises( ConfigError
-                         , Application
+        self.assertRaises( StandardError
+                         , load_app
                          , self.siteroot
                          , '/app2'
                           )
 
     def testNoMagicDirForRootGivesDefaultApp(self):
-        config = Application(self.siteroot, '/')
-        expected = "<default httpy app @ / >"
+        config = load_app(self.siteroot, '/')
+        expected = "<default httpy app>"
         actual = str(config)
         self.assertEqual(expected, actual)
 
@@ -80,31 +78,31 @@ class TestApplication(TestCaseHttpy):
         app = open(os.sep.join(['root', '__', 'app.py']), 'w')
         app.write(DUMMY_APP + 'root = True')
         app.close()
-        config = Application(self.siteroot, '/')
-        self.assert_(config.module.root)
+        config = load_app(self.siteroot, '/')
+        self.assert_(config.site_root)
 
     def testNoAppToImport(self):
         os.remove('root/app1/__/app.py')
-        self.assertRaises( ConfigError
-                         , Application
+        self.assertRaises( ImportError
+                         , load_app
                          , self.siteroot
                          , '/app1'
                           )
 
     def testAppsCanCoexist(self):
-        app1 = Application(self.siteroot, '/app1')
-        app3 = Application(self.siteroot, '/app3')
-        self.assertNotEqual(app1.module.num, app3.module.num)
+        app1 = load_app(self.siteroot, '/app1')
+        app3 = load_app(self.siteroot, '/app3')
+        self.assertNotEqual(app1.num, app3.num)
 
 
     # test our zope interface usage
 
-    def testAppNoApplication(self):
+    def testAppNoload_app(self):
         app = open(os.sep.join(['root', 'app1', '__', 'app.py']), 'w')
         app.write(APP_NO_APPLICATION)
         app.close()
         self.assertRaises( BrokenImplementation
-                         , Application
+                         , load_app
                          , self.siteroot
                          , '/app1'
                           )
@@ -114,7 +112,7 @@ class TestApplication(TestCaseHttpy):
         app.write(APP_NO_PROCESS)
         app.close()
         self.assertRaises( BrokenImplementation
-                         , Application
+                         , load_app
                          , self.siteroot
                         , '/app1'
                           )
@@ -124,7 +122,7 @@ class TestApplication(TestCaseHttpy):
         app.write(APP_BAD_PROCESS)
         app.close()
         self.assertRaises( BrokenMethodImplementation
-                         , Application
+                         , load_app
                          , self.siteroot
                          , '/app1'
                           )
@@ -135,7 +133,7 @@ class TestApplication(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestApplication))
+    suite.addTest(makeSuite(Testload_app))
     return suite
 
 if __name__ == '__main__':
