@@ -8,7 +8,6 @@ test our processing of different cases of configuration options
 do we want traditional access logging? separate access and error logs?
 consider using logging from the std lib
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
-should allow any method
 parse post to dict
 raise Response(537, {}) should give '{}', not '<empty>'
 update to use zope 3.1.0 final
@@ -19,6 +18,8 @@ consider exposing the Server to the Application
 add close hook to Application
 think systematically about hooks for Application
 move API up a level -- from httpy.Response import Response --> from httpy import Response
+think about how httpy could be used in stand-alone servers/applications
+    i.e., one httpy instance per installation, rather than multiple sites per httpy
 =====DONE=====
 document apps
 tests
@@ -38,6 +39,7 @@ refactor docs in Python style
 remove __init__ requirement (don't always want to configure)
 reconsider naming of Transaction given its meaning in persistence contexts
 Transaction -> Application; persistent object
+should allow any method
 
 
 
