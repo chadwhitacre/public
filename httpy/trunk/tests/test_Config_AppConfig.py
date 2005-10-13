@@ -22,13 +22,6 @@ APP_NO_PROCESS = """\
 class Application:
     pass
 """
-APP_BAD_INIT = """\
-class Application:
-    def __init__(self):
-        pass
-    def respond(self, request):
-        pass
-"""
 APP_BAD_PROCESS = """\
 class Application:
     def __init__(self, config):
@@ -124,16 +117,6 @@ class TestApplication(TestCaseHttpy):
                          , Application
                          , self.siteroot
                         , '/app1'
-                          )
-
-    def testAppBadInit(self):
-        app = open(os.sep.join(['root', 'app1', '__', 'app.py']), 'w')
-        app.write(APP_BAD_INIT)
-        app.close()
-        self.assertRaises( BrokenMethodImplementation
-                         , Application
-                         , self.siteroot
-                         , '/app1'
                           )
 
     def testAppBadProcess(self):

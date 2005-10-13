@@ -18,9 +18,11 @@ class TestServerConfigDefaults(TestCaseHttpy):
         d['ip'] = ''
         d['port'] = 8080
         d['root'] = os.path.realpath('.')
-        d['mode'] = 'deployment'
         d['apps'] = [None]
-        d['verbosity'] = 1
+
+        e = {}
+        e['HTTPY_MODE'] = 'deployment'
+        e['HTTPY_VERBOSITY'] = '1'
 
         config = ServerConfig()
 
@@ -31,6 +33,9 @@ class TestServerConfigDefaults(TestCaseHttpy):
             self.assertEqual(expected, actual)
         self.assertEqual([a.__ for a in config.apps], d['apps'])
 
+        for k, expected in e.items():
+            actual = os.environ[k]
+            self.assertEqual(expected, actual)
 
 
     def testOverlapProperly(self):
@@ -58,9 +63,11 @@ class TestServerConfigDefaults(TestCaseHttpy):
         d['ip'] = ''                            # default
         d['port'] = 537                         # file
         d['root'] = os.path.realpath('./root')  # opts
-        d['mode'] = 'development'               # env
         d['apps'] = [None]                      # default
-        d['verbosity'] = 99                     # env
+
+        e = {}
+        e['HTTPY_MODE'] = 'development'         # env
+        e['HTTPY_VERBOSITY'] = '99'             # env
 
         config = ServerConfig(argv)
 
@@ -70,6 +77,10 @@ class TestServerConfigDefaults(TestCaseHttpy):
             actual = getattr(config, k)
             self.assertEqual(expected, actual)
         self.assertEqual([a.__ for a in config.apps], d['apps'])
+
+        for k, expected in e.items():
+            actual = os.environ[k]
+            self.assertEqual(expected, actual)
 
 
 def test_suite():
