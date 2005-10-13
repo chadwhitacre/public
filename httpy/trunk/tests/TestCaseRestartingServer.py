@@ -4,12 +4,13 @@ When an app drops into the post-mortem debugger, and then the server restarts,
 the terminal gets screwed up -- I believe that stdin is lost somehow.
 
 This is an attempt to isolate the problem. The idea is that you would run httpy
-over this application. This is easier than adding RestartingServer to
-TestCaseHttpy. :-)
+over this application. I judged this to be significantly easier than adding
+RestartingServer to TestCaseHttpy. :-)
 
 Here are the specific steps to follow:
 
-    1. start serving this site with httpy in development mode
+    0. cp this file to __/app.py
+    1. start serving the site with httpy in development mode
     2. hit it TTW -- you should see "Greetings, program! [1]"
     3. uncomment the StandardError in Application.respond
     4. save the file -- you should see httpy restart
@@ -34,7 +35,7 @@ class Application:
 
     def respond(self, request):
         self.i += 1
-        raise StandardError("foo!")
+        #raise StandardError("foo!")
         raise Response( 200
                       , "Greetings, program! [%d]" % self.i
                       , {'content-type':'text/plain'}
