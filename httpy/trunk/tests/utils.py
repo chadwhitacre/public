@@ -22,10 +22,6 @@ class StubChannel(StringIO):
         pass
 
 
-class StubApplicationConfig:
-    pass
-
-
 request = ZopeRequest(default_adj)
 request.received("GET / HTTP/1.1\r\n\r\n")
 

@@ -5,27 +5,22 @@ import os
 import unittest
 
 from httpy import DefaultApp
-from httpy.Config import ApplicationConfig
 from httpy.Request import Request, ZopeRequest
 from httpy.Response import Response
 
 from TestCaseHttpy import TestCaseHttpy
-from utils import StubApplicationConfig
 
 
 class TestDefaultApp(TestCaseHttpy):
 
     def setUp(self):
         TestCaseHttpy.setUp(self)
-        config = StubApplicationConfig()
-        config.mode = 'development'
-        config.verbosity = 0
-        config.site_root = os.path.realpath('root')
-        config.app_uri_root = '/'
-        config.app_fs_root = os.path.realpath('root')
-        config.__ = None
-        self.config = config
-        self.txn = DefaultApp.Application(config)
+
+        DefaultApp.Application.site_root = os.path.realpath(self.siteroot)
+        DefaultApp.Application.fs_root = os.path.realpath(self.siteroot)
+        DefaultApp.Application.uri_root = '/'
+
+        self.app = DefaultApp.Application()
 
     testsite = [ ('/index.html', '')
                , ('/foo.bar', '')
@@ -40,7 +35,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Last-Modified'] = 'blah blah blah'
         expected.headers['Content-Type'] = 'text/html'
         try:
-            self.txn.respond(request)
+            self.app.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)
@@ -55,7 +50,7 @@ class TestDefaultApp(TestCaseHttpy):
         request = self.make_request("/foo.bar")
         expected = 'text/plain'
         try:
-            self.txn.respond(request)
+            self.app.respond(request)
         except Response, response:
             actual = response.headers['Content-Type']
         self.assertEqual(expected, actual)
@@ -64,7 +59,7 @@ class TestDefaultApp(TestCaseHttpy):
         request = self.make_request("/foo.png")
         expected = 'image/png'
         try:
-            self.txn.respond(request)
+            self.app.respond(request)
         except Response, response:
             actual = response.headers['Content-Type']
         self.assertEqual(expected, actual)
@@ -74,6 +69,9 @@ class TestDefaultApp(TestCaseHttpy):
     # ===
 
     def testDevelopment_ModifiedSinceIsTrue(self):
+        os.environ['HTTPY_MODE'] = 'development'
+        self.app = DefaultApp.Application()
+
         headers = {'If-Modified-Since':'Fri, 01 Jan 1970 00:00:00 GMT'}
         request = self.make_request("/foo.html", headers)
 
@@ -82,7 +80,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Content-Type'] = 'text/html'
         expected.body = 'Greetings, program!'
         try:
-            self.txn.respond(request)
+            self.app.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)
@@ -90,6 +88,9 @@ class TestDefaultApp(TestCaseHttpy):
         self.assertEqual(expected.body, actual.body)
 
     def testDevelopment_ModifiedSinceIsFalse(self):
+        os.environ['HTTPY_MODE'] = 'development'
+        self.app = DefaultApp.Application()
+
         headers = {'If-Modified-Since':'Fri, 31 Dec 9999 23:59:59 GMT'}
         request = self.make_request("/foo.html", headers)
 
@@ -98,7 +99,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Content-Type'] = 'text/html'
         expected.body = 'Greetings, program!'
         try:
-            self.txn.respond(request)
+            self.app.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)
@@ -106,8 +107,8 @@ class TestDefaultApp(TestCaseHttpy):
         self.assertEqual(expected.body, actual.body)
 
     def testDeployment_ModifiedSinceIsTrue(self):
-        self.config.mode = 'deployment'
-        self.txn = DefaultApp.Application(self.config)
+        os.environ['HTTPY_MODE'] = 'deployment'
+        self.app = DefaultApp.Application()
 
         headers = {'If-Modified-Since':'Fri, 01 Jan 1970 00:00:00 GMT'}
         request = self.make_request("/foo.html", headers)
@@ -117,7 +118,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Content-Type'] = 'text/html'
         expected.body = 'Greetings, program!'
         try:
-            self.txn.respond(request)
+            self.app.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)
@@ -125,8 +126,8 @@ class TestDefaultApp(TestCaseHttpy):
         self.assertEqual(expected.body, actual.body)
 
     def testDeployment_ModifiedSinceIsFalse(self):
-        self.config.mode = 'deployment'
-        self.txn = DefaultApp.Application(self.config)
+        os.environ['HTTPY_MODE'] = 'deployment'
+        self.app = DefaultApp.Application()
 
         headers = {'If-Modified-Since':'Fri, 31 Dec 9999 23:59:59 GMT'}
         request = self.make_request("/foo.html", headers)
@@ -136,7 +137,7 @@ class TestDefaultApp(TestCaseHttpy):
         expected.headers['Content-Type'] = 'text/html'
         expected.body = '' # no body for 304
         try:
-            self.txn.respond(request)
+            self.app.respond(request)
         except Response, actual:
             pass
         self.assertEqual(expected.code, actual.code)

@@ -5,25 +5,19 @@ import os
 import sys
 import unittest
 
-from httpy.Config import ApplicationConfig
 from httpy.Response import Response
 from httpy.utils import uri_to_fs
 
 from TestCaseHttpy import TestCaseHttpy
-from utils import StubApplicationConfig
 
-class TestUriToFs(TestCaseHttpy):
+
+class TestCase(TestCaseHttpy):
 
     def setUp(self):
         TestCaseHttpy.setUp(self)
-        config = StubApplicationConfig()
-        config.mode = 'development'
-        config.verbosity = 0
-        config.site_root = os.path.realpath(self.siteroot)
-        config.app_uri_root = '/'
-        config.app_fs_root = os.path.realpath(self.siteroot)
-        config.__ = None
-        self.config = config
+        self.site_root = os.path.realpath(self.siteroot)
+        self.fs_root = os.path.realpath(self.siteroot)
+        self.uri_root = '/'
 
     testsite = [ ('index.html', '')
                ,  '/__'
@@ -37,7 +31,9 @@ class TestUriToFs(TestCaseHttpy):
 
     def testBasic(self):
         expected = os.path.realpath(self.convert_path('root/index.html'))
-        actual = uri_to_fs( self.config
+        actual = uri_to_fs( self.site_root
+                          , self.fs_root
+                          , self.uri_root
                           , '/index.html'
                           , ()
                            )
@@ -45,7 +41,9 @@ class TestUriToFs(TestCaseHttpy):
 
     def testDefaultDocument(self):
         expected = os.path.realpath(self.convert_path('root/index.html'))
-        actual = uri_to_fs( self.config
+        actual = uri_to_fs( self.site_root
+                          , self.fs_root
+                          , self.uri_root
                           , '/'
                           , ('index.html',)
                            )
@@ -54,36 +52,57 @@ class TestUriToFs(TestCaseHttpy):
     def testNoDefaultRaisesForbidden(self):
         self.assertRaises( Response
                          , uri_to_fs
-                         , self.config
+                         , self.site_root
+                         , self.fs_root
+                         , self.uri_root
                          , '/about/'
                          , ('index.html',)
                            )
         try:
-            uri_to_fs(self.config, '/', ('index.html',))
+            uri_to_fs( self.site_root
+                     , self.fs_root
+                     , self.uri_root
+                     , '/'
+                     , ('index.html',)
+                      )
         except Response, response:
             self.assertEqual(response.code, 403)
 
     def testNotThereRaisesNotFound(self):
         self.assertRaises( Response
                          , uri_to_fs
-                         , self.config
+                         , self.site_root
+                         , self.fs_root
+                         , self.uri_root
                          , '/not-there'
                          , ()
-                           )
+                          )
         try:
-            uri_to_fs(self.config, '/not-there', ('index.html',))
+            uri_to_fs( self.site_root
+                     , self.fs_root
+                     , self.uri_root
+                     , '/not-there'
+                     , ('index.html',)
+                      )
         except Response, response:
             self.assertEqual(response.code, 404)
 
     def testNoTrailingSlashIsRedirected(self):
         self.assertRaises( Response
                          , uri_to_fs
-                         , self.config
+                         , self.site_root
+                         , self.fs_root
+                         , self.uri_root
                          , '/about'
                          , ()
                            )
         try:
-            uri_to_fs(self.config, '/about', ())
+            uri_to_fs( self.site_root
+                     , self.fs_root
+                     , self.uri_root
+                     , '/about'
+                     , ()
+                      )
         except Response, response:
             self.assertEqual(response.code, 301)
             self.assertEqual(response.headers['Location'], '/about/')
@@ -96,7 +115,9 @@ class TestUriToFs(TestCaseHttpy):
             # nevermind
             return
 
-        actual = uri_to_fs( self.config
+        actual = uri_to_fs( self.site_root
+                          , self.fs_root
+                          , self.uri_root
                           , '../../../../../../../../../../etc/master.passwd'
                           , ()
                            )
@@ -106,7 +127,7 @@ class TestUriToFs(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestUriToFs))
+    suite.addTest(makeSuite(TestCase))
     return suite
 
 if __name__ == '__main__':
