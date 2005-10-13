@@ -7,7 +7,7 @@ man page
 test our processing of different cases of configuration options
 do we want traditional access logging? separate access and error logs?
 consider using logging from the std lib
-when restarting in the middle of pdb, terminal gets screwed up
+when restarting in the middle of pdb, terminal gets screwed up -- hrm
 should allow any method
 parse post to dict
 raise Response(537, {}) should give '{}', not '<empty>'
