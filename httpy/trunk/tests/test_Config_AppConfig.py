@@ -7,8 +7,8 @@ import unittest
 from httpy._zope.interface.exceptions import BrokenImplementation
 from httpy._zope.interface.exceptions import BrokenMethodImplementation
 
-from httpy.Config import AppConfig
-from httpy.Config import ConfigError
+from httpy.Application import Application
+from httpy.Application import ConfigError
 
 from TestCaseHttpy import TestCaseHttpy
 from utils import DUMMY_APP
@@ -38,7 +38,7 @@ class Application:
 """
 
 
-class TestAppConfig(TestCaseHttpy):
+class TestApplication(TestCaseHttpy):
 
     testsite = [  '/app1'
                ,  '/app1/__'
@@ -57,27 +57,27 @@ class TestAppConfig(TestCaseHttpy):
                 del sys.modules[app]
 
     def testBasic(self):
-        config = AppConfig(self.siteroot, '/app1')
+        config = Application(self.siteroot, '/app1')
         expected = "<httpy app @ /app1 >"
         actual = str(config)
         self.assertEqual(expected, actual)
 
     def testNoFilesystemRoot(self):
         self.assertRaises( ConfigError
-                         , AppConfig
+                         , Application
                          , self.siteroot
                          , '/not-there'
                           )
 
     def testNoMagicDir(self):
         self.assertRaises( ConfigError
-                         , AppConfig
+                         , Application
                          , self.siteroot
                          , '/app2'
                           )
 
     def testNoMagicDirForRootGivesDefaultApp(self):
-        config = AppConfig(self.siteroot, '/')
+        config = Application(self.siteroot, '/')
         expected = "<default httpy app @ / >"
         actual = str(config)
         self.assertEqual(expected, actual)
@@ -87,20 +87,20 @@ class TestAppConfig(TestCaseHttpy):
         app = open(os.sep.join(['root', '__', 'app.py']), 'w')
         app.write(DUMMY_APP + 'root = True')
         app.close()
-        config = AppConfig(self.siteroot, '/')
+        config = Application(self.siteroot, '/')
         self.assert_(config.module.root)
 
     def testNoAppToImport(self):
         os.remove('root/app1/__/app.py')
         self.assertRaises( ConfigError
-                         , AppConfig
+                         , Application
                          , self.siteroot
                          , '/app1'
                           )
 
     def testAppsCanCoexist(self):
-        app1 = AppConfig(self.siteroot, '/app1')
-        app3 = AppConfig(self.siteroot, '/app3')
+        app1 = Application(self.siteroot, '/app1')
+        app3 = Application(self.siteroot, '/app3')
         self.assertNotEqual(app1.module.num, app3.module.num)
 
 
@@ -111,7 +111,7 @@ class TestAppConfig(TestCaseHttpy):
         app.write(APP_NO_APPLICATION)
         app.close()
         self.assertRaises( BrokenImplementation
-                         , AppConfig
+                         , Application
                          , self.siteroot
                          , '/app1'
                           )
@@ -121,7 +121,7 @@ class TestAppConfig(TestCaseHttpy):
         app.write(APP_NO_PROCESS)
         app.close()
         self.assertRaises( BrokenImplementation
-                         , AppConfig
+                         , Application
                          , self.siteroot
                         , '/app1'
                           )
@@ -131,7 +131,7 @@ class TestAppConfig(TestCaseHttpy):
         app.write(APP_BAD_INIT)
         app.close()
         self.assertRaises( BrokenMethodImplementation
-                         , AppConfig
+                         , Application
                          , self.siteroot
                          , '/app1'
                           )
@@ -141,7 +141,7 @@ class TestAppConfig(TestCaseHttpy):
         app.write(APP_BAD_PROCESS)
         app.close()
         self.assertRaises( BrokenMethodImplementation
-                         , AppConfig
+                         , Application
                          , self.siteroot
                          , '/app1'
                           )
@@ -152,7 +152,7 @@ class TestAppConfig(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestAppConfig))
+    suite.addTest(makeSuite(TestApplication))
     return suite
 
 if __name__ == '__main__':
