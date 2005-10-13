@@ -9,11 +9,15 @@ do we want traditional access logging? separate access and error logs?
 when restarting in the middle of pdb, terminal gets screwed up
 should allow any method
 parse post to dict
-remove __init__ requirement (don't always want to configure)
-reconsider naming of Transaction given its meaning in persistence contexts
 raise Response(537, {}) should give '{}', not '<empty>'
 update to use zope 3.1.0 final
 rename Task.find_app to get_app?
+ServerConfig --> Config
+Transaction -> Application; persistent object
+app.py --> __init__.py?
+consider exposing the Server to the Application
+add close hook to Application
+think systematically about hooks for Application
 =====DONE=====
 document apps
 tests
@@ -30,6 +34,8 @@ need to figure out how to sanely provide for alternate py libs
     sys.path is not a simple solution since we have multiple apps -- what is the import order?
 unittests!
 refactor docs in Python style
+remove __init__ requirement (don't always want to configure)
+reconsider naming of Transaction given its meaning in persistence contexts
 
 
 

@@ -32,7 +32,7 @@ def main(argv=None):
         print >> sys.stderr, "`man 1 httpy' for usage."
         return 2
 
-    plain_jane = (  (config.mode == 'deployment')
+    plain_jane = (  (os.environ['HTTPY_MODE'] == 'deployment')
                  or (sys.platform == 'win32')
                  or ('HTTPY_PLAIN_JANE' in os.environ)
                    )
