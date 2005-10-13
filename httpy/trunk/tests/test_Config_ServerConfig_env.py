@@ -6,11 +6,13 @@ import unittest
 from TestCaseHttpy import TestCaseHttpy
 from httpy.Config import ServerConfig
 
-class TestServerConfigEnv(TestCaseHttpy):
+class TestCase(TestCaseHttpy):
 
     want_config = True
 
     def testDefaultsAsEnv(self):
+
+        self.scrubenv()
 
         d = {}
         d['ip'] = ''
@@ -32,9 +34,9 @@ class TestServerConfigEnv(TestCaseHttpy):
 
         self.assertEqual(expected, actual)
 
+    def testJustOneExtraValueInEnv(self):
 
-    def testJustOneValueInEnv(self):
-
+        self.scrubenv()
         d = {'port':9000}
         os.environ['HTTPY_PORT'] = '9000'
 
@@ -47,7 +49,7 @@ class TestServerConfigEnv(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestServerConfigEnv))
+    suite.addTest(makeSuite(TestCase))
     return suite
 
 if __name__ == '__main__':
