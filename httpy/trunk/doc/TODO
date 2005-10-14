@@ -5,11 +5,11 @@ finish docs
 man page
 
 do we want traditional access logging? separate access and error logs?
-consider using logging from the std lib
+    consider using logging from the std lib
+    but maybe this just is app's job?
 consider using inspect rather than zope interfaces?
 
 raise Response(537, {}) should give '{}', not '<empty>'
-raise Response(200, '') should give '', not "Request fulfilled, document follows"
 update to use zope 3.1.0 final
 test our processing of different cases of configuration options
 systematic tests for different modes
@@ -17,7 +17,7 @@ tests for utils.parse*
 
 rename Task.find_app to get_app?
 ServerConfig --> Config
-app.py --> __init__.py?
+app.py --> __init__.py? --> Application.py?
 consider exposing the Server to the Application
 add close hook to Application
 think systematically about hooks for Application
@@ -54,6 +54,7 @@ parse post to dict
 add dev_mode to Application API
 add a debug mode, which is dev mode + post-mortem
     deploy, develop, debug
+raise Response(200, '') should give '', not "Request fulfilled, document follows"
 
 
 
@@ -152,4 +153,3 @@ need to import rather than execfile
 add apps to configuration
 guess content type in response --> NO!!!!!!11
 server string -> httpy
-

@@ -35,7 +35,7 @@ class TestTask(TestCaseHttpy):
 
     def testFailInDevMode(self):
         task = DUMMY_TASK()
-        task.server.devel_mode = True
+        task.server.deploy_mode = False
         task.channel = StubChannel()
         try:
             raise StandardError("Yarrr!")
