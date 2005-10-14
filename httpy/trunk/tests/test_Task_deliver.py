@@ -56,7 +56,7 @@ class TestCase(TestCaseHttpy):
 
     def testBadResponseCode(self):
         response = Response(600)
-        self.assertRaises(Exception, self.task.respond, response)
+        self.assertRaises(StandardError, self.task.respond, response)
 
     def testStatusLineGetsWritten(self):
         response = Response(505)
@@ -310,7 +310,7 @@ class TestCase(TestCaseHttpy):
         response = Response(537)
         response.body = ('#'*20,['#'*70])
         self.task.server.deploy_mode = True
-        self.assertRaises(Exception, self.task.respond, response)
+        self.assertRaises(StandardError, self.task.respond, response)
 
     def testOtherwiseBodyIsWritten(self):
         response = Response(200)
