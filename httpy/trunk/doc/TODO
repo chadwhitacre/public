@@ -9,15 +9,16 @@ do we want traditional access logging? separate access and error logs?
     but maybe this just is app's job?
 consider using inspect rather than zope interfaces?
 
-raise Response(537, {}) should give '{}', not '<empty>'
 update to use zope 3.1.0 final
 test our processing of different cases of configuration options
 systematic tests for different modes
 tests for utils.parse*
 
-rename Task.find_app to get_app?
 ServerConfig --> Config
+Exception --> StandardError
 app.py --> __init__.py? --> Application.py?
+Task.find_app --> get_app?
+
 consider exposing the Server to the Application
 add close hook to Application
 think systematically about hooks for Application
@@ -55,6 +56,7 @@ add dev_mode to Application API
 add a debug mode, which is dev mode + post-mortem
     deploy, develop, debug
 raise Response(200, '') should give '', not "Request fulfilled, document follows"
+raise Response(537, {}) should give '{}', not '<no output>'
 
 
 
