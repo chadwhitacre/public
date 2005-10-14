@@ -4,7 +4,7 @@ import os
 import unittest
 
 from TestCaseHttpy import TestCaseHttpy
-from httpy.Config import ServerConfig
+from httpy.Config import Config
 
 class TestCase(TestCaseHttpy):
 

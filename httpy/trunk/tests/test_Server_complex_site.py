@@ -4,7 +4,7 @@ import os
 import unittest
 from httplib import HTTPConnection
 
-from httpy.Config import ServerConfig
+from httpy.Config import Config
 from httpy.Server import Server
 
 from TestCaseHttpy import TestCaseHttpy

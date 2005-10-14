@@ -3,12 +3,12 @@
 import os
 import unittest
 
-from httpy.Config import ServerConfig
+from httpy.Config import Config
 
 from TestCaseHttpy import TestCaseHttpy
 
 
-class TestServerConfigDefaults(TestCaseHttpy):
+class TestConfigDefaults(TestCaseHttpy):
     """Put it all together. These test __init__.
     """
 
@@ -24,7 +24,7 @@ class TestServerConfigDefaults(TestCaseHttpy):
         e['HTTPY_MODE'] = 'deployment'
         e['HTTPY_VERBOSITY'] = '1'
 
-        config = ServerConfig()
+        config = Config()
 
         for k, expected in d.items():
             if k == 'apps':
@@ -69,7 +69,7 @@ class TestServerConfigDefaults(TestCaseHttpy):
         e['HTTPY_MODE'] = 'development'         # env
         e['HTTPY_VERBOSITY'] = '99'             # env
 
-        config = ServerConfig(argv)
+        config = Config(argv)
 
         for k, expected in d.items():
             if k == 'apps':
@@ -86,7 +86,7 @@ class TestServerConfigDefaults(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestServerConfigDefaults))
+    suite.addTest(makeSuite(TestConfigDefaults))
     return suite
 
 if __name__ == '__main__':

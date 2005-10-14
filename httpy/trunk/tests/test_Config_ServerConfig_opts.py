@@ -50,7 +50,7 @@ argv_extra_options = [
   , '--cheese=yummy'
    ]
 
-class TestServerConfigOpts(TestCaseHttpy):
+class TestConfigOpts(TestCaseHttpy):
 
     want_config = True
 
@@ -69,7 +69,7 @@ class TestServerConfigOpts(TestCaseHttpy):
         self.assertEqual(expected, actual)
         self.assertEqual('', path)
 
-    def testDefaultsPlusServerConfigFilePath(self):
+    def testDefaultsPlusConfigFilePath(self):
         file('httpy.conf', 'w')
         expected = self.dict2tuple(self.d.copy())
         opts, path = self.config._opts(argv_default_plus_path)
@@ -119,7 +119,7 @@ class TestServerConfigOpts(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestServerConfigOpts))
+    suite.addTest(makeSuite(TestConfigOpts))
     return suite
 
 if __name__ == '__main__':

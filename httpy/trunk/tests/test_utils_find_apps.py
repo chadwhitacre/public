@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from httpy.Config import ServerConfig
+from httpy.Config import Config
 from httpy.utils import find_apps
 
 from TestCaseHttpy import TestCaseHttpy
@@ -65,20 +65,20 @@ class TestFindApps(TestCaseHttpy):
     # Here are some tests from the front.
 
     def testExplicitlySettingAppsOverridesMagic(self):
-        self.config = ServerConfig(['-a/app1', '-rroot'])
+        self.config = Config(['-a/app1', '-rroot'])
         expected = [os.path.realpath('root/app1/__'), None]
         actual = [a.__ for a in self.config.apps]
         self.assertEqual(expected, actual)
 
     def testRootOnlyAddedIfNotAlreadyThere(self):
-        self.config = ServerConfig(['-a/:/app1', '-rroot'])
+        self.config = Config(['-a/:/app1', '-rroot'])
         expected = [None, os.path.realpath('root/app1/__')]
         actual = [a.__ for a in self.config.apps]
         self.assertEqual(expected, actual)
 
     def testCanExplicitlyTurnOffAllApps(self):
         file('httpy.conf', 'w').write('[m]\napps=\n')
-        self.config = ServerConfig(['-fhttpy.conf'])
+        self.config = Config(['-fhttpy.conf'])
         expected = [None] # Can't turn off root app though!
         actual = [a.__ for a in self.config.apps]
         self.assertEqual(expected, actual)
