@@ -16,7 +16,7 @@ import sys
 import time
 
 from httpy.Config import ConfigError
-from httpy.Config import ServerConfig
+from httpy.Config import Config
 from httpy.Server import Server
 from httpy.Server import RestartingServer
 
@@ -26,7 +26,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
     try:
-        config = ServerConfig(argv)
+        config = Config(argv)
     except ConfigError, err:
         print >> sys.stderr, err.msg
         print >> sys.stderr, "`man 1 httpy' for usage."
