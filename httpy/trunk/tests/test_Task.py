@@ -27,7 +27,7 @@ class Application:
 from utils import DUMMY_TASK, StubChannel
 
 
-class TestTask(TestCaseHttpy):
+class TestCase(TestCaseHttpy):
 
 
     # fail
@@ -98,7 +98,7 @@ class TestTask(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestTask))
+    suite.addTest(makeSuite(TestCase))
     return suite
 
 if __name__ == '__main__':

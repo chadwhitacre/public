@@ -23,7 +23,7 @@ class Application:
 from utils import DUMMY_TASK
 
 
-class TestTaskRespond(TestCaseHttpy):
+class TestCase(TestCaseHttpy):
 
     def setUp(self):
         TestCaseHttpy.setUp(self)
@@ -40,12 +40,12 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Greetings, program!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 200 OK'
-                   , u'content-length: 19'
-                   , u'content-type: text/plain'
-                   , u'server: stub server'
-                   , u''
-                   , u'Greetings, program!'
+        expected = [ 'HTTP/1.0 200 OK'
+                   , 'content-length: 19'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
+                   , 'Greetings, program!'
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -62,12 +62,12 @@ class TestTaskRespond(TestCaseHttpy):
         response = Response(505)
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 505 HTTP Version not supported'
-                   , u'content-length: 23'
-                   , u'content-type: text/plain'
-                   , u'server: stub server'
-                   , u''
-                   , u'Cannot fulfill request.'
+        expected = [ 'HTTP/1.0 505 HTTP Version not supported'
+                   , 'content-length: 23'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
+                   , 'Cannot fulfill request.'
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -77,12 +77,12 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Just leave me alone, ok!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 505 HTTP Version not supported'
-                   , u'content-length: 24'
-                   , u'content-type: text/plain'
-                   , u'server: stub server'
-                   , u''
-                   , u'Just leave me alone, ok!'
+        expected = [ 'HTTP/1.0 505 HTTP Version not supported'
+                   , 'content-length: 24'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
+                   , 'Just leave me alone, ok!'
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -96,11 +96,11 @@ class TestTaskRespond(TestCaseHttpy):
         response.headers = {} # the default
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 200 OK'
-                   , u'content-length: 0'
-                   , u'content-type: application/octet-stream'
-                   , u'server: stub server'
-                   , u''
+        expected = [ 'HTTP/1.0 200 OK'
+                   , 'content-length: 0'
+                   , 'content-type: application/octet-stream'
+                   , 'server: stub server'
+                   , ''
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -112,14 +112,14 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Greetings, program!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 200 OK'
-                   , u'cheese: yummy'
-                   , u'content-length: 19'
-                   , u'foo: Bar'
-                   , u'content-type: application/octet-stream'
-                   , u'server: stub server'
-                   , u''
-                   , u'Greetings, program!'
+        expected = [ 'HTTP/1.0 200 OK'
+                   , 'cheese: yummy'
+                   , 'content-length: 19'
+                   , 'foo: Bar'
+                   , 'content-type: application/octet-stream'
+                   , 'server: stub server'
+                   , ''
+                   , 'Greetings, program!'
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -131,12 +131,12 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Greetings, program!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 200 OK'
-                   , u'content-length: 19'
-                   , u'content-type: cheese/yummy'
-                   , u'server: MY SERVER! MINE!'
-                   , u''
-                   , u'Greetings, program!'
+        expected = [ 'HTTP/1.0 200 OK'
+                   , 'content-length: 19'
+                   , 'content-type: cheese/yummy'
+                   , 'server: MY SERVER! MINE!'
+                   , ''
+                   , 'Greetings, program!'
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -147,12 +147,12 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Greetings, program!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 200 OK'
-                   , u'content-length: 19'
-                   , u'content-type: application/octet-stream'
-                   , u'server: stub server'
-                   , u''
-                   , u'Greetings, program!'
+        expected = [ 'HTTP/1.0 200 OK'
+                   , 'content-length: 19'
+                   , 'content-type: application/octet-stream'
+                   , 'server: stub server'
+                   , ''
+                   , 'Greetings, program!'
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -162,12 +162,12 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Greetings, program!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 200 OK'
-                   , u'content-length: 19'
-                   , u'content-type: application/octet-stream'
-                   , u'server: stub server'
-                   , u''
-                   , u'Greetings, program!'
+        expected = [ 'HTTP/1.0 200 OK'
+                   , 'content-length: 19'
+                   , 'content-type: application/octet-stream'
+                   , 'server: stub server'
+                   , ''
+                   , 'Greetings, program!'
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -178,13 +178,13 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Greetings, program!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 301 Moved Permanently'
-                   , u'content-length: 19'
-                   , u'content-type: text/plain'
-                   , u'location: http://www.google.com/'
-                   , u'server: stub server'
-                   , u''
-                   , u'Greetings, program!'
+        expected = [ 'HTTP/1.0 301 Moved Permanently'
+                   , 'content-length: 19'
+                   , 'content-type: text/plain'
+                   , 'location: http://www.google.com/'
+                   , 'server: stub server'
+                   , ''
+                   , 'Greetings, program!'
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -200,11 +200,11 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Greetings, program!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 304 Not modified'
-                   , u'content-length: 19'
-                   , u'content-type: text/plain'
-                   , u'server: stub server'
-                   , u''
+        expected = [ 'HTTP/1.0 304 Not modified'
+                   , 'content-length: 19'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -217,11 +217,11 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Greetings, program!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 200 OK'
-                   , u'content-length: 19'
-                   , u'content-type: application/octet-stream'
-                   , u'server: stub server'
-                   , u''
+        expected = [ 'HTTP/1.0 200 OK'
+                   , 'content-length: 19'
+                   , 'content-type: application/octet-stream'
+                   , 'server: stub server'
+                   , ''
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -232,21 +232,84 @@ class TestTaskRespond(TestCaseHttpy):
         self.task.server.deploy_mode = False
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 537 HTTPY App Dev'
-                   , u'content-length: 101'
-                   , u'content-type: text/plain'
-                   , u'server: stub server'
-                   , u''
+        expected = [ 'HTTP/1.0 537 HTTPY App Dev'
+                   , 'content-length: 101'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
                    , u"('####################',"
                    , u" ['######################################################################'])"
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
-    def testBut537OnlyAvailableInDevMode(self):
+    def testButOnlyForNonStrings(self):
+        response = Response(537)
+        response.body = 'foo'
+        self.task.server.deploy_mode = False
+        self.task.deliver(response)
+
+        expected = [ 'HTTP/1.0 537 HTTPY App Dev'
+                   , 'content-length: 3'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
+                   , 'foo'
+                    ]
+        actual = self.task.channel.getvalue().splitlines()
+        self.assertEqual(expected, actual)
+
+    def testAndEmptyValuesArePreserved(self):
+        response = Response(537)
+        response.body = {}
+        self.task.server.deploy_mode = False
+        self.task.deliver(response)
+
+        expected = [ 'HTTP/1.0 537 HTTPY App Dev'
+                   , 'content-length: 2'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
+                   , '{}'
+                    ]
+        actual = self.task.channel.getvalue().splitlines()
+        self.assertEqual(expected, actual)
+
+    def testJustLikeFor200(self):
+        response = Response(200)
+        response.headers['content-type'] = 'text/plain'
+        response.body = ''
+        self.task.deliver(response)
+
+        expected = [ 'HTTP/1.0 200 OK'
+                   , 'content-length: 0'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
+                    ]
+        actual = self.task.channel.getvalue().splitlines()
+        self.assertEqual(expected, actual)
+
+    def testIncludingNoneForExample(self):
+        response = Response(537)
+        response.body = None
+        self.task.server.deploy_mode = False
+        self.task.deliver(response)
+
+        expected = [ 'HTTP/1.0 537 HTTPY App Dev'
+                   , 'content-length: 4'
+                   , 'content-type: text/plain'
+                   , 'server: stub server'
+                   , ''
+                   , 'None'
+                    ]
+        actual = self.task.channel.getvalue().splitlines()
+        self.assertEqual(expected, actual)
+
+    def testAnd537NotAvailableInDeploymentMode(self):
         response = Response(537)
         response.body = ('#'*20,['#'*70])
-        self.task.dev_mode = False
+        self.task.server.deploy_mode = True
         self.assertRaises(Exception, self.task.respond, response)
 
     def testOtherwiseBodyIsWritten(self):
@@ -254,12 +317,12 @@ class TestTaskRespond(TestCaseHttpy):
         response.body = "Greetings, program!"
         self.task.deliver(response)
 
-        expected = [ u'HTTP/1.0 200 OK'
-                   , u'content-length: 19'
-                   , u'content-type: application/octet-stream'
-                   , u'server: stub server'
-                   , u''
-                   , u'Greetings, program!'
+        expected = [ 'HTTP/1.0 200 OK'
+                   , 'content-length: 19'
+                   , 'content-type: application/octet-stream'
+                   , 'server: stub server'
+                   , ''
+                   , 'Greetings, program!'
                     ]
         actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
@@ -268,7 +331,7 @@ class TestTaskRespond(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestTaskRespond))
+    suite.addTest(makeSuite(TestCase))
     return suite
 
 if __name__ == '__main__':
