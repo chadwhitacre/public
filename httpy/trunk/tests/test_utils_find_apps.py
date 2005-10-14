@@ -4,6 +4,7 @@ import os
 import unittest
 
 from httpy.Config import ServerConfig
+from httpy.utils import find_apps
 
 from TestCaseHttpy import TestCaseHttpy
 from utils import DUMMY_APP
@@ -21,27 +22,27 @@ class TestFindApps(TestCaseHttpy):
 
     def testSiteHasAppsAndTheyAreFoundAutomatically(self):
         expected = ('/app2', '/app1')
-        actual = ServerConfig._find_apps(self.siteroot)
+        actual = find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
     def testSiteHasNoAppsAndTheyAreNotFoundAutomatically(self):
         self.removeTestSite()
         os.mkdir('root')
         expected = ()
-        actual = ServerConfig._find_apps(self.siteroot)
+        actual = find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
     def testWhatYouThoughtWasAnAppWasntCauseThereWasNoMagicDirectory(self):
         os.remove('root/app1/__/app.py')
         os.rmdir('root/app1/__')
         expected = ('/app2',)
-        actual = ServerConfig._find_apps(self.siteroot)
+        actual = find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
     def testRootHasMagicDirectory(self):
         os.mkdir('root/__')
         expected = ('/app2', '/app1', '/')
-        actual = ServerConfig._find_apps(self.siteroot)
+        actual = find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
     def testAppsThreeLevelsDeep(self):
@@ -49,7 +50,7 @@ class TestFindApps(TestCaseHttpy):
         os.mkdir('root/app2/app3')
         os.mkdir('root/app2/app3/__')
         expected = ('/app2/app3', '/app2', '/app1', '/')
-        actual = ServerConfig._find_apps(self.siteroot)
+        actual = find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
     def testAppsBelowAMagicDirAreNotFound(self):
@@ -57,7 +58,7 @@ class TestFindApps(TestCaseHttpy):
         os.mkdir('root/__/app3')
         os.mkdir('root/__/app3/__')
         expected = ('/app2', '/app1', '/')
-        actual = ServerConfig._find_apps(self.siteroot)
+        actual = find_apps(self.siteroot)
         self.assertEqual(expected, actual)
 
 
