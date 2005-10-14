@@ -8,7 +8,6 @@ do we want traditional access logging? separate access and error logs?
 consider using logging from the std lib
 consider using inspect rather than zope interfaces?
 
-parse post to dict
 raise Response(537, {}) should give '{}', not '<empty>'
 raise Response(200, '') should give '', not "Request fulfilled, document follows"
 update to use zope 3.1.0 final
@@ -23,13 +22,13 @@ think systematically about hooks for Application
 move API up a level -- from httpy.Response import Response --> from httpy import Response
 think about how httpy could be used in stand-alone servers/applications
     i.e., one httpy instance per installation, rather than multiple sites per httpy
-add dev_mode to Application API
 
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer and TestCaseRestartingServer.py
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
 add a debug mode, which is dev mode + post-mortem
     deploy, develop, debug
+i18n
 =====DONE=====
 document apps
 tests
@@ -50,6 +49,8 @@ remove __init__ requirement (don't always want to configure)
 reconsider naming of Transaction given its meaning in persistence contexts
 Transaction -> Application; persistent object
 should allow any method
+parse post to dict
+add dev_mode to Application API
 
 
 

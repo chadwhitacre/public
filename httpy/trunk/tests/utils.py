@@ -12,6 +12,9 @@ class StubServer:
         self.http_version_string = "HTTP/1.0"
         self.response_header = "stub server"
         self.config = ServerConfig(['-rroot'])
+        self.debug_mode = False
+        self.deploy_mode = True
+        self.devel_mode = False
 
 
 class StubChannel(StringIO):

@@ -88,8 +88,8 @@ class TestDefaultApp(TestCaseHttpy):
         self.assertEqual(expected.body, actual.body)
 
     def testDevelopment_ModifiedSinceIsFalse(self):
-        os.environ['HTTPY_MODE'] = 'development'
         self.app = DefaultApp.Application()
+        self.app.deploy_mode = False
 
         headers = {'If-Modified-Since':'Fri, 31 Dec 9999 23:59:59 GMT'}
         request = self.make_request("/foo.html", headers)

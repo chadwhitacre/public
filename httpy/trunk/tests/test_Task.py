@@ -35,10 +35,10 @@ class TestTask(TestCaseHttpy):
 
     def testFailInDevMode(self):
         task = DUMMY_TASK()
-        task.dev_mode = True
+        task.server.devel_mode = True
         task.channel = StubChannel()
         try:
-            raise Exception("Yarrr!")
+            raise StandardError("Yarrr!")
         except:
             task.fail()
 
@@ -49,9 +49,9 @@ class TestTask(TestCaseHttpy):
                    , ""
                    , "Internal Server Error"
                    , ""
-                  , "Traceback (most recent call last):"
+                   , "Traceback (most recent call last):"
                    # ...
-                   , 'Exception: Yarrr!'
+                   , 'StandardError: Yarrr!'
                     ]
         actual = task.channel.getvalue().splitlines()
         actual = actual[:1] + actual[2:7] + actual[-1:]
