@@ -3,29 +3,20 @@
 ========================================
 finish docs (tex, man)
 
-do we want traditional access logging? separate access and error logs?
-    consider using logging from the std lib
-    but maybe this just is app's job?
-consider using inspect rather than zope interfaces?
-
 test our processing of different cases of configuration options
-systematic tests for different modes
+systematic tests for different server modes
 tests for utils.parse*
+run tests on Windows again, Mac too
 
-app.py --> __init__.py? --> Application.py?
-
-consider exposing the Server to the Application
-add close hook to Application
-think systematically about hooks for Application
-move API up a level -- from httpy.Response import Response --> from httpy import Response
-think about how httpy could be used in stand-alone servers/applications
-    i.e., one httpy instance per installation, rather than multiple sites per httpy
+expose threads to configuration
 
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
-    see Server.RestartingServer and TestCaseRestartingServer.py
+    see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
+RestartingServer tries to kill a pid that isn't there
 
 =====DONE=====
+transfer encoding
 document apps
 tests
 make apps implicit rather than explicit
@@ -55,55 +46,44 @@ ServerConfig --> Config
 Exception --> StandardError
 update to use zope 3.1.0 final
 Task.find_app --> get_app
+do we want traditional access logging? separate access and error logs?
+    consider using logging from the std lib
+    but maybe this just is app's job? answer: yes
+consider using inspect rather than zope interfaces?
+    interfaces gives us doc as well as constraint, and it's already there and working
+app.py --> __init__.py? --> Application.py?
+    __init__.py implies that the current dir is a package, which it isn't
+    Application.py -- eh, too verbose :^P
+move API up a level -- from httpy.Response import Response --> from httpy import Response
+    no ... EIBTI
+on Windows, should always degrade to Server since RestartingServer won't work
+add close hook to Application
+
+
 
 
 
 ========================================
-    0.8 -- HTTP/1.1
+    FUTURE
 ========================================
+think systematically about hooks for Application
+    consider exposing the Server to the Application
 charsets (i18n)
 keep-alive
 range requests
-=====DONE=====
-transfer encoding
-
-
-========================================
-    1.0 -- BELLS & WHISTLES
-========================================
-precompile templates (in place)
-    httpy -f httpy.conf -c
-support interactive features:
-    ctrl-s? -- display configuration settings
-    ctrl-d? -- enter postmortem debugger on next exception
+think about how httpy could be used in stand-alone servers/applications
+    i.e., one httpy instance per installation, rather than multiple sites per httpy
+support interactive features, e.g.:
+    ctrl-s -- display configuration settings
+    ctrl-d -- toggle postmortem debugging
+    ctrl-v -- set verbosity on the fly
 signal handling
     TERM -- nice shutdown
-    HUP -- reload config
+    HUP -- reload config?
 add cli options to dump config and exit
-smarter module caching?
-
-
-
-========================================
-    1.2 -- EXPAND OUR TERRITORY
-========================================
 play nice on Windows
     GUI?
     pyexe?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ========================================
