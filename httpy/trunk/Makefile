@@ -3,6 +3,7 @@
 # No warranty is expressed or implied.
 
 prefix=/usr/local
+zope_svn=svn://svn.zope.org/repos/main/Zope3/tags/Zope-3.1.0
 
 configure:
 # Delete and recreate the script to be installed.
@@ -24,6 +25,7 @@ clean:
 	rm -rf build
 	rm -rf dist
 	rm -rf doc/html
+	rm -rf _zope
 	find . -name \*.pyc -exec rm -f {} \;
 
 install: configure
@@ -39,3 +41,15 @@ uninstall:
 	rm -f ${prefix}/bin/httpy
 	rm -f ${prefix}/man/man1/httpy.1.gz
 	rm -f ${prefix}/man/man5/httpy.conf.5.gz
+
+
+zope: clean
+	cp -r ./site-packages/httpy/_zope ./_zope
+	echo $zope_svn > ./_zope/VERSION
+	find _zope -name \*.py -exec sed -e 's/httpy._zope/HTTPY-ZOPE/g' -i '' {} \;
+	svn export ${zope_svn}/src/zope/interface ./_zope/interface --force
+	svn export ${zope_svn}/src/zope/server ./_zope/server --force
+	find _zope -name \*.py -exec sed -e 's/zope/httpy._zope/g' -i '' {} \;
+	find _zope -name \*.py -exec sed -e 's/HTTPY-ZOPE/httpy._zope/g' -i '' {} \;
+	rm -rf ./site-packages/httpy/_zope
+	mv ./_zope ./site-packages/httpy/
