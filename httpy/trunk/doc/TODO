@@ -1,20 +1,17 @@
 ========================================
     0.6 -- zope.server
 ========================================
-finish docs
-man page
+finish docs (tex, man)
 
 do we want traditional access logging? separate access and error logs?
     consider using logging from the std lib
     but maybe this just is app's job?
 consider using inspect rather than zope interfaces?
 
-update to use zope 3.1.0 final
 test our processing of different cases of configuration options
 systematic tests for different modes
 tests for utils.parse*
 
-Task.find_app --> get_app
 app.py --> __init__.py? --> Application.py?
 
 consider exposing the Server to the Application
@@ -28,7 +25,6 @@ when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer and TestCaseRestartingServer.py
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
 
-i18n
 =====DONE=====
 document apps
 tests
@@ -57,12 +53,15 @@ raise Response(200, '') should give '', not "Request fulfilled, document follows
 raise Response(537, {}) should give '{}', not '<no output>'
 ServerConfig --> Config
 Exception --> StandardError
+update to use zope 3.1.0 final
+Task.find_app --> get_app
 
 
 
 ========================================
     0.8 -- HTTP/1.1
 ========================================
+charsets (i18n)
 keep-alive
 range requests
 =====DONE=====
