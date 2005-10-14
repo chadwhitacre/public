@@ -14,8 +14,6 @@ test our processing of different cases of configuration options
 systematic tests for different modes
 tests for utils.parse*
 
-ServerConfig --> Config
-Exception --> StandardError
 app.py --> __init__.py? --> Application.py?
 Task.find_app --> get_app?
 
@@ -57,6 +55,8 @@ add a debug mode, which is dev mode + post-mortem
     deploy, develop, debug
 raise Response(200, '') should give '', not "Request fulfilled, document follows"
 raise Response(537, {}) should give '{}', not '<no output>'
+ServerConfig --> Config
+Exception --> StandardError
 
 
 

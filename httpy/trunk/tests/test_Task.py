@@ -62,7 +62,7 @@ class TestCase(TestCaseHttpy):
         task.dev_mode = False
         task.channel = StubChannel()
         try:
-            raise Exception("Yarrr!")
+            raise StandardError("Yarrr!")
         except:
             task.fail()
 
