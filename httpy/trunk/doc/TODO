@@ -14,8 +14,8 @@ test our processing of different cases of configuration options
 systematic tests for different modes
 tests for utils.parse*
 
+Task.find_app --> get_app
 app.py --> __init__.py? --> Application.py?
-Task.find_app --> get_app?
 
 consider exposing the Server to the Application
 add close hook to Application
