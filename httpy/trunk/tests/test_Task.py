@@ -12,35 +12,26 @@ from httpy.Response import Response
 from httpy.Task import Task
 
 from TestCaseHttpy import TestCaseHttpy
-
-
-DUMMY_APP = """\
-from httpy.Response import Response
-class Application:
-    def __init__(self, config):
-        pass
-    def respond(self, request):
-        raise Response(200)
-"""
-
-
 from utils import DUMMY_TASK, StubChannel
 
 
 class TestCase(TestCaseHttpy):
 
+    def setUp(self):
+        TestCaseHttpy.setUp(self)
+        self.task = DUMMY_TASK()
+        self.task.server.deploy_mode = True
+
 
     # fail
     # ====
 
-    def testFailInDevMode(self):
-        task = DUMMY_TASK()
-        task.server.deploy_mode = False
-        task.channel = StubChannel()
+    def testFailInNonDeploymentMode(self):
+        self.task.server.deploy_mode = False
         try:
             raise StandardError("Yarrr!")
         except:
-            task.fail()
+            self.task.fail()
 
         # Traceback and content length depend on incidental circumstances.
         expected = [ "HTTP/1.0 500 Internal Server Error"
@@ -53,27 +44,23 @@ class TestCase(TestCaseHttpy):
                    # ...
                    , 'StandardError: Yarrr!'
                     ]
-        actual = task.channel.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         actual = actual[:1] + actual[2:7] + actual[-1:]
         self.assertEqual(expected, actual)
 
     def testFailInDepMode(self):
-        task = DUMMY_TASK()
-        task.dev_mode = False
-        task.channel = StubChannel()
         try:
             raise StandardError("Yarrr!")
         except:
-            task.fail()
+            self.task.fail()
 
         expected = [ "HTTP/1.0 500 Internal Server Error"
-                   , "Content-Length: 25"
+                   , "Content-Length: 21"
                    , "Content-Type: text/plain"
                    , ""
                    , "Internal Server Error"
-                   , ""
                     ]
-        actual = task.channel.getvalue().splitlines()
+        actual = self.task.channel.getvalue().splitlines()
         self.assertEqual(expected, actual)
 
 
@@ -81,8 +68,7 @@ class TestCase(TestCaseHttpy):
     # =======
 
     def testServiceAtLeastOnceForCryingOutLoud(self):
-        task = DUMMY_TASK()
-        task.service()
+        self.task.service()
         expected = [ "HTTP/1.0 403 Forbidden"
                    , "content-length: 48"
                    , "content-type: text/plain"
@@ -91,8 +77,26 @@ class TestCase(TestCaseHttpy):
                    , "Request forbidden -- authorization will not help"
                     ]
         expected = '\r\n'.join(expected)
-        actual = task.channel.getvalue()
+        actual = self.task.channel.getvalue()
         self.assertEqual(expected, actual)
+
+    def testExceptionInDeliverStillProducesResult(self):
+        def bad_deliver(self, request):
+            raise Exception("MUAHAHAHAHAHHAHA!!!!!!!!!!!!!!!")
+        self.task.deliver = bad_deliver
+        self.task.service()
+
+        expected = [ "HTTP/1.0 500 Internal Server Error"
+                   , "Content-Length: 21"
+                   , "Content-Type: text/plain"
+                   , ""
+                   , "Internal Server Error"
+                    ]
+        expected = '\r\n'.join(expected)
+        actual = self.task.channel.getvalue()
+        self.assertEqual(expected, actual)
+
+
 
 
 def test_suite():

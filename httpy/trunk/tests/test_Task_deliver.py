@@ -28,7 +28,7 @@ class TestCase(TestCaseHttpy):
     def setUp(self):
         TestCaseHttpy.setUp(self)
         self.task = DUMMY_TASK()
-        self.task.dev_mode = True
+        self.task.server.deploy_mode = True
 
 
     # Demonstration

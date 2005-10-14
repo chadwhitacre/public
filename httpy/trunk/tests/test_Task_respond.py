@@ -83,12 +83,10 @@ class TestTaskProcess(TestCaseHttpy):
         request = self.make_request('../../../../../../../../../../etc/master.passwd', Zope=True)
         task = Task(StubChannel(), request)
         expected = [ "HTTP/1.0 500 Internal Server Error"
-                   , "Content-Length: 25"
+                   , "Content-Length: 21"
                    , "Content-Type: text/plain"
                    , ""
                    , "Internal Server Error"
-                   , ""
-                   , ""
                     ]
         expected = '\r\n'.join(expected)
         actual = task.channel.getvalue()
