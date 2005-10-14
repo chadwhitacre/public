@@ -201,11 +201,66 @@ class TestServerConfigValidate(TestCaseHttpy):
         actual = self.config._validate('test', d)
         self.assertEqual(expected, actual)
 
-    def testOtherMode(self):
+    def testDevelopmentMode(self):
         d = {'mode':'development'}
         expected = d.copy()
         actual = self.config._validate('test', d)
         self.assertEqual(expected, actual)
+
+    def testDebuggingMode(self):
+        d = {'mode':'debugging'}
+        expected = d.copy()
+        actual = self.config._validate('test', d)
+        self.assertEqual(expected, actual)
+
+    def testUniqueAbbreviationsWorkDeployment(self):
+        good_abbreviations = ( 'deploymen'
+                             , 'deployme'
+                             , 'deploym'
+                             , 'deploy'
+                             , 'deplo'
+                             , 'depl'
+                             , 'dep'
+                              )
+        for abb in good_abbreviations:
+            expected = {'mode':'deployment'}
+            actual = self.config._validate('test', {'mode':abb})
+            self.assertEqual(expected, actual)
+
+    def testUniqueAbbreviationsWorkDevelopment(self):
+        good_abbreviations = ( 'developmen'
+                             , 'developme'
+                             , 'developm'
+                             , 'develop'
+                             , 'develo'
+                             , 'devel'
+                             , 'deve'
+                             , 'dev'
+                              )
+        for abb in good_abbreviations:
+            expected = {'mode':'development'}
+            actual = self.config._validate('test', {'mode':abb})
+            self.assertEqual(expected, actual)
+
+    def testUniqueAbbreviationsWorkDebugging(self):
+        good_abbreviations = ( 'debuggin'
+                             , 'debuggi'
+                             , 'debugg'
+                             , 'debug'
+                             , 'debu'
+                             , 'deb'
+                              )
+        for abb in good_abbreviations:
+            expected = {'mode':'debugging'}
+            actual = self.config._validate('test', {'mode':abb})
+            self.assertEqual(expected, actual)
+
+    def testNonUniqueAbbreviationsFail(self):
+        for abb in ('de', 'd'):
+            self.assertRaises( ConfigError
+                             , self.config._validate
+                             , 'test', {'mode':abb}
+                              )
 
     def testAnythingElseRaisesError(self):
         self.assertRaises( ConfigError
@@ -218,7 +273,7 @@ class TestServerConfigValidate(TestCaseHttpy):
                           )
         self.assertRaises( ConfigError
                          , self.config._validate
-                         , 'test', {'mode':'developmen'}
+                         , 'test', {'mode':'developmental'}
                           )
         self.assertRaises( ConfigError
                          , self.config._validate
@@ -238,8 +293,9 @@ class TestServerConfigValidate(TestCaseHttpy):
         try:
             self.config._validate('test', d)
         except ConfigError, err:
-            expected = "Found bad mode `None' in context `test'. " +\
-                       "Mode must be either `deployment' or `development'."
+            expected = ("Found bad mode `None' in context `test'. Mode must " +
+                        "be either `deployment,' `development' or " +
+                        "`debugging.' Abbreviations are fine.")
             actual = err.msg
             self.assertEqual(expected, actual)
 

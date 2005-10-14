@@ -28,6 +28,8 @@ add dev_mode to Application API
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer and TestCaseRestartingServer.py
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
+add a debug mode, which is dev mode + post-mortem
+    deploy, develop, debug
 =====DONE=====
 document apps
 tests
