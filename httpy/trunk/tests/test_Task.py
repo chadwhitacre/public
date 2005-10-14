@@ -6,7 +6,7 @@ from StringIO import StringIO
 
 from httpy._zope.server.adjustments import default_adj
 
-from httpy.Config import ServerConfig
+from httpy.Config import Config
 from httpy.Request import ZopeRequest
 from httpy.Response import Response
 from httpy.Task import Task

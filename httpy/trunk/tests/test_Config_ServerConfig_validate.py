@@ -3,13 +3,13 @@
 import os
 import unittest
 
-from httpy.Config import ServerConfig
+from httpy.Config import Config
 from httpy.Config import ConfigError
 
 from TestCaseHttpy import TestCaseHttpy
 
 
-class TestServerConfigValidate(TestCaseHttpy):
+class TestConfigValidate(TestCaseHttpy):
 
     want_config = True
 
@@ -446,7 +446,7 @@ class TestServerConfigValidate(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestServerConfigValidate))
+    suite.addTest(makeSuite(TestConfigValidate))
     return suite
 
 if __name__ == '__main__':

@@ -67,7 +67,7 @@ apps =
 verbosity = 1
 """
 
-class TestServerConfigFile(TestCaseHttpy):
+class TestConfigFile(TestCaseHttpy):
 
     want_config = True
 
@@ -132,7 +132,7 @@ class TestServerConfigFile(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestServerConfigFile))
+    suite.addTest(makeSuite(TestConfigFile))
     return suite
 
 if __name__ == '__main__':

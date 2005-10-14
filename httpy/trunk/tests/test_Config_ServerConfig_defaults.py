@@ -6,7 +6,7 @@ import unittest
 from TestCaseHttpy import TestCaseHttpy
 
 
-class TestServerConfigDefaults(TestCaseHttpy):
+class TestConfigDefaults(TestCaseHttpy):
 
     want_config = True
 
@@ -29,7 +29,7 @@ class TestServerConfigDefaults(TestCaseHttpy):
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
-    suite.addTest(makeSuite(TestServerConfigDefaults))
+    suite.addTest(makeSuite(TestConfigDefaults))
     return suite
 
 if __name__ == '__main__':
