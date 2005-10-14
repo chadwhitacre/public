@@ -12,6 +12,8 @@ raise Response(537, {}) should give '{}', not '<empty>'
 raise Response(200, '') should give '', not "Request fulfilled, document follows"
 update to use zope 3.1.0 final
 test our processing of different cases of configuration options
+systematic tests for different modes
+tests for utils.parse*
 
 rename Task.find_app to get_app?
 ServerConfig --> Config
@@ -26,8 +28,7 @@ think about how httpy could be used in stand-alone servers/applications
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer and TestCaseRestartingServer.py
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
-add a debug mode, which is dev mode + post-mortem
-    deploy, develop, debug
+
 i18n
 =====DONE=====
 document apps
@@ -51,6 +52,8 @@ Transaction -> Application; persistent object
 should allow any method
 parse post to dict
 add dev_mode to Application API
+add a debug mode, which is dev mode + post-mortem
+    deploy, develop, debug
 
 
 
