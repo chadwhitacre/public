@@ -3,7 +3,7 @@
 # No warranty is expressed or implied.
 
 prefix=/usr/local
-zope_svn=svn://svn.zope.org/repos/main/Zope3/tags/Zope-3.1.0
+zope_svn_root=svn://svn.zope.org/repos/main/Zope3/tags/Zope-3.1.0/src/zope
 
 configure:
 # Delete and recreate the script to be installed.
@@ -44,11 +44,12 @@ uninstall:
 
 
 zope: clean
+# Update our zope packages from zope svn
 	cp -r ./site-packages/httpy/_zope ./_zope
-	echo $zope_svn > ./_zope/VERSION
+	echo ${zope_svn_root} > ./_zope/VERSION
 	find _zope -name \*.py -exec sed -e 's/httpy._zope/HTTPY-ZOPE/g' -i '' {} \;
-	svn export ${zope_svn}/src/zope/interface ./_zope/interface --force
-	svn export ${zope_svn}/src/zope/server ./_zope/server --force
+	svn export ${zope_svn_root}/interface ./_zope/interface --force
+	svn export ${zope_svn_root}/server ./_zope/server --force
 	find _zope -name \*.py -exec sed -e 's/zope/httpy._zope/g' -i '' {} \;
 	find _zope -name \*.py -exec sed -e 's/HTTPY-ZOPE/httpy._zope/g' -i '' {} \;
 	rm -rf ./site-packages/httpy/_zope
