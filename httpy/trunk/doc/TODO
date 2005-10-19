@@ -8,12 +8,25 @@ test our processing of different cases of configuration options
 systematic tests for different server modes
 tests for utils.parse*
 run tests on Mac
+test Task when respond doesn't raise anything
 
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
+RestartingServer should be thinner ... shouldn't instantiate Apps, e.g.
+RestartingServer seems to miss _foo.py
 
 headers should be case-preserved
+consider moving API up a level -- from httpy.Response import Response --> from httpy import Response
+
+how do I call security for every request when I have multiple applications? oops?
+since I am not storing data in-site, it is crusty to have blog/__/app.py
+    better to just have blog.py? or blog/index.py?
+so maybe each site should only have one application (=request handler), and we should
+    build *.py support right into httpy?
+
+
+
 
 =====DONE=====
 transfer encoding
@@ -54,8 +67,6 @@ consider using inspect rather than zope interfaces?
 app.py --> __init__.py? --> Application.py?
     __init__.py implies that the current dir is a package, which it isn't
     Application.py -- eh, too verbose :^P
-move API up a level -- from httpy.Response import Response --> from httpy import Response
-    no ... EIBTI
 on Windows, should always degrade to Server since RestartingServer won't work
 signal handling
     TERM -- nice shutdown
