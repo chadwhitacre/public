@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 """Replacement for the standard pwd module.
 
-This module provides a class, Passwd, that represents a FreeBSD passwd(5) file,
-or a Version 7 passwd(5) file. FreeBSD files have 10 fields, Version 7 files
-have 7 fields. The class constructor's single argument is a filesystem path to
-the passwd(5) file that it will manage.
+This module provides a class, Passwd, that represents a FreeBSD passwd(5) file.
+Whereas traditional Version 7 files have 7 fields, FreeBSD files have 10 fields.
+The class constructor's single argument is a filesystem path to the passwd(5)
+file that it will manage (usually /etc/master.passwd).
 
 """
 
 __author__ = "Chad Whitacre <chad@zetaweb.com>"
-__version__ = (0,7)
+__version__ = (0,9)
 
 import os
 import stat
@@ -20,16 +20,16 @@ class Record:
     """Represent a single record in a 10-field FreeBSD passwd(5) file.
     """
 
-    fields = ( ('name', str)
-             , ('password', str)
-             , ('uid', int)
-             , ('gid', int)
-             , ('class', str)
-             , ('change', int)
-             , ('expire', int)
-             , ('gecos', str)
-             , ('home_dir', str)
-             , ('shell', str)
+    fields = ( ('pw_name', str)
+             , ('pw_password', str)
+             , ('pw_uid', int)
+             , ('pw_gid', int)
+             , ('pw_class', str)
+             , ('pw_change', int)
+             , ('pw_expire', int)
+             , ('pw_gecos', str)
+             , ('pw_home_dir', str)
+             , ('pw_shell', str)
               )
 
     def __init__(self, *fields):
@@ -41,20 +41,20 @@ class Record:
         """Sort by uid.
         """
         # root should always be first
-        if self.name == 'root':
+        if self.pw_name == 'root':
             return -1
-        elif other.name == 'root':
+        elif other.pw_name == 'root':
             return 1
 
         # after that we sort on uid
-        elif self.uid < other.uid:
+        elif self.pw_uid < other.pw_uid:
             return -1
-        elif self.uid == other.uid:
+        elif self.pw_uid == other.pw_uid:
 
             # lastly we sort on name
-            if self.name < other.name:
+            if self.pw_name < other.pw_name:
                 return -1
-            elif self.name == other.name:
+            elif self.pw_name == other.pw_name:
                 return 0
             else: # self.name > other.name
                 return 1
@@ -66,7 +66,7 @@ class Record:
         return 10
 
     def __repr__(self):
-        return "<passwd record for '%s'>" % self.name
+        return "<passwd record for '%s'>" % self.pw_name
 
     def __str__(self):
         """Reconstitute the record in passwd(5) format.
@@ -130,7 +130,7 @@ class Passwd:
 
     # Access
     # ======
-    # Support both key and attr access.
+   # Support both key and attr access.
 
     def __getattr__(self, name):
         try:
@@ -210,11 +210,11 @@ class Passwd:
                 fields = line.split(':')
                 if len(fields) == 10:
                     rec = Record(*fields)
-                    if rec.uid not in self.by_uid:
+                    if rec.pw_uid not in self.by_uid:
                         # Only track the first instance of a UID.
-                        self.by_uid[rec.uid] = rec
+                        self.by_uid[rec.pw_uid] = rec
                     # But track all instances of a username.
-                    self.by_name[rec.name] = rec
+                    self.by_name[rec.pw_name] = rec
                 else:
                     raise StandardError("Malformed record %s" % line)
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-"""Bloodhound -- a metadata indexing daemon.
+"""rdfd -- a metadata indexing daemon.
 """
 
 import email
+import grp
 import os
 import sets
 import signal
@@ -28,23 +29,31 @@ NS_STAT_KEYS = ( 'ST_MODE'
                , 'ST_CTIME'
                 )
 
-NS_PASSWD = Namespace("http://localhost/passwd#")
-NS_PASSWD_KEYS = ( 'name'
-                 , 'password'
-                 , 'uid'
-                 , 'gid'
-                 , 'class'
-                 , 'change'
-                 , 'expire'
-                 , 'gecos'
-                 , 'home_dir'
-                 , 'shell'
-                  )
+NS_PWD = Namespace("http://localhost/pwd#")
+NS_PWD_KEYS = ( 'pw_name'
+              , 'pw_password'
+              , 'pw_uid'
+              , 'pw_gid'
+              , 'pw_class'
+              , 'pw_change'
+              , 'pw_expire'
+              , 'pw_gecos'
+              , 'pw_home_dir'
+              , 'pw_shell'
+               )
+
+NS_GRP = Namespace("http://localhost/grp#")
+NS_GRP_KEYS = ( 'gr_name'
+              , 'gr_password'
+              , 'gr_gid'
+              , 'gr_mem'
+               )
 
 NS_MIME = Namespace("http://localhost/mime#")
 
-NS_USERS = Namespace("http://localhost/users#")
 NS_FILES = Namespace("http://localhost/files#")
+NS_GROUPS = Namespace("http://localhost/groups#")
+NS_USERS = Namespace("http://localhost/users#")
 
 
 def signum2name(signum):
@@ -69,17 +78,23 @@ class Bloodhound:
             raise SystemExit('Metadata root does not exist')
 
         self.passwd = Passwd('/etc/master.passwd')
+        self.group_mtime = 0
 
         self.dataroot = dataroot
         self.db = Graph('Sleepycat')
         self.db.open(metaroot)
-        self.db.bind('files',   unicode(NS_FILES.abstract()),   True)
+        # --------------------------------------------------------- #
+        self.db.bind('grp',     unicode(NS_GRP.abstract()),     True)
         self.db.bind('mime',    unicode(NS_MIME.abstract()),    True)
-        self.db.bind('passwd',  unicode(NS_PASSWD.abstract()),  True)
+        self.db.bind('pwd',     unicode(NS_PWD.abstract()),     True)
         self.db.bind('stat',    unicode(NS_STAT.abstract()),    True)
+        # --------------------------------------------------------- #
+        self.db.bind('files',   unicode(NS_FILES.abstract()),   True)
+        self.db.bind('groups',  unicode(NS_GROUPS.abstract()),  True)
         self.db.bind('users',   unicode(NS_USERS.abstract()),   True)
 
         self.known_files = {}
+        self.known_groups = ()
         self.known_users = ()
 
         signal.signal(signal.SIGTERM, self.calloff)
@@ -156,12 +171,12 @@ class Bloodhound:
             self.passwd.load()
             known_users = []
             for rec in self.passwd.values():
-                uri = NS_USERS[rec.name]
-                if rec.uid == 0:                    # don't index root
+                uri = NS_USERS[rec.pw_name]
+                if rec.pw_uid == 0:                    # don't index root
                     continue
-                elif rec.password == '*':           # don't index non-logins
+                elif rec.pw_password == '*':           # don't index non-logins
                     continue
-                elif rec.shell == '/sbin/nologin':  # don't index non-logins
+                elif rec.pw_shell == '/sbin/nologin':  # don't index non-logins
                     continue
                 else:
                     self.db_index_user(uri, rec)
@@ -169,10 +184,24 @@ class Bloodhound:
             self.known_users = tuple(known_users)
 
         # removed
-        removed = self.db_known(NS_USERS).difference(self.known_users)
-        if removed:
-            for uri in removed:
-                self.db_prune(uri)
+        self.db_prune(NS_USERS, known_users)
+
+
+        # Groups
+        # ======
+
+        # added/modified
+        if self.group_mtime < os.stat('/etc/group')[stat.ST_MTIME]:
+            known_groups = []
+            for group in grp.getgrall():
+                uri = NS_GRP[group[0]]
+                self.db_index_group(uri, group)
+                known_groups.append(uri)
+            self.known_groups = tuple(known_groups)
+
+        # removed
+        self.db_prune(NS_GROUPS, known_groups)
+
 
 
         # Files
@@ -197,10 +226,7 @@ class Bloodhound:
                 self.known_files[uri] = (mtime, ctime)
 
         # removed
-        removed = self.db_known(NS_FILES).difference(known_uris)
-        if removed:
-            for uri in removed:
-                self.db_prune(uri)
+        self.db_prune(NS_FILES, known_uris)
 
 
 
@@ -208,20 +234,46 @@ class Bloodhound:
     # ==========
 
     def db_index_user(self, uri, rec):
-        """Index a user, return its URI.
+        """Index a user.
         """
         #print "indexing user %s [passwd]" % rec.name
         s = uri
-        for key in NS_PASSWD_KEYS:
-            p = NS_PASSWD[key]
+        for key in NS_PWD_KEYS:
+            p = NS_PWD[key]
             o = Literal(rec[key])
             #print '  ', (s,p,o)
             self.db.add((s,p,o))
         print "indexed %s" % uri
 
 
+    def db_index_group(self, uri, group):
+        """Index a group.
+        """
+        #print "indexing group %s [groups]" % group[0]
+
+        # grp info
+        s = uri
+        for i in range(len(NS_GRP_KEYS)):
+            key = NS_GRP_KEYS[i]
+            p = NS_GRP[key]
+            o = Literal(group[i])
+            #print '  ', (s,p,o)
+            self.db.add((s,p,o))
+
+        # update user membership
+        p = NS_PWD['pw_gid']
+        o = Literal(group[2])
+        for mem in group[3]:
+            s = uri = NS_USERS[mem]
+            if uri in self.known_users:
+                #print '  ', (s,p,o)
+                self.db.add((s,p,o))
+
+        print "indexed %s" % uri
+
+
     def db_index_file(self, uri, stats):
-        """Index an file, return its URI.
+        """Index an file.
         """
         filename = uri.rsplit('#', 1)[1]
         s = uri
@@ -258,16 +310,20 @@ class Bloodhound:
         return known
 
 
-    def db_prune(self, dead_uri):
+    def db_prune(self, namespace, known_uris):
         """Prune references to a removed resource.
         """
-        # subjects
-        for s,p,o in tuple(self.db.triples((dead_uri, None, None))):
-            self.db.remove((s,p,o))
-        # predicates
-        for s,p,o in tuple(self.db.triples((None, None, dead_uri))):
-            self.db.remove((s,p,o))
-        print "pruned %s" % str(dead_uri)
+        removed = self.db_known(namespace).difference(known_uris)
+        if not removed:
+            return
+        for uri in removed:
+            # subjects
+            for s,p,o in tuple(self.db.triples((uri, None, None))):
+                self.db.remove((s,p,o))
+            # predicates
+            for s,p,o in tuple(self.db.triples((None, None, uri))):
+                self.db.remove((s,p,o))
+            print "pruned %s" % str(dead_uri)
 
 
 
