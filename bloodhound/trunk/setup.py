@@ -3,6 +3,6 @@ from distutils.core import setup
 
 setup( name='flynn'
      , version="0.3"
-     , package_dir = {'':'site-packages'}
-     , py_modules=['passwd']
+     , package_dir = {'':'lib'}
+     , packages=['flynn']
       )
