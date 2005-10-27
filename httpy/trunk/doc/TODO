@@ -24,7 +24,22 @@ since I am not storing data in-site, it is crusty to have blog/__/app.py
     better to just have blog.py? or blog/index.py?
 so maybe each site should only have one application (=request handler), and we should
     build *.py support right into httpy?
-
+or what if we had a distinction between applications and applings
+    application would, yes, be the main request handler, with security/error handling
+    applings should all share security and error handling
+    but each appling is where you implement MVC. so right now you do ...
+        __/site-packages/foo/   model
+        __/templates/foo.pt     view
+        _styles/foo.css             view
+        _scripts/foo.js              view
+        foo.py              controller
+    but wouldn't it be nicer if you could do ...
+        __/site-packages/foo/   model
+        foo/foo.pt              view
+        foo/foo.css             view
+        foo/foo.js              view
+        foo/foo.py              controller
+maybe app.Application --> responder.Responder? (to distinguish from flynn app)
 
 
 
