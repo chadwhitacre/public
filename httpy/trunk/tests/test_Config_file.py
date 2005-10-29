@@ -9,8 +9,8 @@ from TestCaseHttpy import TestCaseHttpy
 
 default_conf = """\
 [main]
-ip =
-port = 8080
+sockfam = AF_INET
+address = :8080
 mode = deployment
 root = .
 apps =
@@ -18,8 +18,8 @@ verbosity = 1
 """
 
 no_header = """\
-ip =
-port = 8080
+sockfam = AF_INET
+address = :8080
 mode = deployment
 root = .
 apps =
@@ -28,13 +28,13 @@ verbosity = 1
 
 one_option = """\
 [main]
-port = 8080
+address = :8080
 """
 
 meaningless_header = """\
 [CHEESE!!!!!!!!!!1]
-ip =
-port = 8080
+sockfam = AF_INET
+address = :8080
 mode = deployment
 root = .
 apps =
@@ -43,9 +43,9 @@ verbosity = 1
 
 wacky_headers = """\
 [The IP Address]
-ip =
+sockfam = AF_INET
 [The TCP Port]
-port = 8080
+address = :8080
 [The Server Mode]
 mode = deployment
 [The Publishing Root]
@@ -58,8 +58,8 @@ verbosity = 1
 
 extra_options = """\
 [main]
-ip =
-port = 8080
+sockfam = AF_INET
+address = :8080
 cheese = yummy
 mode = deployment
 root = .
@@ -72,8 +72,8 @@ class TestConfigFile(TestCaseHttpy):
     want_config = True
 
     d = {}
-    d['ip'] = ''
-    d['port'] = 8080
+    d['sockfam'] = 2 # socket.AF_INET
+    d['address'] = ':8080' # no validation/coercion yet!
     d['mode'] = 'deployment'
     d['root'] = os.path.realpath('.')
     d['apps'] = ()
@@ -91,7 +91,7 @@ class TestConfigFile(TestCaseHttpy):
         conf = open('httpy.conf', 'w')
         conf.write(one_option)
         conf.close()
-        expected = self.dict2tuple({'port':8080})
+        expected = self.dict2tuple({'address':':8080'})
         actual = self.dict2tuple(self.config._file('httpy.conf'))
         self.assertEqual(expected, actual)
 
@@ -112,7 +112,7 @@ class TestConfigFile(TestCaseHttpy):
         actual = self.dict2tuple(self.config._file('httpy.conf'))
         self.assertEqual(expected, actual)
 
-    def testAndMultipleHeadersDoesntMatter(self):
+    def testAndMultsockfamleHeadersDoesntMatter(self):
         conf = open('httpy.conf', 'w')
         conf.write(wacky_headers)
         conf.close()

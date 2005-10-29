@@ -15,15 +15,15 @@ class TestCase(TestCaseHttpy):
         self.scrubenv()
 
         d = {}
-        d['ip'] = ''
-        d['port'] = 8080
+        d['sockfam'] = 2 # socket.AF_INET
+        d['address'] = ':8080' # no validation/coercion at this stage!
         d['mode'] = 'deployment'
         d['root'] = os.path.realpath('.')
         d['apps'] = ()
         d['verbosity'] = 1
 
-        os.environ['HTTPY_IP'] = ''
-        os.environ['HTTPY_PORT'] = '8080'
+        os.environ['HTTPY_SOCKFAM'] = 'AF_INET'
+        os.environ['HTTPY_ADDRESS'] = ':8080'
         os.environ['HTTPY_MODE'] = 'deployment'
         os.environ['HTTPY_ROOT'] = '.'
         os.environ['HTTPY_APPS'] = ''
@@ -37,8 +37,8 @@ class TestCase(TestCaseHttpy):
     def testJustOneExtraValueInEnv(self):
 
         self.scrubenv()
-        d = {'port':9000}
-        os.environ['HTTPY_PORT'] = '9000'
+        d = {'verbosity':54}
+        os.environ['HTTPY_VERBOSITY'] = '54'
 
         expected = self.dict2tuple(d)
         actual = self.dict2tuple(self.config._env())

@@ -1,8 +1,10 @@
 ========================================
-    0.6 -- zope.server
+    0.8 -- AF_UNIX
 ========================================
 finish docs (tex, man)
 expose threads to configuration
+
+support AF_UNIX
 
 test our processing of different cases of configuration options
 systematic tests for different server modes
@@ -18,6 +20,7 @@ RestartingServer seems to miss _foo.py
 
 headers should be case-preserved
 consider moving API up a level -- from httpy.Response import Response --> from httpy import Response
+site-packages -> lib?
 
 how do I call security for every request when I have multiple applications? oops?
 since I am not storing data in-site, it is crusty to have blog/__/app.py
@@ -40,10 +43,13 @@ or what if we had a distinction between applications and applings
         foo/foo.js              view
         foo/foo.py              controller
 maybe app.Application --> responder.Responder? (to distinguish from flynn app)
-
-
-
 =====DONE=====
+
+
+
+========================================
+    0.6 -- zope.server
+========================================
 transfer encoding
 document apps
 tests

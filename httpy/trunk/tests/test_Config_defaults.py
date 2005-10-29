@@ -13,8 +13,8 @@ class TestConfigDefaults(TestCaseHttpy):
     def testDefaults(self):
 
         d = {}
-        d['ip'] = ''
-        d['port'] = 8080
+        d['sockfam'] = 2 # socket.AF_INET
+        d['address'] = ('', 8080)
         d['mode'] = 'deployment'
         d['root'] = os.path.realpath('.')
         d['apps'] = ()

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import socket
 import unittest
 
 from httpy.Config import Config
@@ -22,174 +23,65 @@ class TestConfigValidate(TestCaseHttpy):
         self.assertEqual(expected, actual)
 
     def testSuperfluousKeysRemoved(self):
-        d = {'ip':'', 'foo':'bar'}
-        expected = {'ip':''}
+        d = {'mode':'deployment', 'foo':'bar'}
+        expected = {'mode':'deployment'}
         actual = self.config._validate('test', d)
         self.assertEqual(expected, actual)
 
 
-    # ip
-    # ==
+    # sockfam
+    # =======
 
-    def testGoodIP(self):
-        d = {'ip':'192.168.1.1'}
+    def testGoodSockFam(self):
+        d = {'sockfam':socket.AF_INET}
         expected = d.copy()
         actual = self.config._validate('test', d)
         self.assertEqual(expected, actual)
 
-    def testIPOutOfRange(self):
-        d = {'ip':'256.68.1.1'}
+    def testBadSockFam(self):
+        d = {'sockfam':3}
+        expected = d.copy()
         self.assertRaises( ConfigError
                          , self.config._validate
                          , 'test'
                          , d
                           )
 
-    def testFalseIPCoercedToEmptyString(self):
-        d = {'ip':''}
-        expected = {'ip':''}
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
+    def testAllSockFamsWork(self):
+        for sockfam in (socket.AF_INET, socket.AF_INET6, socket.AF_UNIX):
+            d = {'sockfam':sockfam}
+            expected = d.copy()
+            actual = self.config._validate('test', d)
+            self.assertEqual(expected, actual)
 
-        d = {'ip':None}
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-        d = {'ip':[]}
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-        d = {'ip':tuple()}
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-        d = {'ip':{}}
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-        d = {'ip':False}
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-        d = {'ip':0}
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
+    def testAllSockFamsAlsoWorkAsStrings(self):
+        for sockfam in ('AF_INET', 'AF_INET6', 'AF_UNIX'):
+            d = {'sockfam':sockfam}
+            expected = {'sockfam':getattr(socket, sockfam)}
+            actual = self.config._validate('test', d)
+            self.assertEqual(expected, actual)
 
 
-    def testNonFalseIPOfWrongTypeRaisesError(self):
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test'
-                         , {'ip':192.16811}
-                          )
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test'
-                         , {'ip':('192','168','1','1')}
-                          )
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test'
-                         , {'ip':{'192':'168','1':'1'}}
-                          )
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test'
-                         , {'ip':['192','168','1','1']}
-                          )
-
-    def testIPErrorMessage(self):
-        d = {'ip':'256.68.1.1'}
+    def testSockFamErrorMessage(self):
+        d = {'sockfam':None}
         try:
             self.config._validate('test', d)
         except ConfigError, err:
-            expected = "Found bad IP `256.68.1.1' in context `test'. IP " +\
-                       "must be empty or a valid IPv4 address."
+            expected = ("Found bad socket family `None' in context `test'. " +
+                        "Socket family must be either `AF_INET', `AF_INET6' " +
+                        "or `AF_UNIX'.")
             actual = err.msg
             self.assertEqual(expected, actual)
 
 
-    # port
-    # ====
+    # address
+    # =======
 
-    def testGoodPort(self):
-        d = {'port':8080}
+    def testAddressNotValidatedUntilLater(self):
+        d = {'address':("BLAMBLAM>---<GARBAGE>----<LSDLKFJ", (None, object()))}
         expected = d.copy()
         actual = self.config._validate('test', d)
         self.assertEqual(expected, actual)
-
-    def testOutOfRangeRaisesError(self):
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test', {'port':100000}
-                          )
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test', {'port':65536}
-                          )
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test', {'port':-1}
-                          )
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test', {'port':-8080}
-                          )
-
-    def testButInRangeIsFine(self):
-        d = {'port':0}
-        expected = d.copy()
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-        d = {'port':1}
-        expected = d.copy()
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-        d = {'port':80}
-        expected = d.copy()
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-        d = {'port':65535}
-        expected = d.copy()
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-    def testDigitStringIsCoerced(self):
-        d = {'port':'8080'}
-        expected = {'port':8080}
-        actual = self.config._validate('test', d)
-        self.assertEqual(expected, actual)
-
-    def testNonIntableRaisesError(self):
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test', {'port':False} # considered non-intable here
-                          )
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test', {'port':[]}
-                          )
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test', {'port':['foo']}
-                          )
-        self.assertRaises( ConfigError
-                         , self.config._validate
-                         , 'test', {'port':None}
-                          )
-
-    def testPortErrorMessage(self):
-        d = {'port':None}
-        try:
-            self.config._validate('test', d)
-        except ConfigError, err:
-            expected = "Found bad port `None' in context `test'. Port " +\
-                       "must be an integer between 0 and 65535."
-            actual = err.msg
-            self.assertEqual(expected, actual)
 
 
     # mode

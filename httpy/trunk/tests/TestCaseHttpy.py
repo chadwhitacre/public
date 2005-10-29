@@ -25,9 +25,9 @@ td = ThreadedTaskDispatcher()
 
 
 opts = [ '--mode', 'development'
-       , '--ip', ''
+       , '--sockfam', 'AF_INET'
        , '--root', 'root'
-       , '--port', '65370'
+       , '--address', ':65370'
        , '--verbosity', '99'
        #, '--apps', '/' discover automatically
         ]
