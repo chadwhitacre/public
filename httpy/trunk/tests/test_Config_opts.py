@@ -7,8 +7,8 @@ from TestCaseHttpy import TestCaseHttpy
 
 
 argv_default = [
-    '--ip='
-  , '--port=8080'
+    '--sockfam=AF_INET'
+  , '--address=:8080'
   , '--mode=deployment'
   , '--root=.'
   , '--apps='
@@ -16,8 +16,8 @@ argv_default = [
    ]
 
 argv_default_plus_path = [
-    '--ip='
-  , '--port=8080'
+    '--sockfam=AF_INET'
+  , '--address=:8080'
   , '--mode=deployment'
   , '--root=.'
   , '--apps='
@@ -26,8 +26,8 @@ argv_default_plus_path = [
    ]
 
 argv_short_names = [
-#   '-i' -- can't specify empty with shorts
-    '-p','8080'
+    '-s','AF_INET'
+  , '-d',':8080'
   , '-r','.'
   , '-mdeployment'
 # , '-a' -- can't specify empty with shorts
@@ -36,12 +36,12 @@ argv_short_names = [
    ]
 
 argv_only_one = [
-    '--port=8080'
+    '--mode=deployment'
    ]
 
 argv_extra_options = [
-    '--ip='
-  , '--port=8080'
+    '--sockfam=AF_INET'
+  , '--address=:8080'
   , '--mode=deployment'
   , '--root=.'
   , '--apps='
@@ -55,8 +55,8 @@ class TestConfigOpts(TestCaseHttpy):
     want_config = True
 
     d = {}
-    d['ip'] = ''
-    d['port'] = 8080
+    d['sockfam'] = 2 # socket.AF_INET
+    d['address'] = ':8080' # no validation/coercion yet
     d['mode'] = 'deployment'
     d['root'] = os.path.realpath('.')
     d['apps'] = ()
@@ -80,7 +80,6 @@ class TestConfigOpts(TestCaseHttpy):
     def testShortNames(self):
         file('httpy.conf', 'w')
         d = self.d.copy()
-        del d['ip']
         del d['apps']
         expected = self.dict2tuple(d)
         opts, path = self.config._opts(argv_short_names)
@@ -91,8 +90,8 @@ class TestConfigOpts(TestCaseHttpy):
     def testOnlyOneOption(self):
         file('httpy.conf', 'w')
         d = self.d.copy()
-        del d['ip']
-        del d['mode']
+        del d['sockfam']
+        del d['address']
         del d['root']
         del d['apps']
         del d['verbosity']

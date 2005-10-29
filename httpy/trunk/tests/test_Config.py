@@ -15,8 +15,8 @@ class TestConfigDefaults(TestCaseHttpy):
     def testDefaults(self):
 
         d = {}
-        d['ip'] = ''
-        d['port'] = 8080
+        d['sockfam'] = 2 # socket.AF_INET
+        d['address'] = ('', 8080)
         d['root'] = os.path.realpath('.')
         d['apps'] = [None]
 
@@ -49,19 +49,19 @@ class TestConfigDefaults(TestCaseHttpy):
         conf = file('httpy.conf', 'w')
         conf.write(os.linesep.join([
             "[main]"
-          , "port: 537"                         # should be retained
+          , "address: :537"                     # should be retained
           , "root = /etc"                       # should be overridden
            ]))
         conf.close()
 
         argv = [ '-r','root'                    # should be retained
-               , '-f','httpy.conf'              # should be retained
+              , '-f','httpy.conf'              # should be retained
                 ]
 
         # expected
         d = {}
-        d['ip'] = ''                            # default
-        d['port'] = 537                         # file
+        d['sockfam'] = 2                        # default
+        d['address'] = ('', 537)                # file
         d['root'] = os.path.realpath('./root')  # opts
         d['apps'] = [None]                      # default
 
