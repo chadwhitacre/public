@@ -39,7 +39,7 @@ def main(argv=None):
     # Set up top-level logging.
     # =========================
 
-    format = "%(name)-24s %(levelname)-8s %(message)s"
+    format = "%(name)-16s %(levelname)-8s %(message)s"
     logging.basicConfig( level=logging.DEBUG
                        , format=format
                         )
