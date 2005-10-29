@@ -1,11 +1,11 @@
 ========================================
-    0.8 -- AF_UNIX
+    0.8 -- MAKE WAY FOR FLYNN!
 ========================================
 finish docs (tex, man)
 expose threads to configuration
 
-support AF_UNIX
-
+test AF_UNIX in Server as well as in Config
+test os.path.realpath(addr)
 test our processing of different cases of configuration options
 systematic tests for different server modes
 tests for utils.parse*
@@ -44,6 +44,7 @@ or what if we had a distinction between applications and applings
         foo/foo.py              controller
 maybe app.Application --> responder.Responder? (to distinguish from flynn app)
 =====DONE=====
+support AF_UNIX
 
 
 
