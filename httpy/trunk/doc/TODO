@@ -4,6 +4,8 @@
 finish docs (tex, man)
 expose threads to configuration
 
+needs to log to stderr instead of stdout
+
 test AF_UNIX in Server as well as in Config
 test os.path.realpath(addr)
 test our processing of different cases of configuration options
@@ -17,6 +19,7 @@ when restarting in the middle of pdb, terminal gets screwed up -- hrm
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
 RestartingServer should be thinner ... shouldn't instantiate Apps, e.g.
 RestartingServer seems to miss _foo.py
+RestartingServer should use subprocess instead of os.spawn
 
 headers should be case-preserved
 consider moving API up a level -- from httpy.Response import Response --> from httpy import Response
