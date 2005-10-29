@@ -14,6 +14,7 @@ class TestConfigValidate(TestCaseHttpy):
 
     want_config = True
 
+
     # Basic functions
     # ===============
 
@@ -48,19 +49,34 @@ class TestConfigValidate(TestCaseHttpy):
                           )
 
     def testAllSockFamsWork(self):
-        for sockfam in (socket.AF_INET, socket.AF_INET6, socket.AF_UNIX):
+        for sockfam in (socket.AF_INET, socket.AF_UNIX):
             d = {'sockfam':sockfam}
             expected = d.copy()
             actual = self.config._validate('test', d)
             self.assertEqual(expected, actual)
 
+    def testExceptTheOnesThatDont(self):
+        for sockfam in (socket.AF_INET6,):
+            d = {'sockfam':sockfam}
+            self.assertRaises( NotImplementedError
+                             , self.config._validate
+                             , 'test', d
+                              )
+
     def testAllSockFamsAlsoWorkAsStrings(self):
-        for sockfam in ('AF_INET', 'AF_INET6', 'AF_UNIX'):
+        for sockfam in ('AF_INET', 'AF_UNIX'):
             d = {'sockfam':sockfam}
             expected = {'sockfam':getattr(socket, sockfam)}
             actual = self.config._validate('test', d)
             self.assertEqual(expected, actual)
 
+    def testEvenTheOnesThatDont(self):
+        for sockfam in ('AF_INET6',):
+            d = {'sockfam':sockfam}
+            self.assertRaises( NotImplementedError
+                             , self.config._validate
+                             , 'test', d
+                              )
 
     def testSockFamErrorMessage(self):
         d = {'sockfam':None}
@@ -68,8 +84,7 @@ class TestConfigValidate(TestCaseHttpy):
             self.config._validate('test', d)
         except ConfigError, err:
             expected = ("Found bad socket family `None' in context `test'. " +
-                        "Socket family must be either `AF_INET', `AF_INET6' " +
-                        "or `AF_UNIX'.")
+                        "Socket family must be either `AF_INET' or `AF_UNIX'.")
             actual = err.msg
             self.assertEqual(expected, actual)
 
