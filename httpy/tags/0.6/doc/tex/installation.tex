@@ -1,0 +1,25 @@
+\chapter{Installation}
+
+On a \UNIX-derived system, install httpy with the following procedure:
+
+\begin{verbatim}
+% fetch http://www.zetadev.com/software/httpy/latest/httpy.tbz
+% tar jxf httpy.tbz
+% cd httpy-x.x
+% make install
+\end{verbatim}
+
+This will install the httpy package into your system's python, and will install
+the executable and manual page under /usr/local. To use a specific python
+installation, change the installation location, or otherwise configure the
+installation, please edit the Makefile.
+
+To only install the python package, use:
+
+\begin{verbatim}
+% python setup.py install
+\end{verbatim}
+
+In particular, Windows users are currently limited to this method, because I
+haven't yet found a good way to install an executable on Windows. I am open to
+suggestions.
