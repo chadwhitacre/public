@@ -1,0 +1,187 @@
+.Dd March 9, 2005
+.Os
+.Dt JRC 1 LOCAL
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh NAME
+.Nm jrc
+.Nd start and stop jails
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SYNOPSIS
+.Nm jrc
+.Ar path
+.Op Ar ip-number
+.Ar action
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh DESCRIPTION
+.Nm
+is a thin
+.Xr python 1
+wrapper around
+.Xr jail 8
+which provides hooks for jail sanity checks, prep and cleanup. It is designed to
+ease management of a moderate number of similarly-structured jails. In its basic
+form it simply:
+.Pp
+.Bl -bullet -offset indent
+.It
+verifies that the jail is being started/stopped by root
+.It
+verifies that the jail is currently stopped/running
+.It
+mounts/unmounts the jail's process filesystem
+.El
+.Pp
+However, it could easily be extended to (un)alias IP numbers on the fly, for
+example, or to check whether
+.Ar path
+does in fact point to a jailable directory. In fact, it originally did the
+former, but I found it to significantly lengthen jail startup time.
+.Pp
+.Nm
+also streamlines jail management by inferring the jail's hostname and/or IP
+number from its directory name. If
+.Ar ip-number
+is given then the name of the directory at
+.Ar path
+is assumed to be the hostname of the jail. If
+.Ar ip-number
+is not given, then this directory name is assumed to be in the form
+hostname_ip-number (only one underscore allowed).
+.Pp
+Arguments are as follows:
+.Bl -tag -offset indent
+.It Ar path
+Directory which is to be the root of the jail. This can be an absolute or
+relative path; before it is used it is normalized and absolutized, and symlinks
+are expanded.
+.It Ar ip-number
+IP number assigned to the jail.
+.It Ar action
+.Bq \& start | stop | restart \&
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh IMPLEMENTATION NOTES
+This program was written on FreeBSD 4.11 and Python 2.3.4. It depends on
+.Xr jkill 1
+<http://ext.by/jkill/> and
+.Xr jls 1
+<http://ext.by/jls/> by Pavel Novikov <pavel@ext.by>.
+.Pp
+N.B.: As implied above, we currently assume that
+.Ar ip-number
+is already configured as an alias (e.g., during bootup), and we make no checks
+whether it is currently in use by other running jails.
+.Pp
+Also note that we still expect
+.Ar ip-number
+when stopping a jail, even though this argument is only used to trigger
+interpretation of the directory name as the hostname. Any string, e.g., '-', can
+therefore be passed as
+.Ar ip-number
+when
+.Ar action
+is 'stop'.
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh EXAMPLES
+.Bl -item
+.It
+% jrc somejail_10.0.0.77/ start
+.It
+% jrc ~/jails/sample-jail - stop
+.It
+% jrc /usr/local/jails/foo.example.com._10.0.0.79 restart
+.It
+% jrc . 10.0.0.78 start
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SEE ALSO
+.Xr jkill 1 ,
+.Xr jls 1 ,
+.Xr jail 8 ,
+.Xr rc 8
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh AUTHORS
+.Bl -item
+.It
+(c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+.It
+This program is beerware. If you like it, buy me a beer someday.
+.It
+No warranty is expressed or implied.
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh TODO
+Here are some possible ways that this program could be improved, in order of
+priority for the author:
+.Bl -enum -offset indent
+.It
+Tweak for use from other scripts. In particular, add a non-verbose mode (this
+means adding options support) and return a status code.
+.It
+Make the argument validation smarter, e.g., when
+.Ar ip-number
+should be supplied but isn't.
+.It
+Add a check for whether
+.Ar ip-number
+is already in use.
+.It
+Add a check for whether
+.Ar path
+actually points to a jailable directory.
+.It
+Add a switch to optionally enable on-the-fly IP (un)aliasing.
+.It
+Make the directory inferencing smarter, e.g. make sure hostnames coming from
+directory names are valid hostnames, allow more than one underscore, etc.
+.It
+Enable hostname to optionally be passed in as an argument rather than inferred
+from the directory name. This would mean either using options instead of
+positional arguments, or automagically detecting whether a supplied argument was
+an IP number. This would also mean accounting for full-qualified vs. non-FQ
+hostnames.
+.It
+Make
+.Ar action
+optional, so that calling
+.Nm
+without
+.Ar action
+toggles the state of the jail. This requires smarter argument parsing.
+.It
+Abstract the hooks to allow for easier extension. At this point we ought to
+compare ourselves more closely to
+.Xr rc 8 .
+.El
