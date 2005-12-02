@@ -99,3 +99,68 @@ HTTP errata: (but HTML version is auto-generated)
     varriant
     is not be construed
     section 5.1.1 of RFC 2046
+
+
+
+how do I call security for every request when I have multiple applications? oops?
+since I am not storing data in-site, it is crusty to have blog/__/app.py
+    better to just have blog.py? or blog/index.py?
+so maybe each site should only have one application (=request handler), and we should
+    build *.py support right into httpy?
+
+or what if we had a distinction between applications and applings
+    application would, yes, be the main request handler, with security/error handling
+    applings should all share security and error handling
+    but each appling is where you implement MVC. so right now you do ...
+        __/site-packages/foo/   model
+        __/templates/foo.pt     view
+        _styles/foo.css             view
+        _scripts/foo.js              view
+        foo.py              controller
+    but wouldn't it be nicer if you could do ...
+        __/site-packages/foo/   model
+        foo/foo.pt              view
+        foo/foo.css             view
+        foo/foo.js              view
+        foo/foo.py              controller
+maybe app.Application --> responder.Responder? (to distinguish from flynn app)
+
+httpy is intelligible within the following abstraction of the web application
+problem:
+
+    protocol -- This is the subproblem that httpy directly addresses; it
+                provides an HTTP API for your Python website.
+
+    framework -- hook for security, skinning, error handling, etc.
+        on the way in:  request = framework.wrap_request(request)
+                        request = framework.Request(request)
+        on the way out: response = framework.wrap_response(response)
+                        response = framework.Response(response)
+
+    application -- (servlet, appling?)
+        if a requested file actually exists on the fs under an appling, do we
+        automatically serve it, or do we make the appling responsible for that?
+
+        one common case is going to be support files -- CSS, JavaScript, images,
+        etc. -- that are located in the application's directory
+
+        app.py
+
+
+    data -- maybe stored hierarchically along with applings, or maybe elsewhere
+
+
+    protocol
+    framework
+    application
+    data
+
+/
+/__/
+/__/app.py -- default application for publication or hybrid site
+/__/framework.py
+/app.py -- default application for application site
+/foo-app/
+/foo-app/app.py -- def respond(request):
+/foo-app/style.css
+/foo-app/scripts.js
