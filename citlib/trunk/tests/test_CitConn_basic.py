@@ -25,6 +25,12 @@ class TestCitConn(unittest.TestCase):
         actual = cit._sock
         self.assertEqual(expected, actual)
 
+    def test_NOOP(self):
+        cit = CitConn()
+        expected = None
+        actual = cit.NOOP()
+        self.assertEqual(expected, actual)
+
 
     # login/logout
 
