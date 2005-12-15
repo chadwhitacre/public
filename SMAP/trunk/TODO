@@ -1,25 +1,17 @@
 RTRV
 HDRS
 FIND
-    add indexing support to STOR
 RMV
     need a RMV command to remove a message
 make sure we only use secure sockets
 add AF_INET support
-validate client ids at some early stage
-    use as crypt key requires that they be 32 bytes w/o dashes
 improve error handling in TCPServer537 -- croaks on critical errors
 tighten up encryption padding algorithm -- watch edge cases
-factor out common client/server code into a utils module (e.g. _wrap/_unwrap)
+if the message is already on disk, but the contents don't match the hash, it should be overwritten
+need to validate message as mime? do we require two newlines?
 consider a short-lived thread for when client and server are both manipulating message
-return '1 <msg id>' on AlreadyStored for verification
-need to be able to get back to reproduce index from data alone
-    to do this we need both the client ID and the crypt key on the server
-    storing the client key on the server is fine, but not the crypt key
-    so ... store messages in subdirectories named after the client id
-    then the message id can be a straight hash the message, id not needed
-    but then we lose the flexibility of storing messages on random servers
-    why? no we don't
+consider writing to a temp file and then moving into permanent place -- more atomic
+
 =====DONE=====
 best message transfer method: newline-delimited or Content-Length
     you want to buffer the read
@@ -45,3 +37,15 @@ data should be stored encrypted
     if a bank wants to run our software, they can buy a hosted solution
     for now, crypt key == client id
 STOR
+validate client ids at some early stage
+    use as crypt key requires that they be 32 bytes w/o dashes
+need to be able to get back to reproduce index from data alone
+    to do this we need both the client ID and the crypt key on the server
+    storing the client key on the server is fine, but not the crypt key
+    so ... store messages in subdirectories named after the client id
+    then the message id can be a straight hash the message, id not needed
+    but then we lose the flexibility of storing messages on random servers
+    why? no we don't
+factor out common client/server code into a utils module (e.g. _wrap/_unwrap)
+return '1 <msg id>' on AlreadyStored for verification
+add indexing support to STOR

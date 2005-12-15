@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+import anydbm
 import base64
 import bz2
 import logging
 import os
 import sha
+from email import message_from_string
 
 from Crypto.Cipher import AES
 
@@ -14,8 +16,8 @@ from tcp537 import TCPServer537
 
 
 logger = logging.getLogger('smapd')
-DATA_ROOT = '/var/db/smap/'
-CLIENT_IDS = os.listdir(DATA_ROOT)
+ROOT = '/var/db/smap/'
+CLIENT_IDS = os.listdir(ROOT)
 ALLOWED = ( 'FIND'
           , 'HDRS'
           , 'RTRV'
@@ -80,7 +82,8 @@ class Conversation:
             client_id = self.readline().rstrip('\n')
             if client_id in CLIENT_IDS:
                 self.client_id = client_id
-                self.client_root = os.path.join(DATA_ROOT, client_id)
+                self.data_root = os.path.join(ROOT, client_id, 'data')
+                self.metadata_root = os.path.join(ROOT, client_id, 'metadata')
                 self.write('1 Thanks! Your crypt key? (optional)')
             else:
                 self.write('2 Bad client ID; try again.')
@@ -139,15 +142,25 @@ class Conversation:
         """
         self.write('2 Not implemented.')
 
-    def HDRS(self, arg):
+
+    def HDRS(self, msg_id):
+        """Given a message ID, retrieve the message's HeaDeRS.
         """
-        """
-        self.write('2 Not implemented.')
+        path = os.path.join(self.data_root, msg_id)
+        if os.path.isfile(path):
+            msg = open(path, 'rb').read()
+            msg = self.crypter.decrypt(msg)
+            msg = self.padder.unpad(msg)
+            headers = msg.split('\n\n', 1)[0]
+            self.write('0 %s' % self.wrapper.wrap(headers))
+        else:
+            self.write('2 No such message.')
+
 
     def RTRV(self, msg_id):
         """Given a message ID, ReTRieVe a message.
         """
-        path = os.path.join(DATA_ROOT, msg_id)
+        path = os.path.join(self.data_root, msg_id)
         if os.path.isfile(path):
             msg = open(path, 'rb').read()
             msg = self.crypter.decrypt(msg)
@@ -165,44 +178,50 @@ class Conversation:
         # ==============================================
 
         msg = self.wrapper.unwrap(msg)
-        msg = self.padder.pad(msg)
-        msg = self.crypter.encrypt(msg)
-        msg_id = sha.new(msg).hexdigest()
+        enc = self.padder.pad(msg)
+        enc = self.crypter.encrypt(enc)
+        msg_id = sha.new(enc).hexdigest()
 
 
         # Write the message to disk.
         # ==========================
 
-        return_code = 0
-        path = os.path.join(DATA_ROOT, msg_id)
+        already_stored = False
+        path = os.path.join(self.data_root, msg_id)
 
-        if msg_id not in os.listdir(DATA_ROOT):
+        if msg_id not in os.listdir(self.data_root):
             fp = file(path, 'w+b')
-            fp.write(msg)
+            fp.write(enc)
             fp.close()
         else:
-            return_code = 1
+            already_stored = True
 
 
         # Make sure we stored it successfully.
         # ====================================
 
-        disk_msg = open(path, 'rb').read()
-        disk_msg_id = sha.new(disk_msg).hexdigest()
-        if disk_msg_id != msg_id:
+        disk = open(path, 'rb').read()
+        disk_id = sha.new(disk).hexdigest()
+        if disk_id != msg_id:
             self.write('2 Message storage failed! (server)')
             return
 
 
         # Index the message headers.
         # ==========================
-        # Eventually.
+        # Loop through the message headers and store the value under the msg_id.
+
+        if not already_stored:
+            for header, value in message_from_string(msg).items():
+                db_path = os.path.join(self.metadata_root, header)
+                db = anydbm.open(db_path, 'c')
+                db[msg_id] = value
 
 
         # Return the message ID.
         # ======================
 
-        self.write('%s %s\n' % (return_code, disk_msg_id))
+        self.write('%s %s\n' % (int(already_stored), disk_id))
 
 
 class smapd(TCPServer537):
