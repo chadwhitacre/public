@@ -1,17 +1,17 @@
-RTRV
-HDRS
 FIND
-RMV
-    need a RMV command to remove a message
 make sure we only use secure sockets
 add AF_INET support
-improve error handling in TCPServer537 -- croaks on critical errors
 tighten up encryption padding algorithm -- watch edge cases
 if the message is already on disk, but the contents don't match the hash, it should be overwritten
 need to validate message as mime? do we require two newlines?
 consider a short-lived thread for when client and server are both manipulating message
-consider writing to a temp file and then moving into permanent place -- more atomic
-
+think about case preserving/matching for headers
+optimize indexing/unindexing (pool db connections)
+make it thread safe ... lock the db while writing
+can we encrypt the index as well as the storage?
+ACID, transactional
+    consider writing to a temp file and then moving into permanent place -- more atomic
+tcp537 should be able to dynamically shrink and grow its thread pool
 =====DONE=====
 best message transfer method: newline-delimited or Content-Length
     you want to buffer the read
@@ -49,3 +49,8 @@ need to be able to get back to reproduce index from data alone
 factor out common client/server code into a utils module (e.g. _wrap/_unwrap)
 return '1 <msg id>' on AlreadyStored for verification
 add indexing support to STOR
+HDRS
+RTRV
+RMV -- need a RMV command to remove a message
+improve error handling in TCPServer537 -- croaks on critical errors
+    this actually belongs in smapd
