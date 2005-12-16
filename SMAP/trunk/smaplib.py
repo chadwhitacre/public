@@ -30,14 +30,25 @@ logger = logging.getLogger('smaplib')
 # Exceptions
 # ==========
 
-class SMAPError(StandardError):
+class InternalServerError(StandardError):
     """
     """
 
-class AlreadyStored(SMAPError):
+class ServerError(StandardError):
     """
     """
 
+class ClientError(StandardError):
+    """
+    """
+
+class AlreadyStored(StandardError):
+    """
+    """
+
+class AlreadyRemoved(StandardError):
+    """
+    """
 
 
 # Message Manipulators
@@ -155,9 +166,9 @@ class SMAPConn:
             self.crypter = DummyCrypter()
             self.padder = DummyPadder()
         elif crypt_key.replace('-', '') == client_id:
-            raise SMAPError("Crypt key can't match client ID.")
+            raise ClientError("Crypt key can't match client ID.")
         elif len(crypt_key) != 32:
-            raise SMAPError("Crypt key must be 32 bytes long.")
+            raise ClientError("Crypt key must be 32 bytes long.")
         else:
             self.crypter = AES.new(crypt_key)
             self.padder = Padder()
@@ -200,7 +211,7 @@ class SMAPConn:
         any values returned by the server.
 
         Any error response from the server (codes in the 500 range) will trigger
-        a SMAPError here.
+        a ServerError here.
 
         """
         if not msg.endswith('\n'):
@@ -208,18 +219,18 @@ class SMAPConn:
         self.write(msg)
         response = self.readline().rstrip('\n')
         c, v = self.parse(response)
-        if unicode(c).startswith('5'):
-            raise SMAPError(v)
-        else:
+        if c in (0, 1):
             return (c, v)
+        elif c == 2:
+            raise ServerError(v)
+        elif c == 3:
+            raise InternalServerError(v)
 
     def parse(self, msg):
         """Given a one-line response from the server, parse it.
         """
         msg = msg.rstrip('\n')
         code_, value = msg.split(' ', 1)
-        if code_ == '2':
-            raise SMAPError(value)
         return int(code_), value
 
 
@@ -233,14 +244,25 @@ class SMAPConn:
         raise NotImplementedError
 
 
-    def HDRS(self):
+    def HDRS(self, msg_id):
+        """Given a message ID, retrieve the message's HeaDeRS.
         """
+        c, msg = self.hit('HDRS %s' % msg_id)
+        assert c == 0
+        return self.wrapper.unwrap(msg)
+
+
+    def RMV(self, msg_id):
+        """Given a message ID, ReMoVe the message.
         """
-        raise NotImplementedError
+        c, feedback = self.hit('RMV %s' % msg_id)
+        if c == 1:
+            raise AlreadyRemoved
+        assert c == 0
 
 
     def RTRV(self, msg_id):
-        """Given a message ID, ReTRieVe a message.
+        """Given a message ID, ReTRieVe the message.
         """
         c, msg = self.hit('RTRV %s' % msg_id)
         assert c == 0
@@ -284,7 +306,7 @@ class SMAPConn:
         if remote_msg_id == msg_id:
             return remote_msg_id
         else:
-            raise SMAPError('Message storage failed! (client)')
+            raise ClientError('Message storage failed!')
 
 
         # Decide how to respond.
@@ -300,6 +322,7 @@ class SMAPConn:
 
     find = FIND
     headers = hdrs = HDRS
+    remove = rmv = RMV
     retrieve = rtrv = RTRV
     store = stor = STOR
     stop = STOP
@@ -310,4 +333,7 @@ if __name__ == '__main__':
     client_id = '44b9ef48-1f6e-45b7-b3f7-f29b471396e2'
     crypt_key = 'c02ebb50b1ef44b19181096099288fca'
     c = SMAPConn(client_id, crypt_key)
+    test = open('test.txt').read()
+    id=c.store(test)
     import code; code.interact(local=locals())
+    c.stop()

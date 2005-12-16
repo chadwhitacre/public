@@ -5,8 +5,10 @@ import base64
 import bz2
 import logging
 import os
+import sets
 import sha
-from email import message_from_string
+import traceback
+from email import message_from_file, message_from_string
 
 from Crypto.Cipher import AES
 
@@ -20,6 +22,7 @@ ROOT = '/var/db/smap/'
 CLIENT_IDS = os.listdir(ROOT)
 ALLOWED = ( 'FIND'
           , 'HDRS'
+          , 'RMV'
           , 'RTRV'
           , 'STOP'
           , 'STOR'
@@ -77,7 +80,7 @@ class Conversation:
         # First get the client ID
         # =======================
 
-        self.write('1 Welcome! Your client ID?')
+        self.write('1 SMAP/0.1 Welcome! Your client ID?')
         while not self.client_id:
             client_id = self.readline().rstrip('\n')
             if client_id in CLIENT_IDS:
@@ -140,7 +143,7 @@ class Conversation:
     def FIND(self, arg):
         """
         """
-        self.write('2 Not implemented.')
+        self.write('3 Not implemented.')
 
 
     def HDRS(self, msg_id):
@@ -157,8 +160,32 @@ class Conversation:
             self.write('2 No such message.')
 
 
+    def RMV(self, msg_id):
+        """Given a message ID, ReMoVe the message.
+        """
+        path = os.path.join(self.data_root, msg_id)
+        if os.path.isfile(path):
+            enc = open(path, 'rb').read()
+            msg = self.crypter.decrypt(enc)
+            msg = self.padder.unpad(msg)
+            msg = message_from_string(msg)
+            for header in sets.Set(msg.keys()):
+                db_path = os.path.join(self.metadata_root, header.lower())
+                db = anydbm.open(db_path, 'w')
+                del db[msg_id]
+                if len(db) > 0:
+                    db.close()
+                else:
+                    db.close()
+                    os.remove(db_path)
+            os.remove(path)
+            self.write('0 Message removed.')
+        else:
+            self.write('1 Message already removed.')
+
+
     def RTRV(self, msg_id):
-        """Given a message ID, ReTRieVe a message.
+        """Given a message ID, ReTRieVe the message.
         """
         path = os.path.join(self.data_root, msg_id)
         if os.path.isfile(path):
@@ -207,21 +234,17 @@ class Conversation:
             return
 
 
-        # Index the message headers.
-        # ==========================
-        # Loop through the message headers and store the value under the msg_id.
+        # Index and return.
+        # =================
 
         if not already_stored:
             for header, value in message_from_string(msg).items():
-                db_path = os.path.join(self.metadata_root, header)
+                db_path = os.path.join(self.metadata_root, header.lower())
                 db = anydbm.open(db_path, 'c')
                 db[msg_id] = value
-
-
-        # Return the message ID.
-        # ======================
-
+                db.close()
         self.write('%s %s\n' % (int(already_stored), disk_id))
+
 
 
 class smapd(TCPServer537):
@@ -237,7 +260,10 @@ class smapd(TCPServer537):
         except Done:
             pass
         except:
-            raise
+            logger.error(traceback.format_exc())
+            err_msg = '3 Internal server error.\n'
+            logger.debug(err_msg)
+            outgoing.write(err_msg)
 
 
 if __name__ == '__main__':
