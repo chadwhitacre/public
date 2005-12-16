@@ -3,6 +3,7 @@
 import anydbm
 import base64
 import bz2
+import codecs
 import logging
 import os
 import sets
@@ -118,12 +119,12 @@ class Conversation:
         # ====================================
 
         while 1:
-            request = self.readline()
-            if request == 'STOP\n':
+            request = self.readline().rstrip()
+            if request == 'STOP':
                 self.write('0 Bye!')
                 raise Done
             else:
-                tokens = request.split(None)
+                tokens = request.split(None, 1)
                 try:
                     if len(tokens) != 2:
                         raise Done
@@ -140,10 +141,63 @@ class Conversation:
     # Actual API
     # ==========
 
-    def FIND(self, arg):
+    def FIND(self, criterion):
+        """FIND messages, returning their ids.
         """
-        """
-        self.write('3 Not implemented.')
+
+        # Gather and validate all criteria.
+        # =================================
+        # header = value\nheader2 < value2\n header2 >= value3\n\n
+
+        criteria = []
+        while criterion:
+            tokens = criterion.split(None, 2)
+            if len(tokens) != 3:
+                self.write('2 Bad criterion (too few tokens): %s' % criterion)
+                return
+            elif tokens[1] not in ('>', '>=', '=', '!=', '<=', '<'):
+                self.write('2 Bad criterion (bad operator): %s' % criterion)
+                return
+            else:
+                criteria.append(tokens)
+            criterion = self.readline().rstrip('\n')
+
+        if not criteria:
+            self.write('2 No criteria given.')
+            return
+
+
+        # Find all matching messages.
+        # ===========================
+
+        filters = []
+        for header, op, sought in criteria:
+            msg_ids = sets.Set()
+            db_path = os.path.join(self.metadata_root, header.lower())
+            if not os.path.isfile(db_path):
+                continue
+            db = anydbm.open(db_path)
+            for msg_id, value in db.items():
+                sought = repr(codecs.escape_encode(sought)[0])
+                op = op == '=' and '==' or op
+                value = repr(codecs.escape_encode(value)[0])
+                condition = ' '.join((value, op, sought))
+                logger.debug('evaluating: %s' % condition)
+                if eval(condition):
+                    msg_ids.add(msg_id)
+            filters.append(msg_ids)
+            db.close()
+        for filt in filters:
+            msg_ids &= filt
+
+
+        # Write their message IDs out to the wire.
+        # ========================================
+
+        self.write('1 Message IDs follow.')
+        for msg_id in msg_ids:
+            self.write(msg_id)
+        self.write('')
 
 
     def HDRS(self, msg_id):

@@ -238,10 +238,34 @@ class SMAPConn:
     # Actual API
     # ==========
 
-    def FIND(self):
+    def FIND(self, query):
+        """Given a query, FIND messages, returning their ids.
         """
-        """
-        raise NotImplementedError
+
+        # Make sure we end with two newlines.
+        # ===================================
+        # This is the minimum validation necessary to prevent hanging the
+        # server.
+
+        query = 'FIND ' + query
+        for n in ('\n', '\n\n'):
+            if not query.endswith(n):
+                query += '\n'
+
+
+        # Read any message IDs off the wire and return.
+        # =============================================
+
+        c, v = self.hit(query)
+        assert c == 1
+        msg_ids = []
+        while 1:
+            msg_id = self.readline().rstrip('\n')
+            if not msg_id:
+                break
+            msg_ids.append(msg_id)
+
+        return msg_ids
 
 
     def HDRS(self, msg_id):
