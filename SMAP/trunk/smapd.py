@@ -208,11 +208,9 @@ class Conversation:
                 continue
             db = anydbm.open(db_path)
             for msg_id, value in db.items():
-                sought = repr(codecs.escape_encode(sought)[0])
                 if op == '=':
                     op = '=='
-                value = repr(codecs.escape_encode(value)[0])
-                condition = ' '.join((value, op, sought))
+                condition = ' '.join((repr(value), op, repr(sought)))
                 logger.debug('evaluating: %s' % condition)
                 if eval(condition):
                     msg_ids.add(msg_id)
