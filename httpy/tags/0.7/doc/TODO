@@ -1,0 +1,171 @@
+========================================
+    0.8 -- FLYNN + ACOLYTE
+========================================
+finish docs (tex, man)
+
+needs to log to stderr instead of stdout?
+log should include file and line number
+log should take an expression that is only evaluated if needed
+it would be super cool to change the log level on the fly while running
+    I would want to support this in all modes, including deployment
+also would be great to throttle logging to a single subsystem
+
+update tests post-refactor
+test AF_UNIX in Server as well as in Config
+test os.path.realpath(addr)
+test our processing of different cases of configuration options
+systematic tests for different server modes
+tests for utils.parse*
+run tests on Mac
+test Task when respond doesn't raise anything
+
+when restarting in the middle of pdb, terminal gets screwed up -- hrm
+    see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
+RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
+RestartingServer seems to miss _foo.py
+
+headers should be case-preserved
+consider moving API up a level -- from httpy.Response import Response --> from httpy import Response
+site-packages -> lib?
+
+consider using inspect rather than zope interfaces?
+    interfaces gives us doc as well as constraint, and it's already there and working
+go back to pooled thread server?
+    this means re-implementing chunk transfer encoding and keep-alives
+    but I don't know if these are working atm anyway
+
+
+=====DONE=====
+expose threads to configuration
+move mode from env to config
+do we really need to support a config file? no!
+support AF_UNIX
+refactor for app.py instead of __
+fix to work with RestartingServer again
+insert framework layer -- __/framework.py
+RestartingServer should be thinner ... shouldn't instantiate Apps, e.g.
+    it has to in order to know when to restart!
+RestartingServer should use subprocess instead of os.spawn
+add staging mode
+
+
+
+========================================
+    0.6 -- zope.server
+========================================
+transfer encoding
+document apps
+tests
+make apps implicit rather than explicit
+    change Config to auto-find apps by default -- can still be overriden
+    also update Config tests to reflect the change
+    shouldn't need to touch Server or Task since their input won't change
+httpy.app.CGIMixin
+supporting on-the-fly reloading of apps in dev mode
+need to figure out how to sanely provide for alternate py libs
+    answer: PYTHONPATH per daemontools -- configurable per site
+    per-site lib
+    per-app lib
+    sys.path is not a simple solution since we have multiple apps -- what is the import order?
+unittests!
+refactor docs in Python style
+remove __init__ requirement (don't always want to configure)
+reconsider naming of Transaction given its meaning in persistence contexts
+Transaction -> Application; persistent object
+should allow any method
+parse post to dict
+add dev_mode to Application API
+add a debug mode, which is dev mode + post-mortem
+    deploy, develop, debug
+raise Response(200, '') should give '', not "Request fulfilled, document follows"
+raise Response(537, {}) should give '{}', not '<no output>'
+ServerConfig --> Config
+Exception --> StandardError
+update to use zope 3.1.0 final
+Task.find_app --> get_app
+do we want traditional access logging? separate access and error logs?
+    consider using logging from the std lib
+    but maybe this just is app's job? answer: yes
+app.py --> __init__.py? --> Application.py?
+    __init__.py implies that the current dir is a package, which it isn't
+    Application.py -- eh, too verbose :^P
+on Windows, should always degrade to Server since RestartingServer won't work
+signal handling
+    TERM -- nice shutdown
+    HUP -- reload config?
+add close hook to Application
+RestartingServer tries to kill a pid that isn't there
+run tests on Windows again
+
+
+
+
+
+========================================
+    FUTURE
+========================================
+think systematically about hooks for Application
+    consider exposing the Server to the Application
+charsets (i18n)
+keep-alive
+range requests
+think about how httpy could be used in stand-alone servers/applications
+    i.e., one httpy instance per installation, rather than multiple sites per httpy
+support interactive features, e.g.:
+    ctrl-s -- display configuration settings
+    ctrl-d -- toggle postmortem debugging
+    ctrl-v -- set verbosity on the fly
+add cli options to dump config and exit
+play nice on Windows
+    GUI?
+    pyexe?
+
+
+========================================
+    0.2 -- STATIC
+========================================
+=====DONE=====
+sensible error handling
+get frame macro instead of template
+configuration
+    think through relationship of cli options, config, and env variables
+        defaults -- can start httpy with no options, etc. and get something
+    check to make sure site root exists on filesystem
+    push all config checking up and out of init
+write a make file
+continue with unit tests
+refactor into multiple modules, distutils + make
+if frame.pt is empty, then frame should just be none
+handle 500 better
+400 -> 501
+test error templates
+ignore empty error template
+test last resort
+put tracebacks in error messages when in development mode
+figure out daemontools
+
+
+========================================
+    0.4 -- DYNAMIC
+========================================
+=====DONE=====
+write html docs
+support something sane like CGI to provide context.py with it's API
+manage sessions, post, querystring, cookies?
+logging -- stdout :-) -- but support different verbosities
+factor out medusa goofiness if possible
+refactor for BaseHTTPServer -- no non-std lib dependencies!
+separate error for each HTTP error? if not then why Redirect sep?
+500 traceback should be in pre -- hardwire this into the message?
+    the problem is that we also use message for redirects, which we don't
+      necessarily want in pre, but on another level it doesn't matter cause
+      noone ever sees that payload
+factor out templating
+need to import rather than execfile
+    guessing its faster
+    need persistence, e.g. for template caching
+        import app rather than from app import Transaction
+        then app.py can run whatever and it stays in memory
+add apps to configuration
+guess content type in response --> NO!!!!!!11
+server string -> httpy
