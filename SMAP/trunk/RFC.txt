@@ -1,3 +1,7 @@
+
+SMAP -- Simple Message Access Protocol
+
+
 Principles:
 
 
@@ -15,22 +19,13 @@ Problems:
 
 MIME message server
 
-store mime messages
-index mime messages
-indexing is either triggered by changes, or is run cronishly
-not cron, cause we don't want to launch an entire interpreter every minute
-so we need to use sleep(5) or whatever
 all info is actually stored in the message, so if an index is lost, no biggie
-
-
 in fact, at scale we would probably want async indexers running and checking
 messages to catch the rare case of a corrupt message or an unindexed message.
 
-
-
 Every client of an SMAP server must have a client ID, which can be any string
 not containing newlines. This client id must be registered with the server, and
-will be used by the SMAP server to tag (and to encrypt?) that client's messages.
+will be used by the SMAP server to tag that client's messages.
 
 each message has an ID which is generated as follows:
 
@@ -39,24 +34,9 @@ each message has an ID which is generated as follows:
                 the message contents
                 the client ID
 
-    this ID is the filename (hence the base65 encoding):
+    this ID is the filename (hence the base64 encoding):
 
         /var/db/mime/TfWoM14hJwKjjBDChvBqKNQB7O8=
-
-
-
-import smaplib
-
-smapconn = smaplib.connect('localhost', 5370, 'a2903fbe-f6db-4735-a3ea-0e516ee1b27b')
-
-class Application:
-
-    def respond(self, request):
-        """
-        """
-
-        smapconn.find({'x-uri-path':request.path})
-
 
 
 What applications could use smap?
@@ -66,48 +46,20 @@ threaded discussion
 email
 content management (pages)
 
-messagebase
-mbase
-mimebase
-mimedb
-PyMIMEdb
-mimer
-mimner
-messhall
-smapper
-smapster
-smapattack
-smapdb
-smapit
-
-
-SMAP -- Simple Message Access Protocol
-
-
-smaplib.py
-
-class SMAPConnection:
-
-    def __init__(self, client_id, address='localhost', sockfam=socket.AF_UNIX)
-        """Takes a client ID, a socket address, and a socket family.
-        """
-
-    def retrieve(self, message_id):
-        """Given a message_id, return a message.
-        """
-
-    def find(self, is, isnot=None, startswith=None):
-        """Given three dictionaries of headers, return a list of message IDs.
-        """
-
-    def store(self, message):
-        """Given a message, returns the message's ID.
-        """
-
-    def remove(self, message_id):
-        """Takes a message ID or a sequence of message IDs.
-        """
-
+name storm:
+    messagebase
+    mbase
+    mimebase
+    mimedb
+    PyMIMEdb
+    mimer
+    mimner
+    messhall
+    smapper
+    smapster
+    smapattack
+    smapdb
+    smapit
 
 
 

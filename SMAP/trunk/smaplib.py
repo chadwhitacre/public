@@ -30,15 +30,11 @@ logger = logging.getLogger('smaplib')
 # Exceptions
 # ==========
 
-class InternalServerError(StandardError):
+class ClientError(StandardError):
     """
     """
 
 class ServerError(StandardError):
-    """
-    """
-
-class ClientError(StandardError):
     """
     """
 
@@ -47,6 +43,10 @@ class AlreadyStored(StandardError):
     """
 
 class AlreadyRemoved(StandardError):
+    """
+    """
+
+class InternalServerError(StandardError):
     """
     """
 
@@ -59,6 +59,15 @@ class Wrapper:
     """
 
     def wrap(self, msg):
+        """Can take either a string or an email.Message.Message.
+        """
+        if isinstance(msg, basestring):
+            msg = msg
+        elif isinstance(msg, Message):
+            fp = StringIO()
+            g = Generator(fp, mangle_from_=False, maxheaderlen=0)
+            g.flatten(msg)
+            msg = fp.getvalue()
         return base64.b64encode(bz2.compress(msg))
 
     def unwrap(self, msg):
@@ -154,7 +163,9 @@ class SMAPConn:
         c, v = self.hit(client_id)
         assert c == 1
         c, v = self.hit(crypt_key)
-        assert c == 0
+        assert c in (0, 1)
+        if c == 1:
+            logger.warn('No encryption in use.')
 
 
         # Message Manipulators
@@ -173,9 +184,11 @@ class SMAPConn:
             self.crypter = AES.new(crypt_key)
             self.padder = Padder()
 
+        logger.info('connected to %s' % self)
+
 
     def __repr__(self):
-        return "<smap://%s>" % (self._address)
+        return "<smap://%s>" % (self.address)
     __str__ = __repr__
 
 
@@ -222,7 +235,12 @@ class SMAPConn:
         if c in (0, 1):
             return (c, v)
         elif c == 2:
-            raise ServerError(v)
+            if v == 'Already stored.':
+                raise AlreadyStored
+            elif v == 'Already removed.':
+                raise AlreadyRemoved
+            else:
+                raise ServerError(v)
         elif c == 3:
             raise InternalServerError(v)
 
@@ -238,26 +256,38 @@ class SMAPConn:
     # Actual API
     # ==========
 
-    def FIND(self, query):
-        """Given a query, FIND messages, returning their ids.
+    def all(self):
+        """Return a list of all message IDs.
+        """
+        c, v = self.hit('all')
+        assert c == 1
+        msg_ids = []
+        while 1:
+            msg_id = self.readline().rstrip('\n')
+            if not msg_id:
+                break
+            msg_ids.append(msg_id)
+        return msg_ids
+
+
+    def find(self, query):
+        """Given a query, find messages, returning their ids.
         """
 
-        # Make sure we end with two newlines.
+        # Clean up and send the query.
         # ===================================
-        # This is the minimum validation necessary to prevent hanging the
-        # server.
+        # Strip whitespace from the ends of each line, and make sure we start
+        # with FIND and end with two newlines.
 
-        query = 'FIND ' + query
-        for n in ('\n', '\n\n'):
-            if not query.endswith(n):
-                query += '\n'
+        query = '\n'.join([l.strip() for l in query.splitlines() if l])
+        query = 'find\n%s\n\n' % query
+        c, v = self.hit(query)
+        assert c == 1
 
 
         # Read any message IDs off the wire and return.
         # =============================================
 
-        c, v = self.hit(query)
-        assert c == 1
         msg_ids = []
         while 1:
             msg_id = self.readline().rstrip('\n')
@@ -268,60 +298,29 @@ class SMAPConn:
         return msg_ids
 
 
-    def HDRS(self, msg_id):
-        """Given a message ID, retrieve the message's HeaDeRS.
+    def headers(self, msg_id):
+        """Given a message ID, retrieve the message's headers.
         """
-        c, msg = self.hit('HDRS %s' % msg_id)
+        c, msg = self.hit('headers %s' % msg_id)
         assert c == 0
         return self.wrapper.unwrap(msg)
 
 
-    def RMV(self, msg_id):
-        """Given a message ID, ReMoVe the message.
+    def remove(self, msg_id):
+        """Given a message ID, remove the message.
         """
-        c, feedback = self.hit('RMV %s' % msg_id)
+        c, feedback = self.hit('remove %s' % msg_id)
         if c == 1:
             raise AlreadyRemoved
         assert c == 0
 
 
-    def RTRV(self, msg_id):
-        """Given a message ID, ReTRieVe the message.
-        """
-        c, msg = self.hit('RTRV %s' % msg_id)
-        assert c == 0
-        return self.wrapper.unwrap(msg)
-
-
-    def STOP(self):
-        """
-        """
-        self.write('STOP\n')
-
-
-    def STOR(self, msg):
-        """Given a message, STORe it.
-
-        Takes a string or an email.Message.Message object. Returns a message ID.
-
+    def replace(self, msg_id, msg):
+        """Given a message ID and a message, replace the one with the other.
         """
 
-        # Flatten a possible Message object.
-        # ==================================
-
-        if isinstance(msg, basestring):
-            msg = msg
-        elif isinstance(msg, Message):
-            fp = StringIO()
-            g = Generator(fp, mangle_from_=False, maxheaderlen=0)
-            g.flatten(msg)
-            msg = fp.getvalue()
-
-
-        # Store it and verify the hash.
-        # =============================
-
-        c, remote_msg_id = self.hit('STOR %s' % self.wrapper.wrap(msg))
+        wrapped = self.wrapper.wrap(msg)
+        c, remote_msg_id = self.hit('replace %s %s' % (msg_id, wrapped))
 
         msg = self.padder.pad(msg)
         msg = self.crypter.encrypt(msg)
@@ -332,24 +331,45 @@ class SMAPConn:
         else:
             raise ClientError('Message storage failed!')
 
-
-        # Decide how to respond.
-        # ======================
-
-        if c == 1:
-            raise AlreadyStored
         assert c == 0
 
 
-    # Aliases
-    # =======
+    def retrieve(self, msg_id):
+        """Given a message ID, retrieve the message.
+        """
+        c, msg = self.hit('retrieve %s' % msg_id)
+        assert c == 0
+        return self.wrapper.unwrap(msg)
 
-    find = FIND
-    headers = hdrs = HDRS
-    remove = rmv = RMV
-    retrieve = rtrv = RTRV
-    store = stor = STOR
-    stop = STOP
+    get = retrieve
+
+
+    def stop(self):
+        """
+        """
+        c, v = self.hit('stop')
+        assert c == 0
+
+
+    def store(self, msg):
+        """Given a message, store it.
+
+        Takes a string or an email.Message.Message object. Returns a message ID.
+
+        """
+
+        c, remote_msg_id = self.hit('store %s' % self.wrapper.wrap(msg))
+
+        msg = self.padder.pad(msg)
+        msg = self.crypter.encrypt(msg)
+        msg_id = sha.new(msg).hexdigest()
+
+        if remote_msg_id == msg_id:
+            return remote_msg_id
+        else:
+            raise ClientError('Message storage failed!')
+
+        assert c == 0
 
 
 
@@ -358,6 +378,9 @@ if __name__ == '__main__':
     crypt_key = 'c02ebb50b1ef44b19181096099288fca'
     c = SMAPConn(client_id, crypt_key)
     test = open('test.txt').read()
-    id=c.store(test)
+    try:
+        id=c.store(test)
+    except AlreadyStored:
+        pass
     import code; code.interact(local=locals())
     c.stop()
