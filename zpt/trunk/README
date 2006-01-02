@@ -2,29 +2,37 @@
     INTRO
 ========================================
 
-This is a standalone Zope Page Templates distribution. The code is taken
-unmodified from the Zope svn repo, the only value added here is the absence of
-the other 26 subpackages found there. :-)
+This is a standalone Zope Page Templates distribution. The code is taken from
+the Zope svn repo, and then the namespace is mangled to avoid version conflicts
+with any other Zope distributions you might be using.
 
 Install the package with:
 
-    % python setup.py install
+    # make install
+
+Or:
+
+    # python setup.py install
 
 
-Thanks to the Zope team for making Zope 3 so much more modular.
+Thanks to the Zope team for making Zope 3 more modular.
+
 
 
 ========================================
     VERSION
 ========================================
 
-Zope 3.1.0c3
+zpt 1.0 -- based on Zope-3.1.0
 
 
 
 ========================================
     COPYRIGHT
 ========================================
+
+Portions copyright Chad Whitacre <chad@zetaweb.com>.
+Portions copyright Nicolas Lehuen.
 
 Copyright (c) 2004 Zope Corporation and Contributors.
 All Rights Reserved.

@@ -1,8 +1,18 @@
 VERSION=Zope-3.1.0
 SVN=svn export svn://svn.zope.org/repos/main/Zope3/tags/${VERSION}/src
 
-dummy:
-	echo "nothing to see"
+build:
+	python setup.py build
+
+install:
+	python setup.py install
+
+clean:
+	find . -name \*.pyc -exec rm -rf {} \;
+	rm -rf build
+
+
+# The remaining targets are for building this distribution from the Zope base.
 
 download:
 	mkdir -p site-packages/zpt/_zope
@@ -16,9 +26,6 @@ download:
 	${SVN}/zope/tal site-packages/zpt/_zope/tal
 	${SVN}/zope/tales site-packages/zpt/_zope/tales
 	${SVN}/zope/testing site-packages/zpt/_zope/testing
-
-clean:
-	find . -name \*.pyc -exec rm -rf {} \;
 
 mangle:
 	find site-packages/zpt -name \*.py -exec sed -e 's/pytz/zpt._pytz/g' -i '' {} \;
