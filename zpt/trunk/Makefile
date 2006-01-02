@@ -18,4 +18,8 @@ download:
 	${SVN}/zope/testing site-packages/zpt/_zope/testing
 
 clean:
-	rm -rf site-packages/zpt/_zope
+	find . -name \*.pyc -exec rm -rf {} \;
+
+mangle:
+	find site-packages/zpt -name \*.py -exec sed -e 's/pytz/zpt._pytz/g' -i '' {} \;
+	find site-packages/zpt -name \*.py -exec sed -e 's/zope/zpt._zope/g' -i '' {} \;
