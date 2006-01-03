@@ -2,6 +2,8 @@
     0.8 -- FLYNN + ACOLYTE
 ========================================
 finish docs (tex, man)
+would be nice to make --sockfam implicit
+ideally we wouldn't have to subclass DefaultApplication in order to use serve_static
 
 needs to log to stderr instead of stdout?
 log should include file and line number
