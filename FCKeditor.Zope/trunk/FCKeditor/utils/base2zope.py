@@ -154,3 +154,7 @@ for path, dirs, files in os.walk(SRC_ROOT):
     for dirname in dirs[:]:
         if dirname.startswith('_'):
             dirs.remove(dirname)
+        if dirname == 'connectors':
+            # There was a perl/temp/_2X68R~7 subdirectory that was causing
+            # DirectoryView to barf.
+            dirs.remove(dirname)
