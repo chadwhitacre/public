@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from xmlrpclib import ServerProxy, Error
-foo = ServerProxy("http://josemaria:8080/")
+foo = ServerProxy("http://localhost:5370/")
 
 print foo
 
