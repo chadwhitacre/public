@@ -1,0 +1,71 @@
+NETWORK
+    add AF_INET support
+    make sure we only use secure sockets
+    can we encrypt the index as well as the storage?
+
+TUNING
+    if the message is already on disk, but the contents don't match the hash, it should be overwritten
+    need to validate message as mime? do we require two newlines?
+    tighten up encryption padding algorithm -- watch edge cases
+        consider storing base64-encoded, then we can use spaces for padding!
+    consider a short-lived thread for when client and server are both manipulating message
+    optimize indexing/unindexing (pool db connections)
+    tcp537 should be able to dynamically shrink and grow its thread pool
+    will prolly need to tune fs for lots of inodes
+    shouldn't use string for error meaning ('Already stored.')
+    think through ordering, provide conveniences for different types
+    get/retrieve should return an email.Message.Message, and should have a raw flag
+
+ROBUST
+    consider factoring out anydbm for bsddb
+    make it thread safe ... lock the db while writing
+    ACID, transactional
+        consider writing to a temp file and then moving into permanent place -- more atomic
+    should we support multiple backends?
+    I think we are getting collisions by using a single socket for multiple conversations
+=====DONE=====
+best message transfer method: newline-delimited or Content-Length
+    you want to buffer the read
+    when you read 8192 and you only get 4096, what happens? do you have access to any newline?
+    does readline require unbuffered?
+    apparently not, cause readline in socket.py seems support this
+    answer: newline-delimited!
+establish connection
+STOP
+data should be stored encrypted
+    uuid -v4 gives a 32 byte string, not counting the dashes
+    this can be used for the AES key
+    the smapd server must have clear data in order to index it
+    having the crypt key differ from the client id would be stronger
+        but realistically, think of the ways someone will steal your client id
+            gaining access to your calling program
+            you are unlikely to store it somewhere as you would a password,
+                because you only ever wire it into a program
+            unless they intercept an email in which it is revealed
+            or if we display it on a website
+                then we have cache issues (public terminals)
+                etc.
+    if a bank wants to run our software, they can buy a hosted solution
+    for now, crypt key == client id
+STOR
+validate client ids at some early stage
+    use as crypt key requires that they be 32 bytes w/o dashes
+need to be able to get back to reproduce index from data alone
+    to do this we need both the client ID and the crypt key on the server
+    storing the client key on the server is fine, but not the crypt key
+    so ... store messages in subdirectories named after the client id
+    then the message id can be a straight hash the message, id not needed
+    but then we lose the flexibility of storing messages on random servers
+    why? no we don't
+factor out common client/server code into a utils module (e.g. _wrap/_unwrap)
+return '1 <msg id>' on AlreadyStored for verification
+add indexing support to STOR
+HDRS
+RTRV
+RMV -- need a RMV command to remove a message
+improve error handling in TCPServer537 -- croaks on critical errors
+    this actually belongs in smapd
+FIND
+think about case preserving/matching for headers
+convert API from RTRV -> retrieve
+added ALL and GET
