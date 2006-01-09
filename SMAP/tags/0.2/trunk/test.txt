@@ -1,0 +1,80 @@
+X-Gmail-Received: 90ffdcbdb2283c4f1bda89dd4821b2c9c0706c50
+Delivered-To: whit537@gmail.com
+Received: by 10.65.11.16 with SMTP id o16cs8999qbi;
+        Mon, 12 Dec 2005 13:48:05 -0800 (PST)
+Received: by 10.70.109.14 with SMTP id h14mr5695801wxc;
+        Mon, 12 Dec 2005 13:48:03 -0800 (PST)
+Return-Path: <lori.burens@gmail.com>
+Received: from rs11.luxsci.com (rs11.luxsci.com [65.61.159.36])
+        by mx.gmail.com with ESMTP id h20si10640963wxd.2005.12.12.13.48.02;
+        Mon, 12 Dec 2005 13:48:03 -0800 (PST)
+Received-SPF: neutral (gmail.com: 65.61.159.36 is neither permitted nor denied by domain of lori.burens@gmail.com)
+DomainKey-Status: good (test mode)
+Received: from rs11.luxsci.com (localhost [127.0.0.1])
+	by rs11.luxsci.com (8.13.5/8.13.5) with ESMTP id jBCLm21N020761
+	for <whit537@gmail.com>; Mon, 12 Dec 2005 15:48:02 -0600
+Received: (from mail@localhost)
+	by rs11.luxsci.com (8.13.5/8.13.5/Submit) id jBCLm2SB020759
+	for whit537@gmail.com; Mon, 12 Dec 2005 15:48:02 -0600
+X-Lux-Original-Return-Path: <lori.burens@gmail.com>
+Received: from p03m102.mxlogic.net (p03m102.mxlogic.net [216.183.119.102])
+	by rs11.luxsci.com (8.13.5/8.13.5) with ESMTP id jBCLm1RB020746
+	for <chad@zetaweb.com>; Mon, 12 Dec 2005 15:48:01 -0600
+Received: from unknown [64.233.162.206] (EHLO zproxy.gmail.com)
+	by p03m102.mxlogic.net (mxl_mta-2.13.2-07)
+	with ESMTP id 110fd934.1121450928.16146.p03m102.mxlogic.net (envelope-from <lori.burens@gmail.com>);
+	Mon, 12 Dec 2005 14:48:01 -0700 (MST)
+Received: by zproxy.gmail.com with SMTP id j2so1555791nzf
+        for <chad@zetaweb.com>; Mon, 12 Dec 2005 13:48:01 -0800 (PST)
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+        s=beta; d=gmail.com;
+        h=received:message-id:date:from:to:subject:mime-version:content-type;
+        b=DqW9J49osV1PuSO8BGx78+hn7HV6jUbpjxEXHEto7qNc0sOjzBDl1ZECexwtuucLXnsBqJufNNWGEtddiEHOwklP9e3Mj3o6vtTJVWISiQfVB4N19kst4ycd3QCH3phteVI/Ia0bo7Bl3u1uU117kkAYNiUawqyFe7CDkqhTxgA=
+Received: by 10.65.250.17 with SMTP id c17mr82932qbs;
+        Mon, 12 Dec 2005 13:48:00 -0800 (PST)
+Received: by 10.65.156.9 with HTTP; Mon, 12 Dec 2005 13:48:00 -0800 (PST)
+Message-ID: <77ca92b00512121348g4de1165ah100d5b4c71a240ae@mail.gmail.com>
+Date: Mon, 12 Dec 2005 16:48:00 -0500
+From: Lori Burens <lori.burens@gmail.com>
+To: chad@zetaweb.com
+Subject: Friday
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_25700_17996177.1134424080593"
+X-Spam: [F=0.0001963437; B=0.500(0); HS=0.500(0); S=0.010(2005110201); spamtraq-heur=0.500(2005121210); R=0.019(s236/n12154); SC=none; spf=0.500]
+X-MAIL-FROM: <lori.burens@gmail.com>
+X-SOURCE-IP: [64.233.162.206]
+X-Lux-Processed-For: user #29207 on rs11.luxsci.com
+X-Lux-Envelope-Recipient: <chad@zetaweb.com>
+X-Lux-Rule: Forward
+X-Loop: chad@zetaweb.com
+
+------=_Part_25700_17996177.1134424080593
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hey Chad - actually writing Jess...
+
+Here's what I was thinking for Friday - which do you prefer?
+Brie with a sugar walnut brandy topping
+or
+A feta cheese dip (Greek)
+
+They are both good - I cant decide...  what do you think?
+
+------=_Part_25700_17996177.1134424080593
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<div>Hey Chad - actually writing Jess... </div>
+<div>&nbsp;</div>
+<div>Here's what I was thinking for Friday - which do you prefer?</div>
+<div>Brie with a sugar walnut brandy topping</div>
+<div>or</div>
+<div>A feta cheese dip (Greek)</div>
+<div>&nbsp;</div>
+<div>They are both good - I cant decide...&nbsp; what do you think?</div>
+
+------=_Part_25700_17996177.1134424080593--
