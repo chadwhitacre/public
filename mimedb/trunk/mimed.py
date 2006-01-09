@@ -1,8 +1,26 @@
-"""This module implements the MIMEdb XMLRPC API as an httpy application.
+#!/usr/bin/env python
+"""mimed -- a MIME database XMLRPC server. `man 1 mimed' for details.
 """
+
+__version__ = (0, 1)
+__author__ = 'Chad Whitacre <chad@zetaweb.com>'
+
+import logging
+import os
+import signal
+import sys
+import time
+
 import psycopg
+from httpy.Config import ConfigError
+from httpy.Config import Config
+from httpy.Server import Server
+from httpy.Server import RestartingServer
 from httpy.apps.XMLRPC import XMLRPCApp
 
+
+# Define our Application class.
+# =============================
 
 class Application(XMLRPCApp):
 
@@ -65,3 +83,46 @@ class Application(XMLRPCApp):
         conn = self._connect(key)
         raise NotImplementedError
 
+
+
+def main(argv=None):
+
+    # Read in configuration options.
+    # ==============================
+
+    Config.address = ('', 5370)
+
+    if argv is None:
+        argv = sys.argv[1:]
+    try:
+        config = Config(argv)
+    except ConfigError, err:
+        print >> sys.stderr, err.msg
+        print >> sys.stderr, "`man 1 httpy' for usage."
+        return 2
+
+
+    # Set up top-level logging.
+    # =========================
+
+    format = "%(name)-16s %(levelname)-8s %(message)s"
+    logging.basicConfig( level=logging.DEBUG
+                       , format=format
+                        )
+
+
+    # Instantiate and start a server.
+    # ===============================
+
+    plain_jane = (  (os.environ['HTTPY_MODE'] == 'deployment')
+                 or (sys.platform == 'win32')
+                 or ('HTTPY_PLAIN_JANE' in os.environ)
+                   )
+    ServerClass = plain_jane and Server or RestartingServer
+    server = ServerClass(config)
+    server.apps = [Application()]
+    server.start()
+
+
+if __name__ == "__main__":
+    sys.exit(main())
