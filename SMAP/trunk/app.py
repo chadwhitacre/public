@@ -1,13 +1,21 @@
+"""This module implements the MIMEdb XMLRPC API as an httpy application.
+"""
+import psycopg
 from httpy.apps.XMLRPC import XMLRPCApp
 
 
 class Application(XMLRPCApp):
-    """This server exposes the MIMEdb API.
-    """
+
+    def _connect(self, key):
+        """Given an API key, return a database connection.
+        """
+        return psycopg.connect('dbname=%s' % key)
+
 
     def all(self, key):
         """Return a list of all message IDs.
         """
+        conn = self._connect(key)
         raise NotImplementedError
 
 
@@ -52,9 +60,6 @@ class Application(XMLRPCApp):
     def store(self, key, msg):
         """Given a MIME message, store it.
         """
+        conn = self._connect(key)
         raise NotImplementedError
 
-
-    def set_crypt_key(self, key):
-        """
-        """

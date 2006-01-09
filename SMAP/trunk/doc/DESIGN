@@ -6,9 +6,23 @@ refcount for a particular header drops to zero
     that index is dropped from the db
 
 
+/var/db/mimedb
+mimedb:mimedb
+
+three processes:
+    postmaster
+    mimed
+    pound (eventually, for SSL)
+
 
 
 one db per client id
+    the client ID is the authentication
+    anyone can connect and switch to a database
+    restricted operations:
+        create a database
+        drop a database
+        list database names
 
 
 
@@ -16,16 +30,21 @@ one db per client id
 
 db = MIMEdb('http://localhost:8080/', '8b0e50efb501438fa42077a360084d6a')
 db.store()
+db.retrieve()
 
 
 
 class txn:
+    """under the hood txn gets a txn_id from the server
+    the server stores the txn_id in memory, and maps that to a pgsql txn
+    either keep the pgsql transaction open
+    or run it all at once on commit <- more likely
+    """
     def __init__(self):
 
-txn = MIMEdb.txn()
+txn = db.txn()
 txn.store()
+txn.retrieve()
 txn.commit()
 
-under the hood txn gets a txn_id from the server
-    the server stores the txn_id in memory, and maps that to a pgsql txn
 
