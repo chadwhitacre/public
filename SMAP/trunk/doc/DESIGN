@@ -1,0 +1,31 @@
+dump a message in the db
+    headers are indexed automatically
+    message itself is stored
+pull a message out of the db
+refcount for a particular header drops to zero
+    that index is dropped from the db
+
+
+
+
+one db per client id
+
+
+
+
+
+db = MIMEdb('http://localhost:8080/', '8b0e50efb501438fa42077a360084d6a')
+db.store()
+
+
+
+class txn:
+    def __init__(self):
+
+txn = MIMEdb.txn()
+txn.store()
+txn.commit()
+
+under the hood txn gets a txn_id from the server
+    the server stores the txn_id in memory, and maps that to a pgsql txn
+
