@@ -5,6 +5,8 @@ setup( name='httpy'
      , version="0.5"
      , package_dir={'':'site-packages'}
      , packages=[ 'httpy'
+                , 'httpy.apps'
+                , 'httpy.frameworks'
                 , 'httpy._zope'
                 , 'httpy._zope.interface'
                 , 'httpy._zope.interface.common'

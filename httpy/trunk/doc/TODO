@@ -11,6 +11,13 @@ log should take an expression that is only evaluated if needed
 it would be super cool to change the log level on the fly while running
     I would want to support this in all modes, including deployment
 also would be great to throttle logging to a single subsystem
+add mode constants for use in the wild => httpy.modes.STAGING
+consider making app logic more flexible
+    /app.py (with site-packages/lib logic)
+    /__
+    multiple magic directories
+    multiple app.py's
+really should have serve_py by default
 
 update tests post-refactor
 test AF_UNIX in Server as well as in Config
