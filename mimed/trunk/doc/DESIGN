@@ -9,10 +9,9 @@ refcount for a particular header drops to zero
 /var/db/mimedb
 mimedb:mimedb
 
-three processes:
+two processes:
     postmaster
     mimed
-    pound (eventually, for SSL)
 
 
 

@@ -19,23 +19,54 @@ from httpy.Server import RestartingServer
 from httpy.apps.XMLRPC import XMLRPCApp
 
 
+# Monkey-patch Task since we don't have anything on the filesystem.
+# =================================================================
+
+from httpy.Task import Task
+def _validate(self):
+    pass
+Task.validate = _validate
+
+
 # Define our Application class.
 # =============================
 
+class ConnectionError(StandardError):
+    """An error connecting to the database.
+    """
+
+    def __init__(self, name=''):
+        self.name = name
+
+    def __str__(self):
+        if self.name:
+            return "Unable to connect to database named '%s'" % self.name
+        else:
+            return "No db name given."
+    __repr__ = __str__
+
+
 class Application(XMLRPCApp):
 
-    uri_root = '/' # To play with httpy.
+    uri_root = '/' # To play nice with httpy until it is more library-friendly.
 
     def _connect(self, key):
         """Given an API key, return a database connection.
         """
-        return psycopg.connect('dbname=%s' % key)
+        try:
+            return psycopg.connect('dbname=%s' % key)
+        except:
+            raise ConnectionError(key)
+
+
+    def echo(self, key, foo=''):
+        conn = self._connect(key)
+        return foo
 
 
     def all(self, key):
         """Return a list of all message IDs.
         """
-        conn = self._connect(key)
         raise NotImplementedError
 
 
@@ -84,11 +115,14 @@ class Application(XMLRPCApp):
         raise NotImplementedError
 
 
+# This is our main callable.
+# ==========================
 
 def main(argv=None):
 
     # Read in configuration options.
     # ==============================
+    # We override the default port number
 
     Config.address = ('', 5370)
 
@@ -98,12 +132,13 @@ def main(argv=None):
         config = Config(argv)
     except ConfigError, err:
         print >> sys.stderr, err.msg
-        print >> sys.stderr, "`man 1 httpy' for usage."
+        print >> sys.stderr, "`man 1 mimed' for usage."
         return 2
 
 
     # Set up top-level logging.
     # =========================
+    # Once we trust httpy as a library, we can constrain this to mimed.
 
     format = "%(name)-16s %(levelname)-8s %(message)s"
     logging.basicConfig( level=logging.DEBUG
