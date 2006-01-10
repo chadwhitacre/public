@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+"""This module defines a subclass of ServerProxy for working with MIMEdb's.
+"""
 from xmlrpclib import ServerProxy, Error
 
 class _MethodWithKey:
@@ -25,9 +27,9 @@ class MIMEdb:
 
 
 
-
-url = 'http://philip:5370/'
-key = '8b0e50efb501438fa42077a360084d6a'
-db = MIMEdb(url, key)
-db.echo()
-from pprint import pprint as pp; import code; code.interact(local=locals())
+if __name__ == '__main__':
+    url = 'http://philip:5370/'
+    key = '8b0e50efb501438fa42077a360084d6a'
+    db = MIMEdb(url, key)
+    db.echo()
+    from pprint import pprint as pp; import code; code.interact(local=locals())
