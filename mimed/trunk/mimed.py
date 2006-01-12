@@ -7,6 +7,7 @@ __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 
 import logging
 import os
+import sha
 import signal
 import sys
 import time
@@ -58,11 +59,30 @@ class Application(XMLRPCApp):
         except:
             raise ConnectionError(key)
 
-
     def echo(self, key, foo=''):
         conn = self._connect(key)
         return foo
 
+
+    # Database management
+    # ===================
+
+    def db_create(self, key):
+        """Given the master key, return the name of the new database.
+        """
+
+
+    def db_dump(self, key):
+        """Given the master key, return the name of the new database.
+        """
+
+    def db_remove(self, key):
+        """Given the master key, return the name of the new database.
+        """
+
+
+    # Client
+    # ======
 
     def all(self, key):
         """Return a list of all message IDs.
@@ -108,11 +128,42 @@ class Application(XMLRPCApp):
         raise NotImplementedError
 
 
+    def single(self, key, msg_id):
+        """Just like find, but raise an error if there is more than one match.
+        """
+        raise NotImplementedError
+
+
     def store(self, key, msg):
         """Given a MIME message, store it.
         """
         conn = self._connect(key)
-        raise NotImplementedError
+        # need to quote/escape msg
+        SQL = "INSERT INTO data (datum) VALUES (%s)" % msg
+        conn.execute(SQL)
+
+        # self.write('2 Already stored.') -
+        # does this bring us back to msg_id as hash?
+
+        # Make sure we stored it successfully.
+        # ====================================
+
+        disk = open(path, 'rb').read()
+        disk_id = sha.new(disk).hexdigest()
+        if disk_id != msg_id:
+            self.write('2 Message storage failed! (server)')
+
+
+        # Index and return.
+        # =================
+
+        for header, value in message_from_string(msg).items():
+            db_path = os.path.join(self.metadata_root, header.lower())
+            db = anydbm.open(db_path, 'c')
+            db[msg_id] = value
+            db.close()
+
+        self.write('0 %s' % disk_id)
 
 
 # This is our main callable.

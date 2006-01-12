@@ -6,8 +6,14 @@ refcount for a particular header drops to zero
     that index is dropped from the db
 
 
-/var/db/mimedb
-mimedb:mimedb
+as part of Makefile:
+    pw groupadd mimedb
+    pw useradd mimedb -g mimedb -s /sbin/nologin
+    mkdir -p /var/db/mime
+    chown mimedb:mimedb /var/db/mime
+    createuser
+    createdb
+
 
 two processes:
     postmaster
@@ -23,13 +29,26 @@ one db per client id
         drop a database
         list database names
 
+tables:
+    data
+        did         datum autoincrement
+        message     blob/largetext
+    metadata
+        mid         metadatum id -- autoincrement
+        did         foreign key to messages table
+        key         header
+        value       header value
 
+        def store:
+            for header in header:
+                SQL = "INSERT INTO metadata"
+        def find:
+            for header in headers:
+                s = ''
+                p = ''
+                o = ''
+                SQL = "SELECT mid FROM metadata WHERE %s%s%s" % (s,p,o)
 
-
-
-db = MIMEdb('http://localhost:8080/', '8b0e50efb501438fa42077a360084d6a')
-db.store()
-db.retrieve()
 
 
 
@@ -38,6 +57,7 @@ class txn:
     the server stores the txn_id in memory, and maps that to a pgsql txn
     either keep the pgsql transaction open
     or run it all at once on commit <- more likely
+    other than that, txn exposes the same API as non-txn MIMEdb
     """
     def __init__(self):
 
@@ -47,3 +67,34 @@ txn.retrieve()
 txn.commit()
 
 
+
+
+from mimedb import MIMEdb
+from httpy.apps.zpt import serve_pt
+
+db = MIMEdb('http://localhost:5370/', '8b0e50efb501438fa42077a360084d6a')
+
+
+class Application:
+    """Blog.
+    """
+
+    def respond(self, request):
+
+        if request.method == 'GET':
+            msg = db.single("path = %s" % request.path)
+            post = dict(msg)
+            post.body = msg.get_payload() # or walk and add attachments
+            serve_post(post)
+
+
+        elif request.method == 'POST'
+            raise Reponse(200)
+
+        else:
+            raise Response(501)
+
+
+    def serve_post(self, post):
+        """Given a dict of post information, serve a post.
+        """

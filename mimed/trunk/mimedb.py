@@ -1,23 +1,36 @@
 #!/usr/bin/env python
 """This module defines a subclass of ServerProxy for working with MIMEdb's.
 """
-from xmlrpclib import ServerProxy, Error
+from xmlrpclib import ServerProxy
 
 class _MethodWithKey:
+    """Represent a callable on a MIMEdb server.
+    """
 
     def __init__(self, method, key):
+        """Takes a callable, and a string.
+        """
         self.__method = method
         self.__key = key
 
     def __call__(self, *args):
+        """Override to add the API key to the call.
+        """
         args = (key,) + args
-        import pdb; pdb.set_trace()
         return self.__method(*args)
 
 
 class MIMEdb:
+    """Represent a connection to a MIMEdb server.
+
+    Once instantiated, it exposes the MIMEdb API, transparently inserting your
+    API key on each request.
+
+    """
 
     def __init__(self, uri, key):
+        """Takes the URI of the MIMEdb server, and an API key.
+        """
         self.__proxy = ServerProxy(uri)
         self.__key = key
 
@@ -26,6 +39,9 @@ class MIMEdb:
         return _MethodWithKey(base_method, self.__key)
 
 
+
+# test
+# ====
 
 if __name__ == '__main__':
     url = 'http://philip:5370/'

@@ -1,11 +1,27 @@
-subclass ServerProxy to use API key
+make sure we use unicode!
+figure out permissions on db
+    need a mimedb role
+    CREATE USER mimedb WITH CREATEDB;
+    CREATE DATABASE %(uuid)s ENCODING=UTF8
+write script to create a single MIMEdb database
+    mkmdb
+    mimedb
+    mkmimedb
+    createmimedb
+flesh out API
+    store
+    retrieve
+    headers
+    all
+    remove
+    replace
 in server, protext against calling respond via XMLRPC
 =====DONE=====
 best message transfer method: newline-delimited or Content-Length
     you want to buffer the read
     when you read 8192 and you only get 4096, what happens? do you have access to any newline?
     does readline require unbuffered?
-    apparently not, cause readline in socket.py seems support this
+    apparently not, cause readline in socket.py seems to support this
     answer: newline-delimited!
 establish connection
 STOP
@@ -47,3 +63,4 @@ think about case preserving/matching for headers
 convert API from RTRV -> retrieve
 added ALL and GET
 convert to httpy + postgresql
+subclass ServerProxy to use API key
