@@ -9,8 +9,10 @@ import logging
 import os
 import sha
 import signal
+import subprocess
 import sys
 import time
+from StringIO import StringIO
 
 import psycopg
 from httpy.Config import ConfigError
@@ -18,6 +20,13 @@ from httpy.Config import Config
 from httpy.Server import Server
 from httpy.Server import RestartingServer
 from httpy.apps.XMLRPC import XMLRPCApp
+
+
+format = "%(name)-16s %(levelname)-8s %(message)s"
+logging.basicConfig( level=logging.DEBUG
+                   , format=format
+                    )
+logger = logging.getLogger('mimed')
 
 
 # TODO: add check for ownership and permissions
@@ -36,21 +45,6 @@ Task.validate = _validate
 # Define our Application class.
 # =============================
 
-class BadKey(StandardError):
-    """An error with an API key or the master key.
-    """
-
-    def __init__(self, key=''):
-        self.key = key
-
-    def __str__(self):
-        if self.name:
-            return "Bad key: '%s'" % self.key
-        else:
-            return "No key given."
-    __repr__ = __str__
-
-
 class Application(XMLRPCApp):
 
     uri_root = '/' # To play nice with httpy until it is more library-friendly.
@@ -59,48 +53,72 @@ class Application(XMLRPCApp):
     # Fundaments
     # ==========
 
-    def _connect(self, key):
-        """Given an API key, return a database connection.
+    def echo(self, foo=''):
+        return foo
+
+    def _connect(self, name):
+        """Given a database name, return a database connection.
         """
         try:
-            return psycopg.connect('dbname=%s' % key)
+            return psycopg.connect('dbname=%s' % name)
         except:
-            raise BadKey(key)
+            raise StandardError("Bad db name: '%s'" % name)
 
     def _verify(self, key):
         """Given the master key, verify that it is correct.
         """
         if key != KEY:
-            raise BadKey(key)
-
-
-    def echo(self, key, foo=''):
-        conn = self._connect(key)
-        return foo
+            raise StandardError("Bad key: '%s'" % key)
 
 
     # Cluster management
     # ==================
 
-    def db_create(self, key):
+    def create(self, key):
         """Given the master key, return the name of the new database.
         """
         self._verify(key)
 
-    def db_dump(self, key):
+        # Generate a database name.
+        # =========================
+        # Currently we depend on uuid(1) in the OS.
+
+        p = subprocess.Popen(('uuid','-v4'), stdout=subprocess.PIPE)
+        name = p.stdout.read().replace('-','')
+
+
+        # Create the database and return its name.
+        # ========================================
+
+        p = subprocess.Popen( ( 'createdb'
+                              , '--template'
+                              , 'template_mimedb_0'
+                              , name
+                               )
+                            , stdout=subprocess.PIPE
+                             )
+        result = p.stdout.read()
+        if result != 'CREATE DATABASE\n':
+            raise StandardError("Failed to create database: '%s'" % result)
+        return name
+
+    def dump(self, key):
         """Given the master key, return a bzip2'd SQL script.
         """
         self._verify(key)
+        raise NotImplementedError
 
-    def db_load(self, key, sql):
+    def load(self, key, sql):
         """Takes a bzip2'd SQL script.
         """
         self._verify(key)
+        raise NotImplementedError
 
-    def db_remove(self, key):
+    def drop(self, key):
         """Takes the master key and a database name.
         """
         self._verify(key)
+        raise NotImplementedError
 
 
     # Message API
@@ -207,16 +225,6 @@ def main(argv=None):
         print >> sys.stderr, err.msg
         print >> sys.stderr, "`man 1 mimed' for usage."
         return 2
-
-
-    # Set up top-level logging.
-    # =========================
-    # Once we trust httpy as a library, we can constrain this to mimed.
-
-    format = "%(name)-16s %(levelname)-8s %(message)s"
-    logging.basicConfig( level=logging.DEBUG
-                       , format=format
-                        )
 
 
     # Instantiate and start a server.
