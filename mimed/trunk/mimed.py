@@ -2,7 +2,7 @@
 """mimed -- a MIME database XMLRPC server. `man 1 mimed' for details.
 """
 
-__version__ = (0, 1)
+__version__ = (0, 3)
 __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 
 import logging
@@ -20,6 +20,10 @@ from httpy.Server import RestartingServer
 from httpy.apps.XMLRPC import XMLRPCApp
 
 
+# TODO: add check for ownership and permissions
+KEY = open('/etc/mimedb.key').read()
+
+
 # Monkey-patch Task since we don't have anything on the filesystem.
 # =================================================================
 
@@ -32,18 +36,18 @@ Task.validate = _validate
 # Define our Application class.
 # =============================
 
-class ConnectionError(StandardError):
-    """An error connecting to the database.
+class BadKey(StandardError):
+    """An error with an API key or the master key.
     """
 
-    def __init__(self, name=''):
-        self.name = name
+    def __init__(self, key=''):
+        self.key = key
 
     def __str__(self):
         if self.name:
-            return "Unable to connect to database named '%s'" % self.name
+            return "Bad key: '%s'" % self.key
         else:
-            return "No db name given."
+            return "No key given."
     __repr__ = __str__
 
 
@@ -51,38 +55,56 @@ class Application(XMLRPCApp):
 
     uri_root = '/' # To play nice with httpy until it is more library-friendly.
 
+
+    # Fundaments
+    # ==========
+
     def _connect(self, key):
         """Given an API key, return a database connection.
         """
         try:
             return psycopg.connect('dbname=%s' % key)
         except:
-            raise ConnectionError(key)
+            raise BadKey(key)
+
+    def _verify(self, key):
+        """Given the master key, verify that it is correct.
+        """
+        if key != KEY:
+            raise BadKey(key)
+
 
     def echo(self, key, foo=''):
         conn = self._connect(key)
         return foo
 
 
-    # Database management
-    # ===================
+    # Cluster management
+    # ==================
 
     def db_create(self, key):
         """Given the master key, return the name of the new database.
         """
-
+        self._verify(key)
 
     def db_dump(self, key):
-        """Given the master key, return the name of the new database.
+        """Given the master key, return a bzip2'd SQL script.
         """
+        self._verify(key)
+
+    def db_load(self, key, sql):
+        """Takes a bzip2'd SQL script.
+        """
+        self._verify(key)
 
     def db_remove(self, key):
-        """Given the master key, return the name of the new database.
+        """Takes the master key and a database name.
         """
+        self._verify(key)
 
 
-    # Client
-    # ======
+    # Message API
+    # ===========
 
     def all(self, key):
         """Return a list of all message IDs.
