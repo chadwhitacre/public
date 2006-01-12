@@ -1,0 +1,32 @@
+# This script initializes a fresh PostgreSQL database for use as a MIMEdb. Run
+# this right after initdb. Note that it will fail if user 'mimedb' already
+# exists.
+
+BEGIN;
+
+    CREATE USER mimedb CREATEDB NOINHERIT;
+    CREATE DATABASE template_mimedb_0 OWNER mimedb ENCODING 'UTF8';
+
+COMMIT;
+BEGIN;
+
+    \c template_mimedb_0;
+
+    CREATE TABLE message (
+        mid         BIGSERIAL PRIMARY KEY
+      , headers     TEXT                        # MIME headers
+      , body        TEXT                        # MIME body
+       );
+
+    CREATE TABLE field (
+        fid         BIGSERIAL PRIMARY KEY
+      , mid         BIGSERIAL
+                    REFERENCES message
+                        MATCH FULL
+                        ON DELETE CASCADE
+                        ON UPDATE RESTRICT
+      , name        TEXT                        # a MIME header field-name
+      , body        TEXT                        # a MIME header field-body
+       );
+
+COMMIT;
