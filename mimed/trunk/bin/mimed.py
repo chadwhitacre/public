@@ -13,6 +13,8 @@ import subprocess
 import sys
 import time
 from StringIO import StringIO
+from email.Generator import Generator
+from email.Message import Message
 
 import psycopg
 from httpy.Config import ConfigError
@@ -56,11 +58,11 @@ class Application(XMLRPCApp):
     def echo(self, foo=''):
         return foo
 
-    def _connect(self, name):
+    def _connect(self):
         """Given a database name, return a database connection.
         """
         try:
-            return psycopg.connect('dbname=%s' % name)
+            return psycopg.connect('dbname=MIMEdb')
         except:
             raise StandardError("Bad db name: '%s'" % name)
 
@@ -70,37 +72,30 @@ class Application(XMLRPCApp):
         if key != KEY:
             raise StandardError("Bad key: '%s'" % key)
 
+    def _uuid(self):
+        """Return a 32-byte string. Currently we depend on uuid(1) in the OS.
+        """
+        p = subprocess.Popen(('uuid','-v4'), stdout=subprocess.PIPE)
+        return p.stdout.read().replace('-','')
 
-    # Cluster management
-    # ==================
+
+    # Catalogs
+    # ========
 
     def create(self, key):
-        """Given the master key, return the name of the new database.
+        """Given the master key, return the cid of a new catalog.
         """
         self._verify(key)
+        conn = self._connect()
 
-        # Generate a database name.
-        # =========================
-        # Currently we depend on uuid(1) in the OS.
+        cid = self._uuid()
+        SQL = "INSERT INTO catalog (cid) VALUES (%s);"
+        conn.execute(SQL, (cid,))
 
-        p = subprocess.Popen(('uuid','-v4'), stdout=subprocess.PIPE)
-        name = p.stdout.read().replace('-','')
+        conn.commit()
+        conn.close()
+        return cid
 
-
-        # Create the database and return its name.
-        # ========================================
-
-        p = subprocess.Popen( ( 'createdb'
-                              , '--template'
-                              , 'template_mimedb_0'
-                              , name
-                               )
-                            , stdout=subprocess.PIPE
-                             )
-        result = p.stdout.read()
-        if result != 'CREATE DATABASE\n':
-            raise StandardError("Failed to create database: '%s'" % result)
-        return name
 
     def dump(self, key):
         """Given the master key, return a bzip2'd SQL script.
@@ -108,102 +103,129 @@ class Application(XMLRPCApp):
         self._verify(key)
         raise NotImplementedError
 
+
     def load(self, key, sql):
         """Takes a bzip2'd SQL script.
         """
         self._verify(key)
         raise NotImplementedError
 
-    def drop(self, key):
-        """Takes the master key and a database name.
+
+    def destroy(self, key, cid):
+        """Takes the master key and a cid.
         """
         self._verify(key)
         raise NotImplementedError
 
 
-    # Message API
-    # ===========
+    # Messages
+    # ========
 
-    def all(self, key):
+    def all(self, cid):
         """Return a list of all message IDs.
         """
+        conn = self._connect()
+        conn.close()
         raise NotImplementedError
 
 
-    def find(self, key, criteria):
+    def find(self, cid, criteria):
         """Given criteria, returning message IDs of matching messages.
         """
+        conn = self._connect(key)
+        conn.close()
         raise NotImplementedError
 
 
-    def headers(self, key, msg_id):
+    def headers(self, cid, msg_id):
         """Given a message ID, retrieve the message's headers.
         """
+        conn = self._connect(key)
+        conn.close()
         raise NotImplementedError
 
 
-    def remove(self, key, msg_id):
+    def remove(self, cid, msg_id):
         """Given a message ID, remove the message.
         """
+        conn = self._connect(key)
+        conn.close()
         raise NotImplementedError
 
 
-    def replace(self, key, msg_id, msg):
+    def replace(self, cid, msg_id, msg):
         """Replace one message with another.
-
-        This does a store and a remove within one transaction, and is
-        effectively an update operation. The wrinkle is that to us, the contents
-        of the file determine its uniqueness, but any given application will
-        undoubtedly impute identity to messages that according to our definition
-        are not identical. Since any such imputation is application dependant,
-        we don't support it beyond this convenience method.
-
-        """
-        raise NotImplementedError
-
-
-    def retrieve(self, key, msg_id):
-        """Given a message ID, return a MIME message.
-        """
-        raise NotImplementedError
-
-
-    def single(self, key, msg_id):
-        """Just like find, but raise an error if there is more than one match.
-        """
-        raise NotImplementedError
-
-
-    def store(self, key, msg):
-        """Given a MIME message, store it.
         """
         conn = self._connect(key)
-        # need to quote/escape msg
-        SQL = "INSERT INTO data (datum) VALUES (%s)" % msg
-        conn.execute(SQL)
-
-        # self.write('2 Already stored.') -
-        # does this bring us back to msg_id as hash?
-
-        # Make sure we stored it successfully.
-        # ====================================
-
-        disk = open(path, 'rb').read()
-        disk_id = sha.new(disk).hexdigest()
-        if disk_id != msg_id:
-            self.write('2 Message storage failed! (server)')
+        conn.close()
+        raise NotImplementedError
 
 
-        # Index and return.
-        # =================
+    def retrieve(self, cid, msg_id):
+        """Given a message ID, return a MIME message.
+        """
+        conn = self._connect(key)
+        conn.close()
+        raise NotImplementedError
 
-        for header, value in message_from_string(msg).items():
-            db_path = os.path.join(self.metadata_root, header.lower())
-            db = anydbm.open(db_path, 'c')
-            db[msg_id] = value
-            db.close()
 
-        self.write('0 %s' % disk_id)
+    def single(self, cid, msg_id):
+        """Just like find, but raise an error if there is more than one match.
+        """
+        conn = self._connect(key)
+        conn.close()
+        raise NotImplementedError
+
+
+    def store(self, cid, msg):
+        """Given a new MIME message, return a mid.
+        """
+        conn = self._connect(key)
+
+
+        # Sanitize the message.
+        # =====================
+        # Flatten a possible Message object, convert all ewlines to \n, and
+        # make sure a body-less message has two newlines at the end.
+
+        if isinstance(msg, basestring):
+            pass
+        elif isinstance(msg, Message):
+            fp = StringIO()
+            g = Generator(fp, mangle_from_=False, maxheaderlen=60)
+            g.flatten(msg)
+            msg = fp.getvalue()
+        msg = '\n'.join(msg.splitlines())
+        if '\n\n' not in msg:
+            msg += '\n\n'
+
+
+        # Store the message.
+        # ==================
+
+        mid = self._uuid()
+        headers, body = msg.split('\n\n', 1)
+        SQL = ( "INSERT INTO message (cid, mid, headers, body) " +
+                "VALUES (%s, %s, %s, %s);"
+               )
+        conn.execute(SQL, (cid, mid, headers, body))
+
+
+        # Index the message headers.
+        # ==========================
+
+        for name, body in message_from_string(headers).items():
+            SQL = "INSERT INTO field (mid, name, body) VALUES (%s, %s, %s);"
+            conn.execute(SQL, mid, name, body)
+
+
+        # Wrap up and return.
+        # ===================
+
+        conn.commit()
+        conn.close()
+        return mid
+
 
 
 # This is our main callable.

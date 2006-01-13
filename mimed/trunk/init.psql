@@ -1,32 +1,45 @@
-# This script initializes a fresh PostgreSQL database for use as a MIMEdb. Run
-# this right after initdb. Note that it will fail if user 'mimedb' already
-# exists.
+/* Create a MIMEdb database. */
+
+
+CREATE DATABASE mimedb_0 ENCODING 'UTF8'; -- int is for forwards-compatibility
+
+\connect mimedb_0;
 
 BEGIN;
 
-    CREATE USER mimedb CREATEDB NOINHERIT;
-    CREATE DATABASE template_mimedb_0 OWNER mimedb ENCODING 'UTF8';
+    /* Both catalogs and messages are universally uniquely identified, so
+       they don't have to be kept together. This is important for
+       scalabilty: it means that in future implementations the catalog table
+       can reside on a different server than the message table, etc.
 
-COMMIT;
-BEGIN;
+       */
 
-    \c template_mimedb_0;
+    CREATE TABLE catalog (
+        cid         CHAR(32) PRIMARY KEY    -- a UUID
+       );
 
     CREATE TABLE message (
-        mid         BIGSERIAL PRIMARY KEY
-      , headers     TEXT                        # MIME headers
-      , body        TEXT                        # MIME body
+
+        cid         CHAR(32)                -- a UUID from the catalog table
+                    REFERENCES catalog
+                        MATCH FULL          -- paranoia
+                        ON DELETE CASCADE   -- DELETE messages when a catalog
+                                            -- is DELETEd, but raise an error
+                        ON UPDATE RESTRICT  -- if a cid is ever UPDATEd
+      , mid         CHAR(32) PRIMARY KEY    -- a UUID
+      , headers     TEXT                    -- MIME headers
+      , body        TEXT                    -- MIME body
        );
 
     CREATE TABLE field (
-        fid         BIGSERIAL PRIMARY KEY
-      , mid         BIGSERIAL
+        mid         CHAR(32)                -- a UUID from the message table
                     REFERENCES message
-                        MATCH FULL
-                        ON DELETE CASCADE
-                        ON UPDATE RESTRICT
-      , name        TEXT                        # a MIME header field-name
-      , body        TEXT                        # a MIME header field-body
+                        MATCH FULL          -- paranoia
+                        ON DELETE CASCADE   -- DELETE message metadata when a
+                                            -- message is DELETEd, but raise an
+                        ON UPDATE RESTRICT  -- error if a mid is ever UPDATEd
+      , name        TEXT                    -- a MIME header field-name
+      , body        TEXT                    -- a MIME header field-body
        );
 
 COMMIT;
