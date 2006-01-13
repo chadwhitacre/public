@@ -1,15 +1,20 @@
-do we want a concept of security in this system?
-or is that system dependent?
-is this our Unix fs replacement?!
+
+protection
+    do we want a concept of security in this system?
+    or is that system dependent?
+    is this our Unix fs replacement?!
 
 
-user
+    user
 
-group
+    group
 
 
 MQL: MIME Query Language
-name = body
+    MQL = """\
+        name = body
+        content-type > foo
+          """
 
 
 class txn:
@@ -17,12 +22,13 @@ class txn:
     the server stores the txn_id in memory, and maps that to a pgsql txn
     either keep the pgsql transaction open
     or run it all at once on commit <- more likely
-    """
-    def __init__(self):
 
-txn = db.txn()
-txn.store()
-txn.retrieve()
-txn.commit()
+        >>> txn = db.txn()
+        >>> txn.store()
+        >>> txn.retrieve()
+        >>> txn.commit()
+
+    """
+
 
 

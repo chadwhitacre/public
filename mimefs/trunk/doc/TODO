@@ -4,6 +4,7 @@ fix Makefile to install real key
 txn = cat.transaction()
 protection system?
 find
+jailing problem: localhost doesn't work on philip
 =====DONE=====
 best message transfer method: newline-delimited or Content-Length
     you want to buffer the read
