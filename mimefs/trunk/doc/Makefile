@@ -3,9 +3,6 @@
 # No warranty is expressed or implied.
 
 prefix=/usr/local
-db=/var/db/mime
-user=mimedb
-group=mimedb
 
 
 build:

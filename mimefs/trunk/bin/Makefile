@@ -3,20 +3,20 @@
 # No warranty is expressed or implied.
 
 prefix=/usr/local
-user=mimedb
-group=mimedb
+user=mimefs
+group=mimefs
 
 
 configure:
-	rm -f mimed
-	cp mimed.py mimed
-	chmod 500 mimed
+	rm -f mimefsd
+	cp mimefsd.py mimefsd
+	chmod 500 mimefsd
 
 clean:
-	rm -rf mimed
+	rm -rf mimefsd
 
 install: configure
-	install -C -o  ${user} -g ${group} -m 500 mimed ${prefix}/bin
+	install -C -o  ${user} -g ${group} -m 500 mimefsd ${prefix}/bin
 
 uninstall:
-	rm -f ${prefix}/bin/mimed
+	rm -f ${prefix}/bin/mimefsd

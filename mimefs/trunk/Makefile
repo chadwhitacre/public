@@ -31,7 +31,7 @@ install: build
 
 	mkdir ${db}
 	chown ${user}:${group} ${db}
-	sudo -u mimedb initdb ${db}
+	sudo -u ${user} initdb ${db}
 
 	echo -n 'a6d9b24e496c4255928b987995ac88b5' > /etc/mimefs.key
 	chown ${user}:${group} /etc/mimefs.key
