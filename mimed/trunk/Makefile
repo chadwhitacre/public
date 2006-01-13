@@ -8,43 +8,36 @@ user=mimedb
 group=mimedb
 
 
-configure:
-# delete and recreate the script to be installed
-	rm -f mimed
-	cp bin/mimed.py mimed
-	chmod 500 mimed
-
-
-# delete and recreate the man page to be installed
-	rm -f mimed.1.gz
-	gzip -c -9 doc/mimed.1 > mimed.1.gz
-	chmod 444 mimed.1.gz
+build:
+	make -C bin
+	make -C doc
+	python setup.py build
 
 
 clean:
-# delete the script and man page to be installed
-	rm -rf mimed mimed.1.gz build
+	make -C bin clean
+	make -C doc clean
+	rm -rf build
 	find . -name \*.pyc | xargs rm
 
 
-install: configure
-# installs the executable and man page, and sets up a database
-# PostgreSQL should be installed but not running.
-	python setup.py install
-
-	install -C -o root -g wheel -m 500 mimed ${prefix}/bin
-	install -C -o root -g wheel -m 444 mimed.1.gz ${prefix}/man/man1
+install: build
 
 	pw groupadd ${group}
 	pw useradd ${user} -g ${group} -s /sbin/nologin
+
+	make -C bin install
+	make -C doc install
 
 	mkdir ${db}
 	chown ${user}:${group} ${db}
 	sudo -u mimedb initdb ${db}
 
-	echo 'a6d9b24e496c4255928b987995ac88b5' > /etc/mimedb.key
+	echo -n 'a6d9b24e496c4255928b987995ac88b5' > /etc/mimedb.key
 	chown ${user}:${group} /etc/mimedb.key
 	chmod 400 /etc/mimedb.key
+
+	python setup.py install
 
 
 init:
@@ -53,8 +46,8 @@ init:
 
 
 uninstall:
-	rm -f ${prefix}/bin/mimed
-	rm -f ${prefix}/man/man1/mimed.1.gz
-	rm -rf /var/db/mime
+	make -C bin uninstall
+	make -C doc uninstall
+	rm -rf ${db}
 	pw userdel ${user}
 	#pw groupdel ${group} -- appears to be unnecessary?
