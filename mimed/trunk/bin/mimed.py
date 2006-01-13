@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 from StringIO import StringIO
+from email import message_from_string
 from email.Generator import Generator
 from email.Message import Message
 
@@ -44,8 +45,14 @@ def _validate(self):
 Task.validate = _validate
 
 
+
+
 # Define our Application class.
 # =============================
+
+class MIMEdbServerError(StandardError):
+    """
+    """
 
 class Application(XMLRPCApp):
 
@@ -61,58 +68,87 @@ class Application(XMLRPCApp):
     def _connect(self):
         """Given a database name, return a database connection.
         """
-        try:
-            return psycopg.connect('dbname=MIMEdb')
-        except:
-            raise StandardError("Bad db name: '%s'" % name)
+        return psycopg.connect('dbname=mimedb_0')
 
     def _verify(self, key):
         """Given the master key, verify that it is correct.
         """
         if key != KEY:
-            raise StandardError("Bad key: '%s'" % key)
+            raise MIMEdbServerError("Bad key: '%s'" % key)
 
     def _uuid(self):
-        """Return a 32-byte string. Currently we depend on uuid(1) in the OS.
+        """Return a universally unique 32-byte string.
+
+        Currently we depend on uuid(1) in the OS.
+
         """
         p = subprocess.Popen(('uuid','-v4'), stdout=subprocess.PIPE)
-        return p.stdout.read().replace('-','')
+        return p.stdout.read().replace('-','').strip('\n')
 
 
     # Catalogs
     # ========
 
-    def create(self, key):
+    def c_create(self, key):
         """Given the master key, return the cid of a new catalog.
         """
         self._verify(key)
         conn = self._connect()
+        curs = conn.cursor()
 
         cid = self._uuid()
         SQL = "INSERT INTO catalog (cid) VALUES (%s);"
-        conn.execute(SQL, (cid,))
+        curs.execute(SQL, (cid,))
 
         conn.commit()
         conn.close()
         return cid
 
 
-    def dump(self, key):
-        """Given the master key, return a bzip2'd SQL script.
-        """
-        self._verify(key)
-        raise NotImplementedError
-
-
-    def load(self, key, sql):
-        """Takes a bzip2'd SQL script.
-        """
-        self._verify(key)
-        raise NotImplementedError
-
-
-    def destroy(self, key, cid):
+    def c_destroy(self, key, cid):
         """Takes the master key and a cid.
+
+        The tables are wired such that when a catalog is destroyed, all
+        messages in that catalog are automatically destroyed, and their
+        metadata is unindexed.
+
+        """
+        self._verify(key)
+        conn = self._connect()
+        curs = conn.cursor()
+
+        SQL = "DELETE FROM catalog WHERE cid=%s;"
+        curs.execute(SQL, (cid,))
+
+        conn.commit()
+        conn.close()
+
+
+    def c_dump(self, key):
+        """Given the master key, return a bzip2'd psql script.
+        """
+        self._verify(key)
+        raise NotImplementedError
+
+
+    def c_list(self, key):
+        """Return a list of all message IDs.
+        """
+        self._verify(key)
+        conn = self._connect()
+        curs = conn.cursor()
+
+        SQL = "SELECT cid FROM catalog;"
+        curs.execute(SQL)
+        cids = [row[0] for row in curs.fetchall()]
+
+        conn.commit()
+        conn.close()
+        return cids
+
+
+    def c_load(self, key, sql):
+        """Takes a bzip2'd psql script.
         """
         self._verify(key)
         raise NotImplementedError
@@ -120,103 +156,152 @@ class Application(XMLRPCApp):
 
     # Messages
     # ========
+    # The following all operate on a single catalog.
 
-    def all(self, cid):
-        """Return a list of all message IDs.
+    def m_destroy(self, cid, mid):
+        """Given a message ID, destroy the message.
+
+        The metadata unindexing is handled by a constraint in the table
+        definition.
+
+        """
+        conn = self._connect()
+        conn.close()
+
+        SQL = "DELETE FROM message WHERE mid=%s;"
+        curs.execute(SQL, (mid,))
+
+        conn.commit()
+        conn.close()
+
+
+    def m_find(self, cid, criteria):
+        """Given criteria, return mids of matching messages.
         """
         conn = self._connect()
         conn.close()
         raise NotImplementedError
 
 
-    def find(self, cid, criteria):
-        """Given criteria, returning message IDs of matching messages.
+    def m_headers(self, cid, mid):
+        """Given a message ID, return the message's headers.
+
+        We don't actually use the cid here, since the mid is globally unique.
+
         """
-        conn = self._connect(key)
+        conn = self._connect()
+        curs = conn.cursor()
+
+        SQL = "SELECT headers FROM message WHERE mid=%s;"
+        curs.execute(SQL, (mid,))
+
+        if curs.rowcount == -1:
+            raise MIMEdbServerError("Error running query.")
+        if curs.rowcount == 0:
+            raise MIMEdbServerError("No message found.")
+        elif curs.rowcount > 1:
+            raise MIMEdbServerError( "mid matched %s " % str(curs.rowcount) +
+                                     "messages; possible data corruption!"
+                                    )
+
+        headers = curs.fetchone()[0]
+
+        conn.commit()
         conn.close()
-        raise NotImplementedError
+        return headers
 
 
-    def headers(self, cid, msg_id):
-        """Given a message ID, retrieve the message's headers.
+    def m_list(self, cid):
+        """Return a list of all message IDs.
         """
-        conn = self._connect(key)
+        conn = self._connect()
+        curs = conn.cursor()
+
+        SQL = "SELECT mid FROM message;"
+        curs.execute(SQL)
+        mids = [row[0] for row in curs.fetchall()]
+
+        conn.commit()
         conn.close()
-        raise NotImplementedError
+        return mids
 
 
-    def remove(self, cid, msg_id):
-        """Given a message ID, remove the message.
-        """
-        conn = self._connect(key)
-        conn.close()
-        raise NotImplementedError
-
-
-    def replace(self, cid, msg_id, msg):
-        """Replace one message with another.
-        """
-        conn = self._connect(key)
-        conn.close()
-        raise NotImplementedError
-
-
-    def retrieve(self, cid, msg_id):
+    def m_open(self, cid, mid):
         """Given a message ID, return a MIME message.
         """
-        conn = self._connect(key)
+        conn = self._connect()
+        curs = conn.cursor()
+
+        SQL = "SELECT headers, body FROM message WHERE mid=%s;"
+        curs.execute(SQL, (mid,))
+
+        if curs.rowcount == -1:
+            raise MIMEdbServerError("Error running query.")
+        if curs.rowcount == 0:
+            raise MIMEdbServerError("No message found.")
+        elif curs.rowcount > 1:
+            raise MIMEdbServerError( "mid matched %s " % str(curs.rowcount) +
+                                     "messages; possible data corruption!"
+                                    )
+
+        message = '\n\n'.join(curs.fetchone())
+
+        conn.commit()
         conn.close()
-        raise NotImplementedError
+        return message
 
 
-    def single(self, cid, msg_id):
-        """Just like find, but raise an error if there is more than one match.
+    def m_store(self, cid, msg, mid=''):
+        """Given a MIME message, store it.
+
+        If a mid is given, we file the message under that mid. Otherwise we
+        store and index under a new mid. In both cases we return the mid.
+
         """
-        conn = self._connect(key)
-        conn.close()
-        raise NotImplementedError
-
-
-    def store(self, cid, msg):
-        """Given a new MIME message, return a mid.
-        """
-        conn = self._connect(key)
+        conn = self._connect()
+        curs = conn.cursor()
 
 
         # Sanitize the message.
         # =====================
-        # Flatten a possible Message object, convert all ewlines to \n, and
-        # make sure a body-less message has two newlines at the end.
+        # Convert all newlines to \n, and make sure a bodyless message has
+        # two newlines at the end.
 
-        if isinstance(msg, basestring):
-            pass
-        elif isinstance(msg, Message):
-            fp = StringIO()
-            g = Generator(fp, mangle_from_=False, maxheaderlen=60)
-            g.flatten(msg)
-            msg = fp.getvalue()
         msg = '\n'.join(msg.splitlines())
         if '\n\n' not in msg:
             msg += '\n\n'
 
 
-        # Store the message.
+        # Determine the mid.
         # ==================
+        # If given a valid mid, just destroy the old message.
 
-        mid = self._uuid()
+        if not mid:
+            mid = self._uuid()
+        else:
+            SQL = "SELECT mid FROM message WHERE mid=%s;"
+            curs.execute(SQL, (mid,))
+            if curs.rowcount == 1:
+                SQL = "DELETE FROM message WHERE mid=%s;"
+                curs.execute(SQL, (mid,))
+            else:
+                raise MIMEdbServerError("Bad mid: '%s'" % mid)
+
+
+        # Now store and index the message.
+        # ================================
+
         headers, body = msg.split('\n\n', 1)
+
         SQL = ( "INSERT INTO message (cid, mid, headers, body) " +
                 "VALUES (%s, %s, %s, %s);"
                )
-        conn.execute(SQL, (cid, mid, headers, body))
-
-
-        # Index the message headers.
-        # ==========================
+        curs.execute(SQL, (cid, mid, headers, body))
 
         for name, body in message_from_string(headers).items():
+            name = name.lower() # case insensitive
             SQL = "INSERT INTO field (mid, name, body) VALUES (%s, %s, %s);"
-            conn.execute(SQL, mid, name, body)
+            curs.execute(SQL, (mid, name, body))
 
 
         # Wrap up and return.
@@ -228,8 +313,8 @@ class Application(XMLRPCApp):
 
 
 
-# This is our main callable.
-# ==========================
+# Define a callable to start the server.
+# ======================================
 
 def main(argv=None):
 

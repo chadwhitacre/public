@@ -6,9 +6,6 @@ refcount for a particular header drops to zero
     that index is dropped from the db
 
 
-/var/db/mimedb
-mimedb:mimedb
-
 two processes:
     postmaster
     mimed
@@ -21,6 +18,10 @@ one database per site
         create a database
         drop a database
         list database names
+
+do we want a concept of security in this system?
+or is that system dependent?
+is this our Unix fs replacement?!
 
 or do we have a single database?
 
