@@ -14,57 +14,15 @@ two processes:
     mimed
 
 
-=====Makefile=====
-# install PostgreSQL
-pw groupadd mimedb
-pw useradd mimedb -g mimedb -s /sbin/nologin
-mkdir -p /var/db/mime
-chown mimedb:mimedb /var/db/mimedb
-initdb /var/db/mime
-psql < init.psql
-=====Makefile=====
-==================
-=====init.psql====
-START TRANSACTION;
-
-CREATE USER mimedb CREATEDB NOINHERIT;
-
-CREATE DATABASE template_mimedb_0 (
-    OWNER       mimedb
-  , ENCODING    UTF8;
-   );
-
-\c template_mimedb_0
-
-CREATE TABLE message (
-    mid         BIGSERIAL PRIMARY KEY
-  , headers     TEXT                        # MIME headers
-  , body        TEXT                        # MIME body
-   );
-
-CREATE TABLE field (
-    fid         BIGSERIAL PRIMARY KEY
-  , mid         BIGSERIAL
-                REFERENCES message
-                    MATCH FULL
-                    ON DELETE CASCADE
-                    ON UPDATE RESTRICT
-  , name        TEXT                        # a MIME header field-name
-  , body        TEXT                        # a MIME header field-body
-   );
-
-COMMIT
-=====init.psql====
-
-
-
-
+one database per site
     the db name is the authentication
     anyone can connect and switch to a database
     restricted operations:
         create a database
         drop a database
         list database names
+
+or do we have a single database?
 
 
 
