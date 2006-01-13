@@ -3,9 +3,9 @@
 # No warranty is expressed or implied.
 
 prefix=/usr/local
-db=/var/db/mime
-user=mimedb
-group=mimedb
+db=/var/db/mimefs
+user=mimefs
+group=mimefs
 
 
 build:
@@ -33,9 +33,9 @@ install: build
 	chown ${user}:${group} ${db}
 	sudo -u mimedb initdb ${db}
 
-	echo -n 'a6d9b24e496c4255928b987995ac88b5' > /etc/mimedb.key
-	chown ${user}:${group} /etc/mimedb.key
-	chmod 400 /etc/mimedb.key
+	echo -n 'a6d9b24e496c4255928b987995ac88b5' > /etc/mimefs.key
+	chown ${user}:${group} /etc/mimefs.key
+	chmod 400 /etc/mimefs.key
 
 	python setup.py install
 
