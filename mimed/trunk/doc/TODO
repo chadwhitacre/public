@@ -2,6 +2,8 @@ in server, protext against calling respond via XMLRPC
 add check for permissions/ownership on /etc/mimedb.key
 fix Makefile to install real key
 txn = cat.transaction()
+protection system?
+find
 =====DONE=====
 best message transfer method: newline-delimited or Content-Length
     you want to buffer the read
