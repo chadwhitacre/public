@@ -1,4 +1,4 @@
-/* Create a MIMEfs database. */
+/* Create a mimefs database. */
 
 
 CREATE DATABASE mimefs_0 ENCODING 'UTF8'; -- int is for forwards-compatibility

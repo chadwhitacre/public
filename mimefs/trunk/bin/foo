@@ -6,9 +6,9 @@ import subprocess
 import time
 
 c = 'make install clean'
-mtime = os.stat('mimed.py')[stat.ST_MTIME]
+mtime = os.stat('mimefsd.py')[stat.ST_MTIME]
 while 1:
-    newtime = os.stat('mimed.py')[stat.ST_MTIME]
+    newtime = os.stat('mimefsd.py')[stat.ST_MTIME]
     if mtime != newtime:
         p = subprocess.Popen(c, shell=True)
         sts = os.waitpid(p.pid, 0)

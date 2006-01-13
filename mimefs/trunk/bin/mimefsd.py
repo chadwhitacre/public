@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""mimed -- a MIME database XMLRPC server. `man 1 mimed' for details.
+"""mimefsd -- a MIME filesystem XMLRPC server.
 """
 
 __version__ = (0, 3)
@@ -29,11 +29,11 @@ format = "%(name)-16s %(levelname)-8s %(message)s"
 logging.basicConfig( level=logging.DEBUG
                    , format=format
                     )
-logger = logging.getLogger('mimed')
+logger = logging.getLogger('mimefsd')
 
 
 # TODO: add check for ownership and permissions
-KEY = open('/etc/mimedb.key').read()
+KEY = open('/etc/mimefs.key').read()
 
 
 # Monkey-patch Task since we don't have anything on the filesystem.
@@ -45,12 +45,10 @@ def _validate(self):
 Task.validate = _validate
 
 
-
-
 # Define our Application class.
 # =============================
 
-class MIMEdbServerError(StandardError):
+class mimefsServerError(StandardError):
     """
     """
 
@@ -68,13 +66,13 @@ class Application(XMLRPCApp):
     def _connect(self):
         """Given a database name, return a database connection.
         """
-        return psycopg.connect('dbname=mimedb_0')
+        return psycopg.connect('dbname=mimefsd_0')
 
     def _verify(self, key):
         """Given the master key, verify that it is correct.
         """
         if key != KEY:
-            raise MIMEdbServerError("Bad key: '%s'" % key)
+            raise mimefsServerError("Bad key: '%s'" % key)
 
     def _uuid(self):
         """Return a universally unique 32-byte string.
@@ -196,11 +194,11 @@ class Application(XMLRPCApp):
         curs.execute(SQL, (mid,))
 
         if curs.rowcount == -1:
-            raise MIMEdbServerError("Error running query.")
+            raise mimefsServerError("Error running query.")
         if curs.rowcount == 0:
-            raise MIMEdbServerError("No message found.")
+            raise mimefsServerError("No message found.")
         elif curs.rowcount > 1:
-            raise MIMEdbServerError( "mid matched %s " % str(curs.rowcount) +
+            raise mimefsServerError( "mid matched %s " % str(curs.rowcount) +
                                      "messages; possible data corruption!"
                                     )
 
@@ -236,11 +234,11 @@ class Application(XMLRPCApp):
         curs.execute(SQL, (mid,))
 
         if curs.rowcount == -1:
-            raise MIMEdbServerError("Error running query.")
+            raise mimefsServerError("Error running query.")
         if curs.rowcount == 0:
-            raise MIMEdbServerError("No message found.")
+            raise mimefsServerError("No message found.")
         elif curs.rowcount > 1:
-            raise MIMEdbServerError( "mid matched %s " % str(curs.rowcount) +
+            raise mimefsServerError( "mid matched %s " % str(curs.rowcount) +
                                      "messages; possible data corruption!"
                                     )
 
@@ -285,7 +283,7 @@ class Application(XMLRPCApp):
                 SQL = "DELETE FROM message WHERE mid=%s;"
                 curs.execute(SQL, (mid,))
             else:
-                raise MIMEdbServerError("Bad mid: '%s'" % mid)
+                raise mimefsServerError("Bad mid: '%s'" % mid)
 
 
         # Now store and index the message.
