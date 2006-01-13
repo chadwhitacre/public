@@ -5,8 +5,10 @@
 __version__ = (0, 3)
 __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 
+import codecs
 import logging
 import os
+import sets
 import sha
 import signal
 import subprocess
@@ -48,7 +50,7 @@ Task.validate = _validate
 # Define our Application class.
 # =============================
 
-class mimefsServerError(StandardError):
+class mimefsdError(StandardError):
     """
     """
 
@@ -66,13 +68,13 @@ class Application(XMLRPCApp):
     def _connect(self):
         """Given a database name, return a database connection.
         """
-        return psycopg.connect('dbname=mimefsd_0')
+        return psycopg.connect('dbname=mimefs_0')
 
     def _verify(self, key):
         """Given the master key, verify that it is correct.
         """
         if key != KEY:
-            raise mimefsServerError("Bad key: '%s'" % key)
+            raise mimefsdError("Bad key: '%s'" % key)
 
     def _uuid(self):
         """Return a universally unique 32-byte string.
@@ -173,12 +175,77 @@ class Application(XMLRPCApp):
         conn.close()
 
 
-    def m_find(self, vid, criteria):
-        """Given criteria, return mids of matching messages.
+    def m_find(self, vid, WHERE, LIMIT='ALL', OFFSET=0):
+        """Given some parameters, return mids of matching messages.
+
+        This is brute force unoptimized. You have been warned. :^)
+
         """
         conn = self._connect()
+        curs = conn.cursor()
+
+
+        # Parse and validate input.
+        # =========================
+
+        err_msg = ''
+        criteria = []
+        for criterion in WHERE.splitlines():
+            tokens = criterion.split(None, 2)
+            if len(tokens) != 3:
+                err_msg = 'Bad criterion (too few tokens): %s' % criterion
+            elif tokens[1] not in ('>', '>=', '=', '!=', '<=', '<'):
+                err_msg = 'Bad criterion (bad operator): %s' % criterion
+            else:
+                criteria.append(tokens)
+
+        if not err_msg and not criteria:
+            err_msg = 'No criteria given.'
+
+        if err_msg:
+            raise mimefsdError(err_msg)
+
+        if LIMIT != 'ALL' and not isinstance(LIMIT, int):
+            raise mimefsdError("Bad limit: '%s'" % LIMIT)
+        if OFFSET and not isinstance(OFFSET, int):
+            raise mimefsdError("Bad offset: '%s'" % OFFSET)
+
+
+        # Find all matching messages.
+        # ===========================
+
+        filters = []
+        for header, op, sought in criteria:
+            mids = sets.Set()
+            SQL = "SELECT mid, body FROM field WHERE name=%s;"
+            curs.execute(SQL, (header,))
+
+            for mid, body in curs.fetchall():
+                sought = repr(codecs.escape_encode(sought)[0])
+                if op == '=':
+                    op = '=='
+                body = repr(codecs.escape_encode(body)[0])
+                condition = ' '.join((body, op, sought))
+                logger.debug('evaluating: %s' % condition)
+                if eval(condition):
+                    mids.add(mid)
+
+            filters.append(mids)
+
+        for filt in filters:
+            mids &= filt
+        mids = tuple(mids)
+
+
+        # Slice, dice, and return.
+        # ========================
+
+        if LIMIT == 'ALL':
+            LIMIT = len(mids)
+        mids = mids[OFFSET:OFFSET+LIMIT]
+        conn.commit()
         conn.close()
-        raise NotImplementedError
+        return mids
 
 
     def m_headers(self, vid, mid):
@@ -194,11 +261,11 @@ class Application(XMLRPCApp):
         curs.execute(SQL, (mid,))
 
         if curs.rowcount == -1:
-            raise mimefsServerError("Error running query.")
+            raise mimefsdError("Error running query.")
         if curs.rowcount == 0:
-            raise mimefsServerError("No message found.")
+            raise mimefsdError("No message found.")
         elif curs.rowcount > 1:
-            raise mimefsServerError( "mid matched %s " % str(curs.rowcount) +
+            raise mimefsdError( "mid matched %s " % str(curs.rowcount) +
                                      "messages; possible data corruption!"
                                     )
 
@@ -234,11 +301,11 @@ class Application(XMLRPCApp):
         curs.execute(SQL, (mid,))
 
         if curs.rowcount == -1:
-            raise mimefsServerError("Error running query.")
+            raise mimefsdError("Error running query.")
         if curs.rowcount == 0:
-            raise mimefsServerError("No message found.")
+            raise mimefsdError("No message found.")
         elif curs.rowcount > 1:
-            raise mimefsServerError( "mid matched %s " % str(curs.rowcount) +
+            raise mimefsdError( "mid matched %s " % str(curs.rowcount) +
                                      "messages; possible data corruption!"
                                     )
 
@@ -262,12 +329,12 @@ class Application(XMLRPCApp):
 
         # Sanitize the message.
         # =====================
-        # Convert all newlines to \n, and make sure a bodyless message has
-        # two newlines at the end.
+        # Convert all newlines to \r\n per RFC 822/2045, and make sure a
+        # bodyless message has two line breaks at the end.
 
-        msg = '\n'.join(msg.splitlines())
-        if '\n\n' not in msg:
-            msg += '\n\n'
+        msg = '\r\n'.join(msg.splitlines())
+        if '\r\n\r\n' not in msg:
+            msg += '\r\n\r\n'
 
 
         # Determine the mid.
@@ -283,13 +350,13 @@ class Application(XMLRPCApp):
                 SQL = "DELETE FROM message WHERE mid=%s;"
                 curs.execute(SQL, (mid,))
             else:
-                raise mimefsServerError("Bad mid: '%s'" % mid)
+                raise mimefsdError("Bad mid: '%s'" % mid)
 
 
         # Now store and index the message.
         # ================================
 
-        headers, body = msg.split('\n\n', 1)
+        headers, body = msg.split('\r\n\r\n', 1)
 
         SQL = ( "INSERT INTO message (vid, mid, headers, body) " +
                 "VALUES (%s, %s, %s, %s);"
