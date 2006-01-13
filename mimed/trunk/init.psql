@@ -1,31 +1,31 @@
-/* Create a MIMEdb database. */
+/* Create a MIMEfs database. */
 
 
-CREATE DATABASE mimedb_0 ENCODING 'UTF8'; -- int is for forwards-compatibility
+CREATE DATABASE mimefs_0 ENCODING 'UTF8'; -- int is for forwards-compatibility
 
-\connect mimedb_0;
+\connect mimefs_0;
 
 BEGIN;
 
-    /* Both catalogs and messages are universally uniquely identified, so
+    /* Both volumes and messages are universally uniquely identified, so
        they don't have to be kept together. This is important for
-       scalabilty: it means that in future implementations the catalog table
+       scalability: it means that in future implementations the volume table
        can reside on a different server than the message table, etc.
 
        */
 
-    CREATE TABLE catalog (
-        cid         CHAR(32) PRIMARY KEY    -- a UUID
+    CREATE TABLE volume (
+        vid         CHAR(32) PRIMARY KEY    -- a UUID
        );
 
     CREATE TABLE message (
 
-        cid         CHAR(32)                -- a UUID from the catalog table
-                    REFERENCES catalog
+        vid         CHAR(32)                -- a UUID from the volume table
+                    REFERENCES volume
                         MATCH FULL          -- paranoia
-                        ON DELETE CASCADE   -- DELETE messages when a catalog
+                        ON DELETE CASCADE   -- DELETE messages when a volume
                                             -- is DELETEd, but raise an error
-                        ON UPDATE RESTRICT  -- if a cid is ever UPDATEd
+                        ON UPDATE RESTRICT  -- if a vid is ever UPDATEd
       , mid         CHAR(32) PRIMARY KEY    -- a UUID
       , headers     TEXT                    -- MIME headers
       , body        TEXT                    -- MIME body

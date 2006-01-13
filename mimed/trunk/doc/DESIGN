@@ -1,38 +1,15 @@
-dump a message in the db
-    headers are indexed automatically
-    message itself is stored
-pull a message out of the db
-refcount for a particular header drops to zero
-    that index is dropped from the db
-
-
-two processes:
-    postmaster
-    mimed
-
-
-one database per site
-    the db name is the authentication
-    anyone can connect and switch to a database
-    restricted operations:
-        create a database
-        drop a database
-        list database names
-
 do we want a concept of security in this system?
 or is that system dependent?
 is this our Unix fs replacement?!
 
-or do we have a single database?
+
+user
+
+group
 
 
-
-
-
-db = MIMEdb('http://localhost:8080/', '8b0e50efb501438fa42077a360084d6a')
-db.store()
-db.retrieve()
-
+MQL: MIME Query Language
+name = body
 
 
 class txn:

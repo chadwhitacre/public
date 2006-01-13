@@ -86,30 +86,30 @@ class Application(XMLRPCApp):
         return p.stdout.read().replace('-','').strip('\n')
 
 
-    # Catalogs
+    # Volumes
     # ========
 
-    def c_create(self, key):
-        """Given the master key, return the cid of a new catalog.
+    def v_create(self, key):
+        """Given the master key, return the vid of a new volume.
         """
         self._verify(key)
         conn = self._connect()
         curs = conn.cursor()
 
-        cid = self._uuid()
-        SQL = "INSERT INTO catalog (cid) VALUES (%s);"
-        curs.execute(SQL, (cid,))
+        vid = self._uuid()
+        SQL = "INSERT INTO volume (vid) VALUES (%s);"
+        curs.execute(SQL, (vid,))
 
         conn.commit()
         conn.close()
-        return cid
+        return vid
 
 
-    def c_destroy(self, key, cid):
-        """Takes the master key and a cid.
+    def v_destroy(self, key, vid):
+        """Takes the master key and a vid.
 
-        The tables are wired such that when a catalog is destroyed, all
-        messages in that catalog are automatically destroyed, and their
+        The tables are wired such that when a volume is destroyed, all
+        messages in that volume are automatically destroyed, and their
         metadata is unindexed.
 
         """
@@ -117,37 +117,37 @@ class Application(XMLRPCApp):
         conn = self._connect()
         curs = conn.cursor()
 
-        SQL = "DELETE FROM catalog WHERE cid=%s;"
-        curs.execute(SQL, (cid,))
+        SQL = "DELETE FROM volume WHERE vid=%s;"
+        curs.execute(SQL, (vid,))
 
         conn.commit()
         conn.close()
 
 
-    def c_dump(self, key):
+    def v_dump(self, key):
         """Given the master key, return a bzip2'd psql script.
         """
         self._verify(key)
         raise NotImplementedError
 
 
-    def c_list(self, key):
+    def v_list(self, key):
         """Return a list of all message IDs.
         """
         self._verify(key)
         conn = self._connect()
         curs = conn.cursor()
 
-        SQL = "SELECT cid FROM catalog;"
+        SQL = "SELECT vid FROM volume;"
         curs.execute(SQL)
-        cids = [row[0] for row in curs.fetchall()]
+        vids = [row[0] for row in curs.fetchall()]
 
         conn.commit()
         conn.close()
-        return cids
+        return vids
 
 
-    def c_load(self, key, sql):
+    def v_load(self, key, sql):
         """Takes a bzip2'd psql script.
         """
         self._verify(key)
@@ -156,9 +156,9 @@ class Application(XMLRPCApp):
 
     # Messages
     # ========
-    # The following all operate on a single catalog.
+    # The following all operate on a single volume.
 
-    def m_destroy(self, cid, mid):
+    def m_destroy(self, vid, mid):
         """Given a message ID, destroy the message.
 
         The metadata unindexing is handled by a constraint in the table
@@ -175,7 +175,7 @@ class Application(XMLRPCApp):
         conn.close()
 
 
-    def m_find(self, cid, criteria):
+    def m_find(self, vid, criteria):
         """Given criteria, return mids of matching messages.
         """
         conn = self._connect()
@@ -183,10 +183,10 @@ class Application(XMLRPCApp):
         raise NotImplementedError
 
 
-    def m_headers(self, cid, mid):
+    def m_headers(self, vid, mid):
         """Given a message ID, return the message's headers.
 
-        We don't actually use the cid here, since the mid is globally unique.
+        We don't actually use the vid here, since the mid is globally unique.
 
         """
         conn = self._connect()
@@ -211,7 +211,7 @@ class Application(XMLRPCApp):
         return headers
 
 
-    def m_list(self, cid):
+    def m_list(self, vid):
         """Return a list of all message IDs.
         """
         conn = self._connect()
@@ -226,7 +226,7 @@ class Application(XMLRPCApp):
         return mids
 
 
-    def m_open(self, cid, mid):
+    def m_open(self, vid, mid):
         """Given a message ID, return a MIME message.
         """
         conn = self._connect()
@@ -251,7 +251,7 @@ class Application(XMLRPCApp):
         return message
 
 
-    def m_store(self, cid, msg, mid=''):
+    def m_store(self, vid, msg, mid=''):
         """Given a MIME message, store it.
 
         If a mid is given, we file the message under that mid. Otherwise we
@@ -293,10 +293,10 @@ class Application(XMLRPCApp):
 
         headers, body = msg.split('\n\n', 1)
 
-        SQL = ( "INSERT INTO message (cid, mid, headers, body) " +
+        SQL = ( "INSERT INTO message (vid, mid, headers, body) " +
                 "VALUES (%s, %s, %s, %s);"
                )
-        curs.execute(SQL, (cid, mid, headers, body))
+        curs.execute(SQL, (vid, mid, headers, body))
 
         for name, body in message_from_string(headers).items():
             name = name.lower() # case insensitive
