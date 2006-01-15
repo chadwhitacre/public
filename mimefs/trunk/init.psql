@@ -15,24 +15,24 @@ BEGIN;
        */
 
     CREATE TABLE volume (
-        vid         CHAR(32) PRIMARY KEY    -- a UUID
+        vid         CHAR(36) PRIMARY KEY    -- a UUID
        );
 
     CREATE TABLE message (
 
-        vid         CHAR(32)                -- a UUID from the volume table
+        vid         CHAR(36)                -- a UUID from the volume table
                     REFERENCES volume
                         MATCH FULL          -- paranoia
                         ON DELETE CASCADE   -- DELETE messages when a volume
                                             -- is DELETEd, but raise an error
                         ON UPDATE RESTRICT  -- if a vid is ever UPDATEd
-      , mid         CHAR(32) PRIMARY KEY    -- a UUID
+      , mid         CHAR(36) PRIMARY KEY    -- a UUID
       , headers     TEXT                    -- MIME headers
       , body        TEXT                    -- MIME body
        );
 
     CREATE TABLE field (
-        mid         CHAR(32)                -- a UUID from the message table
+        mid         CHAR(36)                -- a UUID from the message table
                     REFERENCES message
                         MATCH FULL          -- paranoia
                         ON DELETE CASCADE   -- DELETE message metadata when a

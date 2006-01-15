@@ -1,21 +1,46 @@
-in server, protect against calling respond via XMLRPC
-add check for permissions/ownership on /etc/mimefs.key
-fix Makefile to install real key
-txn = cat.transaction()
-protection system?
+========================================
+    0.4 -- PyCon
+========================================
 jailing problem: localhost doesn't work on philip
-tests
-caching
-    microcaching? every call gets cached for 5 seconds?
-    client-side? server-side? both? memcached?
-synchronization primitives? locking?
-XMLRPC -> TCP protocol?
-more robust client
-    intercept and validate/wrap data
-        but! we don't always want Message objects -- dies on large messages
-documentation
-should prolly have timestamps for pruning purposes
-    we are going to have tons of data that can get disembodied
+in server, protect against calling respond via XMLRPC
+add check for permissions/ownership on /etc/mimedb.key
+fix Makefile to install real key
+protection system?
+make open like open(2)
+message should have object representation
+    uses email.Message.Message under the hood
+        but not for body > 500KB!
+    dict set flushes to storage
+    caching?
+    can we diff headers and only index changed ones? (disallow \n in headers)
+uuid(1) -> uuidgen(1)
+m_create -> open
+m_destroy -> remove
+v_create -> mount
+v_destroy -> unmount
+update volume API to be mount-ish
+remove should mimic remove(3) errors
+list w/ filters needs an ORDER BY
+
+
+
+
+========================================
+    FUTURE
+========================================
+locking primitives
+pool db connections in mimefsd
+put version into svn property
+txn = vol.transaction()
+need to use thread-safe postgresql lib?
+require and optimize for certain headers? Content-Type, Content-Length
+mfs -- mimefs command-line client
+    cf -- change filters ()
+concept of aliases? http://example.com:5370/my-volume -> ...
+NotImplementedError doesn't make it back to client
+
+
+
 =====DONE=====
 best message transfer method: newline-delimited or Content-Length
     you want to buffer the read
@@ -65,5 +90,10 @@ added ALL and GET
 convert to httpy + postgresql
 subclass ServerProxy to use API key
 find
-double newline in message body hangs connection
-need to constrain by vid in find
+
+========================================
+    0.4 -- PyCon
+========================================
+revert to UUID with dashes
+    convert dashes to underscores where needed
+find -> list

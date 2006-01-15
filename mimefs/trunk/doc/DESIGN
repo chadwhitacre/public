@@ -1,3 +1,43 @@
+MIME filesystem
+
+    design considerations:
+        one server, many, many clients
+        ACID
+        agnostic (zero configuration)
+
+
+    like UFS:
+        *agnostic re: meaning of bits themselves
+        similar api: newvol, list, open, remove, read, write
+        maintain minimal metadata
+            stat() ... id, timestamps(?), protection bits (-x), ownership
+        provides locking primitives
+        unencrypted
+
+
+    unlike UFS:
+        *not hierarchical
+            inode -> UUID
+            path -> param
+            concept of linking not applicable ... or is it!?
+        ACID, transactional
+        truly networked
+        r/w only, no executables
+
+
+should messages be arbitrarily parentable?
+    message -> node
+    geez that feels heavy and complicated
+
+
+are users and groups defined at fs or vol level?
+users are messages, and therefore have a vid just like every other
+fs is conceptually an OS instance
+OR MAYBE WE DON'T IMPLEMENT PROTECTION HERE?
+
+
+
+
 
 protection
     do we want a concept of security in this system?
