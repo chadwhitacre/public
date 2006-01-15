@@ -1,10 +1,21 @@
-in server, protext against calling respond via XMLRPC
-add check for permissions/ownership on /etc/mimedb.key
+in server, protect against calling respond via XMLRPC
+add check for permissions/ownership on /etc/mimefs.key
 fix Makefile to install real key
 txn = cat.transaction()
 protection system?
-find
 jailing problem: localhost doesn't work on philip
+tests
+caching
+    microcaching? every call gets cached for 5 seconds?
+    client-side? server-side? both? memcached?
+synchronization primitives? locking?
+XMLRPC -> TCP protocol?
+more robust client
+    intercept and validate/wrap data
+        but! we don't always want Message objects -- dies on large messages
+documentation
+should prolly have timestamps for pruning purposes
+    we are going to have tons of data that can get disembodied
 =====DONE=====
 best message transfer method: newline-delimited or Content-Length
     you want to buffer the read
@@ -53,3 +64,6 @@ convert API from RTRV -> retrieve
 added ALL and GET
 convert to httpy + postgresql
 subclass ServerProxy to use API key
+find
+double newline in message body hangs connection
+need to constrain by vid in find
