@@ -18,6 +18,7 @@ consider making app logic more flexible
     multiple magic directories
     multiple app.py's
 really should have serve_py by default
+consider capturing NotImplementedError as 505 or something
 
 update tests post-refactor
 test AF_UNIX in Server as well as in Config
