@@ -1,0 +1,69 @@
+in server, protect against calling respond via XMLRPC
+add check for permissions/ownership on /etc/mimefs.key
+fix Makefile to install real key
+txn = cat.transaction()
+protection system?
+jailing problem: localhost doesn't work on philip
+tests
+caching
+    microcaching? every call gets cached for 5 seconds?
+    client-side? server-side? both? memcached?
+synchronization primitives? locking?
+XMLRPC -> TCP protocol?
+more robust client
+    intercept and validate/wrap data
+        but! we don't always want Message objects -- dies on large messages
+documentation
+should prolly have timestamps for pruning purposes
+    we are going to have tons of data that can get disembodied
+=====DONE=====
+best message transfer method: newline-delimited or Content-Length
+    you want to buffer the read
+    when you read 8192 and you only get 4096, what happens? do you have access to any newline?
+    does readline require unbuffered?
+    apparently not, cause readline in socket.py seems support this
+    answer: newline-delimited!
+establish connection
+STOP
+data should be stored encrypted
+    uuid -v4 gives a 32 byte string, not counting the dashes
+    this can be used for the AES key
+    the smapd server must have clear data in order to index it
+    having the crypt key differ from the client id would be stronger
+        but realistically, think of the ways someone will steal your client id
+            gaining access to your calling program
+            you are unlikely to store it somewhere as you would a password,
+                because you only ever wire it into a program
+            unless they intercept an email in which it is revealed
+            or if we display it on a website
+                then we have cache issues (public terminals)
+                etc.
+    if a bank wants to run our software, they can buy a hosted solution
+    for now, crypt key == client id
+STOR
+validate client ids at some early stage
+    use as crypt key requires that they be 32 bytes w/o dashes
+need to be able to get back to reproduce index from data alone
+    to do this we need both the client ID and the crypt key on the server
+    storing the client key on the server is fine, but not the crypt key
+    so ... store messages in subdirectories named after the client id
+    then the message id can be a straight hash the message, id not needed
+    but then we lose the flexibility of storing messages on random servers
+    why? no we don't
+factor out common client/server code into a utils module (e.g. _wrap/_unwrap)
+return '1 <msg id>' on AlreadyStored for verification
+add indexing support to STOR
+HDRS
+RTRV
+RMV -- need a RMV command to remove a message
+improve error handling in TCPServer537 -- croaks on critical errors
+    this actually belongs in smapd
+FIND
+think about case preserving/matching for headers
+convert API from RTRV -> retrieve
+added ALL and GET
+convert to httpy + postgresql
+subclass ServerProxy to use API key
+find
+double newline in message body hangs connection
+need to constrain by vid in find
