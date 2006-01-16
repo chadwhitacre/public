@@ -7,10 +7,9 @@ CREATE DATABASE mimefs_0 ENCODING 'UTF8'; -- int is for forwards-compatibility
 
 BEGIN;
 
-    /* Both volumes and messages are universally uniquely identified, so
-       they don't have to be kept together. This is important for
-       scalability: it means that in future implementations the volume table
-       can reside on a different server than the message table, etc.
+    /* Each entity -- volume, message -- is universally uniquely identified,
+       so that in a future implementation the volume table can more easily
+       reside on a different server than the message table, etc.
 
        */
 
@@ -19,7 +18,6 @@ BEGIN;
        );
 
     CREATE TABLE message (
-
         vid         CHAR(36)                -- a UUID from the volume table
                     REFERENCES volume
                         MATCH FULL          -- paranoia
@@ -28,7 +26,11 @@ BEGIN;
                         ON UPDATE RESTRICT  -- if a vid is ever UPDATEd
       , mid         CHAR(36) PRIMARY KEY    -- a UUID
       , headers     TEXT                    -- MIME headers
+                    NOT NULL
+                    DEFAULT ''
       , body        TEXT                    -- MIME body
+                    NOT NULL
+                    DEFAULT ''
        );
 
     CREATE TABLE field (
@@ -39,7 +41,11 @@ BEGIN;
                                             -- message is DELETEd, but raise an
                         ON UPDATE RESTRICT  -- error if a mid is ever UPDATEd
       , name        TEXT                    -- a MIME header field-name
+                    NOT NULL
+                    CHECK (name <> '')
       , body        TEXT                    -- a MIME header field-body
+                    NOT NULL
+                    DEFAULT ''
        );
 
 COMMIT;

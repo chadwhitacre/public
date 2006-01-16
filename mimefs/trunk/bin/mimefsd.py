@@ -2,7 +2,7 @@
 """mimefsd -- a MIME filesystem XMLRPC server.
 """
 
-__version__ = (0, 3)
+__version__ = (0, 4)
 __author__ = 'Chad Whitacre <chad@zetaweb.com>'
 
 import codecs
@@ -78,7 +78,6 @@ class Application(XMLRPCApp):
         if key != KEY:
             raise mimefsdError("Bad key: '%s'" % key)
 
-
     def _verify_vid(self, vid):
         """Given a vid, verify that it exists.
         """
@@ -94,21 +93,36 @@ class Application(XMLRPCApp):
         else:
             raise mimefsdError("Wacky rowcount: %s" % curs.rowcount)
 
-
     def _uuid(self):
-        """Return a universally unique 32-byte string.
+        """Return a universally unique identifier, version 4 (RFC 4122).
 
-        Currently we depend on uuid(1) in the OS.
+        Currently we depend on uuid(1) in the OS; should change to uuidgen?
 
         """
-        p = subprocess.Popen(('uuid','-v4'), stdout=subprocess.PIPE)
-        return p.stdout.read().replace('-','').strip('\n')
+        proc = subprocess.Popen(('uuid','-v4'), stdout=subprocess.PIPE)
+        return proc.stdout.read().strip('\n')
 
 
     # Volumes
-    # ========
+    # =======
 
-    def v_create(self, key):
+    def v_list(self, key):
+        """Return a list of all vids.
+        """
+        self._verify_key(key)
+        conn = self._connect()
+        curs = conn.cursor()
+
+        SQL = "SELECT vid FROM volume;"
+        curs.execute(SQL)
+        vids = [row[0] for row in curs.fetchall()]
+
+        conn.commit()
+        conn.close()
+        return vids
+
+
+    def v_newvol(self, key):
         """Given the master key, return the vid of a new volume.
         """
         self._verify_key(key)
@@ -124,12 +138,12 @@ class Application(XMLRPCApp):
         return vid
 
 
-    def v_destroy(self, key, vid):
+    def v_rmvol(self, key, vid):
         """Takes the master key and a vid.
 
-        The tables are wired such that when a volume is destroyed, all
-        messages in that volume are automatically destroyed, and their
-        metadata is unindexed.
+        The tables are wired such that when a volume is removed, all messages
+        in that volume are automatically removed, and their metadata is
+        unindexed.
 
         """
         self._verify_key(key)
@@ -143,57 +157,10 @@ class Application(XMLRPCApp):
         conn.close()
 
 
-    def v_dump(self, key):
-        """Given the master key, return a bzip2'd psql script.
-        """
-        self._verify_key(key)
-        raise NotImplementedError
-
-
-    def v_list(self, key):
-        """Return a list of all message IDs.
-        """
-        self._verify_key(key)
-        conn = self._connect()
-        curs = conn.cursor()
-
-        SQL = "SELECT vid FROM volume;"
-        curs.execute(SQL)
-        vids = [row[0] for row in curs.fetchall()]
-
-        conn.commit()
-        conn.close()
-        return vids
-
-
-    def v_load(self, key, sql):
-        """Takes a bzip2'd psql script.
-        """
-        self._verify_key(key)
-        raise NotImplementedError
-
 
     # Messages
     # ========
     # The following all operate on a single volume.
-
-    def m_destroy(self, vid, mid):
-        """Given a mid, destroy a message, returning None.
-
-        The metadata unindexing is handled by a constraint in the table
-        definition.
-
-        """
-        conn = self._connect()
-        conn.close()
-
-        SQL = "DELETE FROM message WHERE mid=%s;"
-        curs.execute(SQL, (mid,))
-
-        conn.commit()
-        conn.close()
-        return None
-
 
     def m_exists(self, vid, mid):
         """Given a mid, return True or False.
@@ -215,39 +182,42 @@ class Application(XMLRPCApp):
         return val
 
 
-    def m_find(self, vid, WHERE, LIMIT='ALL', OFFSET=0):
-        """Given some parameters, return mids of matching messages.
+    def m_list(self, vid, WHERE='', LIMIT='ALL', OFFSET=0):
+        """Given optional constraints, return mids.
 
         This is brute force unoptimized. You have been warned. :^)
+
+        One idea for optimization is to require certain metadata, such as
+        Content-Type and Modification-Time. Think of the most common listing
+        cases. Another idea is to push the filtering logic down into a
+        PostgreSQL procedure. The more radical idea is to actually create
+        columns for metadata and use native SQL joins, etc. rather than
+        reimplementing all of this set malarky at a higher level.
 
         """
         conn = self._connect()
         curs = conn.cursor()
 
 
-        # Parse and validate input.
-        # =========================
+        # Parse and validate constraints.
+        # ===============================
 
-        err_msg = ''
         criteria = []
         for criterion in WHERE.splitlines():
             tokens = criterion.split(None, 2)
             if len(tokens) != 3:
-                err_msg = 'Bad criterion (too few tokens): %s' % criterion
+                mimefsdError( "Bad criterion (too few tokens): " +
+                              "'%s'" % criterion
+                             )
             else:
                 tokens[1] = tokens[1].lower()
                 if tokens[1] not in OPERATORS:
-                    err_msg = 'Bad criterion (bad operator): %s' % criterion
+                    mimefsdError( "Bad criterion (bad operator): " +
+                                  "'%s'" % criterion
+                                 )
                 else:
                     criteria.append(tokens)
-
-        if not err_msg and not criteria:
-            err_msg = 'No criteria given.'
-
-        if err_msg:
-            raise mimefsdError(err_msg)
-
-        if LIMIT != 'ALL' and not isinstance(LIMIT, int):
+        if (LIMIT != 'ALL') and not isinstance(LIMIT, int):
             raise mimefsdError("Bad limit: '%s'" % LIMIT)
         if OFFSET and not isinstance(OFFSET, int):
             raise mimefsdError("Bad offset: '%s'" % OFFSET)
@@ -256,56 +226,64 @@ class Application(XMLRPCApp):
         # Find all matching messages.
         # ===========================
 
-        filters = []
+        if not criteria:
 
-        for name, op, sought in criteria:
-            mids = sets.Set()
+            SQL = "SELECT mid FROM message ORDER BY mid;"
+            curs.execute(SQL)
+            mids = [row[0] for row in curs.fetchall()]
 
-            # Massage our input.
-            # ==================
+        else:
 
-            name = name.lower() # case-insensitive
-            if op == '=':
-                op = '=='
-            if len(op) > 2: # startswith, endswith
-                condition_tmpl = '%(body)s.%(op)s(%(sought)s)'
-            else:
-                condition_tmpl = '%(body)s%(op)s%(sought)s'
-            sought = repr(codecs.escape_encode(sought)[0])
+            filters = []
 
+            for name, op, sought in criteria:
+                mids = sets.Set()
 
-            # Get candidate fields.
-            # =====================
+                # Massage our input.
+                # ==================
 
-            SQL = """\
-                SELECT f.mid, f.body
-                  FROM field f
-                  JOIN message m
-                    ON f.mid = m.mid
-                 WHERE m.vid = %s
-                   AND f.name = %s;
-                 """
-            curs.execute(SQL, (vid, name))
+                name = name.lower() # case-insensitive
+                if op == '=':
+                    op = '=='
+                if len(op) > 2: # startswith, endswith
+                    condition_tmpl = '%(body)s.%(op)s(%(sought)s)'
+                else:
+                    condition_tmpl = '%(body)s%(op)s%(sought)s'
+                sought = repr(codecs.escape_encode(sought)[0])
 
 
-            # Loop through and find matches.
-            # ==============================
+                # Get candidate fields.
+                # =====================
 
-            for mid, body in curs.fetchall():
-                vals = {}
-                vals['sought'] = sought
-                vals['op'] = op
-                vals['body'] = repr(codecs.escape_encode(body)[0])
-                condition = condition_tmpl % vals
-                logger.debug('evaluating: %s' % condition)
-                if eval(condition):
-                    mids.add(mid)
+                SQL = """\
+                    SELECT f.mid, f.body
+                      FROM field f
+                      JOIN message m
+                        ON f.mid = m.mid
+                     WHERE m.vid = %s
+                       AND f.name = %s;
+                     """
+                curs.execute(SQL, (vid, name))
 
-            filters.append(mids)
 
-        for filt in filters:
-            mids &= filt
-        mids = tuple(mids)
+                # Loop through and find matches.
+                # ==============================
+
+                for mid, body in curs.fetchall():
+                    vals = {}
+                    vals['sought'] = sought
+                    vals['op'] = op
+                    vals['body'] = repr(codecs.escape_encode(body)[0])
+                    condition = condition_tmpl % vals
+                    logger.debug('evaluating: %s' % condition)
+                    if eval(condition):
+                        mids.add(mid)
+
+                filters.append(mids)
+
+            for filt in filters:
+                mids &= filt
+            mids = tuple(mids)
 
 
         # Slice, dice, and return.
@@ -319,8 +297,45 @@ class Application(XMLRPCApp):
         return mids
 
 
-    def m_headers(self, vid, mid):
-        """Given a message ID, return the message's headers.
+    def m_open(self, vid, mid='', flags=''):
+        """Given an optional mid and flags, return a mid.
+
+        If no mid is given, a new message is created. [Isn't this a bit
+        nonsensical? The point of creating a new file on open under UFS is
+        presumably to reserve the pathname, but that concern doesn't apply
+        here. Not nonsensical, because we are preserving read/write
+        semantics: they need a mid to operate. Also not a NOOP because we
+        carry out locking here.]
+
+        """
+        conn = self._connect()
+        curs = conn.cursor()
+
+        SQL = "SELECT mid FROM message WHERE mid=%s;"
+        curs.execute(SQL, (mid,))
+
+        if curs.rowcount == 0:
+            mid = self._uuid()
+            SQL = "INSERT INTO message (vid, mid) VALUES (%s, %s)"
+            curs.execute(SQL, (vid, mid))
+        elif curs.rowcount == 1:
+            mid = curs.fetchall()[0]
+        elif curs.rowcount == -1:
+            raise mimefsdError("Error running query.")
+        elif curs.rowcount > 1:
+            raise mimefsdError( "mid matched %s " % str(curs.rowcount) +
+                                "messages; possible data corruption!"
+                               )
+
+        conn.commit()
+        conn.close()
+        return mid
+
+
+    def m_read(self, vid, mid, headers_only=False):
+        """Given a mid, return the message as a string.
+
+        If headers_only is True, only the message's header block is returned.
 
         We don't actually use the vid here, since the mid is globally unique.
 
@@ -328,8 +343,19 @@ class Application(XMLRPCApp):
         conn = self._connect()
         curs = conn.cursor()
 
-        SQL = "SELECT headers FROM message WHERE mid=%s;"
+
+        # Get data.
+        # =========
+
+        what = 'headers, body'
+        if headers_only:
+            what = 'headers'
+        SQL = "SELECT %s FROM message WHERE mid=%%s;" % what
         curs.execute(SQL, (mid,))
+
+
+        # Validate.
+        # =========
 
         if curs.rowcount == -1:
             raise mimefsdError("Error running query.")
@@ -340,59 +366,38 @@ class Application(XMLRPCApp):
                                      "messages; possible data corruption!"
                                     )
 
-        headers = curs.fetchone()[0]
+        # Return.
+        # =======
 
-        conn.commit()
-        conn.close()
-        return headers
-
-
-    def m_list(self, vid):
-        """Return a list of all message IDs.
-        """
-        conn = self._connect()
-        curs = conn.cursor()
-
-        SQL = "SELECT mid FROM message;"
-        curs.execute(SQL)
-        mids = [row[0] for row in curs.fetchall()]
-
-        conn.commit()
-        conn.close()
-        return mids
-
-
-    def m_open(self, vid, mid):
-        """Given a message ID, return a MIME message.
-        """
-        conn = self._connect()
-        curs = conn.cursor()
-
-        SQL = "SELECT headers, body FROM message WHERE mid=%s;"
-        curs.execute(SQL, (mid,))
-
-        if curs.rowcount == -1:
-            raise mimefsdError("Error running query.")
-        if curs.rowcount == 0:
-            raise mimefsdError("No message found.")
-        elif curs.rowcount > 1:
-            raise mimefsdError( "mid matched %s " % str(curs.rowcount) +
-                                "messages; possible data corruption!"
-                               )
-
-        message = '\r\n\r\n'.join(curs.fetchone())
-
+        if headers_only:
+            message = curs.fetchone()[0]
+        else:
+            message = '\r\n\r\n'.join(curs.fetchone()[0])
         conn.commit()
         conn.close()
         return message
 
 
-    def m_store(self, vid, msg, mid=''):
-        """Given a MIME message, store it.
+    def m_remove(self, vid, mid):
+        """Given a mid, remove a message, returning None.
 
-        If a mid is given, we file the message under that mid. Otherwise we
-        store and index under a new mid. In both cases we return the mid.
+        The metadata unindexing is handled by a constraint in the table
+        definition.
 
+        """
+        conn = self._connect()
+        conn.close()
+
+        SQL = "DELETE FROM message WHERE mid=%s;"
+        curs.execute(SQL, (mid,))
+
+        conn.commit()
+        conn.close()
+        return None
+
+
+    def m_write(self, vid, mid, msg):
+        """Given a mid and a MIME message, store and index.
         """
         self._verify_vid(vid)
         conn = self._connect()
