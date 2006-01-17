@@ -8,11 +8,10 @@ MIME filesystem
 
     like UFS:
         *agnostic re: meaning of bits themselves
-        similar api: newvol, list, open, remove, read, write
-        maintain minimal metadata
-            stat() ... id, timestamps(?), protection bits (-x), ownership
-        provides locking primitives
+        similar api: list, open, read, write, remove
         unencrypted
+            apps can provide body enc, of course, but not header
+            otherwise we have to manage enc keys, could use uuid I suppose
 
 
     unlike UFS:
@@ -20,10 +19,28 @@ MIME filesystem
             inode -> UUID
             path -> param
             concept of linking not applicable ... or is it!?
-        ACID, transactional
-        truly networked
+        ACID, arbitrary transactions
+        client/server
+            consequence: read/write operate on the entire file; no append
+            trades in mime messages, not files per se
         r/w only, no executables
+        no protection
+        no special files
+        no locking
+            afaict, the reason to have locking in the storage layer rather than
+            in the application layer is so it can be atomic. however, with
+            mimefs you can make *any* operation atomic, so locking can be safely
+            pushed back up to the app layer
+        no caching(?)
 
+
+
+what is parallel to a process in our system?
+
+    file
+    process -- httpy, process manager that spawns new instances across a farm
+    memory
+    user/group
 
 should messages be arbitrarily parentable?
     message -> node
@@ -33,22 +50,49 @@ should messages be arbitrarily parentable?
 are users and groups defined at fs or vol level?
 users are messages, and therefore have a vid just like every other
 fs is conceptually an OS instance
-OR MAYBE WE DON'T IMPLEMENT PROTECTION HERE?
+OR MAYBE WE DON'T IMPLEMENT PROTECTION AT ALL?
 
+
+and do we even need locking since we are already ACID?
+also, we are disembodied, i.e., client-server
+    if a client {forgets to,dies before it can} release a lock, then what?
+
+
+fs =
+mid = fs.list()[0]
+mid = fs.open(mid)
+msg = fs.read()
+fs.write()
+
+
+
+
+
+something = file.getmeta()
+file.setmeta('', 'something else')
+file.write('foo bar')
 
 
 
 
 protection
-    do we want a concept of security in this system?
-    or is that system dependent?
-    is this our Unix fs replacement?!
 
+    Do we want a concept of security in this system? If so, do users exist at
+    the fs level or the volume level?
 
-    user
-
-    group
-
+	   O_RDONLY	    n/a: protection
+	   O_WRONLY     n/a: protection
+	   O_RDWR       n/a: protection
+	   O_NONBLOCK	n/a
+	   O_APPEND     n/a: networked
+	   O_CREAT
+	   O_TRUNC
+	   O_EXCL
+	   O_SHLOCK     n/a: locking
+	   O_EXLOCK     n/a: locking
+	   O_DIRECT	    n/a: caching
+	   O_FSYNC	    n/a: caching
+	   O_NOFOLLOW   n/a: links
 
 MQL: MIME Query Language
     MQL = """\
