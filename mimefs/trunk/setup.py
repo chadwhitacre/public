@@ -4,5 +4,5 @@ from distutils.core import setup
 setup( name='mimefslib'
      , version="0.3"
      , package_dir={'':'site-packages'}
-     , py_modules=['mimefslib']
+     , py_modules=['mimefslib', 'bit']
       )

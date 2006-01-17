@@ -19,6 +19,7 @@ from email import message_from_string
 from email.Generator import Generator
 from email.Message import Message
 
+import mimefslib
 import psycopg
 from httpy.Config import ConfigError
 from httpy.Config import Config
@@ -106,7 +107,7 @@ class Application(XMLRPCApp):
     # Volumes
     # =======
 
-    def v_list(self, key):
+    def list(self, key):
         """Return a list of all vids.
         """
         self._verify_key(key)
@@ -122,7 +123,7 @@ class Application(XMLRPCApp):
         return vids
 
 
-    def v_newvol(self, key):
+    def newvol(self, key):
         """Given the master key, return the vid of a new volume.
         """
         self._verify_key(key)
@@ -138,7 +139,7 @@ class Application(XMLRPCApp):
         return vid
 
 
-    def v_rmvol(self, key, vid):
+    def rmvol(self, key, vid):
         """Takes the master key and a vid.
 
         The tables are wired such that when a volume is removed, all messages
@@ -162,7 +163,7 @@ class Application(XMLRPCApp):
     # ========
     # The following all operate on a single volume.
 
-    def m_exists(self, vid, mid):
+    def exists(self, mid):
         """Given a mid, return True or False.
         """
         conn = self._connect()
@@ -182,7 +183,7 @@ class Application(XMLRPCApp):
         return val
 
 
-    def m_list(self, vid, WHERE='', LIMIT='ALL', OFFSET=0):
+    def list(self, vid, WHERE='', LIMIT='ALL', OFFSET=0):
         """Given optional constraints, return mids.
 
         This is brute force unoptimized. You have been warned. :^)
@@ -297,42 +298,82 @@ class Application(XMLRPCApp):
         return mids
 
 
-    def m_open(self, vid, mid='', flags=''):
-        """Given an optional mid and flags, return a mid.
+    def open(self, vid, headers, flags=None):
+        """Given a vid, a header block, and optional flags, return a mid.
 
-        If no mid is given, a new message is created. [Isn't this a bit
-        nonsensical? The point of creating a new file on open under UFS is
-        presumably to reserve the pathname, but that concern doesn't apply
-        here. Not nonsensical, because we are preserving read/write
-        semantics: they need a mid to operate. Also not a NOOP because we
-        carry out locking here.]
+        In mimefs, a set of headers is parallel to a path on traditional
+        filesystems: it identifies a particular point in the datastore. On that
+        parallel, this call behaves as follows based on the number of messages
+        matched by the given headers:
+
+            0 messages matched
+                An error is raised.
+
+            1 message matched
+                The mid of that message is returned.
+
+            >1 messages matched
+                An error is raised.
+
+
+        mimefs does not implement caching, linking, locking or protection.
+
+        Flags:
+
+            O_CREAT 1
+            O_TRUNC 2
+            O_EXCL  4
+
+
 
         """
         conn = self._connect()
         curs = conn.cursor()
 
-        SQL = "SELECT mid FROM message WHERE mid=%s;"
-        curs.execute(SQL, (mid,))
 
-        if curs.rowcount == 0:
+        # Validate vid.
+        # =============
+
+        if vid:
+            SQL = "SELECT vid FROM volume WHERE vid=%s;"
+            curs.execute(SQL, (vid,))
+
+            if curs.rowcount == 0:
+                raise mimefsError("Bad vid: '%s'" % vid)
+            elif curs.rowcount == 1:
+                pass
+            else:
+                raise mimefsdError("Wacky rowcount: '%s'" % curs.rowcount)
+
+
+        # Get a valid mid.
+        # ================
+
+        if not mid:
             mid = self._uuid()
             SQL = "INSERT INTO message (vid, mid) VALUES (%s, %s)"
             curs.execute(SQL, (vid, mid))
-        elif curs.rowcount == 1:
-            mid = curs.fetchall()[0]
-        elif curs.rowcount == -1:
-            raise mimefsdError("Error running query.")
-        elif curs.rowcount > 1:
-            raise mimefsdError( "mid matched %s " % str(curs.rowcount) +
-                                "messages; possible data corruption!"
-                               )
+        else:
+            SQL = "SELECT mid FROM message WHERE mid=%s;"
+            curs.execute(SQL, (mid,))
+
+            if curs.rowcount == 0:
+                raise mimefsdError("Bad mid: '%s'" % mid)
+            elif curs.rowcount == 1:
+                mid = curs.fetchall()[0]
+            elif curs.rowcount == -1:
+                raise mimefsdError("Error running query.")
+            elif curs.rowcount > 1:
+                raise mimefsdError( "mid matched %s " % str(curs.rowcount) +
+                                    "messages; possible data corruption!"
+                                   )
 
         conn.commit()
         conn.close()
         return mid
 
 
-    def m_read(self, vid, mid, headers_only=False):
+    def read(self, vid, mid, headers_only=False):
         """Given a mid, return the message as a string.
 
         If headers_only is True, only the message's header block is returned.
@@ -378,7 +419,7 @@ class Application(XMLRPCApp):
         return message
 
 
-    def m_remove(self, vid, mid):
+    def remove(self, vid, mid):
         """Given a mid, remove a message, returning None.
 
         The metadata unindexing is handled by a constraint in the table
@@ -396,8 +437,12 @@ class Application(XMLRPCApp):
         return None
 
 
-    def m_write(self, vid, mid, msg):
+    def write(self, vid, mid, msg, headers_only=False):
         """Given a mid and a MIME message, store and index.
+
+        If headers_only is True, then any body part in msg is optional and will
+        be ignored.
+
         """
         self._verify_vid(vid)
         conn = self._connect()
@@ -416,7 +461,7 @@ class Application(XMLRPCApp):
 
         # Determine the mid.
         # ==================
-        # If given a valid mid, just destroy the old message.
+        # If given a valid mid, be sure to unindex it.
 
         if not mid:
             mid = self._uuid()
@@ -424,7 +469,7 @@ class Application(XMLRPCApp):
             SQL = "SELECT mid FROM message WHERE mid=%s;"
             curs.execute(SQL, (mid,))
             if curs.rowcount == 1:
-                SQL = "DELETE FROM message WHERE mid=%s;"
+                SQL = "DELETE FROM field WHERE mid=%s;"
                 curs.execute(SQL, (mid,))
             else:
                 raise mimefsdError("Bad mid: '%s'" % mid)
@@ -432,15 +477,28 @@ class Application(XMLRPCApp):
 
         # Now store and index the message.
         # ================================
+        # If the message doesn't have a double newline, we have to infer
+        # whether it is a header block or a body.
 
-        headers, body = msg.split('\r\n\r\n', 1)
+        if '\r\n\r\n' in msg:
+            headers, body = msg.split('\r\n\r\n', 1)
+        elif headers_only:
+            headers, body = (msg, '')
+        else:
+            headers, body = ('', msg)
 
-        SQL = ( "INSERT INTO message (vid, mid, headers, body) " +
-                "VALUES (%s, %s, %s, %s);"
-               )
-        curs.execute(SQL, (vid, mid, headers, body))
+        if headers_only:
+            SQL = ( "INSERT INTO message (vid, mid, headers) " +
+                    "VALUES (%s, %s, %s);"
+                   )
+            curs.execute(SQL, (vid, mid, headers))
+        else:
+            SQL = ( "INSERT INTO message (vid, mid, headers, body) " +
+                    "VALUES (%s, %s, %s, %s);"
+                   )
+            curs.execute(SQL, (vid, mid, headers, body))
 
-        for name, body in message_from_string(headers).items():
+        for name, body in message_frostring(headers).items():
             name = name.lower() # case insensitive
             SQL = "INSERT INTO field (mid, name, body) VALUES (%s, %s, %s);"
             curs.execute(SQL, (mid, name, body))
