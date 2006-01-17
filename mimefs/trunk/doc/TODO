@@ -12,16 +12,14 @@ message should have object representation
         but not for body > 500KB!
     dict set flushes to storage
     caching?
-    can we diff headers and only index changed ones? (disallow \n in headers)
+    can we diff headers and only index changed ones? (disallow \r\n in headers)
 uuid(1) -> uuidgen(1)
-m_create -> open
-m_destroy -> remove
 v_create -> mount
 v_destroy -> unmount
 update volume API to be mount-ish
 remove should mimic remove(3) errors
 list w/ filters needs an ORDER BY
-
+dir(fs) should show something useful
 
 
 
@@ -97,3 +95,5 @@ find
 revert to UUID with dashes
     convert dashes to underscores where needed
 find -> list
+m_create -> open
+m_destroy -> remove
