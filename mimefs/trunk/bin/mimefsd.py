@@ -64,8 +64,8 @@ class Application(XMLRPCApp):
     # Fundaments
     # ==========
 
-    def echo(self, foo=''):
-        return foo
+    def ping(self, *args, **kwargs):
+        return 'pong'
 
     def _connect(self):
         """Given a database name, return a database connection.

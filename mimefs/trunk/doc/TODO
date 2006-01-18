@@ -2,10 +2,9 @@
     0.4 -- PyCon
 ========================================
 jailing problem: localhost doesn't work on philip
-in server, protect against calling respond via XMLRPC
+in server, protect against calling respond via XMLRPC (httpy issue)
 add check for permissions/ownership on /etc/mimedb.key
 fix Makefile to install real key
-protection system?
 make open like open(2)
 message should have object representation
     uses email.Message.Message under the hood
@@ -23,7 +22,8 @@ dir(fs) should show something useful
 ========================================
     FUTURE
 ========================================
-locking primitives
+locking primitives?
+protection?
 pool db connections in mimefsd
 put version into svn property
 txn = vol.transaction()
