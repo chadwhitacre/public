@@ -22,8 +22,8 @@ BEGIN;
                     REFERENCES volume
                         MATCH FULL          -- paranoia
                         ON DELETE CASCADE   -- DELETE messages when a volume
-                                            -- is DELETEd, but raise an error
-                        ON UPDATE RESTRICT  -- if a vid is ever UPDATEd
+                        ON UPDATE RESTRICT  -- is DELETEd, but raise an error
+                                            -- if a vid is ever UPDATEd
       , mid         CHAR(36) PRIMARY KEY    -- a UUID
       , headers     TEXT                    -- MIME headers
                     NOT NULL
@@ -38,8 +38,8 @@ BEGIN;
                     REFERENCES message
                         MATCH FULL          -- paranoia
                         ON DELETE CASCADE   -- DELETE message metadata when a
-                                            -- message is DELETEd, but raise an
-                        ON UPDATE RESTRICT  -- error if a mid is ever UPDATEd
+                        ON UPDATE RESTRICT  -- message is DELETEd, but raise an
+                                            -- error if a mid is ever UPDATEd
       , name        TEXT                    -- a MIME header field-name
                     NOT NULL
                     CHECK (name <> '')

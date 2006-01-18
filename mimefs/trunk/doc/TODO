@@ -1,7 +1,6 @@
 ========================================
     0.4 -- PyCon
 ========================================
-jailing problem: localhost doesn't work on philip
 in server, protect against calling respond via XMLRPC (httpy issue)
 add check for permissions/ownership on /etc/mimedb.key
 fix Makefile to install real key
@@ -16,6 +15,23 @@ uuid(1) -> uuidgen(1)
 remove should mimic remove(3) errors
 list w/ filters needs an ORDER BY
 dir(fs) should show something useful
+reimplement store and find
+
+
+
+        vol = Volume(url+vid)
+
+        t1 = open('test.txt').read()
+        t2 = open('test2.txt').read()
+
+        # not keeping test.mp3 in svn due to size
+        import base64
+        mp3 = base64.b64encode(open('test.mp3').read())
+        t3 = 'Content-Type: audio/x-mp3\r\n\r\n%s' % mp3
+
+        for msg in (t1, t2, t3):
+            mid = vol.open()
+            vol.write(mid, msg)
 
 
 
@@ -95,3 +111,4 @@ find -> list
 m_create -> open
 m_destroy -> remove
 v_create -> newvol, v_destroy -> rmvol
+jailing problem: localhost doesn't work on philip
