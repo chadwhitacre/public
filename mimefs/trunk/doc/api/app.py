@@ -18,10 +18,9 @@ class Application:
 
         if request.method != 'GET':
             raise Response(501)
-
-
-        path = request.path[len(self.uri_root):]
-        if path == '':
+        if self.uri_root != '/' and request.path.startswith(self.uri_root):
+            request.path = request.path[len(self.uri_root):]
+        if request.path == '':
             raise Response(302, '', {'Location':self.uri_root+'/'})
 
 
@@ -49,11 +48,11 @@ class Application:
             nav.append(item)
         data['nav'] = '\n'.join(nav)
 
-        if path == '/':
+        if request.path == '/':
             data['title'] = ''
             data['body'] = mimefslib.__doc__ % len(callables)
-        elif path[1:-5] in callables:
-            name = path[1:-5]
+        elif request.path[1:-5] in callables:
+            name = request.path[1:-5]
             m = getattr(mimefslib.Server, name)
 
             # Definition
