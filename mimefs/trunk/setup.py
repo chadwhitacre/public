@@ -2,7 +2,7 @@
 from distutils.core import setup
 
 setup( name='mimefslib'
-     , version="0.3"
+     , version="0.4"
      , package_dir={'':'site-packages'}
-     , py_modules=['mimefslib', 'bit']
+     , py_modules=['mimefslib']
       )
