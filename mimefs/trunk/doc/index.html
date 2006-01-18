@@ -50,6 +50,20 @@
           border-bottom: 1px solid #00A359;
         }
 
+
+        dl {
+            padding: 0 0 0 2em;
+            }
+
+        dt {
+            font-weight: bold;
+            line-height: 100%;
+            }
+
+        dd {
+            margin: 0.5em 0 1em 1.5em;
+            line-height: 130%;
+            }
     </style>
 </head>
 
@@ -66,19 +80,31 @@ in Python. The server is the <i>de facto</i> definition of the mimefs API.</p>
 <p>mimefs is a solution to the problem of information storage and retrieval, so
 it occupies the same space as the filesystem on the one hand, and RDBMSes on the
 other. The genius of the Unix filesystem is that it is agnostic: interpretations
-of the meaning of a file's contents are refered to the application layer. The
+of the meaning of a file's contents are referred to the application layer. The
 result is flexibility and lower overhead in application development. On the
-other hand, an RDBMS makes metadata more useful, and provides ACIDity and a sane
-network abstraction, leading to solid scalability. mimefs offers
-the best of both worlds: the arbitrary metadata and robust transactions of an
-RDBMS, and the flexibility of a filesystem.</p>
+other hand, an RDBMS makes metadata more useful, and provides ACID-ity and a
+sane network abstraction, leading to solid scalability. mimefs offers the best
+of both worlds: the arbitrary metadata and robust transactions of an RDBMS, and
+the flexibility of a filesystem.</p>
+
+<p>mimefs is organized into three concepts: filesystem, volume, message. A
+<b>filesystem</b> is a single mimefs XMLRPC server, identified by an HTTP URI. A
+<b>volume</b> is a logical container within a single filesystem, allowing
+multiple client applications to share a single mimefs server. Volumes contain
+MIME <b>messages</b>. Each volume and each message are identified by a UUID,
+called a <b>vid</b> for volumes and a <b>mid</b> for messages.</p>
+
+<p>The power of mimefs is that it indexes the headers in your MIME messages,
+without your having to tell it about those headers ahead of time. Simply dump
+whatever MIME messages you want onto your mimefs volume, and they will be
+ACID-ly persisted until you retrieve them later based on their headers.</p>
 
 <p>To whet your whistle, here is a "hello world" example using mimefslib, the
 Python client:</p>
 
 <pre>
 >>> from mimefslib import Volume
->>> vid = "228434f2-885f-11da-8e59-00b0d091c186"
+>>> vid = "228434f2-885f-11da-8e59-00b0d091c186" # keep this a secret!
 >>> vol = Volume("http://localhost:5370/%s" % vid)
 >>> msg="""\
 ... Content-Type: x-my-app/foo
@@ -99,14 +125,26 @@ True
 <p>Notice the use of UUIDs to identify both volumes and messages. UUIDs are the
 new inode. Notice also the familiar open/read/write API. mimefs tries to mimic
 the traditional stdio API, while also exposing a more database-like API (store,
-find).
+query).</p>
 
 
 <h2>Documentation</h2>
 
-<p>The following documents are generated automatically from the Python source
-code. Anyone interested in the XMLRPC API specification should consult the docs
-for the Server class.</p>
+<p>Anyone interested in the XMLRPC API specification should consult the docs for
+the Server class.</p>
+
+<dl>
+
+  <dt><a href="api/">client documentation</a></dt>
+  <dd>auto-generated from the Python source code for mimefslib</dd>
+
+  <dt><a href="mimefsd.1.html">server documentation</a></dt>
+  <dd>auto-generated from the manual page for mimefsd(1)</dd>
+
+</dl>
+
+
+
 
 <hr />
 
