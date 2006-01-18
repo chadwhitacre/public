@@ -33,7 +33,7 @@ install: build
 	chown ${user}:${group} ${db}
 	sudo -u ${user} initdb ${db}
 
-	echo -n 'a6d9b24e496c4255928b987995ac88b5' > /etc/mimefs.key
+	echo -n 'a6d9b24e-496c-4255-928b-987995ac88b5' > /etc/mimefs.key
 	chown ${user}:${group} /etc/mimefs.key
 	chmod 400 /etc/mimefs.key
 
