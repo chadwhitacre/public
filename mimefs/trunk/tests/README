@@ -1,0 +1,3 @@
+This is the test suite for mimefs. It expects mimefs to be running on
+http://localhost:5370/. It also expects that this mimefs is empty and that no
+data need be preserved in this mimefs. You have been warned!

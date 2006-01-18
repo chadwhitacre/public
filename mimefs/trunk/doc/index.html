@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+
+<head profile="http://www.w3.org/2000/08/w3c-synd/#">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mimefs</title>
+    <style>
+        body {
+            padding: 2em 4em;
+            font: normal 12pt "Trebuchet MS", sans-serif;
+        }
+        pre {
+            background: #EFEFEF;
+            border: 1px solid #CCCCCC;
+            font-size: 10pt;
+            margin: 0;
+            padding: 1em;
+            overflow: auto;
+        }
+
+        a:link
+            { color:#0000EE; }
+        a:hover
+            { color:#00A359; }
+        a:visited
+            { color:#551A8B; }
+        a:visited:hover
+            { color:#00A359; }
+        a:active
+            { color:#FF0000; }
+        hr {
+            clear: both;
+        }
+        #footer {
+            font-size: 10pt;
+            font-style: italic;
+        }
+
+        h1 {
+          padding: 0 0.5em;
+          background: #ECF7F2;
+          border-bottom: 2px solid #00A359;
+        }
+        h2 {
+          margin: 2em 0 0;
+          padding: 0 0.5em;
+          background: #F4FFFA;
+          border-bottom: 1px solid #00A359;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<h1>mimefs</h1>
+
+<p>mimefs is a networked database filesystem, specified as an XMLRPC API. This
+distribution includes a client library and a server implementation, both written
+in Python. The server is the <i>de facto</i> definition of the mimefs API.</p>
+
+<h2>Introduction</h2>
+
+<p>mimefs is a solution to the problem of information storage and retrieval, so
+it occupies the same space as the filesystem on the one hand, and RDBMSes on the
+other. The genius of the Unix filesystem is that it is agnostic: interpretations
+of the meaning of a file's contents are refered to the application layer. The
+result is flexibility and lower overhead in application development. On the
+other hand, an RDBMS makes metadata more useful, and provides ACIDity and a sane
+network abstraction, leading to solid scalability. mimefs offers
+the best of both worlds: the arbitrary metadata and robust transactions of an
+RDBMS, and the flexibility of a filesystem.</p>
+
+<p>To whet your whistle, here is a "hello world" example using mimefslib, the
+Python client:</p>
+
+<pre>
+>>> from mimefslib import Volume
+>>> vid = "228434f2-885f-11da-8e59-00b0d091c186"
+>>> vol = Volume("http://localhost:5370/%s" % vid)
+>>> msg="""\
+... Content-Type: x-my-app/foo
+... x-bar: baz
+...
+... Greetings, program!
+... """
+>>> mid = vol.open(create=True)
+>>> vol.write(mid, msg)
+>>> mids = vol.list('x-bar = baz')
+>>> mids
+['f6e700b8-0aa1-4e9d-8364-a91fd0a38fdf']
+>>> msg2 = vol.read(mids[0])
+>>> msg == msg2
+True
+</pre>
+
+<p>Notice the use of UUIDs to identify both volumes and messages. UUIDs are the
+new inode. Notice also the familiar open/read/write API. mimefs tries to mimic
+the traditional stdio API, while also exposing a more database-like API (store,
+find).
+
+
+<h2>Documentation</h2>
+
+<p>The following documents are generated automatically from the Python source
+code. Anyone interested in the XMLRPC API specification should consult the docs
+for the Server class.</p>
+
+<hr />
+
+<div id="footer">
+    This page was generated on %(date)s, and refers to version %(version)s.
+    <a href="http://www.zetadev.com/">mimefs is Zeta software</a>.
+</div>
+
+</body>
