@@ -1,0 +1,145 @@
+body {
+    padding: 0;
+    margin: 0;
+    font: normal 18pt/28pt "Times New Roman", serif;
+    background: #ECF7F2;
+}
+
+
+#nav {
+    width: 20%;
+    float: left;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    }
+
+#nav ul {
+    list-style: none;
+    margin: 1em auto;
+    padding: 0;
+    text-align: center;
+    }
+#nav li {
+    display: inline;
+    margin: 0;
+    padding; 0;
+    }
+#nav li a {
+    display: block;
+    padding: 2px 4px;
+    margin: 3px 0;
+    border: 1px solid #0000EE;
+    background: #EEEEEF;
+    color: #0000EE;
+    font-weight: bold;
+    white-space: nowrap;
+    text-decoration: none;
+    font: bold 16pt Arial, sans-serif;
+    }
+#nav li a:visited {
+    border: 1px solid #551A8B;
+    background: #F6F1FA;
+    color: #551A8B;
+    }
+#nav li a:hover {
+    border: 1px solid #00A359;
+    background: #ECF7F2;
+    color: #00A359;
+    }
+
+
+h1 {
+    font: normal 36pt Impact, "Arial Black", sans-serif;
+    padding: 0 30px;
+    margin: 0;
+    }
+
+#canvas {
+    background: white;
+    border: 2px solid #00A359;
+    border-style: solid none;
+    margin: 0;
+    padding: 0;
+    }
+
+#content-hack {
+    width: 80%;
+    float: right;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    }
+#content {
+    margin: 0;
+    padding: 30px;
+    }
+
+h2 {
+    font: normal 24pt Impact, "Arial Black", sans-serif;
+    margin: 0;
+    padding: 0 0.5em;
+    background: #F4FFFA;
+    border-bottom: 1px solid #00A359;
+    }
+h2 a {
+    text-decoration: none;
+    color: black ! important;
+    }
+h2 a:hover {
+    color: #666666 ! important;
+    }
+
+
+a:link
+    { color:#0000EE; }
+a:hover
+    { color:#00A359; }
+a:visited
+    { color:#551A8B; }
+a:visited:hover
+    { color:#00A359; }
+a:active
+    { color:#FF0000; }
+
+
+dl {
+    padding: 0 0 0 2em;
+    }
+dt {
+    font-weight: bold;
+    line-height: 100%;
+    }
+dd {
+    margin: 0.5em 0 1em 1.5em;
+    line-height: 130%;
+    }
+
+pre {
+    background: #F6F6F6;
+    border-bottom: 2px solid #CCCCCC;
+    font: normal 14pt/14pt monospace;
+    margin: 0;
+    padding: 0.5em 2px;
+    width: 100%; /* for IE */
+    overflow: auto;
+    }
+pre.noshade {
+    background: transparent;
+    border: none;
+    overflow: show;
+    margin: 0;
+    padding: 0;
+    }
+
+
+hr {
+    display: none;
+    }
+
+#footer {
+    clear: both;
+    font: italic 10pt/10pt Arial, sans-serif;
+    margin: 0;
+    padding: 10px 30px;
+    }
