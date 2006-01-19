@@ -6,115 +6,7 @@
 <head profile="http://www.w3.org/2000/08/w3c-synd/#">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>mimefs</title>
-    <style>
-        body {
-            padding: 2em 4em;
-            font: normal 18pt/28pt "Times New Roman", serif;
-        }
-
-
-        #nav {
-            width: 240px;
-            list-style: none;
-            margin: 1em auto;
-            padding: 0;
-            text-align: center;
-            }
-        #nav li {
-            display: inline;
-            margin: 0;
-            padding; 0;
-            }
-        #nav li a {
-            display: block;
-            padding: 2px 4px;
-            margin: 3px 0;
-            border: 1px solid #0000EE;
-            background: #EEEEEF;
-            color: #0000EE;
-            font-weight: bold;
-            white-space: nowrap;
-            text-decoration: none;
-            font: bold 12pt Arial, sans-serif;
-            }
-        #nav li a:visited {
-            border: 1px solid #551A8B;
-            background: #ECF7F2;
-            color: #551A8B;
-            }
-        #nav li a:hover {
-            border: 1px solid #00A359;
-            background: #ECF7F2;
-            color: #00A359;
-            }
-
-
-        h1 {
-            font: normal 36pt Impact, "Arial Black", sans-serif;
-            padding: 0 0.5em;
-            background: #ECF7F2;
-            border-bottom: 2px solid #00A359;
-            }
-        h2 {
-            font: normal 24pt Impact, "Arial Black", sans-serif;
-            margin: 2em 0 0;
-            padding: 0 0.5em;
-            background: #F4FFFA;
-            border-bottom: 1px solid #00A359;
-            }
-        h2 a {
-            text-decoration: none;
-            color: black ! important;
-            }
-        h2 a:hover {
-            color: #666666 ! important;
-            }
-
-
-        a:link
-            { color:#0000EE; }
-        a:hover
-            { color:#00A359; }
-        a:visited
-            { color:#551A8B; }
-        a:visited:hover
-            { color:#00A359; }
-        a:active
-            { color:#FF0000; }
-
-
-        dl {
-            padding: 0 0 0 2em;
-            }
-        dt {
-            font-weight: bold;
-            line-height: 100%;
-            }
-        dd {
-            margin: 0.5em 0 1em 1.5em;
-            line-height: 130%;
-            }
-
-        pre {
-            background: #F6F6F6;
-            border-bottom: 2px solid #CCCCCC;
-            font: normal 14pt/14pt monospace;
-            margin: 0;
-            padding: 0.5em 2px;
-            width: 100%; /* for IE */
-            overflow: auto;
-            }
-
-        hr {
-            clear: both;
-            }
-
-        #footer {
-            font-size: 14pt;
-            font-style: italic;
-        }
-
-    </style>
+    <style>@import url("style.css");</style>
 </head>
 
 <body>
@@ -138,14 +30,16 @@ in Python. The server is the <i>de facto</i> definition of the mimefs API.</p>
 <h2><a name="introduction" href="#introduction">Introduction</a></h2>
 
 <p>mimefs is a solution to the problem of information storage and retrieval, so
-it occupies the same space as the filesystem on the one hand, and RDBMSes on the
-other. The genius of the Unix filesystem is that it is agnostic: interpretations
-of the meaning of a file's contents are referred to the application layer. The
-result is flexibility and lower overhead in application development. On the
-other hand, an RDBMS makes metadata more useful, and provides ACID-ity and a
-sane network abstraction, leading to solid scalability. mimefs offers the best
-of both worlds: the arbitrary metadata and robust transactions of an RDBMS, and
-the flexibility of a filesystem.</p>
+it sits in the same domain as the filesystem on the one hand, and RDBMSes on the
+other. The genius of the Unix filesystem is that it is agnostic: interpretation
+of a file's contents is referred to the application layer. The result is an
+extremely flexible tool with low initial overhead in application development. On
+the other hand, an RDBMS puts metadata to much better use, as well as providing
+ACID-ity and a saner network abstraction, enabling richer applications.</p>
+
+<p><b>mimefs offers the best of both worlds:</b> the powerful metadata and
+robust transactions of an RDBMS, and the conventionality &mdash; in the best
+sense &mdash; of a filesystem.</p>
 
 <p>mimefs is organized into three concepts: filesystem, volume, message. A
 <b>filesystem</b> is a single mimefs XMLRPC server, identified by an HTTP URI. A
@@ -249,7 +143,7 @@ href="api/">the docs for the Server class in mimefslib</a>.</p>
   <dt><a href="api/">mimefslib manual</a></dt>
   <dd>auto-generated from the source code of the Python client library</dd>
 
-  <dt><a href="mimefsd.1.html">mimefsd manual</a> &mdash; mimefs server</dt>
+  <dt><a href="mimefsd.1.html">mimefsd manual</a></dt>
   <dd>auto-generated from the manual page for mimefsd(1) daemon</dd>
 
 </dl>
@@ -259,7 +153,7 @@ href="api/">the docs for the Server class in mimefslib</a>.</p>
 <h2><a name="legal" href="#legal">Copyright and License</a></h2>
 
 <p>mimefs is copyright &copy; 2005 by <a href="mailto:chad@zetaweb.com">Chad W.
-L. Whitacre</a>. It is offered free of charge, restriction, and warranty.</p>
+L. Whitacre</a>. It is offered free of charge, restrictions, and warranty.</p>
 
 
 <hr />

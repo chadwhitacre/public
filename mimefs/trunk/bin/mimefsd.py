@@ -33,6 +33,9 @@ class Application(XMLRPCApp, mimefslib.Server):
     uri_root = '/' # hoop
 
 
+# Now the main callable.
+# ======================
+
 def main(argv=None):
 
     # Read in configuration options.
