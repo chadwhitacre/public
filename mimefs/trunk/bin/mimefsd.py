@@ -1,23 +1,11 @@
 #!/usr/bin/env python
 """mimefsd -- a MIME filesystem XMLRPC server.
 """
-
 import logging
 import os
-import sets
-import sha
-import signal
-import string
-import subprocess
 import sys
-import time
-from StringIO import StringIO
-from email import message_from_string
-from email.Generator import Generator
-from email.Message import Message
 
 import mimefslib
-import psycopg
 from httpy.Config import ConfigError
 from httpy.Config import Config
 from httpy.Server import Server
@@ -34,7 +22,7 @@ logger = logging.getLogger('mimefsd')
 
 # Define some httpy usables.
 # ==========================
-# We have jump through hoops since we aren't on the local filesystem.
+# We have to jump through hoops since we aren't on the local filesystem.
 
 from httpy.Task import Task
 def _validate(self):
@@ -59,7 +47,7 @@ def main(argv=None):
         config = Config(argv)
     except ConfigError, err:
         print >> sys.stderr, err.msg
-        print >> sys.stderr, "`man 1 mimed' for usage."
+        print >> sys.stderr, "`man 1 mimefsd' for usage."
         return 2
 
 

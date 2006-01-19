@@ -9,16 +9,67 @@
     <style>
         body {
             padding: 2em 4em;
-            font: normal 12pt "Trebuchet MS", sans-serif;
+            font: normal 18pt/28pt "Times New Roman", serif;
         }
-        pre {
-            background: #EFEFEF;
-            border: 1px solid #CCCCCC;
-            font-size: 10pt;
+
+
+        #nav {
+            width: 240px;
+            list-style: none;
+            margin: 1em auto;
+            padding: 0;
+            text-align: center;
+            }
+        #nav li {
+            display: inline;
             margin: 0;
-            padding: 1em;
-            overflow: auto;
-        }
+            padding; 0;
+            }
+        #nav li a {
+            display: block;
+            padding: 2px 4px;
+            margin: 3px 0;
+            border: 1px solid #0000EE;
+            background: #EEEEEF;
+            color: #0000EE;
+            font-weight: bold;
+            white-space: nowrap;
+            text-decoration: none;
+            font: bold 12pt Arial, sans-serif;
+            }
+        #nav li a:visited {
+            border: 1px solid #551A8B;
+            background: #ECF7F2;
+            color: #551A8B;
+            }
+        #nav li a:hover {
+            border: 1px solid #00A359;
+            background: #ECF7F2;
+            color: #00A359;
+            }
+
+
+        h1 {
+            font: normal 36pt Impact, "Arial Black", sans-serif;
+            padding: 0 0.5em;
+            background: #ECF7F2;
+            border-bottom: 2px solid #00A359;
+            }
+        h2 {
+            font: normal 24pt Impact, "Arial Black", sans-serif;
+            margin: 2em 0 0;
+            padding: 0 0.5em;
+            background: #F4FFFA;
+            border-bottom: 1px solid #00A359;
+            }
+        h2 a {
+            text-decoration: none;
+            color: black ! important;
+            }
+        h2 a:hover {
+            color: #666666 ! important;
+            }
+
 
         a:link
             { color:#0000EE; }
@@ -30,40 +81,39 @@
             { color:#00A359; }
         a:active
             { color:#FF0000; }
-        hr {
-            clear: both;
-        }
-        #footer {
-            font-size: 10pt;
-            font-style: italic;
-        }
-
-        h1 {
-          padding: 0 0.5em;
-          background: #ECF7F2;
-          border-bottom: 2px solid #00A359;
-        }
-        h2 {
-          margin: 2em 0 0;
-          padding: 0 0.5em;
-          background: #F4FFFA;
-          border-bottom: 1px solid #00A359;
-        }
 
 
         dl {
             padding: 0 0 0 2em;
             }
-
         dt {
             font-weight: bold;
             line-height: 100%;
             }
-
         dd {
             margin: 0.5em 0 1em 1.5em;
             line-height: 130%;
             }
+
+        pre {
+            background: #F6F6F6;
+            border-bottom: 2px solid #CCCCCC;
+            font: normal 14pt/14pt monospace;
+            margin: 0;
+            padding: 0.5em 2px;
+            width: 100%; /* for IE */
+            overflow: auto;
+            }
+
+        hr {
+            clear: both;
+            }
+
+        #footer {
+            font-size: 14pt;
+            font-style: italic;
+        }
+
     </style>
 </head>
 
@@ -75,7 +125,17 @@
 distribution includes a client library and a server implementation, both written
 in Python. The server is the <i>de facto</i> definition of the mimefs API.</p>
 
-<h2>Introduction</h2>
+<div style="text-align: center;" hack-for-IE="true">
+<ul id="nav">
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#installation">Installation</a></li>
+  <li><a href="#manuals">Usage Manuals</a></li>
+  <li><a href="#legal">Copyright and License</a></li>
+</ul>
+</div>
+
+
+<h2><a name="introduction" href="#introduction">Introduction</a></h2>
 
 <p>mimefs is a solution to the problem of information storage and retrieval, so
 it occupies the same space as the filesystem on the one hand, and RDBMSes on the
@@ -104,7 +164,7 @@ Python client:</p>
 
 <pre>
 >>> from mimefslib import Volume
->>> vid = "228434f2-885f-11da-8e59-00b0d091c186" # keep this a secret!
+>>> vid = "228434f2-885f-11da-8e59-00b0d091c186"
 >>> vol = Volume("http://localhost:5370/%s" % vid)
 >>> msg="""\
 ... Content-Type: x-my-app/foo
@@ -128,22 +188,78 @@ the traditional stdio API, while also exposing a more database-like API (store,
 query).</p>
 
 
-<h2>Documentation</h2>
+<h2><a name="installation" href="#installation">Installation</a></h2>
 
-<p>Anyone interested in the XMLRPC API specification should consult the docs for
-the Server class.</p>
+<p>To install the Python client, run the following in the root of this
+distribution:</p>
+
+<pre>
+# python setup.py install
+</pre>
+
+<p>The mimefs server is intended to be installed much, much less often than the
+client, and on a dedicated server. The relative difficulty in installation
+reflects this. Before you install the server, you need the following software
+installed on localhost:</p>
+
+<ul>
+  <li>PostgreSQL (known to work with 8.1)</li>
+  <li>Python (requires 2.4+)</li>
+  <li>httpy (requires 0.8+)</li>
+</ul>
+
+<p>Once these are installed, run <code>make</code> in the root of this
+distribution:</p>
+
+<pre>
+$ make
+# make install
+</pre>
+
+<p>Unfortunately, there is no <code>configure</code> script, so you will almost
+certainly have to edit <code>Makefile</code> to adapt mimefs to your system.
+Also, <code>mimefsd</code> requires <code>mimefslib</code>; installing the
+server will install the client as well. After installation, you will need to
+start PostgreSQL, serving the database cluster created during mimefs
+installation (see <code>Makefile</code>). At this point, run <code>make</code>
+once more:<p>
+
+<pre># make init</pre>
+
+<p>This will create a new mimefs database in the PostgreSQL cluster being served
+on localhost. And with that, you can now run <code>mimefsd</code> to start the
+server. The convention is to serve mimefs on TCP port 5370. To depart from this
+convention, please consult the <code>mimefsd</code> manual page.</p>
+
+<p>We recommend using daemontools to manage your <code>mimefsd</code> and
+<code>postmaster</code> processes. Our practice is to create service directories
+named <code>mimefsd</code> and <code>postmaster</code> under
+<code>/usr/local/service</code>, each with a <code>log</code> subdirectory.</p>
+
+<p>mimefs version 0 is known to work with FreeBSD 4.11.</p>
+
+
+<h2><a name="manuals" href="#manuals">Usage Manuals</a></h2>
+
+<p>Anyone interested in the XMLRPC API specification should consult <a
+href="api/">the docs for the Server class in mimefslib</a>.</p>
 
 <dl>
 
-  <dt><a href="api/">client documentation</a></dt>
-  <dd>auto-generated from the Python source code for mimefslib</dd>
+  <dt><a href="api/">mimefslib manual</a></dt>
+  <dd>auto-generated from the source code of the Python client library</dd>
 
-  <dt><a href="mimefsd.1.html">server documentation</a></dt>
-  <dd>auto-generated from the manual page for mimefsd(1)</dd>
+  <dt><a href="mimefsd.1.html">mimefsd manual</a> &mdash; mimefs server</dt>
+  <dd>auto-generated from the manual page for mimefsd(1) daemon</dd>
 
 </dl>
 
 
+
+<h2><a name="legal" href="#legal">Copyright and License</a></h2>
+
+<p>mimefs is copyright &copy; 2005 by <a href="mailto:chad@zetaweb.com">Chad W.
+L. Whitacre</a>. It is offered free of charge, restriction, and warranty.</p>
 
 
 <hr />

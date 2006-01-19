@@ -6,16 +6,16 @@ prefix=/usr/local
 
 
 build:
-	rm -f mimed.1.gz
-	gzip -c -9 mimed.1 > mimed.1.gz
-	chmod 444 mimed.1.gz
+	rm -f mimefsd.1.gz
+	gzip -c -9 mimefsd.1 > mimefsd.1.gz
+	chmod 444 mimefsd.1.gz
 
 clean:
-	rm -f mimed.1.gz
+	rm -f mimefsd.1.gz
 
 install: build
 
-	install -C -o root -g wheel -m 444 mimed.1.gz ${prefix}/man/man1
+	install -C -o root -g wheel -m 444 mimefsd.1.gz ${prefix}/man/man1
 
 uninstall:
-	rm -f ${prefix}/man/man1/mimed.1.gz
+	rm -f ${prefix}/man/man1/mimefsd.1.gz
