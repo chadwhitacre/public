@@ -11,6 +11,7 @@ log should take an expression that is only evaluated if needed
 it would be super cool to change the log level on the fly while running
     I would want to support this in all modes, including deployment
 also would be great to throttle logging to a single subsystem
+
 add mode constants for use in the wild => httpy.modes.STAGING
 consider making app logic more flexible
     /app.py (with site-packages/lib logic)
@@ -18,7 +19,17 @@ consider making app logic more flexible
     multiple magic directories
     multiple app.py's
 really should have serve_py by default
+app.py -> htt.py
+Application -> App
+DocApp?
+raise Response(537, {}) -> error!
+shouldn't request.path be modified to reflect the app.uri_root?
+    request.path -> request.fullpath
+    request.path = request.fullpath[len(self.uri_root):]
+batteries included!
+should be able to make Response.body an iterable
 consider capturing NotImplementedError as 505 or something
+
 
 update tests post-refactor
 test AF_UNIX in Server as well as in Config
