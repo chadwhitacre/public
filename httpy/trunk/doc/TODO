@@ -1,65 +1,73 @@
 ========================================
     0.8 -- FLYNN + ACOLYTE + MIMEFS
 ========================================
-finish docs (tex, man)
-would be nice to make --sockfam implicit
-ideally we wouldn't have to subclass DefaultApplication in order to use serve_static
-think about how serve_* should work, re: reuse
-need a serve_stream that starts writing before it's done reading
-    not sure how to do this
+grok WSGI
+grok deployment -- standalone vs. CGI/FastGCI/WSGI/mod_python
+    how is boston.com hosted?
+pay jan (lighttpd)
+finish docs (html, man)
 
-needs to log to stderr instead of stdout?
-log should include file and line number
-log should take an expression that is only evaluated if needed
-it would be super cool to change the log level on the fly while running
-    I would want to support this in all modes, including deployment
-also would be great to throttle logging to a single subsystem
-mimefs_logger
 
-add mode constants for use in the wild => httpy.modes.STAGING
+config
+    logging!
+    IConfig
+
 consider making app logic more flexible
+    app.py -> htt.py, Application -> App
     /app.py (with site-packages/lib logic)
     /__
     multiple magic directories
     multiple app.py's
-really should have serve_py by default
-app.py -> htt.py
-Application -> App
-DocApp?
-raise Response(537, {}) -> error!
-shouldn't request.path be modified to reflect the app.uri_root?
-    request.path -> request.fullpath
-    request.path = request.fullpath[len(self.uri_root):]
-batteries included!
-should be able to make Response.body an iterable
-consider capturing NotImplementedError as 505 or something
-consider eggs for pluggability
+    why is App a class but framework is a module?
 
+programmatic API
+    batteries included!
+    ideally we wouldn't have to subclass static.App in order to use serve_static
+    think about how serve_* should work, re: reuse
+    need a serve_stream that starts writing before it's done reading
+        not sure how to do this
+        easy, just add support for Response.body as an iterator instead of a string
+    really should have serve_py by default
 
-update tests post-refactor
-test AF_UNIX in Server as well as in Config
-test os.path.realpath(addr)
-test our processing of different cases of configuration options
-systematic tests for different server modes
-tests for utils.parse*
-run tests on Mac
-test Task when respond doesn't raise anything
+logging
+    needs to log to stderr instead of stdout?
+    log should include file and line number
+    log should take an expression that is only evaluated if needed
+    it would be super cool to change the log level on the fly while running
+        I would want to support this in all modes, including deployment
+    also would be great to throttle logging to a single subsystem
+    mimefs_logger
+
+tests
+    update tests post-refactor
+    test AF_UNIX in Server as well as in Config
+    test os.path.realpath(addr)
+    test our processing of different cases of configuration options
+    systematic tests for different server modes
+    tests for utils.parse*
+    run tests on Mac
+    test Task when respond doesn't raise anything
 
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
+    why can't we manage this in the signal handler? i.e., "if pdb: finish_pdb()"
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
 RestartingServer seems to miss _foo.py
 
-headers should be case-preserved
-consider moving API up a level -- from httpy.Response import Response --> from httpy import Response
-site-packages -> lib?
-
-consider using inspect rather than zope interfaces?
-    interfaces gives us doc as well as constraint, and it's already there and working
-go back to pooled thread server?
-    this means re-implementing chunk transfer encoding and keep-alives
-    but I don't know if these are working atm anyway
-pidfile option?
+tweaks
+    raise Response(537, {}) -> error!
+    shouldn't request.path be modified to reflect the app.uri_root?
+        request.path -> request.fullpath
+        request.path = request.fullpath[len(self.uri_root):]
+    consider eggs for pluggability
+    why can't we just import StatusCodes from BaseHTTPServer?
+    headers should be case-preserved
+    do something smart with mode, utils.isdeployed?
+    consider using inspect rather than zope interfaces?
+        interfaces gives us doc as well as constraint, and it's already there and working
+    go back to pooled thread server?
+        this means re-implementing chunk transfer encoding and keep-alives
+        but I don't know if these are working atm anyway
 
 
 =====DONE=====
@@ -77,52 +85,6 @@ add staging mode
 
 
 
-========================================
-    0.6 -- zope.server
-========================================
-transfer encoding
-document apps
-tests
-make apps implicit rather than explicit
-    change Config to auto-find apps by default -- can still be overriden
-    also update Config tests to reflect the change
-    shouldn't need to touch Server or Task since their input won't change
-httpy.app.CGIMixin
-supporting on-the-fly reloading of apps in dev mode
-need to figure out how to sanely provide for alternate py libs
-    answer: PYTHONPATH per daemontools -- configurable per site
-    per-site lib
-    per-app lib
-    sys.path is not a simple solution since we have multiple apps -- what is the import order?
-unittests!
-refactor docs in Python style
-remove __init__ requirement (don't always want to configure)
-reconsider naming of Transaction given its meaning in persistence contexts
-Transaction -> Application; persistent object
-should allow any method
-parse post to dict
-add dev_mode to Application API
-add a debug mode, which is dev mode + post-mortem
-    deploy, develop, debug
-raise Response(200, '') should give '', not "Request fulfilled, document follows"
-raise Response(537, {}) should give '{}', not '<no output>'
-ServerConfig --> Config
-Exception --> StandardError
-update to use zope 3.1.0 final
-Task.find_app --> get_app
-do we want traditional access logging? separate access and error logs?
-    consider using logging from the std lib
-    but maybe this just is app's job? answer: yes
-app.py --> __init__.py? --> Application.py?
-    __init__.py implies that the current dir is a package, which it isn't
-    Application.py -- eh, too verbose :^P
-on Windows, should always degrade to Server since RestartingServer won't work
-signal handling
-    TERM -- nice shutdown
-    HUP -- reload config?
-add close hook to Application
-RestartingServer tries to kill a pid that isn't there
-run tests on Windows again
 
 
 
@@ -196,3 +158,74 @@ need to import rather than execfile
 add apps to configuration
 guess content type in response --> NO!!!!!!11
 server string -> httpy
+
+
+========================================
+    0.6 -- zope.server
+========================================
+transfer encoding
+document apps
+tests
+make apps implicit rather than explicit
+    change Config to auto-find apps by default -- can still be overriden
+    also update Config tests to reflect the change
+    shouldn't need to touch Server or Task since their input won't change
+httpy.app.CGIMixin
+supporting on-the-fly reloading of apps in dev mode
+need to figure out how to sanely provide for alternate py libs
+    answer: PYTHONPATH per daemontools -- configurable per site
+    per-site lib
+    per-app lib
+    sys.path is not a simple solution since we have multiple apps -- what is the import order?
+unittests!
+refactor docs in Python style
+remove __init__ requirement (don't always want to configure)
+reconsider naming of Transaction given its meaning in persistence contexts
+Transaction -> Application; persistent object
+should allow any method
+parse post to dict
+add dev_mode to Application API
+add a debug mode, which is dev mode + post-mortem
+    deploy, develop, debug
+raise Response(200, '') should give '', not "Request fulfilled, document follows"
+raise Response(537, {}) should give '{}', not '<no output>'
+ServerConfig --> Config
+Exception --> StandardError
+update to use zope 3.1.0 final
+Task.find_app --> get_app
+do we want traditional access logging? separate access and error logs?
+    consider using logging from the std lib
+    but maybe this just is app's job? answer: yes
+app.py --> __init__.py? --> Application.py?
+    __init__.py implies that the current dir is a package, which it isn't
+    Application.py -- eh, too verbose :^P
+on Windows, should always degrade to Server since RestartingServer won't work
+signal handling
+    TERM -- nice shutdown
+    HUP -- reload config?
+add close hook to Application
+RestartingServer tries to kill a pid that isn't there
+run tests on Windows again
+
+
+========================================
+    0.8
+========================================
+consider capturing NotImplementedError as 505 or something -- no, too much magic
+DocApp?
+lowercase package/module names
+consider moving API up a level -- from httpy.Response import Response --> from httpy import Response
+site-packages -> lib? -- no, I like site-packages since it matches stock
+would be nice to make --sockfam implicit
+    if address starts with a / or a ., then it is interpreted as AF_UNIX
+    otherwise, AF_INET
+pidfile option?
+    no, because in dev you will have it in the foreground, and in dep use daemontools
+user in env?
+    no, because the only port below 1024 that you should need to bind to is 80
+add config file support back in
+    nope, back down to 5 options, no need
+don't even need root! just cd before httpy :^)
+SIGHUP -- reload config?
+    nope, just restart
+add mode constants for use in the wild => httpy.modes.STAGING
