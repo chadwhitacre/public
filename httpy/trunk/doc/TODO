@@ -1,9 +1,12 @@
 ========================================
-    0.8 -- FLYNN + ACOLYTE
+    0.8 -- FLYNN + ACOLYTE + MIMEFS
 ========================================
 finish docs (tex, man)
 would be nice to make --sockfam implicit
 ideally we wouldn't have to subclass DefaultApplication in order to use serve_static
+think about how serve_* should work, re: reuse
+need a serve_stream that starts writing before it's done reading
+    not sure how to do this
 
 needs to log to stderr instead of stdout?
 log should include file and line number
@@ -11,6 +14,7 @@ log should take an expression that is only evaluated if needed
 it would be super cool to change the log level on the fly while running
     I would want to support this in all modes, including deployment
 also would be great to throttle logging to a single subsystem
+mimefs_logger
 
 add mode constants for use in the wild => httpy.modes.STAGING
 consider making app logic more flexible
@@ -29,6 +33,7 @@ shouldn't request.path be modified to reflect the app.uri_root?
 batteries included!
 should be able to make Response.body an iterable
 consider capturing NotImplementedError as 505 or something
+consider eggs for pluggability
 
 
 update tests post-refactor
@@ -54,6 +59,7 @@ consider using inspect rather than zope interfaces?
 go back to pooled thread server?
     this means re-implementing chunk transfer encoding and keep-alives
     but I don't know if these are working atm anyway
+pidfile option?
 
 
 =====DONE=====
