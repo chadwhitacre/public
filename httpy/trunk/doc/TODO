@@ -1,24 +1,12 @@
 ========================================
-    0.8 -- FLYNN + ACOLYTE + MIMEFS
+    0.9 -- MIMEFS + PYCON
 ========================================
 grok WSGI
 grok deployment -- standalone vs. CGI/FastGCI/WSGI/mod_python
     how is boston.com hosted?
 pay jan (lighttpd)
 finish docs (html, man)
-
-
-config
-    logging!
-    IConfig
-
-consider making app logic more flexible
-    app.py -> htt.py, Application -> App
-    /app.py (with site-packages/lib logic)
-    /__
-    multiple magic directories
-    multiple app.py's
-    why is App a class but framework is a module?
+find out what is up with Zope/WSGI
 
 programmatic API
     batteries included!
@@ -27,7 +15,7 @@ programmatic API
     need a serve_stream that starts writing before it's done reading
         not sure how to do this
         easy, just add support for Response.body as an iterator instead of a string
-    really should have serve_py by default
+    really should have serve_py by default, no?
 
 logging
     needs to log to stderr instead of stdout?
@@ -37,6 +25,7 @@ logging
         I would want to support this in all modes, including deployment
     also would be great to throttle logging to a single subsystem
     mimefs_logger
+    config!
 
 tests
     update tests post-refactor
@@ -51,6 +40,7 @@ tests
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
     why can't we manage this in the signal handler? i.e., "if pdb: finish_pdb()"
+        hrm, tried this; not instantly obvious
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
 RestartingServer seems to miss _foo.py
 
@@ -61,30 +51,11 @@ tweaks
         request.path = request.fullpath[len(self.uri_root):]
     consider eggs for pluggability
     why can't we just import StatusCodes from BaseHTTPServer?
-    headers should be case-preserved
-    do something smart with mode, utils.isdeployed?
     consider using inspect rather than zope interfaces?
         interfaces gives us doc as well as constraint, and it's already there and working
     go back to pooled thread server?
         this means re-implementing chunk transfer encoding and keep-alives
         but I don't know if these are working atm anyway
-
-
-=====DONE=====
-expose threads to configuration
-move mode from env to config
-do we really need to support a config file? no!
-support AF_UNIX
-refactor for app.py instead of __
-fix to work with RestartingServer again
-insert framework layer -- __/framework.py
-RestartingServer should be thinner ... shouldn't instantiate Apps, e.g.
-    it has to in order to know when to restart!
-RestartingServer should use subprocess instead of os.spawn
-add staging mode
-
-
-
 
 
 
@@ -208,8 +179,26 @@ RestartingServer tries to kill a pid that isn't there
 run tests on Windows again
 
 
+
 ========================================
-    0.8
+    0.8 -- FLYNN + ACOLYTE
+========================================
+expose threads to configuration
+move mode from env to config
+do we really need to support a config file? no!
+support AF_UNIX
+refactor for app.py instead of __
+fix to work with RestartingServer again
+insert framework layer -- __/framework.py
+RestartingServer should be thinner ... shouldn't instantiate Apps, e.g.
+    it has to in order to know when to restart!
+RestartingServer should use subprocess instead of os.spawn
+add staging mode
+
+
+
+========================================
+    0.9 -- MIMEFS + PYCON
 ========================================
 consider capturing NotImplementedError as 505 or something -- no, too much magic
 DocApp?
@@ -221,7 +210,7 @@ would be nice to make --sockfam implicit
     otherwise, AF_INET
 pidfile option?
     no, because in dev you will have it in the foreground, and in dep use daemontools
-user in env?
+config: user from env?
     no, because the only port below 1024 that you should need to bind to is 80
 add config file support back in
     nope, back down to 5 options, no need
@@ -229,3 +218,13 @@ don't even need root! just cd before httpy :^)
 SIGHUP -- reload config?
     nope, just restart
 add mode constants for use in the wild => httpy.modes.STAGING
+do something smart with mode, utils.isdeployed?
+IConfig
+headers should be case-preserved
+consider making app logic more flexible
+    app.Application.respond -> responder.Responder.respond
+    should also support responder.respond
+    tweak responder finding logic; integrate site-packages logic
+    multiple magic directories
+    multiple responders
+    why is App a class but framework is a module?
