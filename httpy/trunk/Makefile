@@ -7,8 +7,6 @@ zope_svn_root=svn://svn.zope.org/repos/main/Zope3/tags/Zope-3.1.0/src/zope
 
 configure:
 # Delete and recreate the script to be installed.
-	rm -f httpy
-	cp bin/httpy.py httpy
 	chmod 555 httpy
 
 # Delete and recreate the man page to be installed.
@@ -21,7 +19,7 @@ configure:
 
 clean:
 # Delete the script and man page to be installed.
-	rm -rf httpy httpy.1.gz httpy.conf.5.gz
+	rm -rf httpy.1.gz httpy.conf.5.gz
 	rm -rf build
 	rm -rf dist
 	rm -rf doc/html
@@ -31,7 +29,7 @@ clean:
 install: configure
 # After deleting and recreating the script and man page, install them.
 	python setup.py install
-	install -C -o root -g wheel -m 555 httpy ${prefix}/bin
+	install -C -o root -g wheel -m 555 bin/httpy ${prefix}/bin
 	install -C -o root -g wheel -m 444 httpy.1.gz ${prefix}/man/man1
 	install -C -o root -g wheel -m 444 httpy.conf.5.gz ${prefix}/man/man5
 
