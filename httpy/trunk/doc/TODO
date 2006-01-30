@@ -9,6 +9,18 @@ finish docs (html, man)
 find out what is up with Zope/WSGI
 http://tautology.org/software/woolweb/
 
+multiple frameworks? layered or either/or?
+    couplers
+        StandAlone
+    responders
+        Doc
+        XMLRPC
+        Static
+        FS
+    frameworks
+        Example
+        PassThrough
+
 programmatic API
     batteries included!
     ideally we wouldn't have to subclass static.App in order to use serve_static
@@ -52,12 +64,7 @@ tweaks
         request.path = request.fullpath[len(self.uri_root):]
     consider eggs for pluggability
     why can't we just import StatusCodes from BaseHTTPServer?
-    consider using inspect rather than zope interfaces?
-        interfaces gives us doc as well as constraint, and it's already there and working
-    go back to pooled thread server?
-        this means re-implementing chunk transfer encoding and keep-alives
-        but I don't know if these are working atm anyway
-
+    HTTP/1.0 -> HTTP/1.1
 
 
 
@@ -229,3 +236,8 @@ consider making app logic more flexible
     multiple magic directories
     multiple responders
     why is App a class but framework is a module?
+consider using inspect rather than zope interfaces?
+    interfaces gives us doc as well as constraint, and it's already there and working
+go back to pooled thread server?
+    this means re-implementing chunk transfer encoding and keep-alives
+    but I don't know if these are working atm anyway
