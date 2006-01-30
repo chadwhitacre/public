@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 """httpy -- a straightforward Python webserver. `man 1 httpy' for details.
 """
-from httpy.couplers.standalone import main
-raise SystemExit(main())
+from httpy.couplers import StandAlone
+raise SystemExit(StandAlone())
