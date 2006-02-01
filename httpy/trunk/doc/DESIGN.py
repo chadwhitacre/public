@@ -164,3 +164,31 @@ problem:
 /foo-app/app.py -- def respond(request):
 /foo-app/style.css
 /foo-app/scripts.js
+
+
+
+
+These are the things people are going to write based on httpy:
+
+    couplers
+    responders
+    frameworks
+
+
+Do we care to support multiple frameworks per site? I.e., when someone is
+assembling a site, are they going to need to use a different framework to support
+
+I want to use responder X for blogging, but responder Y for commerce. responder
+X requires framework A, but responder Y requires framework B. Future!!!!
+
+For now, only one framework per site.
+
+
+
+
+/__/framework.py
+    class Framework:
+/blog/__/framework/
+
+
+
