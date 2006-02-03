@@ -2,4 +2,7 @@
 """httpy -- a straightforward Python webserver. `man 1 httpy' for details.
 """
 from httpy.couplers import StandAlone
-raise SystemExit(StandAlone())
+from httpy.responders import Multiple
+
+coupler = StandAlone(Multiple())
+coupler.go()
