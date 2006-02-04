@@ -20,11 +20,11 @@ programmatic API
     Response.headers = [()] or {}
     Response.code = 200 or (200, 'OK')
     httpy.coupler to match httpy.mode?
-    RequestPath object
-        for script at /foo
-        request.path = '/foo'
-        request.path.info = '/bar/baz.html' <- path below script root
-        request.path.translated = None
+    RequestPath object?
+        for script at /foo:
+            request.path = '/foo' <- path to script itself
+            request.path.info = '/bar/baz.html' <- path below script root
+            request.path.translated = None
 
 logging
     access to stdout, error to stderr
