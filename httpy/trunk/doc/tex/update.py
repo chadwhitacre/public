@@ -10,7 +10,10 @@ mtimes = {}
 while 1:
     made = False
     for name in os.listdir('.'):
-        if not name.endswith('.tex'):
+        if not (  name == 'Makefile'
+               or name.endswith('.tex')
+               or name.endswith('.css')
+                 ):
             continue
         if name not in mtimes:
             mtime = 0
