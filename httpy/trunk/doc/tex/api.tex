@@ -163,7 +163,7 @@ raise a malformed \class{Response} by setting instance attributes
 post-instantiation.
 
 \begin{datadesc}{code}
-The HTTP code as an integer.
+The \ulink{HTTP code}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html} as an integer.
 \end{datadesc}
 
 \begin{datadesc}{body}
@@ -191,55 +191,66 @@ example, to use a different database connection string in deployment than in
 development or staging.
 
 \module{httpy} models this common requirement via a \class{mode} singleton,
-which provides the following members:
+which has the following members:
 
-\begin{datadesc}{IS_DEVELOPMENT}
+\begin{classdesc*}{mode}
+
+\begin{memberdesc}{IS_DEVELOPMENT}
 \dataline{IS_DEBUGGING}
 \dataline{IS_STAGING}
 \dataline{IS_DEPLOYMENT}
     These constants are boolean values based on the current mode, and only one
     will be \class{True} at any given time. Abbrevations and alternate casings
-    are allowed: \constant{IS_DEV} and \constant{is_devel} are both aliases for
-    \constant{IS_DEVELOPMENT}. \constant{IS_DE} is an \class{AttributeError},
-    however.
-\end{datadesc}
+    are allowed; e.g., \constant{IS_DEV} and \constant{is_develo} are both
+    aliases for \constant{IS_DEVELOPMENT}. \constant{IS_DE} is an
+    \class{AttributeError}, however.
+\end{memberdesc}
 
-\begin{datadesc}{default}
+\begin{methoddesc}{__repr__}{}
+    Returns the current mode as a lowercase string. This will always be one of
+    \code{development}, \code{debugging}, \code{staging}, or \code{deployment}.
+\end{methoddesc}
+
+\begin{methoddesc}{__str__}{}
+    Alias for \method{__repr__}.
+\end{methoddesc}
+
+\begin{memberdesc}{default}
     Contains the default mode as a lowercase string. Out of the box, this is
     \code{development}.
-\end{datadesc}
+\end{memberdesc}
 
-\begin{datadesc}{__str__}
-\dataline{__repr__}
-    Returns the current mode as a lowercase string.
-\end{datadesc}
+\end{classdesc*}
 
 
 \module{httpy}'s current mode is determined by the environment variable
 \envvar{HTTPY_MODE}. Since the mode of an application instance is generally only
-defined at start-up, this API is intended to be read-only. However, the instance
+defined at start-up, this API is intended to be read-only. However, \class{mode}
 checks the environment on each call or attribute access, so if you must change
 the mode on the fly, you can.
 
-\module{httpy} itself alters its behavior according to the current mode. Here is
-a reference:
+Other parts of the \module{httpy} package alter their behavior according to the
+current mode. Here is a reference:
 
 \begin{description}
 
 \item[\code{development}]
-    {foo}
+    Internal server errors generate a traceback in the browser.
+
+    On \UNIX{} systems, the \class{StandAlone} coupler monitors the filesystem
+    counterparts of all loaded modules, and restarts itself if the modification
+    time of any of these files changes.
 
 \item[\code{debugging}]
-    {Equivalent to \code{development}, except that non-\class{Response}
-    \class{Exception}s will cause the Python process to enter post-mortem
-    debugging via
-    \ulink{\module{pdb}}{http://docs.python.org/lib/module-pdb.html}.}
+    Equivalent to \code{development}. Additionally, non-\class{Response}
+    \class{Exception}s trigger post-mortem debugging via
+    \ulink{\module{pdb}}{http://docs.python.org/lib/module-pdb.html}.
 
 \item[\code{staging}]
-    {foo}
+    Equivalent to \code{deployment}.
 
 \item[\code{deployment}]
-    {foo}
+    The \class{Static} responder supports \ulink{304s}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5}.
 
 \end{description}
 
