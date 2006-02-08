@@ -1,4 +1,4 @@
-\chapter{Configuration}
+\chapter{Manual}
 
 httpy exposes the following configuration parameters:
 
@@ -53,8 +53,6 @@ as given in the first column of the above table.
 
 
 
-\section{Command Line Options}
-
 httpy uses the Python standard library's \module{optparse} module to represent
 its command line arguments. The parameter names may be used for long-named
 arguments, or their initial letter may be used for short-named arguments. So for
@@ -73,32 +71,6 @@ In addition, the path to any configuration file is specified with the
           {optparse}
           {httpy uses the standard library's optparse module.}
 \end{seealso}
-
-
-
-
-\section{Configuration File Settings}
-
-httpy uses the standard library's \module{RawConfigParser} class to represent
-its configuration file. This means that the file is in the style of a Windows
-INI file, with section headers in brackets, and \code{name=value} pairs on
-successive lines. Use the parameter names as given earlier. The number and names
-of any sections are irrelevant, but \module{RawConfigParser} requires that there
-be at least one section. As an example, a configuration file with the following
-contents would set the verbosity of an httpy instance:
-
-\begin{verbatim}
-[main]
-verbosity = 99
-\end{verbatim}
-
-\begin{seealso}
-\seetitle [http://www.python.org/doc/lib/RawConfigParser-objects.html]
-          {RawConfigParser}
-          {httpy uses the standard library's RawConfigParser class.}
-\end{seealso}
-
-
 
 
 \section{Environment Variables}

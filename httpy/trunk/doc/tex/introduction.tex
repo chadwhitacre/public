@@ -4,121 +4,15 @@
 
 
 
-\section{Relation to Existing Options}
-
-\subsection{Libraries and Frameworks}
-
-\module{httpy} is a Python library for building websites and web applications.
-To understand how it differs from the glut of Python web programming libraries
-and frameworks already on the market, consider for a moment this diagram of the
-web stack:
-
-\begin{verbatim}
-
-                   The Web Stack
-                   =============
-
-  ^                    etc.
-  |                 JavaScript
-                       CSS
-client                XHTML
-
-network                HTTP
-
-server            compiled server
-                      gateway
-  |
-application --->       [  ], security, templating, persistence, etc.
-  |
-  |                   Python
-  |                  database
-  v              operating system
-                       etc.
-
-\end{verbatim}
-
-Python web programming packages fit in the empty spot in this diagram. Now,
-other packages generally start out on the "application" arm of this diagram. In
-other words, they start with the concept of the \b{application}, and give that
-concept expression as a Python object model.
-
-\module{httpy} takes the opposite tack. Instead of starting with a variable --
-the application -- \module{httpy} starts with the constants: HTTP above us, and
-Python below us. (The "compiled server" and "gateway" are also variables, of
-course, and may not be present at all.)
-
-In other words, since every web application is an HTTP application at heart,
-\module{httpy} starts there, and develops a simple object model based on the
-HyperText Transmission Protocol itself. The premise here is that HTTP -- mature,
-well-documented, ubiquitous -- is a much surer foundation than any one
-individual's notion of how your website should be modeled.
-
-Here's another way to think about it: websites are complex! Ask 10 people to
-model a website using Python objects, and we end up with 20 different answers.
-Ok, so let's try to narrow the problem down slightly: what are the relatively
-fixed points in this discussion? HTTP coming from the client, and Python waiting
-on the server. Well, then, if we can give HTTP a compelling Python object
-representation, then we will have squeezed out that much complexity from the
-problem.
-
-
-\subsection{WSGI}
-
-The Web Server Gateway Interface (WSGI; \pep{333}) is "a proposed standard
-interface between web servers and Python web applications or frameworks." Its
-primary goal is straightforward: to make any Python web app work with any web
-server (Apache, lighttpd, BaseHTTPServer, etc.). Its secondary goal is to enable
-web apps to be built from decoupled components. The idea is that if the various
-parts of a web app -- security, templating, persistence -- are each modeled as
-WSGI apps themselves, then they can be strung together in a "middleware stack."
-Ultimately, it is hoped that WSGI will spur innovation by busting up the
-monolithic Python web frameworks into smaller components from which one may
-freely pick and choose.
-
-\module{httpy} occupies roughly the same space as WSGI. Each models HTTP within
-Python by specifying an interface to which your application ought to conform in
-order to be portable between webservers, given some glue code:
-
-\begin{description}
-
-\item[WSGI]
-    {\code{app(environ, start_response)} calls \code{start_response} and returns
-    an iterator}
-
-\item[httpy]
-    {\code{responder.respond(request)} raises a \code{Response} object}
-
-\end{description}
-
-
-Furthermore, each wants to recast Python web programming in terms of smaller
-components rather than monolithic frameworks. But whereas the choice of
-interfaces is largely a matter of taste, the difference in componentization
-strategy is more significant.
-
-Under WSGI, the basic building-block for website authors is \emph{WSGI
-middleware}. The WSGI vision is of a middleware marketplace, where various
-subsystems of the web application problem domain -- security, templating,
-persistence, etc. -- are packaged and offered as more or less independent WSGI
-apps. Inter-app communication is handled by extensions to the WSGI protocol:
-think CGI environment variables set to Python objects instead of strings.
-
-With \module{httpy}, on the other hand, the basic building-blocks are
-\emph{Python libraries}. Instead of a "middleware stack," you have the standard
-Python call stack. And instead of "inter-app communication," you simply have
-APIs. Python is a mature, well-documented, ubiquitous tool. As with HTTP, the
-premise is that the closer one sticks to bare Python, the better.
-
-
-\section{Interface Overview}
+\section{Overview}
 
 \module{httpy}'s job is to get HTTP requests off the wire into your Python
 program, and to get HTTP responses from your program back onto the wire. Within
-this narrow ambit, we intend to include batteries: you shouldn't have to resort
-to another library for anything between the wire and your app. At the same time,
-we aim for a sane and satisfying API. Beyond the basic modeling of HTTP Request
-and Response messages, \module{httpy} is organized around just two types of
-Python objects:
+this narrow ambit, we include batteries: you shouldn't have to resort to another
+library for anything between the wire and your app. At the same time, we aim for
+a sane and satisfying API. Beyond the basic modeling of HTTP Request and
+Response messages, \module{httpy} is organized around just two types of Python
+objects:
 
 \begin{description}
 
@@ -143,22 +37,18 @@ ending abruptly at any of a number of places on this stack, with a response
 zipping back up the stack to the client. \module{httpy} turns the Python
 interpreter's call stack into an extension of the HTTP stack.
 
-Programming with \module{httpy} means writing responders.
-
 
 
 \section{An Example}
 
-To whet your whistle, here is \module{httpy}'s hello world:
+Programming with \module{httpy} means writing responders. To whet your whistle,
+here is \module{httpy}'s hello world:
 
 \begin{verbatim}
 >>> import httpy
 >>> class Responder:
 ...   def respond(self, request):
-...     response = httpy.Response(200)
-...     response.body = "Greetings, program!"
-...     response.headers = {'Content-Type':'text/html'}
-...     raise response
+...     raise httpy.Response(200, "Greetings, program!")
 ...
 >>>
 \end{verbatim}
@@ -166,20 +56,26 @@ To whet your whistle, here is \module{httpy}'s hello world:
 Besides being a subclass of \class{StandardError}, \class{httpy.Response} is
 bone simple: its constructor takes an integer HTTP code, a body, and a
 dictionary of headers -- all optional. These are stored in attributes, as seen
-here. At the end of the transaction, this response is raised back up the stack
-towards the client. Your responder will generally raise responses from more than
-one place. For example, you could add this check to the above Responder class:
+here with \code{headers}. At the end of the transaction, this response is raised
+back up the stack towards the client. Your responder will generally raise
+responses from more than one place. For example, you could add a check on the
+incoming method:
 
 \begin{verbatim}
+>>> class Responder:
 ...   def respond(self, request):
 ...     if request.method != 'GET':
 ...       raise httpy.Response(501)
+...     raise httpy.Response(200, "Greetings, program!")
+...
+>>>
 \end{verbatim}
 
 In any case, after defining a responder, here is how to put it on the network:
 
 \begin{verbatim}
->>> httpy.couplers.StandAlone(Responder())
+>>> coupler = httpy.couplers.StandAlone(Responder())
+>>> coupler.go()
 httpy.server     INFO     httpy started on port 8080
 \end{verbatim}
 
@@ -218,14 +114,15 @@ Out of the box, \module{httpy} includes four responders, to be found in the
 \begin{description}
 
 \item[\class{CGI}]
-    {This reconstructs an httpy.Request from a CGI environment.}
+    {This reconstructs an httpy.Request from a CGI environment and responds to
+    a single request.}
 
 \item[\class{FastCGI}]
-    {Built on the \module{jonpy} package.}
+    {Enters a response loop, reconstructing Requests from the environment as
+    with CGI.}
 
 \item[\class{StandAlone}]
-    {A portable, multi-threaded, standalone web server (for the interested, it
-    is built on zope.server).}
+    {A portable, multi-threaded, standalone web server.}
 
 \end{description}
 
@@ -268,3 +165,109 @@ be used either above or below \module{httpy} on your stack.
     you.}
 
 \end{description}
+
+
+
+\section{Relation to Existing Options}
+
+\subsection{Frameworks \label{frameworks}}
+
+\module{httpy} is a Python library for building websites and web applications.
+To understand how it differs from the glut of Python web programming libraries
+and frameworks already on the market, consider for a moment this diagram of the
+web stack:
+
+\begin{verbatim}
+
+                   The Web Stack
+                   =============
+
+  ^                    etc.
+  |                 JavaScript
+                       CSS
+client                XHTML
+
+network                HTTP
+
+server            compiled server
+                      gateway
+  |
+application --->       [  ], security, templating, persistence, etc.
+  |
+  |                   Python
+  |                  database
+  v              operating system
+                       etc.
+
+\end{verbatim}
+
+Python web programming packages fit in the empty spot in this diagram. Now,
+other packages generally start out on the "application" arm of this diagram. In
+other words, they start with the concept of the \b{application}, and give that
+concept expression as a Python object model.
+
+\module{httpy} takes the opposite tack. Instead of starting with a variable --
+the application -- \module{httpy} starts with the constants: HTTP above us, and
+Python below us. (The "compiled server" and "gateway" are also variables, of
+course, and may not be present at all.) In other words, since every web
+application is an HTTP application at heart, \module{httpy} starts there, and
+develops a simple object model based on the HyperText Transmission Protocol
+itself. The premise here is that HTTP -- mature, well-documented, ubiquitous --
+is a much surer foundation than any one individual's notion of how your website
+should be modeled.
+
+Here's another way to think about it: websites are complex! Ask 10 people to
+model a website using Python objects, and we end up with 20 different answers.
+Ok, so let's try to narrow the problem down slightly: what are the relatively
+fixed points in this discussion? HTTP coming from the client, and Python waiting
+on the server. Well, then, if we can give HTTP a compelling Python object
+representation, then we will have squeezed out that much complexity from the
+problem.
+
+
+\subsection{WSGI \label{wsgi}}
+
+The Web Server Gateway Interface (WSGI; \pep{333}) is "a proposed standard
+interface between web servers and Python web applications or frameworks." Its
+primary goal is straightforward: to make any Python web app work with any web
+server (Apache, lighttpd, BaseHTTPServer, etc.). Its secondary goal is to enable
+web apps to be built from decoupled components. The idea is that if the various
+parts of a web app -- security, templating, persistence, etc. -- are each
+modeled as WSGI apps themselves, then they can be strung together in a
+"middleware stack." Ultimately, it is hoped that WSGI will spur innovation by
+busting up the monolithic Python web frameworks into smaller components from
+which one may freely pick and choose.
+
+\module{httpy} occupies roughly the same space as WSGI. Each models HTTP within
+Python by specifying an interface to which your application ought to conform in
+order to be portable between webservers, given some glue code:
+
+\begin{description}
+
+\item[WSGI]
+    {\code{app(environ, start_response)} calls \code{start_response} and returns
+    an iterator}
+
+\item[\module{httpy}]
+    {\code{responder.respond(request)} raises a \code{Response} object}
+
+\end{description}
+
+
+Furthermore, each wants to recast Python web programming in terms of smaller
+components rather than monolithic frameworks. But whereas the choice of
+interfaces is largely a matter of taste, the difference in componentization
+strategy is more significant.
+
+Under WSGI, the basic building-block for website authors is \emph{WSGI
+middleware}. The WSGI vision is of a middleware marketplace, where various
+subsystems of the web application problem domain -- security, templating,
+persistence, etc. -- are packaged and offered as more or less independent WSGI
+apps. Inter-app communication is handled by extensions to the WSGI protocol:
+think CGI environment variables set to Python objects instead of strings.
+
+With \module{httpy}, on the other hand, the basic building-blocks are
+\emph{Python libraries}. Instead of a "middleware stack," you have the standard
+Python call stack. And instead of "inter-app communication," you simply have
+APIs. Python is a mature, well-documented, ubiquitous tool. As with HTTP, the
+premise is that the closer one sticks to bare Python, the better.

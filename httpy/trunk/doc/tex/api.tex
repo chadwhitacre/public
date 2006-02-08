@@ -1,49 +1,251 @@
-\chapter{API}
+\chapter{Package Contents}
 
-\section{\module{httpy}}
-
-\begin{classdesc}{Request}{}
-
-This class represents an HTTP request rather woodenly. It is passed to the
-\method{respond} method of a custom \class{app.Application}.
-
-rawline
-
-raw
-
-raw_line
-
-raw_headers
-
-raw_body
-
-method
-
-uri
-
-path
-
-message
+The \module{httpy} package defines classes to represent HTTP Request and
+Response messages. It also defines interfaces specifying how to build responders
+and couplers, specimens of which are to be found in the \module{responders} and
+\module{couplers} subpackages. Finally, the \class{mode} singleton provides an
+object-oriented API for the \envvar{HTTPY_MODE} environment variable, and the
+\module{utils} subpackage collects some other possibly useful utilities.
 
 
+
+\begin{classdesc}{Request}{IRequest}
+
+Constructs a new \class{Request} object. \var{IRequest} is a provider of the
+\class{IRequest} interface. This provision is validated, and the desired API is
+transferred from the \class{IRequest} provider to the new object instance.
+
+Your responder's \method{respond} method will be given instances of this class,
+so you will be using it constantly on that basis. However, you would probably
+only need to instantiate it directly if you were writing a new coupler.
 
 \end{classdesc}
 
 
 
-\begin{classdesc}{Response}{config}
+\begin{classdesc}{Response}{\optional{code} \optional{, body} \optional{, headers}}
 
-foo
+Constructs a new \class{Response} object. If given, \var{code} must be an
+integer. The default is 200; see
+\citetitle[http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html]{the HTTP
+spec} for other values that will be meaningful to most HTTP clients. \var{body}
+may be a string, an iterator over strings, or an \class{httpy.utils.Path}
+object. \var{headers} must be a dictionary.
+
+\var{body} is second rather than \var{headers} because one more often wants to
+specify a body without headers than a header without a body. Also note that
+\mailheader{Content-Type} defaults to \code{text/html} for responses where
+\var{code} is between 200 and 299, inclusive, but to \code{text/plain} for
+non-2xx responses.
+
+This class is likewise central to \module{httpy} programming: its instances are
+the payload for \module{httpy}'s overloaded \code{raise} statement. These will
+be caught, validated, flattened, and sent out to the wire by whatever coupler is
+in use.
+
 \end{classdesc}
 
 
-\section{\module{httpy.utils} --- utilities for custom applications}
 
 
-\section{\module{httpy.responders}}
+\section{\class{Request} Objects}
 
-\section{\module{httpy.responders.multiple.frameworks}}
+\subsection{Raw API}
 
-\section{\module{httpy.couplers}}
+Instances of \class{httpy.Request} store the raw HTTP request in the following
+attributes:
+
+\begin{datadesc}{raw}
+The entire \ulink{HTTP Request message}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html} exactly as it was found on the wire.
+\end{datadesc}
+
+\begin{datadesc}{raw_line}
+The raw
+\ulink{Request-Line}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1},
+ not including the trailing line break.
+\end{datadesc}
+
+\begin{datadesc}{raw_headers}
+The raw message headers, not including the trailing line breaks.
+\end{datadesc}
+
+\begin{datadesc}{raw_body}
+The raw message body.
+\end{datadesc}
+
+
+
+\subsection{Derived API}
+
+Furthermore, \class{Request} instances provide a very minimal derivative API:
+
+\begin{datadesc}{method}
+The \ulink{HTTP method}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html} from the Request-Line.
+\end{datadesc}
+
+\begin{datadesc}{uri}
+The \ulink{Request-URI}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.2} as a dictionary. The keys of this dictionary are taken from the
+names used in the standard library's
+\ulink{\module{urlparse}}{http://docs.python.org/lib/module-urlparse.html},
+namely: \emph{scheme://netloc/path;parameters?query\#fragment}.
+\end{datadesc}
+
+\begin{datadesc}{path}
+The \emph{path} component of the Request-URI.
+\end{datadesc}
+
+\begin{datadesc}{headers}
+the headers as an instance of the standard library's
+\ulink{\module{email.Message.Message}}{http://docs.python.org/lib/module-email.Message.html}.
+\end{datadesc}
+
+
+\subsection{Differences under CGI/FastCGI}
+
+Whereas the \class{StandAlone} coupler builds \class{Request} objects directly
+from the raw request coming off the wire, the \class{CGI} and \class{FastCGI}
+couplers must resort to reconstructing \class{Request}s from the environment and
+standard input. The resulting object has the same API as above, but since some
+attributes could have subtly different meanings, we provide the following
+reference. Where called for, \code{\e r\e n} line breaks are used.
+
+\begin{datadesc}{raw}
+The concatenation of raw_line, raw_headers, and raw_body as described below.
+\end{datadesc}
+
+\begin{datadesc}{raw_line}
+The Request-URI is reconstructed from the \envvar{SCRIPT_NAME},
+\envvar{PATH_INFO}, and \envvar{QUERY_STRING} environment variables. This is
+combined with the \envvar{REQUEST_METHOD} and \envvar{SERVER_PROTOCOL} variables
+to approximate the Request-Line.
+\end{datadesc}
+
+\begin{datadesc}{raw_headers}
+The headers are reconstructed by taking all environment variables beginning with
+"HTTP_" and replacing all underscores with dashes.
+\end{datadesc}
+
+\begin{datadesc}{raw_body}
+Read from the standard input.
+\end{datadesc}
+
+\begin{datadesc}{method}
+Equivalent to the \envvar{REQUEST_METHOD} environment variable.
+\end{datadesc}
+
+\begin{datadesc}{uri}
+The dictionary is based on \var{raw_line} as derived above.
+\end{datadesc}
+
+\begin{datadesc}{path}
+Equivalent to the \envvar{PATH_INFO} environment variable.
+\end{datadesc}
+
+\begin{datadesc}{headers}
+The \class{Message} object is constructed from \var{raw_headers} as described
+above.
+\end{datadesc}
+
+
+\begin{seealso}
+    \seetitle[http://hoohoo.ncsa.uiuc.edu/cgi/interface.html]{The CGI
+    Specification}{ The reference for CGI, including use of environment
+    variables and standard input.}
+\end{seealso}
+
+
+
+\section{\class{Response} Objects}
+
+Instances of \class{httpy.Response} have the following attributes. Note that
+values are only validated in the constructor, so it is currently possible to
+raise a malformed \class{Response} by setting instance attributes
+post-instantiation.
+
+\begin{datadesc}{code}
+The HTTP code as an integer.
+\end{datadesc}
+
+\begin{datadesc}{body}
+The message body as a string, an iterator over strings, or an
+\class{httpy.utils.Path} object.
+\end{datadesc}
+
+\begin{datadesc}{headers}
+The message headers as a dictionary.
+\end{datadesc}
+
+
+
+\section{\class{httpy.couplers}}
+\section{\class{httpy.interfaces}}
+
+
+
+\section{The \class{mode} Object}
+
+Websites and web applications go through a life-cycle involving development,
+debugging, staging, and deployment. It is often desirable to alter behavior
+throughout the application based on the current stage in this life-cycle, for
+example, to use a different database connection string in deployment than in
+development or staging.
+
+\module{httpy} models this common requirement via a \class{mode} singleton,
+which provides the following members:
+
+\begin{datadesc}{IS_DEVELOPMENT}
+\dataline{IS_DEBUGGING}
+\dataline{IS_STAGING}
+\dataline{IS_DEPLOYMENT}
+    These constants are boolean values based on the current mode, and only one
+    will be \class{True} at any given time. Abbrevations and alternate casings
+    are allowed: \constant{IS_DEV} and \constant{is_devel} are both aliases for
+    \constant{IS_DEVELOPMENT}. \constant{IS_DE} is an \class{AttributeError},
+    however.
+\end{datadesc}
+
+\begin{datadesc}{default}
+    Contains the default mode as a lowercase string. Out of the box, this is
+    \code{development}.
+\end{datadesc}
+
+\begin{datadesc}{__str__}
+\dataline{__repr__}
+    Returns the current mode as a lowercase string.
+\end{datadesc}
+
+
+\module{httpy}'s current mode is determined by the environment variable
+\envvar{HTTPY_MODE}. Since the mode of an application instance is generally only
+defined at start-up, this API is intended to be read-only. However, the instance
+checks the environment on each call or attribute access, so if you must change
+the mode on the fly, you can.
+
+\module{httpy} itself alters its behavior according to the current mode. Here is
+a reference:
+
+\begin{description}
+
+\item[\code{development}]
+    {foo}
+
+\item[\code{debugging}]
+    {Equivalent to \code{development}, except that non-\class{Response}
+    \class{Exception}s will cause the Python process to enter post-mortem
+    debugging via
+    \ulink{\module{pdb}}{http://docs.python.org/lib/module-pdb.html}.}
+
+\item[\code{staging}]
+    {foo}
+
+\item[\code{deployment}]
+    {foo}
+
+\end{description}
+
+
+
+\section{\class{httpy.responders}}
+\section{\class{httpy.utils}}
 
 

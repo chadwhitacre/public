@@ -66,7 +66,6 @@ tweaks
     consider eggs for pluggability
     why can't we just import StatusCodes from BaseHTTPServer?
     HTTP/1.0 -> HTTP/1.1
-    move response flattening out of Task into utils (for use by other couplers)
 
 
 
@@ -245,3 +244,4 @@ go back to pooled thread server?
     but I don't know if these are working atm anyway
 multiple frameworks? layered or either/or? -- no! too complicated; maybe later
 really should have serve_py by default, no? -- no! we want to encourage responders
+move response flattening out of Task into utils (for use by other couplers)
