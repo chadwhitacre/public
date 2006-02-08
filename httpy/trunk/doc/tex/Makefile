@@ -3,11 +3,12 @@
 PYTHON_SRC = /home/whit537/shelf/Python-2.4.2
 MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--iconserver icons \
-				--split 0 \
+				--split 4 \
 				--favicon icons/pyfav.gif \
 				--dir ../html \
 				--logging \
 				--numeric
+#				--style style.css
 
 default: html clean
 
