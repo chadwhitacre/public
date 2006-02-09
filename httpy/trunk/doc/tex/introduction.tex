@@ -1,7 +1,12 @@
 \chapter{Introduction \label{introduction}}
 
 \module{httpy} is a Python library for building websites and web applications.
-
+This chapter introduces the library in several ways. First, with a narrative
+overview from 30,000 feet; then, with an example. After getting your feet wet, I
+describe \module{httpy} positively, by the bells and whistles it does have, and
+in relief, pointing out what it is explicitly not. Lastly, I attempt to locate
+\module{httpy} on the Python web programming map, with a view towards defending
+its existence.
 
 
 \section{Overview \label{overview}}
@@ -88,15 +93,13 @@ At this point, your program is blocking, waiting for requests on
 Congratulations!
 
 
+
 \section{Batteries Included \label{batteries}}
 
-Out of the box, \module{httpy} includes four responders, to be found in the
+Out of the box, \module{httpy} includes three responders, to be found in the
 \module{httpy.responders} subpackage:
 
 \begin{description}
-
-\item[\class{Doc}]
-    {This serves documentation for Python site-packages.}
 
 \item[\class{Multiple}]
     {This responder allows you to define a website with multiple responders,
@@ -172,9 +175,27 @@ be used either above or below \module{httpy} on your stack.
 
 
 
-\section{Relation to Existing Tools \label{existing-tools}}
+\section{Apologia \label{apologia}}
 
-\subsection{Frameworks}
+The world of Python web programming is currently quite fragmented. Any new
+entrant must give some account of itself in relation to the existing frameworks,
+as well as the emerging WSGI protocol. The details follow, but the question
+"Why?" does have an easy answer; it is the classic open source justification:
+\module{httpy} is my attempt to scratch an itch. Here is my itch:
+
+\begin{quote}
+How do I make the \emph{most} websites of the \emph{highest quality} and
+\emph{widest variety} as \emph{quickly} and \emph{cheaply} as possible?
+\end{quote}
+
+I looked at the available solutions, and picked a point on a stack below which I
+am satisfied with the available black boxes, and above which I am willing to
+write the necessary white boxes. The surest foundation I could find was the
+combination of HTTP and Python. With \module{httpy}, I have tried to knit these
+two together in a way which lives up to the reputation of each.
+
+
+\subsection{Frameworks \label{frameworks}}
 
 \module{httpy} is a Python library for building websites and web applications.
 To understand how it differs from the glut of Python web programming libraries
@@ -229,7 +250,7 @@ representation, then we will have squeezed out that much complexity from the
 problem.
 
 
-\subsection{WSGI}
+\subsection{WSGI \label{wsgi}}
 
 The Web Server Gateway Interface (WSGI; \pep{333}) is "a proposed standard
 interface between web servers and Python web applications or frameworks." Its

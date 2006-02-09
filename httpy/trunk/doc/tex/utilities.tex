@@ -1,11 +1,11 @@
-\section{Utilities \label{utilities}}
+\section{Utilities \label{utils}}
 
-The \module{httpy.utilities} subpackage collects several tools which may be of
-value to those building web applications with \module{httpy}. The \class{Path}
-and \function{translate} objects are actually used by \module{httpy}'s own
+The \module{httpy.utils} subpackage collects several tools which may be of value
+to those building web applications with \module{httpy}. The \class{Path} and
+\function{translate} objects are actually used by \module{httpy}'s own
 \class{Static} responder. The \function{parse_*} functions are not used in the
-base module, but all but the simplest web applications will need these or
-parallel methods to extract information from the \class{Request} object.
+base package. However, all but the simplest web applications will need these or
+similar methods to extract information from the \class{Request} object.
 
 
 \begin{classdesc}{Path}{path}
