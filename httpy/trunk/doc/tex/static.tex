@@ -1,0 +1,30 @@
+\subsection{\class{Static} Responders \label{static}}
+
+The \class{Static} responder is designed to be used either by itself or as a
+mixin. It provides two attributes and two methods:
+
+\begin{memberdesc}[string]{root}
+The filesystem path of the directory to use as the publishing root.
+\end{memberdesc}
+
+\begin{memberdesc}[tuple]{defaults}
+A tuple of names to interpret as default resources. The first-named is chosen
+first.
+\end{memberdesc}
+
+
+\begin{methoddesc}{respond}{request}
+This is a pass-through for \method{serve_static}.
+\end{methoddesc}
+
+\begin{methoddesc}{serve_static}{request} Serves a static resource from the
+filesystem. \var{request} is a \class{Request} object. The URI is translated
+using the \function{httpy.utils.translate} function, and the
+\mailheader{Content-Type} is set by the standard library's
+\ulink{\module{mimetypes}}{http://docs.python.org/lib/module-mimetypes.html} module. In
+\code{staging} and \code{deployment} modes, \method{serve_static} supports the
+\ulink{\code{304 Not
+Modified}}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5}
+response.
+\end{methoddesc}
+

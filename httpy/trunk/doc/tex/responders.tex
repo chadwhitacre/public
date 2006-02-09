@@ -3,7 +3,30 @@
 \module{httpy} includes three responders out of the box. The fun of
 \module{httpy}, though, is in writing your own responders.
 
+\begin{classdesc}{Static}{\optional{root}\optional{, defaults}} Constructs a new
+\class{Static} responder object. \var{root} is the filesystem path of the
+directory to use as the publishing root. If not given or \class{None}, then the
+value in the class attribute of the same name is used if it does not evaluate to
+\class{False}. If it does (and out of the box, it does), then \var{root} is set
+to the current working directory. If \var{root} does not point to a directory,
+\exception {ValueError} is raised. \var{defaults} is a sequence of names to use
+when looking for a default resource. If it is omitted or \class{None}, it is set
+to \code{('index.html', 'index.htm')}, after checking the class attribute as
+with \var{root}. \end{classdesc}
+
+\begin{classdesc}{Multiple}{\optional{root}} Constructs a new \class{Multiple}
+responder object. \var{root} has the same meaning as in
+\class{Static}.\end{classdesc}
+
+\begin{classdesc*}{XMLRPC}
+The XMLRPC responder is not designed to be instantiated directly, but rather
+used as a mixin.
+\end{classdesc*}
+
+
 \input{multiple}
-\subsection{The \class{Static} Responder \label{static}}
-\subsection{The \class{XMLRPC} Responder \label{xmlrpc}}
+\input{static}
+\input{xmlrpc}
+
+
 \subsection{Writing a Responder \label{writing-a-responder}}
