@@ -7,7 +7,7 @@ MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--split 5 \
 				--link 2 \
 				--favicon icons/zeta.ico \
-				--dir ../html \
+				--dir ./html \
 				--logging \
 				--up-link "http://www.zetadev.com/software/httpy/" \
 				--up-title "httpy homepage" \
@@ -15,18 +15,18 @@ MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 #				--style style.css
 
 
-default: html clean
+default: html
 
-html:
-	rm -rf ../html
+html: clean
 	$(MKHOWTO) httpy.tex
-	cp -r ../icons ../html/
-	rm -rf ../html/icons/.svn
+	cp -r ../icons ./html/
+	rm -rf ./html/icons/.svn
+	rm -rf ../html && mv ./html ../
 
 pdf:
 	$(PYTHON_SRC)/Doc/tools/mkhowto --pdf httpy.tex
 	mv httpy.pdf ../httpy-$(VERSION).pdf
 
 clean:
-	rm -f *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \
-			*.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi
+	rm -rf *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \
+			*.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi html
