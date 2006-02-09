@@ -9,11 +9,10 @@ development or staging.
 \module{httpy} models this common requirement via a \class{mode} singleton,
 which has the following members:
 
-\begin{classdesc*}{mode}
-\begin{memberdesc}{IS_DEVELOPMENT}
-\dataline{IS_DEBUGGING}
-\dataline{IS_STAGING}
-\dataline{IS_DEPLOYMENT}
+\begin{memberdesc}[boolean]{IS_DEVELOPMENT}
+\memberline[boolean]{IS_DEBUGGING}
+\memberline[boolean]{IS_STAGING}
+\memberline[boolean]{IS_DEPLOYMENT}
     These constants are boolean values based on the current mode, and only one
     will be \class{True} at any given time. Abbrevations and alternate casings
     are allowed; e.g., \constant{IS_DEV} and \constant{is_develo} are both
@@ -34,8 +33,6 @@ which has the following members:
     Contains the default mode as a lowercase string. Out of the box, this is
     \code{development}.
 \end{memberdesc}
-
-\end{classdesc*}
 
 
 \module{httpy}'s current mode is determined by the environment variable
@@ -65,6 +62,6 @@ current mode. Here is a reference:
     Equivalent to \code{deployment}.
 
 \item[\code{deployment}]
-    The \class{Static} responder supports \ulink{304s}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5}.
+    The \class{Static} responder supports \ulink{304}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5}s.
 
 \end{description}

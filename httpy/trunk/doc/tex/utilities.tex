@@ -4,8 +4,8 @@ The \module{httpy.utils} subpackage collects several tools which may be of value
 to those building web applications with \module{httpy}. The \class{Path} and
 \function{translate} objects are actually used by \module{httpy}'s own
 \class{Static} responder. The \function{parse_*} functions are not used in the
-base package. However, all but the simplest web applications will need these or
-similar methods to extract information from the \class{Request} object.
+base package, but even the simplest web applications will need these or similar
+methods to extract application state from the \class{Request} object.
 
 
 \begin{classdesc}{Path}{path}
@@ -46,10 +46,8 @@ Translates a URI path to the filesystem.
 directory in which the URI path should be rooted. \var{defaults}, if given, is a
 sequence of names that should be considered default resources. If not given,
 \var{defaults} is empty. If \var{raw} is given and it evaluates to \class{True},
-then \code{translate()} ignores \var{defaults} and performs no validation.
-
-If \var{raw} is \class{False}, then validation proceeds according to this
-rubric:
+then \code{translate()} ignores \var{defaults} and performs no validation. If
+\var{raw} is \class{False}, then validation proceeds according to this rubric:
 
 \begin{enumerate}
 
