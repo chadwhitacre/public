@@ -1,10 +1,10 @@
-\chapter{Introduction}
+\chapter{Introduction \label{introduction}}
 
 \module{httpy} is a Python library for building websites and web applications.
 
 
 
-\section{Overview}
+\section{Overview \label{overview}}
 
 \module{httpy}'s job is to get HTTP requests off the wire into your Python
 program, and to get HTTP responses from your program back onto the wire. Within
@@ -39,34 +39,36 @@ interpreter's call stack into an extension of the HTTP stack.
 
 
 
-\section{An Example}
+\section{An Example \label{example}}
 
 Programming with \module{httpy} means writing responders. To whet your whistle,
 here is \module{httpy}'s hello world:
 
 \begin{verbatim}
->>> import httpy
+>>> from httpy import Response
 >>> class Responder:
 ...   def respond(self, request):
-...     raise httpy.Response(200, "Greetings, program!")
+...     raise Response(200, "Greetings, program!")
 ...
 >>>
 \end{verbatim}
 
-Besides being a subclass of \class{StandardError}, \class{httpy.Response} is
-bone simple: its constructor takes an integer HTTP code, a body, and a
-dictionary of headers -- all optional. These are stored in attributes, as seen
-here with \code{headers}. At the end of the transaction, this response is raised
-back up the stack towards the client. Your responder will generally raise
-responses from more than one place. For example, you could add a check on the
-incoming method:
+A responder is simply a module or class with a \method{respond} callable, which
+takes a \class{Request} object and raises a \class{Response} object. Besides
+being a subclass of \class{StandardError}, \class{Response} is bone simple: its
+constructor takes an integer HTTP code, a body, and a dictionary of headers --
+all optional. At the end of the transaction, this response is raised back up the
+stack towards the client.
+
+Your responder will generally raise \class{Response}s from more than one place.
+For example, you could add a check on the incoming method:
 
 \begin{verbatim}
 >>> class Responder:
 ...   def respond(self, request):
 ...     if request.method != 'GET':
-...       raise httpy.Response(501)
-...     raise httpy.Response(200, "Greetings, program!")
+...       raise Response(501)
+...     raise Response(200, "Greetings, program!")
 ...
 >>>
 \end{verbatim}
@@ -74,17 +76,19 @@ incoming method:
 In any case, after defining a responder, here is how to put it on the network:
 
 \begin{verbatim}
->>> coupler = httpy.couplers.StandAlone(Responder())
+>>> from httpy import couplers
+>>> coupler = couplers.StandAlone(Responder())
 >>> coupler.go()
 httpy.server     INFO     httpy started on port 8080
 \end{verbatim}
 
 At this point, your program is blocking, waiting for requests on
-http://localhost:8080/. Visit it there, and you will see the text "Greetings,
-program!" in your browser, and log output in your console. Congratulations!
+\url{http://localhost:8080/}. Visit it there, and you will see the text
+\code{Greetings, program!} in your browser, and log output in your console.
+Congratulations!
 
 
-\section{Batteries Included}
+\section{Batteries Included \label{batteries}}
 
 Out of the box, \module{httpy} includes four responders, to be found in the
 \module{httpy.responders} subpackage:
@@ -127,13 +131,13 @@ Out of the box, \module{httpy} includes four responders, to be found in the
 \end{description}
 
 
-In addition, the \module{httpy} distribution includes an executable, also named
+Furthermore, the \module{httpy} distribution includes an executable, also named
 \program{httpy}, that instantiates the \class{StandAlone} coupler with the
 \class{Multiple} responder. Thus, out of the box, \module{httpy} provides a
 robust and sane foundation for your Python websites and web applications.
 
 
-\section{Some Items Sold Separately}
+\section{Some Items Sold Separately \label{sold-separately}}
 
 Below are some things that are explicitly not \module{httpy}'s job, with
 pointers to tools that do these jobs well. Where non-Python tools are mentioned,
@@ -168,9 +172,9 @@ be used either above or below \module{httpy} on your stack.
 
 
 
-\section{Relation to Existing Options}
+\section{Relation to Existing Tools \label{existing-tools}}
 
-\subsection{Frameworks \label{frameworks}}
+\subsection{Frameworks}
 
 \module{httpy} is a Python library for building websites and web applications.
 To understand how it differs from the glut of Python web programming libraries
@@ -225,7 +229,7 @@ representation, then we will have squeezed out that much complexity from the
 problem.
 
 
-\subsection{WSGI \label{wsgi}}
+\subsection{WSGI}
 
 The Web Server Gateway Interface (WSGI; \pep{333}) is "a proposed standard
 interface between web servers and Python web applications or frameworks." Its

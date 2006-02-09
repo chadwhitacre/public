@@ -1,0 +1,70 @@
+\section{The \class{mode} Object \label{mode}}
+
+Websites and web applications go through a life-cycle involving development,
+debugging, staging, and deployment. It is often desirable to alter behavior
+throughout the application based on the current stage in this life-cycle, for
+example, to use a different database connection string in deployment than in
+development or staging.
+
+\module{httpy} models this common requirement via a \class{mode} singleton,
+which has the following members:
+
+\begin{classdesc*}{mode}
+\begin{memberdesc}{IS_DEVELOPMENT}
+\dataline{IS_DEBUGGING}
+\dataline{IS_STAGING}
+\dataline{IS_DEPLOYMENT}
+    These constants are boolean values based on the current mode, and only one
+    will be \class{True} at any given time. Abbrevations and alternate casings
+    are allowed; e.g., \constant{IS_DEV} and \constant{is_develo} are both
+    aliases for \constant{IS_DEVELOPMENT}. \constant{IS_DE} is an
+    \class{AttributeError}, however.
+\end{memberdesc}
+
+\begin{methoddesc}{__repr__}{}
+    Returns the current mode as a lowercase string. This will always be one of
+    \code{development}, \code{debugging}, \code{staging}, or \code{deployment}.
+\end{methoddesc}
+
+\begin{methoddesc}{__str__}{}
+    Alias for \method{__repr__}.
+\end{methoddesc}
+
+\begin{memberdesc}{default}
+    Contains the default mode as a lowercase string. Out of the box, this is
+    \code{development}.
+\end{memberdesc}
+
+\end{classdesc*}
+
+
+\module{httpy}'s current mode is determined by the environment variable
+\envvar{HTTPY_MODE}. Since the mode of an application instance is generally only
+defined at start-up, this API is intended to be read-only. However, \class{mode}
+checks the environment on each call or attribute access, so if you must change
+the mode on the fly, you can.
+
+Other parts of the \module{httpy} package alter their behavior according to the
+current mode. Here is a reference:
+
+\begin{description}
+
+\item[\code{development}]
+    Internal server errors generate a traceback in the browser.
+
+    On \UNIX{} systems, the \class{StandAlone} coupler monitors the filesystem
+    counterparts of all loaded modules, and restarts itself if the modification
+    time of any of these files changes.
+
+\item[\code{debugging}]
+    Equivalent to \code{development}. Additionally, non-\class{Response}
+    \class{Exception}s trigger post-mortem debugging via
+    \ulink{\module{pdb}}{http://docs.python.org/lib/module-pdb.html}.
+
+\item[\code{staging}]
+    Equivalent to \code{deployment}.
+
+\item[\code{deployment}]
+    The \class{Static} responder supports \ulink{304s}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5}.
+
+\end{description}
