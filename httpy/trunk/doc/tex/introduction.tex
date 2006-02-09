@@ -2,11 +2,11 @@
 
 \module{httpy} is a Python library for building websites and web applications.
 This chapter introduces the library in several ways. First, with a narrative
-overview from 30,000 feet; then, with an example. After getting your feet wet, I
-describe \module{httpy} positively, by the bells and whistles it does have, and
-in relief, pointing out what it is explicitly not. Lastly, I attempt to locate
-\module{httpy} on the Python web programming map, with a view towards defending
-its existence.
+overview from 30,000 feet; then, with an example. After getting your feet wet
+thus, I describe \module{httpy} positively, by the bells and whistles it does
+have, and in relief, pointing out what it is explicitly not. Lastly, I attempt
+to locate \module{httpy} on the Python web programming map, with a view towards
+defending its existence.
 
 
 \section{Overview \label{overview}}
@@ -271,7 +271,7 @@ order to be portable between webservers, given some glue code:
 
 \item[WSGI]
     {\code{app(environ, start_response)} calls \code{start_response} and returns
-    an iterator}
+    an iterator over strings}
 
 \item[\module{httpy}]
     {\code{responder.respond(request)} raises a \code{Response} object}

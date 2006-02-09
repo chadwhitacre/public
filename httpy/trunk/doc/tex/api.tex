@@ -1,4 +1,4 @@
-\chapter{Package Contents (API) \label{api}}
+\chapter{Package Contents/API \label{api}}
 
 The \module{httpy} package defines classes to represent HTTP Request and
 Response messages. It also defines interfaces specifying how to build responders
@@ -10,7 +10,6 @@ object-oriented API for the \envvar{HTTPY_MODE} environment variable, and the
 
 
 \begin{classdesc}{Request}{IRequest}
-
 Constructs a new \class{Request} object. \var{IRequest} is a provider of the
 \class{IRequest} interface. This provision is validated, and the desired API is
 transferred from the \class{IRequest} provider to the new object instance.
@@ -18,22 +17,22 @@ transferred from the \class{IRequest} provider to the new object instance.
 Your responder's \method{respond} method will be given instances of this class,
 so you will be using it constantly on that basis. However, you would probably
 only need to instantiate it directly if you were writing a new coupler.
-
 \end{classdesc}
 
 
 
-\begin{classdesc}{Response}{\optional{code} \optional{, body} \optional{, headers}}
-
-Constructs a new \class{Response} object. If given, \var{code} must be an
-integer. The default is 200; see
-\citetitle[http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html]{the HTTP
-spec} for other values that will be meaningful to most HTTP clients. \var{body}
+\begin{classdesc}{Response}{\optional{code} \optional{, body} \optional{,
+    headers}}
+Constructs a new \class{Response} object. If given, \var{code} must be
+an integer; the default is
+\ulink{200}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1}
+(see \citetitle[http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html]{the HTTP
+spec} for other values that will be meaningful to most HTTP clients). \var{body}
 may be a string, an iterator over strings, or an \class{httpy.utils.Path}
 object. \var{headers} must be a dictionary.
 
 \var{body} is second rather than \var{headers} because one more often wants to
-specify a body without headers than a header without a body. Also note that
+specify a body without headers than vice versa. Also note that
 \mailheader{Content-Type} defaults to \code{text/html} for responses where
 \var{code} is between 200 and 299, inclusive, but to \code{text/plain} for
 non-2xx responses.
@@ -42,7 +41,6 @@ This class is likewise central to \module{httpy} programming: its instances are
 the payload for \module{httpy}'s overloaded \code{raise} statement. These will
 be caught, validated, flattened, and sent out to the wire by whatever coupler is
 in use.
-
 \end{classdesc}
 
 

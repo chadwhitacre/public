@@ -1,32 +1,22 @@
-6:15 - 7:00
-7:15 - 7:45
-
 ========================================
     0.9 -- MIMEFS + PYCON
 ========================================
 be knowledgeable
-    grok WSGI
-    grok deployment -- standalone vs. CGI/FastGCI/WSGI/mod_python
     how is boston.com hosted? medusa, fcgi, what?
     pay jan (lighttpd)
-    finish docs (html, man)
-    find out what is up with Zope/WSGI
     http://tautology.org/software/woolweb/
 
 programmatic API
+    should do smart things with large POST bodies, similar to outbound
     batteries included!
     ideally we wouldn't have to subclass static.App in order to use serve_static
     think about how serve_* should work, re: reuse
-    need a serve_stream that starts writing before it's done reading
-        not sure how to do this
-        easy, just add support for Response.body as an iterator instead of a string
-    Response.headers = [()] or {}
-    Response.code = 200 or (200, 'OK')
     RequestPath object?
         for script at /foo:
             request.path = '/foo' <- path to script itself
             request.path.info = '/bar/baz.html' <- path below script root
             request.path.translated = None
+    sendfile/GPL-free package
 
 logging
     access to stdout, error to stderr
@@ -53,6 +43,22 @@ tests
     run tests on Mac
     test Task when respond doesn't raise anything
 
+documentation
+    add intro paragraph to request.tex
+    responders
+            figure out what is up with responder.uri and .root
+        Multiple
+        Static
+        XMLRPC
+        custom
+    couplers
+        CGI
+        FastCGI
+        StandAlone
+        custom
+    man httpy(1)
+    fix index for PDF; consider adding index to HTML; cross.linking (utils.Path)
+
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
     why can't we manage this in the signal handler? i.e., "if pdb: finish_pdb()"
@@ -65,9 +71,8 @@ tweaks
     shouldn't request.path be modified to reflect the app.uri_root?
         request.path -> request.fullpath
         request.path = request.fullpath[len(self.uri_root):]
-    consider eggs for pluggability
+
     why can't we just import StatusCodes from BaseHTTPServer?
-    HTTP/1.0 -> HTTP/1.1
 
 
 
@@ -75,21 +80,25 @@ tweaks
 ========================================
     FUTURE
 ========================================
-think systematically about hooks for Application
-    consider exposing the Server to the Application
-charsets (i18n)
-keep-alive
-range requests
-think about how httpy could be used in stand-alone servers/applications
-    i.e., one httpy instance per installation, rather than multiple sites per httpy
+tighten up
+    HTTP/1.0 -> HTTP/1.1
+    charsets? unicode? i18n?
+    keep-alive
+    range requests
+    chunked encoding
+    100 Continue
 support interactive features, e.g.:
     ctrl-s -- display configuration settings
     ctrl-d -- toggle postmortem debugging
     ctrl-v -- set verbosity on the fly
+AJAX debugger?
 add cli options to dump config and exit
 play nice on Windows
     GUI?
     pyexe?
+Response.headers = [()] or {} -- not now!
+Response.code = 200 or (200, 'OK') -- now now!
+consider eggs for pluggability
 
 
 ========================================
@@ -248,3 +257,11 @@ multiple frameworks? layered or either/or? -- no! too complicated; maybe later
 really should have serve_py by default, no? -- no! we want to encourage responders
 move response flattening out of Task into utils (for use by other couplers)
 httpy.coupler to match httpy.mode? -- no! we want responders to be coupler-agnostic
+need a serve_stream that starts writing before it's done reading
+    not sure how to do this
+    easy, just add support for Response.body as an iterator instead of a string
+think about how httpy could be used in stand-alone servers/applications
+    i.e., one httpy instance per installation, rather than multiple sites per httpy
+grok WSGI
+grok deployment -- standalone vs. CGI/FastGCI/WSGI/mod_python
+find out what is up with Zope/WSGI

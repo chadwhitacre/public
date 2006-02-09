@@ -1,4 +1,4 @@
-\chapter{the \class{Multiple} responder \label{multiple}}
+\subsection{The \class{Multiple} Responder \label{multiple}}
 
 httpy is built around the idea that there are two kinds of websites,
 publications and applications, which are differentiated by their organization
@@ -32,7 +32,7 @@ incorporates into the HTTP request/response process. These are described below.
 
 
 
-\section{Filesystem Layout}
+\subsubsection{Filesystem Layout}
 
 When httpy starts up, it walks the tree rooted in your website's filesystem
 root, and it gathers all paths to directories below the root that have a
@@ -65,7 +65,7 @@ a magic directory, httpy will raise \class{ConfigError} and exits.
 
 
 
-\section{Expected Python Objects}
+\subsubsection{Expected Python Objects}
 
 When httpy starts up, it attempts to import a module or package named
 \module{app} from each application's magic directory. Each \module{app}
@@ -110,7 +110,7 @@ class Application:
 
 
 
-\section{Site-Specific Libraries}
+\subsubsection{Site-Specific Libraries}
 
 If a website root has a magic directory, httpy will look when it starts up for a
 subdirectory of this magic directory named \file{site-packages}. It will prepend

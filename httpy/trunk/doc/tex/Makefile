@@ -1,5 +1,6 @@
 # Makefile to create documentation using the Python LaTeX system.
 
+VERSION=0.9a
 PYTHON_SRC = /home/whit537/shelf/Python-2.4.2
 MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--iconserver icons \
@@ -11,8 +12,8 @@ MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--up-link "http://www.zetadev.com/software/httpy/" \
 				--up-title "httpy homepage" \
 				--address "<a href=\"http://www.zetadev.com/software/httpy/\">httpy is Zeta software</a>" \
-#				--numeric \
 #				--style style.css
+
 
 default: html clean
 
@@ -22,6 +23,9 @@ html:
 	cp -r ../icons ../html/
 	rm -rf ../html/icons/.svn
 
+pdf:
+	$(PYTHON_SRC)/Doc/tools/mkhowto --pdf httpy.tex
+	mv httpy.pdf ../httpy-$(VERSION).pdf
 
 clean:
 	rm -f *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \
