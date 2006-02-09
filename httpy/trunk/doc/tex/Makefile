@@ -4,10 +4,14 @@ PYTHON_SRC = /home/whit537/shelf/Python-2.4.2
 MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--iconserver icons \
 				--split 4 \
-				--favicon icons/pyfav.gif \
+				--link 2 \
+				--favicon icons/zeta.ico \
 				--dir ../html \
 				--logging \
-				--numeric
+				--up-link "http://www.zetadev.com/software/httpy/" \
+				--up-title "httpy homepage" \
+				--address "<a href=\"http://www.zetadev.com/software/httpy/\">httpy is Zeta software</a>" \
+#				--numeric \
 #				--style style.css
 
 default: html clean
