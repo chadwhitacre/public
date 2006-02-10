@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+"""This is a test runner for the httpy library.
+
+Usage, e.g.:
+
+    $ python test.py site-packages/httpy/couplers
+
+The argument to test.py is a path constraint. This runner looks for all tests/
+directories under the path constraint, recursing into subdirectories. Within
+those directories, it looks for files named test_*.py, and runs .
+
+"""
+
 
 import os
 import sys
@@ -6,12 +18,18 @@ import unittest
 from StringIO import StringIO
 
 
-# prevent logging output; unittest output goes to stderr
+# Prevent logging output; unittest output goes to stderr.
+# =======================================================
+
 __stdout = sys.stdout
 sys.stdout = StringIO()
 
 
+#
+
 # decide which tests to run
+
+
 arg = sys.argv[1:2]
 prefix = 'test'
 if arg:
