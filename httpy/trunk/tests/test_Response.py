@@ -7,7 +7,7 @@ import unittest
 class TestResponse(unittest.TestCase):
 
     def testDontUseMutableObjectsAsDefaults(self):
-        """Demonstraion of a gotcha.
+        """Demonstration of a gotcha.
 
         Since method parameter defaults are evaluated at import time, two
         instances of a class will have an identical default value if that value

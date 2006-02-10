@@ -94,7 +94,8 @@ support interactive features, e.g.:
     ctrl-s -- display configuration settings
     ctrl-d -- toggle postmortem debugging
     ctrl-v -- set verbosity on the fly
-AJAX debugger?
+AJAX debugger? combine development and debugging modes
+    or keep debugging mode as is and add ajax debugging in dev mode -- "dynamic traceback"
 add cli options to dump config and exit
 play nice on Windows
     GUI?

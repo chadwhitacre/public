@@ -7,7 +7,8 @@ from email.Message import Message
 from httpy._zope.interface.exceptions import DoesNotImplement
 from httpy._zope.server.adjustments import default_adj
 
-from httpy.Request import Request, ZopeRequest
+from httpy import Request
+from httpy.couplers.standalone.request import ZopeRequest
 
 
 ZOPEREQ_API = [ '__doc__'
@@ -25,9 +26,8 @@ ZOPEREQ_API = [ '__doc__'
               , 'get_body'
               , 'get_headers'
               , 'get_line'
-              , 'message'
+              , 'headers'
               , 'method'
-              , 'parse_body'
               , 'parse_line'
               , 'path'
               , 'raw'
@@ -42,7 +42,9 @@ ZOPEREQ_API = [ '__doc__'
 REQUEST_API = [ '__doc__'
               , '__init__'
               , '__module__'
-              , 'message'
+              , '__repr__'
+              , '__str__'
+              , 'headers'
               , 'method'
               , 'path'
               , 'raw'
@@ -70,9 +72,9 @@ class TestRequest(unittest.TestCase):
         actual = dir(self.request)
         self.assertEqual(expected, actual)
 
-    def testNoBodyStillHasEmailMessageMessage(self):
+    def testNoBodyStillHasHeaders(self):
         expected = True
-        actual = isinstance(self.request.message, Message)
+        actual = isinstance(self.request.headers, Message)
         self.assertEqual(expected, actual)
 
     def testBadRequestObject(self):
