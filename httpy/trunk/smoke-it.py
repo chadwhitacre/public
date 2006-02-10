@@ -9,7 +9,10 @@ HTML and PDF formats.
 """
 import os
 import sys
-sys.path.insert(0, os.path.realpath('./site-packages/'))
+
+if __name__ == '__main__':
+    sys.path.insert(0, os.path.realpath('./site-packages/'))
+
 import httpy
 
 
@@ -30,20 +33,39 @@ HOMEPAGE = """\
   <title>Success!</title>
   <style type="text/css">
     body {
-      background: green;
-      font-family: "Comic Sans MS", sans-serif;
-      margin: 0;
-      padding: 2em;
-      text-align: center;
-      }
+        background: green;
+        font-family: "Comic Sans MS", sans-serif;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+        }
     #hack {
-      width: 525px;
-      height: 440px;
-      background: white url("/doc/success.gif") bottom center no-repeat;
-      text-align: center;
-      margin: 0 auto;
-      padding: 1em 0 0;
-      }
+        position: relative;
+        width: 525px;
+        height: 420px;
+        background: white url("/doc/success.gif") bottom center no-repeat;
+        text-align: center;
+        margin: 0 auto;
+        padding: 0.5em 0 0;
+        }
+    h1 {
+        margin: 0;
+        padding: 0;
+        height: 70px;
+        }
+    p {
+        margin: 0;
+        padding: 0;
+        }
+    #version {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        padding: 2px 4px;
+        background: black;
+        color: white;
+        font: normal 12px/14px monospace;
+        }
   </style>
 
 <body><div id="hack">
@@ -54,11 +76,18 @@ HOMEPAGE = """\
   <a href="/doc/html/">HTML</a> |
   <a href="/doc/httpy-%(version)s.pdf">PDF</a>
 </p>
+<div id="version">
+    version <b>%(version)s</b> |
+    revision <b>%(revision)s</b>
 </div>
-<div id="version">version %(version)s</div>
+</div>
 </body>
 </html>
-""" % {'version':httpy.__version__}
+""" % { 'version':httpy.__version__
+      , 'revision':httpy.__revision__ or 'n/a'
+       }
 
 
-httpy.couple(Responder())
+
+if __name__ == "__main__":
+    httpy.couple(Responder())
