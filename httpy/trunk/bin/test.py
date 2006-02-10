@@ -3,15 +3,15 @@
 
 Usage, e.g.:
 
-    $ python test.py site-packages/httpy/couplers
+    $ python bin/test.py site-packages/httpy/couplers
 
 The argument to test.py is a path constraint. This runner looks for all tests/
 directories under the path constraint, recursing into subdirectories. Within
-those directories, it looks for files named test_*.py, and runs .
+those directories, it looks for files named test_*.py, and adds the return value
+of test_suite within those files to its list of tests to run.
 
 """
-
-
+import optparse
 import os
 import sys
 import unittest
@@ -25,12 +25,26 @@ __stdout = sys.stdout
 sys.stdout = StringIO()
 
 
-#
+# Get the top of the tree.
+# ========================
 
-# decide which tests to run
+argv = sys.argv[1:2]
+recursive = False
+if '-r' in argv:
+    recursive = True
+    argv.remove('-r')
+arg = argv and argv[0] or '.'
+root = os.path.realpath(arg)
+
+print recursive
+print root
+raise SystemExit
 
 
-arg = sys.argv[1:2]
+
+# Walk the tree and gather tests.
+# ===============================
+
 prefix = 'test'
 if arg:
     prefix = '%s_%s' % (prefix, arg[0])
