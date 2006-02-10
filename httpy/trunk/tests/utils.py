@@ -2,9 +2,9 @@ from StringIO import StringIO
 
 from httpy._zope.server.adjustments import default_adj
 
-from httpy.Config import Config
-from httpy.Request import ZopeRequest
-from httpy.Task import Task
+from httpy.couplers.standalone.config import Config
+from httpy.couplers.standalone.request import ZopeRequest
+from httpy.couplers.standalone.task import Task
 
 
 class StubServer:

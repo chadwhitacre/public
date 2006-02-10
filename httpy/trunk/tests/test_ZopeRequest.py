@@ -5,7 +5,7 @@ import unittest
 
 from httpy._zope.server.adjustments import default_adj
 
-from httpy.Request import ZopeRequest
+from httpy.couplers.standalone.request import ZopeRequest
 
 
 class TestRequest(unittest.TestCase):

@@ -7,27 +7,34 @@ programmatic interface
     httpy.couple(responder) -- automatically switches between CGI/FastCGI/StandAlone
         need to find a way to infer FastCGI env
 
-logging
-    access to stdout, error to stderr
-    check out Apache Common Log Format
-    needs to log to stderr instead of stdout?
-    log should include file and line number
-    log should take an expression that is only evaluated if needed
-    it would be super cool to change the log level on the fly while running
-        I would want to support this in all modes, including deployment
-    also would be great to throttle logging to a single subsystem
-    mimefs_logger
-    config!
-    how about a custom logger ...
-        devel, debug, stage, deploy instead of info, warn, etc.
-        simple on/off switch in Config
-
 tests
     update tests post-refactor
+
+    Request
+    Response
+    deliver -- only have with make_deliver
+    couplers
+        StandAlone
+            ZopeRequest
+            Config
+        CGI
+            CGIRequest
+        FastCGI
+    responders
+        Multiple
+        Static
+        XMLRPC
+    utils
+        translate
+        mode
+        add_api
+        couple
+
+
+    Request and deliver need the most testing because the are the most
+    complicated; that's where the action is. The couplers also need to be well
+
     test AF_UNIX in Server as well as in Config
-    test os.path.realpath(addr)
-    test our processing of different cases of configuration options
-    systematic tests for different server modes
     tests for utils.parse*
     run tests on Mac
     test Task when respond doesn't raise anything
@@ -45,6 +52,21 @@ documentation
     man httpy(1)
     fix index for PDF; consider adding index to HTML; cross.linking (utils.Path)
 
+logging
+    access to stdout, error to stderr
+    check out Apache Common Log Format
+    needs to log to stderr instead of stdout?
+    log should include file and line number
+    log should take an expression that is only evaluated if needed
+    it would be super cool to change the log level on the fly while running
+        I would want to support this in all modes, including deployment
+    also would be great to throttle logging to a single subsystem
+    mimefs_logger
+    config!
+    how about a custom logger ...
+        devel, debug, stage, deploy instead of info, warn, etc.
+        simple on/off switch in Config
+
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
     why can't we manage this in the signal handler? i.e., "if pdb: finish_pdb()"
@@ -54,12 +76,7 @@ RestartingServer seems to miss _foo.py
 
 tweaks
     raise Response(537, {}) -> error!
-    shouldn't request.path be modified to reflect the app.uri_root?
-        request.path -> request.fullpath
-        request.path = request.fullpath[len(self.uri_root):]
-
     why can't we just import StatusCodes from BaseHTTPServer?
-
 
 
 
