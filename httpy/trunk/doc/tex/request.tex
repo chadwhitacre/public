@@ -1,5 +1,13 @@
 \section{\class{Request} Objects \label{request}}
 
+HTTP is a stateless protocol. Any state that exists is encoded somewhere in the
+Request: either in the Request-Line, the headers, or the body. httpy doesn't
+pretend to know the best way for you to encode state in your app's requests.
+Instead, it gives you the raw HTTP message, and a very minimal secondary API.
+There are a few utilities to help you with this -- parse_body, parse_cookie,
+parse_query. But you are free to parse the Request however you like.
+
+
 \subsection{Raw API}
 
 Instances of \class{httpy.Request} store the raw HTTP request in the following
@@ -27,7 +35,8 @@ The raw message body.
 
 \subsection{Derived API}
 
-Furthermore, \class{Request} instances provide a very minimal derivative API:
+Besides providing access to the raw Request message, \class{Request} instances
+provide a very minimal derivative API:
 
 \begin{datadesc}{method}
 The \ulink{HTTP method}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html} from the Request-Line.

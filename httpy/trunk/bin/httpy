@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 """httpy -- a straightforward Python webserver. `man 1 httpy' for details.
 """
-from httpy.couplers import StandAlone
+from httpy import couple
 from httpy.responders import Multiple
 
-coupler = StandAlone(Multiple())
-coupler.go()
+couple(Multiple())
