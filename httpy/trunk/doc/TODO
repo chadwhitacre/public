@@ -8,6 +8,9 @@ programmatic interface
         need to find a way to infer FastCGI env
 
 tests
+    write a restarting test loader/runner
+
+
     update tests post-refactor
 
     Request
@@ -71,6 +74,8 @@ when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
     why can't we manage this in the signal handler? i.e., "if pdb: finish_pdb()"
         hrm, tried this; not instantly obvious
+    maybe curses has an answer?
+        http://www.amk.ca/python/howto/curses/curses.html
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
 RestartingServer seems to miss _foo.py
 
