@@ -459,10 +459,10 @@ def main(argv=None):
         if ('-i','') in opts:
             CursesInterface('httpy')
         else:
-            name = ''
+            name = 'httpy'
             if args:
                 name = args[0]
-            Tester().run(name)
+            run(name)
 
     except Usage, err:
         print >>sys.stderr, err.msg
