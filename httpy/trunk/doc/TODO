@@ -8,7 +8,14 @@ programmatic interface
         need to find a way to infer FastCGI env
 
 tests
-    write a restarting test loader/runner
+    write a restarting test loader/runner -- testosterone
+        refactor with a clean data structure
+        should only should tests with failures and/or errors
+        write ResultsScreen
+        implement pgup/pgdn, F5, etc.
+        ===done===
+        fix bug in gather
+
 
 
     update tests post-refactor

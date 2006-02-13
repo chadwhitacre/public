@@ -28,6 +28,7 @@ screen 1: ModulesScreen
     F5 -- run tests and stay on ModulesScreen
     <ctrl>-F5 -- refresh list of modules
         do real work in child process, a la RestartingServer?
+    <something> -- toggle show all/only fail/err
 
 
 screen 2: ResultsScreen
@@ -61,6 +62,22 @@ drawing screen
 
 
 
+class ModuleTests:
+    "TestSuite subclass"
+
+    direct = TestSuite
+    cumulative = TestSuite
+
+
+
+
+
+class TestManager:
+
+    suites
+
+
+
 
 
 
@@ -69,18 +86,29 @@ import curses
 import getopt
 import os
 import sys
-import time
 import unittest
 
 import httpy
+
+
+def flatten(_suite):
+    """Given a TestSuite, return a flattened TestSuite.
+    """
+    suite = unittest.TestSuite()
+    for item in _suite:
+        if isinstance(item, unittest.TestCase):
+            suite.addTest(item)
+        if isinstance(item, unittest.TestSuite):
+            suite.addTests(flatten(item))
+    return suite
 
 
 def gather(base):
     """Given a base module, crawl sys.modules looking for tests.
 
     Returns a dictionary: {'module dotted name': (<suite>, <suite>). The first
-    suite contains tests from just that module. The second suite includes tests
-    from all sub-modules.
+    suite contains tests from just that module. The second suite includes all
+    the tests from that modules, and all tests from modules below that module.
 
     """
 
@@ -111,7 +139,7 @@ def gather(base):
         if not module.__file__.startswith(path):
             # Skip non-httpy modules that ended up in our namespace.
             continue
-        suite = unittest.defaultTestLoader.loadTestsFromModule(module)
+        suite = flatten(unittest.defaultTestLoader.loadTestsFromModule(module))
         if suite.countTestCases() == 0:
             continue
 
@@ -119,10 +147,10 @@ def gather(base):
         # We have tests!
         # ==============
         # Store our tests, and add them to any ancestors' cumulative test
-        # suites.
+        # suites. Since we sorted sys.modules, ancestor will always be
+        # populated first if it has tests. It might not have tests, though.
 
-        below = unittest.TestSuite()
-        below.addTests(suite)
+        below = flatten(unittest.TestSuite(suite))
         tests[name] = (suite, below)
 
         parts = name.split('.')[:-1]
@@ -130,11 +158,12 @@ def gather(base):
             continue
         for i in range(len(parts)):
             ancestor = '.'.join(parts[:i+1])
-            if ancestor in tests:
-                tests[ancestor][1].addTests(suite)
-            else:
-                tests[ancestor] = (unittest.TestSuite(), suite)
-
+            if ancestor in tests:     # Ancestor already has its own tests too.
+                tests[ancestor][1].addTests(suite._tests)
+            else:                  # Ancestor doesn't have any of its own tests.
+                empty = unittest.TestSuite()
+                cumulative = unittest.TestSuite(suite._tests)
+                tests[ancestor] = (empty, cumulative)
 
     return tests
 
@@ -213,7 +242,7 @@ class ModulesScreen:
             c = self.win.getch()
             if c == ord('q'):
                 raise KeyboardInterrupt
-            if c == ord('h'):
+            elif c == ord('h'):
                 pass # return HelpScreen(self.iface)
 
             elif c == curses.KEY_UP:
@@ -245,6 +274,19 @@ class ModulesScreen:
                 self.cumulative = not self.cumulative
                 self.draw_list()
 
+            elif c == curses.KEY_F5:
+                result = unittest.TestResult()
+                start = self.offset
+                end = start + self.viewrows + 1
+                suite = flatten(unittest.TestSuite(self.suites[start:end]))
+                suite.run(result)
+                self.result = result
+                self.draw_list()
+
+
+    def run(self, start, end):
+        """Run tests.
+        """
 
 
     def draw(self):
@@ -313,11 +355,11 @@ class ModulesScreen:
         # Banner text and column headers
         # ==============================
 
-        banner = "httpy v%s [r%s]" % (httpy.__version__, httpy.__rev__)
+        banner = "testosterone -- the manly Python test driver"
         self.win.addstr(1,2,banner)
 
-        self.win.addstr(3,2,"module")
-        self.win.addstr(3,c1w+8,"direct")
+        self.win.addstr(3,2,"modules")
+        self.win.addstr(3,c1w+7,"discrete")
         self.win.addstr(3,c1w+c2w+7,"cumulative")
 
         self.win.addstr(5,c1w+4,"fail")
@@ -432,6 +474,18 @@ class ModulesScreen:
         self.win.addch(self.size[0],self.size[1]-1,c)
 
 
+        # Distinct/Cumulative
+        # ===================
+
+        W = self.size[1]
+        if self.cumulative:
+            self.win.addstr(3,c1w+7,"discrete")
+            self.win.addstr(3,c1w+c2w+7,"cumulative", curses.A_BOLD)
+        else:
+            self.win.addstr(3,c1w+7,"discrete", curses.A_BOLD)
+            self.win.addstr(3,c1w+c2w+7,"cumulative")
+
+
         # Finally, draw the window.
         # =========================
 
@@ -449,6 +503,7 @@ class Usage(Exception):
 
 def main(argv=None):
     if argv is None:
+
         argv = sys.argv
     try:
         try:
