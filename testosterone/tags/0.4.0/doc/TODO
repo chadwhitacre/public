@@ -1,7 +1,4 @@
 release
-    tag release
-    update website
-    cheeseshop
     PyCon wiki
     screencast
     announcement
@@ -9,6 +6,10 @@ release
     testosterone.1
     testosterone.tex
     package
+    tag release
+    update website
+    cheeseshop
+    testing wiki
 
 consider a TESTOSTERONE_STOPWORDS environment variable
 add ability to cancel a report refresh

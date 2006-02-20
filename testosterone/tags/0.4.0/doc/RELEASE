@@ -6,3 +6,8 @@ when svn is stable, tag the release, then update the following items on the tag:
 
 make dist will re-generate docs and build archives
     put docs and archives on zetadev.com/software
+
+
+update PyPI, and the testing tools taxonomy:
+
+http://pycheesecake.org/wiki/PythonTestingToolsTaxonomy
