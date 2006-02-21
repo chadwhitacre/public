@@ -9,15 +9,6 @@ programmatic interface
 
 tests
     write a restarting test loader/runner -- testosterone
-        refactor with a clean data structure
-        should only should tests with failures and/or errors
-        write ResultsScreen
-        implement pgup/pgdn, F5, etc.
-        ===done===
-        fix bug in gather
-
-
-
     update tests post-refactor
 
     Request
