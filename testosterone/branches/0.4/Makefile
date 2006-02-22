@@ -24,11 +24,12 @@ clean:
 	rm -rf build
 	rm -rf dist
 	find . -name \*.pyc | xargs rm
+	make -C doc/tex clean
 
 
 install: configure
-	install -C -o root -g wheel -m 555 testosterone ${prefix}/bin
-	install -C -o root -g wheel -m 444 testosterone.1.gz ${prefix}/man/man1
+	install -o root -m 555 testosterone ${prefix}/bin
+	install -o root -m 444 testosterone.1.gz ${prefix}/man/man1
 	python setup.py install
 
 
