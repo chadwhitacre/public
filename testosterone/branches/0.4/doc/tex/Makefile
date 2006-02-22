@@ -10,8 +10,8 @@ MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--dir ./html \
 				--logging \
 				--up-link "http://www.zetadev.com/software/testosterone/" \
-				--up-title "httpy homepage" \
-				--address "<a href=\"http://www.zetadev.com/software/testosterone/\">testosterone is Zeta software</a>. It is copyright &copy; 2006 Chad Whitacre, and is offered free of charge, warranty, and restrictions." \
+				--up-title "httpy testosterone" \
+				--address "<a href=\"http://www.zetadev.com/software/testosterone/\">testosterone is Zeta software</a>. It is copyright &copy; 2006 by Chad Whitacre, and is offered free of charge, warranty, and restrictions." \
 #				--style style.css
 
 
@@ -29,4 +29,4 @@ pdf:
 
 clean:
 	rm -rf *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \
-			*.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi html
+			*.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi html ../*.pdf
