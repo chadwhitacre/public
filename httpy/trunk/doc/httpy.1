@@ -173,10 +173,66 @@ before instantiation, so they are available during construction.
 .Pp
 Responders must be able to respond to multiple (non-concurrent) requests.
 .Ss Frameworks
+
+Responders are Python applications scattered about your site hierarchy. In order
+to unify these responders into a coherent whole,
+.Nm
+
+provides a framework abstraction. This gives you three hooks: one before the
+responder is chosen, another before it is called, and a third
+
+ is a centralized hook into every HTTP request, so that you
+can affect the Request on the way in, and the Response on the way out.
+
+regardless of the responder in use. This is the
+place to centralize site logic -- such as security, templating, etc.
+
+
+class IFramework(Interface):
+    """A package/module or class that defines a framework.
+
+    As with IResponder above, there are two data attributes that are added
+    magically if they aren't already present:
+
+        root    the filesystem root of the site for which the framework obtains
+        __      the site's magic directory
+
+    If your framework is a class, these are added immediately before
+    instantiation.
+
+    """
+
+    def wrap_request(request, responder=None):
+        """Takes an IRequest and a possible IResponder.
+
+        This routine is called twice, once immediately before selecting a
+        responder, and once immediately after. This gives you the flexibility to
+        both influence responder selection, and carry out logic based on the
+        chosen responder.
+
+        The object returned by this hook will be passed to your responders'
+        respond method, so you can return anything meaningful to responders
+        written for your framework. The same object will be passed to
+        unwrap_response (see below), so you can use it to store state between
+        the inbound and outbound hooks.
+
+        """
+
+
+    def unwrap_response(response, request, responder):
+        """Takes an IResponder, an httpy.Request, and a response object.
+
+        The response object is framework-dependent. The object returned by this
+        hook will be processed by httpy's outbound machinery, so you must return
+        an IResponse implementation.
+
+        """
+
+
 .Nm
 looks for a file named
 .Sq framework.py
-in the site's publishing root and in the site's magic directory.
+in the site's magic directory, and then in the site's publishing root.
 .\"
 .\"
 .\"
