@@ -16,7 +16,7 @@ classifiers = [
                 ]
 
 setup( name = 'testosterone'
-     , version = '0.4.0'
+     , version = '0.4'
      , package_dir = {'':'site-packages'}
      , packages = [ 'testosterone'
                   , 'testosterone.cli'
