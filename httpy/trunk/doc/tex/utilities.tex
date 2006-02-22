@@ -52,18 +52,18 @@ then \code{translate()} ignores \var{defaults} and performs no validation. If
 \begin{enumerate}
 
 \item If the translated path points to a directory, then the URI must end with a
-slash, or
-\ulink{301}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.2} is
-raised.
+slash, or \ulink{301 Moved
+Permanently}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.2}
+is raised.
 
 \item If the translated path points to a directory, and no default resource is
-named or available, then
-\ulink{403}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4} is
+named or available, then \ulink{403
+Forbidden}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4} is
 raised.
 
 \item If the translated path does not point to a directory, then it must point
-to a valid file, or
-\ulink{404}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5} is
+to a valid file, or \ulink{404 Not
+Found}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5} is
 raised.
 
 \end{enumerate}

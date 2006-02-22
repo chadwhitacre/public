@@ -1,36 +1,14 @@
 \subsection{\class{Multiple} Responders \label{multiple}}
 
-httpy is built around the idea that there are two kinds of websites,
-publications and applications, which are differentiated by their organization
-and interface models. A \dfn{publication} website organizes information into
-individual pages within a hierarchical folder structure that one navigates by
-browsing. In an \dfn{application} website, on the other hand, data is not
-organized into hierarchical pages but is dealt with via a non-browsing interface
-such as a search box.
+The \class{Multiple} responder implements a hybrid website. The URI hierarchy is
+taken straight from the filesystem. At any point in the site's filesystem tree,
+you can place a file named responder.py, which can either be a responder
 
-The HTML version of this documentation is an example of a publication website: a
-number of hypertext documents organized into sections. If we weren't using LaTeX
-(or if I knew how to use it better), the sections would probably be encoded in
-folders. \ulink{Gmail}{http://mail.google.com/mail} is a pure application
-website, one which organizes and presents information non-hierarchically. Most
-websites, however, are hybrids. That is, within an overall hierarchical
-organization you will find both individual pages of information as well as
-applications such as a site search feature, or a threaded discussion forum.
-
-Now, in point of fact, publication websites are a subset of application
-websites. An application site can use any interface metaphor; a publication is
-an application that uses the familiar folder/page metaphor to organize and
-present its information. Therefore, every website is fundamentally an
-application. httpy's default application implements the basic publication
-scenario: serving static files straight off the filesystem.
-
-httpy enables you to build custom publication, application, and hybrid websites.
-It privileges the filesystem in supporting a publication or hybrid website's
-hierarchical organization. To support applications, httpy looks for a certain
-filesystem layout with files that define certain Python objects, which it
-incorporates into the HTTP request/response process. These are described below.
-
-
+, using the filesystem for hierarchical organization. URI hierarchy is
+mapped directly are to the filesystem, and chooses different responders based on
+the path. The various sub-applications are defined in files named
+\code{responder.py}, The Static responder picks up anything that falls through
+the cracks.
 
 \subsubsection{Filesystem Layout}
 

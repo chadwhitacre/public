@@ -1,0 +1,3 @@
+Makefile            version
+setup.py            version
+doc/tex/httpy.tex   version and date

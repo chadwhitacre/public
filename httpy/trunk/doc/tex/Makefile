@@ -11,7 +11,7 @@ MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--logging \
 				--up-link "http://www.zetadev.com/software/httpy/" \
 				--up-title "httpy homepage" \
-				--address "<a href=\"http://www.zetadev.com/software/httpy/\">httpy is Zeta software</a>" \
+				--address "<a href=\"http://www.zetadev.com/software/httpy/\">httpy is Zeta software</a>. It is copyright &copy; 2006 by Chad Whitacre, and is offered free of charge, warranty, and restrictions." \
 #				--style style.css
 
 

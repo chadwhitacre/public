@@ -3,43 +3,72 @@
 # No warranty is expressed or implied.
 
 prefix=/usr/local
-zope_svn_root=svn://svn.zope.org/repos/main/Zope3/tags/Zope-3.1.0/src/zope
+version=0.9
+
 
 configure:
-# Delete and recreate the script to be installed.
+# create the script to be installed
+	rm -f httpy
+	cp bin/httpy.py httpy
 	chmod 555 httpy
 
-# Delete and recreate the man page to be installed.
+# [re]create the man page to be installed
 	rm -f httpy.1.gz
-	rm -f httpy.conf.5.gz
-	gzip -c -9 doc/man/httpy.1 > httpy.1.gz
-	gzip -c -9 doc/man/httpy.conf.5 > httpy.conf.5.gz
+	gzip -c -9 doc/httpy.1 > httpy.1.gz
 	chmod 444 httpy.1.gz
-	chmod 444 httpy.conf.5.gz
+
 
 clean:
-# Delete the script and man page to be installed.
-	rm -rf httpy.1.gz httpy.conf.5.gz
+# remove all of the cruft that gets auto-generated on doc/install/release
+	rm -f httpy httpy.1.gz
 	rm -rf build
 	rm -rf dist
-	rm -rf doc/html
-	rm -rf _zope
-	find . -name \*.pyc -exec rm -f {} \;
+	find . -name \*.pyc | xargs rm
+	make -C doc/tex clean
+
 
 install: configure
-# After deleting and recreating the script and man page, install them.
-	python setup.py install
-	install -C -o root -g wheel -m 555 bin/httpy ${prefix}/bin
+	install -C -o root -g wheel -m 555 httpy ${prefix}/bin
 	install -C -o root -g wheel -m 444 httpy.1.gz ${prefix}/man/man1
-	install -C -o root -g wheel -m 444 httpy.conf.5.gz ${prefix}/man/man5
+	python setup.py install
+
 
 uninstall:
-# Delete the script and man page from their installed locations/
-# This should also remove the package from the python installation.
 	rm -f ${prefix}/bin/httpy
 	rm -f ${prefix}/man/man1/httpy.1.gz
-	rm -f ${prefix}/man/man5/httpy.conf.5.gz
 
+
+
+
+# Target for building a distribution
+# ==================================
+
+dist: clean
+	mkdir dist
+	mkdir dist/httpy-${version}
+	cp -r Makefile README bin site-packages setup.py dist/httpy-${version}
+
+	make -C doc/tex html pdf clean
+	mkdir dist/httpy-${version}/doc
+	cp -r doc/html doc/httpy* dist/httpy-${version}/doc
+
+	find dist/httpy-${version} -name \.svn | xargs rm -r
+	tar --directory dist -zcf dist/httpy-${version}.tgz httpy-${version}
+	tar --directory dist -jcf dist/httpy-${version}.tbz httpy-${version}
+
+# ZIP archive gets different line endings and script name
+	svneol clean -w dist/httpy-${version}
+	mv dist/httpy-${version}/bin/httpy.py dist/httpy-${version}/bin/httpy
+	cd dist && zip -9rq httpy-${version}.zip httpy-${version}
+#	rm -rf dist/httpy-${version}
+
+
+
+# Target for updating Zope packages
+# =================================
+# This is not robust.
+
+zope_svn_root=svn://svn.zope.org/repos/main/Zope3/tags/Zope-3.1.0/src/zope
 
 zope: clean
 # Update our zope packages from zope svn
