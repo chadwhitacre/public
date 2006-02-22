@@ -10,9 +10,10 @@ object-oriented API for the \envvar{HTTPY_MODE} environment variable, and the
 
 
 \begin{classdesc}{Request}{IRequest}
-Constructs a new \class{Request} object. \var{IRequest} is a provider of the
-\class{IRequest} interface. This provision is validated, and the desired API is
-transferred from the \class{IRequest} provider to the new object instance.
+Constructs a new \class{Request} object. \var{IRequest} is a (probably implicit)
+provider of the \class{IRequest} interface. This provision is validated, and the
+desired API is transferred from the \class{IRequest} provider to the new object
+instance.
 
 Your responder's \method{respond} method will be given instances of this class,
 so you will be using it constantly on that basis. However, you would probably

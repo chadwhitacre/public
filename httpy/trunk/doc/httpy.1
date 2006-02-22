@@ -1,0 +1,237 @@
+.Dd February 20, 2006
+.Os
+.Dt HTTPY 1 LOCAL
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh NAME
+.Nm httpy
+.Nd a sane and robust Python web server
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SYNOPSIS
+.Nm
+.Op Ar options
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh DESCRIPTION
+.Nm
+is a Python web server bundled with the Python library of the same name. It
+serves static files from the filesystem, and also offers a mechanism for
+inserting custom Python applications into a site's path hierarchy.
+
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh OPTIONS
+.Bl -tag -width "--threads" -compact
+.It Fl a Ar address
+.It Fl -address Ar address
+The address to which
+.Nm
+should bind. If
+.Ar address
+begins with a dot or a forward slash, then it is interpreted as an AF_UNIX
+socket. Otherwise, it is interpreted as an AF_INET socket. If
+.Ar address
+begins with a colon, then the loopback address is assumed. The default is :8080.
+.It Fl m Ar mode
+.It Fl -mode Ar mode
+.Ar mode
+is one of the strings
+.Sq development ,
+.Sq debugging ,
+.Sq staging ,
+or
+.Sq deployment .
+The
+.Ev HTTPY_MODE
+environment variable will be set to this value, and will be available to your
+responders via the httpy.mode object. The default is
+.Sq development .
+.It Fl t Ar threads
+.It Fl -threads Ar threads
+.Nm
+creates a new thread for each request, up to
+.Ar threads .
+The minimum is 1, and the default is 10. No upper limit is enforced.
+.It Fl u Ar user
+.It Fl -user Ar user
+After binding to
+.Ar address ,
+.Nm
+switches to the uid of
+.Ar user ,
+if given.
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh BUILDING A SITE
+.Nm
+translates URI paths literally to the filesystem, rooting them in the current
+working directory. For example, if you start
+.Nm
+in /usr/local/www, then it would translate a request for
+http://localhost:8080/foo/ to a directory /usr/local/www/foo. Out of the box,
+.Nm
+serves static files from the filesystem, and looks for default documents
+within a given directory named
+.Sq index.html
+and
+.Sq index.htm .
+.Pp
+.Nm
+also provides for integrating custom Python applications into a site's
+hierarchy through two abstractions: responders and frameworks.
+.Pp
+.Ss Responders
+If a directory contains a file named
+.Sq responder.py ,
+then
+.Nm
+tries to import a responder from that file, and uses that responder to serve all
+requests for resources at or below that directory.
+.Pp
+A responder is a Python object with a method named
+.Sq respond
+that takes an
+httpy.Request object and raises an httpy.Response object. If responder.py
+defines a class named
+.Sq Responder ,
+then that is used as the responder. Otherwise, if responder.py defines a respond
+function, then the module itself is used as the responder.
+.Pp
+So if you define a responder in /usr/local/www/foo/responder.py, then
+.Nm
+would route requests for all of the following to that responder:
+.Pp
+.Bl -item -offset indent -compact
+.It
+http://localhost:8080/foo
+.It
+http://localhost:8080/foo/
+.It
+http://localhost:8080/foo/bar
+.El
+.Pp
+Furthermore,
+.Nm
+adds exactly one path to sys.path for each responder it finds. First it looks
+for a subdirectory named
+.Sq site-packages ,
+then one named
+.Sq lib .
+If neither of these exist, then it adds the directory itself.
+.Pp
+The final twist is that if a directory contains a subdirectory named
+.Sq __
+(double-underscore, referred to as a
+.Sq magic directory ) ,
+then
+.Nm
+will use any responder defined there to serve requests for the parent directory,
+and the sys.path addition logic uses the magic directory as its base. If both a
+magic directory and its parent define a responder, then the parent's wins. If
+the responder comes from the parent, then the magic directory is considered for
+inclusion in sys.path, after site-packages and lib.
+.Pp
+.Nm
+registers responders with URI paths when it starts up, and adds the following
+data attributes to each responder at registration:
+.Pp
+.Bl -tag -width "site_root" -offset indent
+.It __
+the filesystem path of the responder's magic directory, or None if it does not
+exist
+.It pkg
+the path added to sys.path for this responder
+.It root
+the responder's filesystem path
+.It site___
+the filesystem path of the magic directory in the publishing root, or None if it
+does not exist
+.It site_root
+the filesystem path of the publishing root
+.It uri
+the URI path below which requests will go to this responder
+.El
+.Pp
+Existing attributes are not overriden. For class responders, these are added
+before instantiation, so they are available during construction.
+.Pp
+Responders must be able to respond to multiple (non-concurrent) requests.
+.Ss Frameworks
+.Nm
+looks for a file named
+.Sq framework.py
+in the site's publishing root and in the site's magic directory.
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh IMPLEMENTATION NOTES
+This program is known to work with the following software:
+.Pp
+.Bl -dash -offset indent -compact
+.It
+FreeBSD 4.11
+.It
+Python 2.4.2
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.\".Sh FILES
+.\"
+.\"
+.\"
+.\"
+.\"
+.\".Sh EXAMPLES
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SEE ALSO
+.Xr python 1 ,
+http://www.zetadev.com/software/httpy/
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh HISTORY
+.Bl -hang
+.It Em 2006-02-21
+released version 0.9.0
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh AUTHORS
+.Bl -item -compact
+.It
+(c) 2006 Chad Whitacre <http://www.zetadev.com/>
+.It
+This program is offered free of charge, warranty, and restrictions.
+.It
+If you like it, buy me a beer someday.
+.El

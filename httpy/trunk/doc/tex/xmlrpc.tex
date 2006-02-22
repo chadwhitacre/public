@@ -8,16 +8,17 @@ basis for this class. By mixing the \class{XMLRPC} responder into your class,
 you can easily make your instance's methods available to clients over the
 network. Instances inherit one attribute and two methods:
 
-\begin{memberdesc}[tuple]{protected} A tuple of names of methods of \class{self}
+\begin{memberdesc}[tuple]{protected} A tuple of names of methods on \class{self}
 which should never be served via XMLRPC. This class attribute on \class{XMLRPC}
 is set to the empty tuple.\end{memberdesc}
 
 \begin{methoddesc}{respond}{request}
-This is a pass-through for \method{serve_xmlrpc}.
+This is a pass-through for \method{serve_xmlrpc}. It can safely be overriden, but
+in most cases need not be.
 \end{methoddesc}
 
 \begin{methoddesc}{serve_xmlrpc}{request}
-Proxies methods of \class{self} via XMLRPC. \var{request} is a \class{Request}
+Proxies methods on \class{self} via XMLRPC. \var{request} is a \class{Request}
 object. Assuming \var{request} is an XMLRPC request for method \var{name}, the
 following conditions trigger an XMLRPC <fault> response with <faultCode> 404:
 

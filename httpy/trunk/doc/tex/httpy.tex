@@ -26,7 +26,7 @@
 				% the date to \today can be used during draft
 				% stages to make it easier to handle versions.
 
-\release{0.9a}			% release version; this is used to define the
+\release{0.9}			% release version; this is used to define the
 				% \version macro
 
 \makeindex			% tell \index to actually write the .idx file
@@ -53,23 +53,24 @@ Python websites and web applications.
 
 
 
-
+% These are adding <Image> things to the last page, and I haven't cleaned up the
+% inputs for indexing anyway.
+%%
+%%  The ugly "%begin{latexonly}" pseudo-environments are really just to
+%%  keep LaTeX2HTML quiet during the \renewcommand{} macros; they're
+%%  not really valuable.
+%%
+%%  If you don't want the Module Index, you can remove all of this up
+%%  until the second \input line.
+%%
+%%begin{latexonly}
+%\renewcommand{\indexname}{Module Index}
+%%end{latexonly}
+%\input{mod\jobname.ind}		% Module Index
 %
-%  The ugly "%begin{latexonly}" pseudo-environments are really just to
-%  keep LaTeX2HTML quiet during the \renewcommand{} macros; they're
-%  not really valuable.
-%
-%  If you don't want the Module Index, you can remove all of this up
-%  until the second \input line.
-%
-%begin{latexonly}
-\renewcommand{\indexname}{Module Index}
-%end{latexonly}
-\input{mod\jobname.ind}		% Module Index
-
-%begin{latexonly}
-\renewcommand{\indexname}{Index}
-%end{latexonly}
-\input{\jobname.ind}			% Index
+%%begin{latexonly}
+%\renewcommand{\indexname}{Index}
+%%end{latexonly}
+%\input{\jobname.ind}			% Index
 
 \end{document}

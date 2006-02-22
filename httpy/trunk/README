@@ -1,34 +1,23 @@
-httpy -- a sane Python webserver
+httpy -- a sane and robust HTTP library for Python
 
-========================================
-    INSTALLATION
-========================================
 
-Unix:
+INSTALLATION
 
     $ make install
 
 
-Windows:
+MORE INFO
 
-    C:\httpy>install.bat
+    $ bin/smoke-it.py
+    $ lynx http://localhost:8080/
 
+        <or>
 
-
-========================================
-    MORE INFO
-========================================
-
-You can find more info in the doc/ directory of this distribution, or online:
-
-    http://www.zetadev.com/
+    $ lynx http://www.zetadev.com/software/httpy/
 
 
+LEGAL
 
-========================================
-    LEGAL
-========================================
-
-(c) 2005 Chad Whitacre (except where noted)
-This software carries neither warranty nor restrictions.
-If you like it, buy me a beer someday.
+    (c) 2005 Chad Whitacre (except where noted)
+    This software is offered free of charge, warranty, and restrictions.
+    If you like it, buy me a beer someday.

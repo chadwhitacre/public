@@ -31,7 +31,7 @@ objects:
 
 \end{description}
 
-\module{httpy}'s \class{Request} and \class{Response} objects are fairly literal
+\module{httpy}'s \class{Request} and \class{Response} objects are wooden
 representations of their HTTP counterparts. Likewise, couplers are rather
 pedestrian: that's where the socket and gateway programming happens.
 \module{httpy}'s chief innovation is in overloading Python's \code{raise}
@@ -121,12 +121,12 @@ Out of the box, \module{httpy} includes three responders, to be found in the
 \begin{description}
 
 \item[\class{CGI}]
-    {This reconstructs an httpy.Request from a CGI environment and responds to
-    a single request.}
+    {This reconstructs an \class{httpy.Request} from a CGI environment and
+    responds to a single request.}
 
 \item[\class{FastCGI}]
-    {Enters a response loop, reconstructing Requests from the environment as
-    with CGI.}
+    {Enters a response loop, reconstructing \class{Request}s from the
+    environment as with CGI.}
 
 \item[\class{StandAlone}]
     {A portable, multi-threaded, standalone web server.}
@@ -183,10 +183,9 @@ as well as the emerging WSGI protocol. The details follow, but the question
 "Why?" does have an easy answer; it is the classic open source justification:
 \module{httpy} is my attempt to scratch an itch. Here is my itch:
 
-\begin{quote}
-How do I make the \emph{most} websites of the \emph{highest quality} and
-\emph{widest variety} as \emph{quickly} and \emph{cheaply} as possible?
-\end{quote}
+\begin{quote} I want to make the \emph{most} websites of the \emph{highest
+quality} and \emph{widest variety} as \emph{quickly} and \emph{cheaply} as
+possible. \end{quote}
 
 I looked at the available solutions, and picked a point on a stack below which I
 am satisfied with the available black boxes, and above which I am willing to
@@ -245,7 +244,7 @@ Here's another way to think about it: websites are complex! Ask 10 people to
 model a website using Python objects, and we end up with 20 different answers.
 Ok, so let's try to narrow the problem down slightly: what are the relatively
 fixed points in this discussion? HTTP coming from the client, and Python waiting
-on the server. Well, then, if we can give HTTP a compelling Python object
+on the server. Well then, if we can give HTTP a compelling Python object
 representation, then we will have squeezed out that much complexity from the
 problem.
 
@@ -294,5 +293,5 @@ think CGI environment variables set to Python objects instead of strings.
 With \module{httpy}, on the other hand, the basic building-blocks are
 \emph{Python libraries}. Instead of a "middleware stack," you have the standard
 Python call stack. And instead of "inter-app communication," you simply have
-APIs. Python is a mature, well-documented, ubiquitous tool. As with HTTP, the
-premise is that the closer one sticks to bare Python, the better.
+Python library APIs. Python is a mature, well-documented, ubiquitous tool. As
+with HTTP, the premise is that the closer one sticks to bare Python, the better.
