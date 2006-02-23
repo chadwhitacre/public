@@ -11,7 +11,7 @@ import os
 import sys
 
 if __name__ == '__main__':
-    sys.path.insert(0, os.path.realpath('./site-packages/'))
+    sys.path.insert(0, os.path.realpath('site-packages'))
 
 import httpy
 
@@ -90,4 +90,4 @@ HOMEPAGE = """\
 
 
 if __name__ == "__main__":
-    httpy.couple(Responder())
+    httpy.couplers.StandAlone(Responder()).go()
