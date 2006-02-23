@@ -4,7 +4,6 @@ from distutils.core import setup
 classifiers = [
     'Development Status :: 4 - Beta'
   , 'Environment :: Console'
-  , 'Environment :: Console :: Curses'
   , 'Intended Audience :: Developers'
   , 'License :: Freeware'
   , 'Natural Language :: English'
