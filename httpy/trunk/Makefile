@@ -42,15 +42,27 @@ uninstall:
 
 # Target for building a distribution
 # ==================================
+# note the dependency on svneol: https://www.zetadev.com/svn/public/svneol/
 
 dist: clean
 	mkdir dist
 	mkdir dist/httpy-${version}
-	cp -r Makefile README bin site-packages setup.py dist/httpy-${version}
+	cp -r etc/Makefile \
+	      README \
+	      site-packages \
+	      setup.py \
+	      dist/httpy-${version}
 
-	make -C doc/tex html pdf clean
+	mkdir dist/httpy-${version}/bin
+	cp -r bin/httpy.py \
+	      bin/smoke-it.py \
+	      dist/httpy-${version}/bin
+
+	make -C doc/tex html clean
 	mkdir dist/httpy-${version}/doc
-	cp -r doc/html doc/httpy* dist/httpy-${version}/doc
+	cp -r doc/html \
+	      doc/httpy* \
+	      dist/httpy-${version}/doc
 
 	find dist/httpy-${version} -name \.svn | xargs rm -r
 	tar --directory dist -zcf dist/httpy-${version}.tgz httpy-${version}
