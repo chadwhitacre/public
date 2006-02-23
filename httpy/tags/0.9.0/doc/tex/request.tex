@@ -1,0 +1,127 @@
+\section{\class{Request} Objects \label{request}}
+
+HTTP is a stateless protocol. Any application state that exists in a request is
+encoded in one of the following places:
+
+\begin{itemize}
+\item{the Request Method}
+\item{the path}
+\item{a querystring}
+\item{another part of the Request-URI}
+\item{a \mailheader{Cookie} header}
+\item{another header}
+\item{a \code{POST} body}
+\end{itemize}
+
+httpy doesn't pretend to know the best way for you to encode state in your app's
+requests, nor the best way to object-represent this state. Instead, it gives you
+the raw HTTP message, and a very minimal secondary API. There are a few tools in
+\class{httpy.utils} that might be helpful -- \function{parse_body},
+\function{parse_cookie}, \function{parse_query} -- but you are free to translate
+the \class{Request} to your application's object model however you like.
+
+
+\subsection{Raw API}
+
+Instances of \class{httpy.Request} store the raw HTTP Request message in the
+following attributes:
+
+\begin{datadesc}{raw}
+The entire \ulink{HTTP Request message}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html} exactly as it was found on the wire.
+\end{datadesc}
+
+\begin{datadesc}{raw_line}
+The raw
+\ulink{Request-Line}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1},
+ not including the trailing line break.
+\end{datadesc}
+
+\begin{datadesc}{raw_headers}
+The raw message headers, not including the trailing line breaks.
+\end{datadesc}
+
+\begin{datadesc}{raw_body}
+The raw message body.
+\end{datadesc}
+
+
+
+\subsection{Derived API}
+
+Besides providing access to the raw Request message, \class{Request} instances
+provide a very minimal derivative API:
+
+\begin{datadesc}{method}
+The \ulink{HTTP method}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html} from the Request-Line.
+\end{datadesc}
+
+\begin{datadesc}{uri}
+The \ulink{Request-URI}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.2} as a dictionary. The keys of this dictionary are taken from the
+names used in the standard library's
+\ulink{\module{urlparse}}{http://docs.python.org/lib/module-urlparse.html} module,
+namely: \emph{scheme://netloc/path;parameters?query\#fragment}.
+\end{datadesc}
+
+\begin{datadesc}{path}
+The \emph{path} component of the Request-URI.
+\end{datadesc}
+
+\begin{datadesc}{headers}
+The headers as an instance of the standard library's
+\ulink{\module{email.Message.Message}}{http://docs.python.org/lib/module-email.Message.html}.
+\end{datadesc}
+
+
+\subsection{Differences under CGI/FastCGI}
+
+Whereas the \class{StandAlone} coupler builds \class{Request} objects directly
+from the raw request coming off the wire, the \class{CGI} and \class{FastCGI}
+couplers must resort to reconstructing \class{Request}s from the environment and
+standard input. The resulting object has the same API as above, but since some
+attributes could have subtly different meanings, we provide the following
+reference. Where called for, \code{\e r\e n} line breaks are used.
+
+\begin{datadesc}{raw}
+The concatenation of \member{raw_line}, \member{raw_headers}, and
+\member{raw_body} as described below.
+\end{datadesc}
+
+\begin{datadesc}{raw_line}
+The Request-URI is reconstructed from the \envvar{SCRIPT_NAME},
+\envvar{PATH_INFO}, and \envvar{QUERY_STRING} environment variables. This is
+combined with the \envvar{REQUEST_METHOD} and \envvar{SERVER_PROTOCOL} variables
+to approximate the Request-Line.
+\end{datadesc}
+
+\begin{datadesc}{raw_headers}
+The headers are reconstructed by taking all environment variables beginning with
+"HTTP_" and replacing all underscores with dashes.
+\end{datadesc}
+
+\begin{datadesc}{raw_body}
+Read from the standard input.
+\end{datadesc}
+
+\begin{datadesc}{method}
+Equivalent to the \envvar{REQUEST_METHOD} environment variable.
+\end{datadesc}
+
+\begin{datadesc}{uri}
+The dictionary is based on \member{raw_line} as derived above.
+\end{datadesc}
+
+\begin{datadesc}{path}
+Equivalent to the \envvar{PATH_INFO} environment variable.
+\end{datadesc}
+
+\begin{datadesc}{headers}
+The \class{Message} object is constructed from \member{raw_headers} as described
+above.
+\end{datadesc}
+
+
+\begin{seealso}
+    \seetitle[http://hoohoo.ncsa.uiuc.edu/cgi/interface.html]{The CGI
+    Specification}{ The reference for CGI, including use of environment
+    variables and standard input.}
+\end{seealso}
