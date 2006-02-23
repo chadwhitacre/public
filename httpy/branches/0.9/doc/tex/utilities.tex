@@ -1,0 +1,61 @@
+\section{Utilities \label{utils}}
+
+The \module{httpy.utils} subpackage collects several tools which may be of value
+to those building web applications with \module{httpy}. The \function{translate}
+function is actually used by \module{httpy}'s own \class{Static} and
+\class{Multiple} responders. The \function{parse_*} functions are not used in
+the base package, but even the simplest web applications will need these or
+similar methods to extract application state from the \class{Request} object.
+
+
+\begin{funcdesc}{parse_body}{request}
+Given a \class{Request} instance, returns an instance of the standard library's
+\ulink{\module{cgi.FieldStorage}}{http://docs.python.org/lib/node471.html} class
+representing the request body.
+\end{funcdesc}
+
+\begin{funcdesc}{parse_cookie}{request}
+Given a \class{Request} instance, returns an instance of the standard library's
+\ulink{\module{Cookie.SimpleCookie}}{http://docs.python.org/lib/module-Cookie.html} class
+representing the request's cookie.
+\end{funcdesc}
+
+\begin{funcdesc}{parse_query}{request}
+Given a \class{Request} instance, returns an instance of the standard library's
+\ulink{\module{cgi.FieldStorage}}{http://docs.python.org/lib/node471.html} class
+representing the request's querystring.
+\end{funcdesc}
+
+
+\begin{funcdesc}{translate}{uri_path, fs_root\optional{, defaults}\optional{, raw}}
+Translates a URI path to the filesystem.
+
+\var{uri_path} is the path component of a Request-URI (i.e.,
+\class{Request}.\code{path}). \var{fs_root} is the filesystem path of the
+directory in which the URI path should be rooted. \var{defaults}, if given, is a
+sequence of names that should be considered default resources. If not given,
+\var{defaults} is empty. If \var{raw} is given and it evaluates to \class{True},
+then \code{translate()} ignores \var{defaults} and performs no validation. If
+\var{raw} is \class{False}, then validation proceeds according to this rubric:
+
+\begin{enumerate}
+
+\item If the translated path points to a directory, then the URI must end with a
+slash, or \ulink{301 Moved
+Permanently}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.2}
+is raised.
+
+\item If the translated path points to a directory, and no default resource is
+named or available, then \ulink{403
+Forbidden}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4} is
+raised.
+
+\item If the translated path does not point to a directory, then it must point
+to a valid file, or \ulink{404 Not
+Found}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5} is
+raised.
+
+\end{enumerate}
+
+\code{translate()} returns the filesystem path of the requested resource.
+\end{funcdesc}
