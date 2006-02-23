@@ -26,12 +26,9 @@ websites, and its bundled responders include an implementation of each.
 
 
 
-
 \begin{classdesc}{Multiple}{\optional{root}} Constructs a new \class{Multiple}
 responder object. \var{root} is the filesystem path of the directory to use as
-the publishing root. If not given or \class{None}, then the value in the class
-attribute of the same name is used if it does not evaluate to \class{False}. If
-it does (and out of the box, it does), then \var{root} is set to the current
+the publishing root. If not given or \class{None}, then it is set to the current
 working directory. If \var{root} does not point to a directory, \exception
 {ValueError} is raised.\end{classdesc}
 

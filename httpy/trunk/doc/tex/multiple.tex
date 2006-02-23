@@ -36,8 +36,8 @@ responders. If a directory contains a file named \file{responder.py}, then
 responder to serve all requests for resources at or below that directory. If
 \code{responder.py} defines a class named \class{Responder}, then that is used
 as the responder. Otherwise \class{Multiple} uses the module itself. In either
-case, the responder must provide \ulink{iresponder.html}{the \class{IResponder}
-interface}, at least implicitly.
+case, the responder must provide \ulink{the \class{IResponder}
+interface}{iresponder.html}, at least implicitly.
 
 So if you define a responder in:
 
@@ -72,11 +72,6 @@ both a \file{magic directory} and its parent define a responder, then the
 parent's wins. If the responder comes from the parent, then any \file{magic
 directory} is considered for inclusion in \member{sys.path}, after
 \file{site-packages} and \file{lib}.
-
-Requests that translate to a responder's \file{magic directory} or
-\member{sys.path} addition trigger a \ulink{403
-Forbidden}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4}
-response.
 
 
 \subsubsection{API Additions}
@@ -121,15 +116,25 @@ that order. The first found is used. Frameworks have no required API, but they
 may hook into the HTTP transaction process by defining some or all of the
 following callables. These are listed in the order they are called.
 
-\begin{funcdesc}{get_responder}{request}
-\var{request} is an \class{httpy.Request} object. This routine must return
-a provider of \ulink{\class{IResponder}}{responder.html}.
+\begin{funcdesc}{get_responder}{request} \var{request} is an
+\class{httpy.Request} object. This routine must return a provider of
+\ulink{\class{IResponder}}{responder.html}. The default implementation chooses a
+responder based on the \member{path} attribute as described above. It then
+removes that portion of the path from \member{Request.path}, ensuring that
+\member{Request.path} is never less than '/'. \method{get_responder} checks that
+the paths named in \member{root}, \member{__} and \member{pkg} still exist, and
+raises \ulink{\code{500 Internal Server
+Error}}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1}
+otherwise. If the client is requesting a resource in \member{__} or
+\member{pkg}, then \method{get_responder} raises \ulink{\code{403
+Forbidden}}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4}.
 \end{funcdesc}
 
 \begin{funcdesc}{wrap_request}{responder, request}
 \var{responder} is the result of the call to \method{get_responder};
 \var{request} is the same \class{Request} object. This routine may return any
-object that is meaningful to \var{responder}'s \function{respond} routine.
+object that is meaningful to \var{responder}'s \function{respond} routine. It is
+not implemented by default.
 \end{funcdesc}
 
 \begin{funcdesc}{unwrap_response}{response, responder, request} \var{response}
@@ -137,13 +142,11 @@ is the object raised by \var{responder}.\function{respond}. Note that this
 object must be a subclass of \class{httpy.Response}, or it will be interpreted
 as a \ulink{\code{500 Internal Server
 Error}}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1}.
-\var{request} is the same \class{Request} object.
+\var{request} is the same \class{Request} object. This method is not implemented
+by default. \end{funcdesc}
 
-\end{funcdesc}
-
-\begin{funcdesc}{stop}{}
-This method is called when the application terminates normally.
-\end{funcdesc}
+\begin{funcdesc}{stop}{} This method is called when the application terminates
+normally. It is not implemented by default. \end{funcdesc}
 
 Note that because \var{request} is passed to each hook, and then discarded
 following the transaction, you can safely store state there between hooks.
