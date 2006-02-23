@@ -5,7 +5,7 @@ PYTHON_SRC = /home/whit537/shelf/Python-2.4.2
 MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--iconserver icons \
 				--split 5 \
-				--link 2 \
+				--link 3 \
 				--favicon icons/zeta.ico \
 				--dir ./html \
 				--logging \
