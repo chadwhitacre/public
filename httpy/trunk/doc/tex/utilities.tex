@@ -1,21 +1,11 @@
 \section{Utilities \label{utils}}
 
 The \module{httpy.utils} subpackage collects several tools which may be of value
-to those building web applications with \module{httpy}. The \class{Path} and
-\function{translate} objects are actually used by \module{httpy}'s own
-\class{Static} responder. The \function{parse_*} functions are not used in the
-base package, but even the simplest web applications will need these or similar
-methods to extract application state from the \class{Request} object.
-
-
-\begin{classdesc}{Path}{path}
-Constructs a new \class{Path} object. \var{path} is a path to a file on the
-filesystem. When a \class{Response}.\code{body} is a \class{Path}, the
-third-party
-\ulink{\class{sendfile}}{http://tautology.org/software/python-modules/sendfile}
-module will be used if available to write the file out to the wire.
-\end{classdesc}
-
+to those building web applications with \module{httpy}. The \function{translate}
+function is actually used by \module{httpy}'s own \class{Static} and
+\class{Multiple} responders. The \function{parse_*} functions are not used in
+the base package, but even the simplest web applications will need these or
+similar methods to extract application state from the \class{Request} object.
 
 
 \begin{funcdesc}{parse_body}{request}
@@ -35,7 +25,6 @@ Given a \class{Request} instance, returns an instance of the standard library's
 \ulink{\module{cgi.FieldStorage}}{http://docs.python.org/lib/node471.html} class
 representing the request's querystring.
 \end{funcdesc}
-
 
 
 \begin{funcdesc}{translate}{uri_path, fs_root\optional{, defaults}\optional{, raw}}
