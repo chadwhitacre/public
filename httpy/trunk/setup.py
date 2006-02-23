@@ -36,8 +36,6 @@ setup( name='httpy'
                 , 'httpy.couplers.fastcgi.jon'
                 , 'httpy.couplers.standalone'
                 , 'httpy.responders'
-                , 'httpy.responders.multiple'
-                , 'httpy.responders.multiple.frameworks'
                 #, 'httpy.tests'
                  ]
      , description = 'httpy is a sane and robust HTTP library for Python.'
