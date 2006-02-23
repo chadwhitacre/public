@@ -1,63 +1,6 @@
 ========================================
     0.9 -- MIMEFS + PYCON
 ========================================
-
-programmatic interface
-    sendfile/GPL-free package
-    httpy.couple(responder) -- automatically switches between CGI/FastCGI/StandAlone
-        need to find a way to infer FastCGI env
-
-tests
-    update tests post-refactor
-
-    Request
-    Response
-    deliver -- only have with make_deliver
-    couplers
-        StandAlone
-            ZopeRequest
-            Config
-        CGI
-            CGIRequest
-        FastCGI
-    responders
-        Multiple
-        Static
-        XMLRPC
-    utils
-        translate
-        mode
-        add_api
-        couple
-
-
-    Request and deliver need the most testing because they are the most
-    complicated; that's where the action is. The couplers also need to be well
-    tested
-
-    test AF_UNIX in Server as well as in Config
-    tests for utils.parse*
-    run tests on Mac
-    test Task when respond doesn't raise anything
-
-documentation
-    Request Objects
-        Differences under CGI/FastCGI
-    responders
-            figure out what is up with responder.uri and .root
-        Multiple
-    couplers
-        CGI/FastCGI
-        StandAlone
-        custom
-    man httpy(1)
-    double check mode behavior
-    sendfile mentioned in Utilities
-    ===done===
-    add intro paragraph to request.tex
-    fix index for PDF; consider adding index to HTML; cross.linking (utils.Path)
-        yanked the index for now
-
 logging
     access to stdout, error to stderr
     check out Apache Common Log Format
@@ -114,6 +57,8 @@ consider eggs for pluggability
 should do smart things with large POST bodies, similar to outbound
 ideally we wouldn't have to subclass static.App in order to use serve_static
 think about how serve_* should work, re: reuse
+httpy.couple(responder) -- automatically switches between CGI/FastCGI/StandAlone
+    need to find a way to infer FastCGI env
 
 
 ========================================
@@ -282,3 +227,6 @@ grok deployment -- standalone vs. CGI/FastGCI/WSGI/mod_python
 find out what is up with Zope/WSGI
 pay jan (lighttpd)
 write a restarting test loader/runner -- testosterone
+sendfile/GPL-free package
+update tests post-refactor
+documentation
