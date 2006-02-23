@@ -28,8 +28,8 @@ clean:
 
 
 install: configure
-	install -C -o root -g wheel -m 555 httpy ${prefix}/bin
-	install -C -o root -g wheel -m 444 httpy.1.gz ${prefix}/man/man1
+	install -o root -m 555 httpy ${prefix}/bin
+	install -o root -m 444 httpy.1.gz ${prefix}/man/man1
 	python setup.py install
 
 
