@@ -3,7 +3,7 @@
 # No warranty is expressed or implied.
 
 prefix=/usr/local
-version=0.9
+version=0.9.0
 
 
 configure:
@@ -48,7 +48,7 @@ dist: clean
 	mkdir dist/httpy-${version}
 	cp -r Makefile README bin site-packages setup.py dist/httpy-${version}
 
-	make -C doc/tex html pdf clean
+	make -C doc/tex html clean
 	mkdir dist/httpy-${version}/doc
 	cp -r doc/html doc/httpy* dist/httpy-${version}/doc
 
@@ -60,7 +60,7 @@ dist: clean
 	svneol clean -w dist/httpy-${version}
 	mv dist/httpy-${version}/bin/httpy.py dist/httpy-${version}/bin/httpy
 	cd dist && zip -9rq httpy-${version}.zip httpy-${version}
-#	rm -rf dist/httpy-${version}
+	rm -rf dist/httpy-${version}
 
 
 
