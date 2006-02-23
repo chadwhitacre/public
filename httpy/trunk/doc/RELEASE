@@ -1,5 +1,19 @@
-Makefile            version
-setup.py            version
-doc/tex/Makefile    version
-doc/tex/httpy.tex   version and date
-etc/Makefile        version
+update the following on the tag:
+    Makefile                            version
+    doc/httpy.1                         date and VERSION
+    doc/tex/Makefile                    version
+    doc/tex/httpy.tex                   version and date
+    etc/Makefile                        version
+    setup.py                            version
+    site-packages/httpy/__init__.py     __version__, tweak logging
+
+make dist to generate docs and build archives
+    post to http://www.zetadev.com/software/httpy/
+
+update PyPI:
+    $ python setup.py register
+
+announce
+    Google Group
+    Web-SIG
+    python-announce
