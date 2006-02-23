@@ -1,3 +1,5 @@
 Makefile            version
 setup.py            version
+doc/tex/Makefile    version
 doc/tex/httpy.tex   version and date
+etc/Makefile        version
