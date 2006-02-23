@@ -5,8 +5,7 @@ Response messages. It also defines interfaces specifying how to build responders
 and couplers, specimens of which are to be found in the \module{responders} and
 \module{couplers} subpackages. Finally, the \class{mode} singleton provides an
 object-oriented API for the \envvar{HTTPY_MODE} environment variable, and the
-\module{utils} subpackage collects some other possibly useful utilities.
-
+\module{utils} subpackage collects some other possibly useful tools.
 
 
 \begin{classdesc}{Request}{IRequest}
@@ -21,7 +20,6 @@ only need to instantiate it directly if you were writing a new coupler.
 \end{classdesc}
 
 
-
 \begin{classdesc}{Response}{\optional{code} \optional{, body} \optional{,
     headers}}
 Constructs a new \class{Response} object. If given, \var{code} must be
@@ -29,8 +27,7 @@ an integer; the default is
 \ulink{200}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1}
 (see \citetitle[http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html]{the HTTP
 spec} for other values that will be meaningful to most HTTP clients). \var{body}
-may be a string, an iterator over strings, or an \class{httpy.utils.Path}
-object. \var{headers} must be a dictionary.
+may be a string or an iterator over strings. \var{headers} must be a dictionary.
 
 \var{body} is second rather than \var{headers} because one more often wants to
 specify a body without headers than vice versa. Also note that
