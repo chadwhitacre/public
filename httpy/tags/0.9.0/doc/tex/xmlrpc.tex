@@ -1,0 +1,71 @@
+\subsection{\class{XMLRPC} Responders \label{xmlrpc}}
+
+The \class{XMLRPC} responder implements an application website.
+\ulink{XMLRPC}{http://www.xmlrpc.com/} is a language-neutral protocol for
+distributed computing, using XML for serialization and HTTP for transport. The
+Python standard library includes \ulink{a well-written XMLRPC
+library}{http://docs.python.org/lib/module-xmlrpclib.html}, which forms the
+basis for this class. By mixing the \class{XMLRPC} responder into your class,
+you can easily make your instance's methods available to clients over the
+network. Instances inherit one attribute and two methods:
+
+\begin{memberdesc}[tuple]{protected} A tuple of names of methods on \class{self}
+which should never be served via XMLRPC. This class attribute on \class{XMLRPC}
+is set to the empty tuple.\end{memberdesc}
+
+\begin{methoddesc}{respond}{request}
+This is a pass-through for \method{serve_xmlrpc}. It can safely be overriden, but
+in most cases need not be.
+\end{methoddesc}
+
+\begin{methoddesc}{serve_xmlrpc}{request}
+Proxies methods on \class{self} via XMLRPC. \var{request} is a \class{Request}
+object. Assuming \var{request} is an XMLRPC request for method \var{name}, the
+following conditions trigger an XMLRPC <fault> response with <faultCode> 404:
+
+\begin{enumerate}
+
+\item \var{name} starts with an underscore.
+
+\item \var{name} is \code{respond} or \code{serve_xmlrpc}.
+
+\item \var{name} is named in \code{protected}.
+
+\item The instance does not have a method named \var{name}.
+
+\end{enumerate}
+\end{methoddesc}
+
+
+\subsubsection{An Example}
+
+In a Python shell, create an XMLRPC server like so:
+
+\begin{verbatim}
+>>> import httpy
+>>> class Responder(httpy.responders.XMLRPC):
+...   protected = ['private']
+...   def private(self):
+...     return 'leave me alone!'
+...   def ping(self):
+...     return 'pong'
+...
+>>> responder = Responder()
+>>> coupler = httpy.couplers.StandAlone(responder)
+>>> coupler.go()
+httpy.server     INFO     httpy started on port 8080
+\end{verbatim}
+
+Then, in a second shell, you can talk to your server like this:
+
+\begin{verbatim}
+>>> import xmlrpclib
+>>> server = xmlrpclib.ServerProxy('http://localhost:8080/')
+>>> server.ping()
+'pong'
+>>> server.private()
+Traceback (most recent call last):
+...
+xmlrpclib.Fault: <Fault 404: "method 'private' not found">
+>>>
+\end{verbatim}
