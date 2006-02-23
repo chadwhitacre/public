@@ -1,0 +1,164 @@
+\subsection{\class{Multiple} Responders \label{multiple}}
+
+The \class{Multiple} responder implements a hybrid website. It is a
+meta-responder: it enables you to tie together multiple responders into a
+coherent website, using the filesystem for hierarchical organization. It also
+gives you site-wide in- and outbound hooks via a "framework" abstraction. The
+\class{Multiple} responder is the most complicated part of \class{httpy} to
+explain in reference, but almost everything is optional, and it is fundamentally
+intuitive.
+
+\class{Multiple} translates URI paths literally to the filesystem, rooting them
+in \var{root}. For example, if \var{root} is:
+
+\begin{quote}
+\file{/usr/local/www}
+\end{quote}
+
+Then \class{Multiple} would translate a request for:
+
+\begin{verbatim}
+http://localhost:8080/foo
+\end{verbatim}
+
+To the path:
+
+\begin{quote}
+\file{/usr/local/www/foo}
+\end{quote}
+
+
+\subsubsection{Responder Discovery}
+
+When \class{Multiple} is instantiated, it searches the tree under \var{root} for
+responders. If a directory contains a file named \file{responder.py}, then
+\class{Multiple} tries to import a responder from that file, and uses that
+responder to serve all requests for resources at or below that directory. If
+\code{responder.py} defines a class named \class{Responder}, then that is used
+as the responder. Otherwise \class{Multiple} uses the module itself. In either
+case, the responder must provide \ulink{iresponder.html}{the \class{IResponder}
+interface}, at least implicitly.
+
+So if you define a responder in:
+
+\begin{quote}
+\file{/usr/local/www/foo/responder.py}
+\end{quote}
+
+Then \class{Multiple} would route requests for all of the following to that
+responder:
+
+\begin{verbatim}
+http://localhost:8080/foo
+http://localhost:8080/foo/
+http://localhost:8080/foo/bar
+\end{verbatim}
+
+There must be at least one responder, associated with the root of the site. If
+none is defined, then \class{Multiple} uses the \class{Static} responder.
+
+
+\subsubsection{Special Directories}
+
+Furthermore, \class{Multiple} adds exactly one path to \member{sys.path} for
+each responder it finds. First it looks for a subdirectory named
+\file{site-packages}, then one named \file{lib}. The first one found is used.
+
+If a directory contains a subdirectory named \file{__} (double-underscore,
+referred to as a \file{magic directory}), then \class{Multiple} will use any
+responder defined there to serve requests for the parent directory, and the
+\member{sys.path} addition logic uses the \file{magic directory} as its base. If
+both a \file{magic directory} and its parent define a responder, then the
+parent's wins. If the responder comes from the parent, then any \file{magic
+directory} is considered for inclusion in \member{sys.path}, after
+\file{site-packages} and \file{lib}.
+
+Requests that translate to a responder's \file{magic directory} or
+\member{sys.path} addition trigger a \ulink{403
+Forbidden}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4}
+response.
+
+
+\subsubsection{API Additions}
+
+\class{Multiple} adds the following data attributes to each responder as it is
+discovered. Existing attributes are not overriden. For class responders, these
+are added before instantiation, so they are available during construction.
+
+\begin{tableii}{l|l}{code}{name}{value}
+
+\lineii{__}
+    {the filesystem path of the responder's \file{magic directory}, or
+    \class{None} if it does not exist [that's two underscores]}
+
+\lineii{pkg}
+    {the path added to \member{sys.path} for this responder}
+
+\lineii{root}
+    {the responder's filesystem path}
+
+\lineii{site___}
+    {the filesystem path of the \file{magic directory} in the publishing root,
+    or \class{None} if it does not exist [that's three underscores]}
+
+\lineii{site_root}
+    {the filesystem path of the publishing root}
+
+\lineii{path}
+    {the URI path below which requests will go to this responder}
+
+\end{tableii}
+
+
+
+\subsubsection{Frameworks}
+
+Responders are mini Python applications scattered about your site hierarchy. In
+order to unify these responders into a coherent website, \class{Multiple}
+provides a framework abstraction. \class{Multiple} looks for a file named
+\file{framework.py} in \var{root} and in \var{root}'s \file{magic directory}, in
+that order. The first found is used. Frameworks have no required API, but they
+may hook into the HTTP transaction process by defining some or all of the
+following callables. These are listed in the order they are called.
+
+\begin{funcdesc}{get_responder}{request}
+\var{request} is an \class{httpy.Request} object. This routine must return
+a provider of \ulink{\class{IResponder}}{responder.html}.
+\end{funcdesc}
+
+\begin{funcdesc}{wrap_request}{responder, request}
+\var{responder} is the result of the call to \method{get_responder};
+\var{request} is the same \class{Request} object. This routine may return any
+object that is meaningful to \var{responder}'s \function{respond} routine.
+\end{funcdesc}
+
+\begin{funcdesc}{unwrap_response}{response, responder, request} \var{response}
+is the object raised by \var{responder}.\function{respond}. Note that this
+object must be a subclass of \class{httpy.Response}, or it will be interpreted
+as a \ulink{\code{500 Internal Server
+Error}}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1}.
+\var{request} is the same \class{Request} object.
+
+\end{funcdesc}
+
+\begin{funcdesc}{stop}{}
+This method is called when the application terminates normally.
+\end{funcdesc}
+
+Note that because \var{request} is passed to each hook, and then discarded
+following the transaction, you can safely store state there between hooks.
+
+As with responders, \class{Multiple} adds the following data attributes to your
+framework if they are not already present. If your framework is a class, these
+are added immediately before instantiation.
+
+
+\begin{tableii}{l|l}{code}{name}{value}
+
+\lineii{__}
+    {the filesystem path of the site's magic directory [that's two underscores]}
+
+\lineii{root}
+    {the filesystem path of the site's publishing root}
+
+\end{tableii}

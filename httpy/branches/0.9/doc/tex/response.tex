@@ -1,0 +1,19 @@
+\section{\class{Response} Objects \label{response}}
+
+Instances of \class{httpy.Response} have the following attributes. Note that
+values are only validated in the constructor, so it is currently possible to
+raise a malformed \class{Response} by setting instance attributes
+post-instantiation.
+
+\begin{datadesc}{code}
+The \ulink{HTTP code}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html} as an integer.
+\end{datadesc}
+
+\begin{datadesc}{body}
+The message body as a string, an iterator over strings, or an
+\class{httpy.utils.Path} object.
+\end{datadesc}
+
+\begin{datadesc}{headers}
+The message headers as a dictionary.
+\end{datadesc}
