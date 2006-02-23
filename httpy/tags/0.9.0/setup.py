@@ -16,7 +16,7 @@ classifiers = [
                 ]
 
 setup( name='httpy'
-     , version="0.9"
+     , version="0.9.0"
      , package_dir={'':'site-packages'}
      , packages=[ 'httpy'
                 , 'httpy._zope'

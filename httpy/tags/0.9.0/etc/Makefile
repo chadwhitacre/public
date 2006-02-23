@@ -3,7 +3,6 @@
 # No warranty is expressed or implied.
 
 prefix=/usr/local
-version=0.9
 
 
 configure:
