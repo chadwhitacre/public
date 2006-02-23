@@ -4,7 +4,6 @@ from distutils.core import setup
 classifiers = [
     'Development Status :: 4 - Beta'
   , 'Environment :: Console'
-  , 'Environment :: Console :: Curses'
   , 'Intended Audience :: Developers'
   , 'License :: Freeware'
   , 'Natural Language :: English'
@@ -17,7 +16,7 @@ classifiers = [
                 ]
 
 setup( name='httpy'
-     , version="0.9"
+     , version="0.9.0"
      , package_dir={'':'site-packages'}
      , packages=[ 'httpy'
                 , 'httpy._zope'
