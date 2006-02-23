@@ -1,82 +1,41 @@
 \chapter{Manual for the httpy Executable \label{manual}}
 
-httpy exposes the following configuration parameters:
+\program{httpy} is an executable that instantiates the \class{Multiple}
+responder with the \class{StandAlone} coupler. Out of the box, it serves static
+files from the filesystem using the \class{Static} responder. Please see
+\ulink{the \class{Multiple} documentation}{multiple.html} for information on
+extending \program{httpy}.
+
+\program{httpy} exposes the following command-line options:
 
 
-\begin{tableiii}{l|l|l}{var}{Parameter}{Description}{Default Behavior/Value}
+\begin{tableiii}{l|l|l}{var}{Option}{Description}{Defaults}
 
-\lineiii{apps}
-    {A colon-separated list of paths that should be considered applications. The
-    paths should be given as if they were in URL-space, or from the filesystem's
-    perspective, as if they were rooted in the website's filesystem root (but
-    always using the forward-slash as the path separator). So they should begin
-    with a forward-slash but should not include the filesystem path to the root
-    of the website. The website root is always implicitly considered an
-    application.}
-    {Walk the tree rooted in \var{root} and collect all directories with a
-    subdirectory named __ (that's two underscores).}
+\lineiii{\programopt{-a}/\longprogramopt{-address}=\var{address}}
+    {The address to which \program{httpy} should bind. If \var{address} begins
+    with a dot or a forward slash, then it is interpreted as an AF_UNIX socket.
+    Otherwise, it is interpreted as an AF_INET socket. If \var{address} begins
+    with a colon, then the loopback address is assumed.} {\code{:8080}}
 
-\lineiii{ip}
-    {The IP address that httpy should listen on. This must either be a valid
-    IPv4 address or a null value, in which case httpy will listen on all
-    available addresses.}
-    {Listen on all available addresses.}
+\lineiii{\programopt{-m}/\longprogramopt{-mode}=\var{mode}}
+    {\var{mode} is one of the strings 'development', 'debugging', 'staging', or
+    'deployment'.  The \envvar{HTTPY_MODE} environment variable will be set to
+    this value, and will be available to your responders via the
+    \class{httpy.mode} object.} {\code{development}}
 
-\lineiii{mode}
-    {Either of the strings \code{deployment} or \code{development}. This affects
-    various aspects of httpy's behavior.}
-    {\code{deployment}}
+\lineiii{\programopt{-t}/\longprogramopt{-threads}=\var{threads}}
+    {\program{httpy} creates a new thread for each request, up to \var{threads}.
+    The minimum is 1. No upper limit is enforced.}
+    {\code{10}}
 
-\lineiii{port}
-    {The TCP port that httpy should bind to. This must be an integer between 0
-    and 65535, inclusive.}
-    {\code{8080}}
-
-\lineiii{root}
-    {The path to a directory on the filesystem which will serve as the root of
-    the website.}
-    {Use the current working directory.}
-
-\lineiii{verbosity}
-    {An integer from 0 to 99, inclusive, indicating how much information to
-    log.}
-    {\code{1}}
+\lineiii{\programopt{-u}/\longprogramopt{-user}=\var{user}}
+    {After binding to address, \program{httpy} switches to the uid of
+    \var{user}, if given.}
+    {}
 
 \end{tableiii}
 
-The defaults may be overriden in three ways: via command line options, through a
-configuration file, and by setting environment variables. This is also the order
-in which they take precedence, such that configuration file settings override
-environment variables, etc. The subsections below refer to the parameter names
-as given in the first column of the above table.
 
-
-
-
-httpy uses the Python standard library's \module{optparse} module to represent
-its command line arguments. The parameter names may be used for long-named
-arguments, or their initial letter may be used for short-named arguments. So for
-example, httpy could be started on a custom port, with a custom website root,
-using the following command:
-
-\begin{verbatim}
-% httpy -p9000 --root ~/www
-\end{verbatim}
-
-In addition, the path to any configuration file is specified with the
-\programopt{-f}/\longprogramopt{file} argument.
-
-\begin{seealso}
-\seetitle [http://www.python.org/doc/lib/module-optparse.html]
-          {optparse}
-          {httpy uses the standard library's optparse module.}
-\end{seealso}
-
-
-\section{Environment Variables}
-
-The names of the environment variables recognized by httpy are derived by
-uppercasing the above names, and prepending them with HTTPY_. So, for example,
-to configure a server so that all instances of httpy on that server are run in
-development mode instead of deployment mode, one would simply set the
-environment variable \envvar{HTTPY_MODE} to \code{development}.
+\program{httpy} can also take its \var{mode} and \var{threads} paramaters from
+the environment, in the \envvar{HTTPY_MODE} and \envvar{HTTPY_THREADS}
+variables. The command line options override the environment variables.

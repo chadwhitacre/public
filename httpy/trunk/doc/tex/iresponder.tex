@@ -1,13 +1,14 @@
-\subsection{Writing a Responder \label{writing-a-responder}}
+\subsection{Writing a Responder \label{iresponder}}
 
 In \module{httpy}, a \dfn{responder} is simply an object with a
-\function{respond} routine. For example, a responder can be a module with a
+\function{respond} callable. For example, a responder can be a module with a
 \function{respond} function, or a class instance with a \method{respond} method.
 Responders have two optional data attributes, which, if not present, will be
 added by whatever coupler is in use. For responders that are classes, this API
 addition takes place prior to instantiation, so the information is available to
-the constructor. See the coupler documentation for more information.
+the constructor.
 
+\begin{classdesc*}{IResponder}
 
 \begin{funcdesc}{respond}{request} Responds to a single HTTP request.
 \var{request} is a \class{Request} object. The \code{raise} statement is used to
@@ -17,12 +18,23 @@ converted to an HTTP Response message and written out to the wire. All other
 Error}}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1}
 response.\end{funcdesc}
 
+\begin{funcdesc}{stop}{} This optional method is called when the application
+terminates normally. \end{funcdesc}
+
 \begin{datadesc}{root} The location of the responder on the local
 filesystem.\end{datadesc}
 
 \begin{datadesc}{uri}The location of the responder on the network.\end{datadesc}
 
+\end{classdesc*}
 
+Responders are validated using \ulink{Zope's interface
+machinery}{http://www.zope.org/Products/ZopeInterface}. Your responder may
+provide this interface without explicitly declaring so. If a responder does not
+have a \function{respond} callable, or if \function{respond} does not accept
+exactly one argument, then an \class{Exception} is raised.
+
+Responders must be able to respond to multiple (non-concurrent) requests.
 
 
 \subsubsection{An Example}
@@ -47,7 +59,7 @@ def respond(request):
     elif request.method == 'POST':
         if not auth.check(request):
             raise Response(403)
-        result = logic.set_data(request.path, request.body)
+        result = logic.set_data(request.path, request.raw_body)
     else:
         raise Response(501)
 

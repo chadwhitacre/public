@@ -1,100 +1,164 @@
 \subsection{\class{Multiple} Responders \label{multiple}}
 
-The \class{Multiple} responder implements a hybrid website. The URI hierarchy is
-taken straight from the filesystem. At any point in the site's filesystem tree,
-you can place a file named responder.py, which can either be a responder
+The \class{Multiple} responder implements a hybrid website. It is a
+meta-responder: it enables you to tie together multiple responders into a
+coherent website, using the filesystem for hierarchical organization. It also
+gives you site-wide in- and outbound hooks via a "framework" abstraction. The
+\class{Multiple} responder is the most complicated part of \class{httpy} to
+explain in reference, but almost everything is optional, and it is fundamentally
+intuitive.
 
-, using the filesystem for hierarchical organization. URI hierarchy is
-mapped directly are to the filesystem, and chooses different responders based on
-the path. The various sub-applications are defined in files named
-\code{responder.py}, The Static responder picks up anything that falls through
-the cracks.
+\class{Multiple} translates URI paths literally to the filesystem, rooting them
+in \var{root}. For example, if \var{root} is:
 
-\subsubsection{Filesystem Layout}
+\begin{quote}
+\file{/usr/local/www}
+\end{quote}
 
-When httpy starts up, it walks the tree rooted in your website's filesystem
-root, and it gathers all paths to directories below the root that have a
-subdirectory named '__' -- that's two underscores. The directory is said to be
-an \dfn{app} or \dfn{application}, and the subdirectory is that application's
-\dfn{magic directory}. \footnote{You can override this default behavior. Please
-see the section on Configuration.}
-
-For example, consider this filesystem layout:
+Then \class{Multiple} would translate a request for:
 
 \begin{verbatim}
-/usr/local/www/
-/usr/local/www/about/
-/usr/local/www/news/
-/usr/local/www/news/__
+http://localhost:8080/foo
 \end{verbatim}
 
-Assuming that \file{/usr/local/www/} is configured as your website root, httpy
-will by default find one app: /news. This app's magic directory will be
-\file{/usr/local/www/__}.
+To the path:
 
-On each request, httpy looks for an application that matches the beginning of
-the requested URI path. So in the above example, requests for \file{/news},
-\file{/news/archive}, \file{/news/post}, etc., would be handled by the
-\code{/news} app. All other requests would be handled by the default httpy
-application, because there is no app configured for the site root.
-
-If you manually configure the \var{apps} setting, and a given app does not have
-a magic directory, httpy will raise \class{ConfigError} and exits.
+\begin{quote}
+\file{/usr/local/www/foo}
+\end{quote}
 
 
+\subsubsection{Responder Discovery}
 
-\subsubsection{Expected Python Objects}
+When \class{Multiple} is instantiated, it searches the tree under \var{root} for
+responders. If a directory contains a file named \file{responder.py}, then
+\class{Multiple} tries to import a responder from that file, and uses that
+responder to serve all requests for resources at or below that directory. If
+\code{responder.py} defines a class named \class{Responder}, then that is used
+as the responder. Otherwise \class{Multiple} uses the module itself. In either
+case, the responder must provide \ulink{iresponder.html}{the \class{IResponder}
+interface}, at least implicitly.
 
-When httpy starts up, it attempts to import a module or package named
-\module{app} from each application's magic directory. Each \module{app}
-module/package must define a class named \class{Application}.
-\class{Application}'s constructor must take a single argument, an instance of
-\class{AppConfig}. \class{Application} must have at least one other method,
-named \code{respond}, which also takes a single argument, an instance of
-\class{Request}. If any of these conditions are not met, httpy raises
-\class{ConfigError} and exits. Therefore, here is the minimal legal
-\file{app.py}:
+So if you define a responder in:
+
+\begin{quote}
+\file{/usr/local/www/foo/responder.py}
+\end{quote}
+
+Then \class{Multiple} would route requests for all of the following to that
+responder:
 
 \begin{verbatim}
-class Application:
-
-    def __init__(self, config):
-        pass
-
-    def respond(self, request):
-        pass
-
+http://localhost:8080/foo
+http://localhost:8080/foo/
+http://localhost:8080/foo/bar
 \end{verbatim}
 
-\class{Application.respond} is expected to end the request by raising a
-\class{Response} or other \class{Exception}. Therefore, here is the minimal
-successful \file{app.py}:
-
-\begin{verbatim}
-from httpy.Response import Response
-
-class Application:
-
-    def __init__(self, config):
-        pass
-
-    def respond(self, request):
-        response = Response(200)
-        response.headers['content-type'] = 'text/plain'
-        response.body = "Greetings, program!"
-        raise response
-
-\end{verbatim}
+There must be at least one responder, associated with the root of the site. If
+none is defined, then \class{Multiple} uses the \class{Static} responder.
 
 
+\subsubsection{Special Directories}
 
-\subsubsection{Site-Specific Libraries}
+Furthermore, \class{Multiple} adds exactly one path to \member{sys.path} for
+each responder it finds. First it looks for a subdirectory named
+\file{site-packages}, then one named \file{lib}. The first one found is used.
 
-If a website root has a magic directory, httpy will look when it starts up for a
-subdirectory of this magic directory named \file{site-packages}. It will prepend
-this path to \class{sys.path}, with the effect that each website can maintain a
-local Python library in \file{<site-root>/__/site-packages}. This library is
-global to the applications within a website, however, and only the root's magic
-directory is searched for \file{site-packages}.
+If a directory contains a subdirectory named \file{__} (double-underscore,
+referred to as a \file{magic directory}), then \class{Multiple} will use any
+responder defined there to serve requests for the parent directory, and the
+\member{sys.path} addition logic uses the \file{magic directory} as its base. If
+both a \file{magic directory} and its parent define a responder, then the
+parent's wins. If the responder comes from the parent, then any \file{magic
+directory} is considered for inclusion in \member{sys.path}, after
+\file{site-packages} and \file{lib}.
+
+Requests that translate to a responder's \file{magic directory} or
+\member{sys.path} addition trigger a \ulink{403
+Forbidden}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4}
+response.
 
 
+\subsubsection{API Additions}
+
+\class{Multiple} adds the following data attributes to each responder as it is
+discovered. Existing attributes are not overriden. For class responders, these
+are added before instantiation, so they are available during construction.
+
+\begin{tableii}{l|l}{code}{name}{value}
+
+\lineii{__}
+    {the filesystem path of the responder's \file{magic directory}, or
+    \class{None} if it does not exist [that's two underscores]}
+
+\lineii{pkg}
+    {the path added to \member{sys.path} for this responder}
+
+\lineii{root}
+    {the responder's filesystem path}
+
+\lineii{site___}
+    {the filesystem path of the \file{magic directory} in the publishing root,
+    or \class{None} if it does not exist [that's three underscores]}
+
+\lineii{site_root}
+    {the filesystem path of the publishing root}
+
+\lineii{path}
+    {the URI path below which requests will go to this responder}
+
+\end{tableii}
+
+
+
+\subsubsection{Frameworks}
+
+Responders are mini Python applications scattered about your site hierarchy. In
+order to unify these responders into a coherent website, \class{Multiple}
+provides a framework abstraction. \class{Multiple} looks for a file named
+\file{framework.py} in \var{root} and in \var{root}'s \file{magic directory}, in
+that order. The first found is used. Frameworks have no required API, but they
+may hook into the HTTP transaction process by defining some or all of the
+following callables. These are listed in the order they are called.
+
+\begin{funcdesc}{get_responder}{request}
+\var{request} is an \class{httpy.Request} object. This routine must return
+a provider of \ulink{\class{IResponder}}{responder.html}.
+\end{funcdesc}
+
+\begin{funcdesc}{wrap_request}{responder, request}
+\var{responder} is the result of the call to \method{get_responder};
+\var{request} is the same \class{Request} object. This routine may return any
+object that is meaningful to \var{responder}'s \function{respond} routine.
+\end{funcdesc}
+
+\begin{funcdesc}{unwrap_response}{response, responder, request} \var{response}
+is the object raised by \var{responder}.\function{respond}. Note that this
+object must be a subclass of \class{httpy.Response}, or it will be interpreted
+as a \ulink{\code{500 Internal Server
+Error}}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1}.
+\var{request} is the same \class{Request} object.
+
+\end{funcdesc}
+
+\begin{funcdesc}{stop}{}
+This method is called when the application terminates normally.
+\end{funcdesc}
+
+Note that because \var{request} is passed to each hook, and then discarded
+following the transaction, you can safely store state there between hooks.
+
+As with responders, \class{Multiple} adds the following data attributes to your
+framework if they are not already present. If your framework is a class, these
+are added immediately before instantiation.
+
+
+\begin{tableii}{l|l}{code}{name}{value}
+
+\lineii{__}
+    {the filesystem path of the site's magic directory [that's two underscores]}
+
+\lineii{root}
+    {the filesystem path of the site's publishing root}
+
+\end{tableii}
