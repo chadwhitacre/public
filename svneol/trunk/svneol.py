@@ -89,6 +89,8 @@ class EOLToolkit:
         j = 0; sys.stdout.write('scrubbing newlines ...')
 
         for path in filepaths:
+            if not os.path.isfile(path):
+                continue
             # do the replacements
             textfile = file(path, 'r+')
             tmp = textfile.read()
