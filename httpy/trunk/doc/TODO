@@ -1,8 +1,6 @@
 ========================================
     0.9 -- MIMEFS + PYCON
 ========================================
-response.headers needs to be msg object just like request.headers
-
 
 logging
     access to stdout, error to stderr
@@ -233,3 +231,4 @@ write a restarting test loader/runner -- testosterone
 sendfile/GPL-free package
 update tests post-refactor
 documentation
+response.headers needs to be msg object just like request.headers
