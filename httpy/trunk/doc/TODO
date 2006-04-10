@@ -1,5 +1,5 @@
 ========================================
-    0.9
+    0.9a2 -- Chipy
 ========================================
 
 logging
@@ -20,6 +20,10 @@ RestartingServer seems to miss _foo.py
 tweaks
     raise Response(537, {}) -> error!
     why can't we just import StatusCodes from BaseHTTPServer?
+    need outbound hook for error handling in Multiple framework
+    raise Response(2xx) should be an error
+    Requests should only go to Multiple sub-responders when Static gives 404
+        but be sure not to serve responder.py itself or anything
 
 tighten up -- validate all this stuff
     HTTP/1.0 -> HTTP/1.1
@@ -28,7 +32,6 @@ tighten up -- validate all this stuff
     range requests
     chunked encoding
     100 Continue
-
 
 
 
@@ -52,6 +55,7 @@ ideally we wouldn't have to subclass static.App in order to use serve_static
 think about how serve_* should work, re: reuse
 httpy.couple(responder) -- automatically switches between CGI/FastCGI/StandAlone
     need to find a way to infer FastCGI env
+
 
 
 ========================================
@@ -223,10 +227,15 @@ write a restarting test loader/runner -- testosterone
 sendfile/GPL-free package
 update tests post-refactor
 documentation
+
+
+========================================
+    0.9a2 -- CHIPY
+========================================
 response.headers needs to be msg object just like request.headers
 logging
     access to stdout, error to stderr
     tweak format of error log -- include file and line number
-un-flatten import hierarchy (to improve performance)
+un-flatten import hierarchy (to improve startup)
     from httpy.responders import Static
     from httpy.responders.static import Responder as Static
