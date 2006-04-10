@@ -22,25 +22,21 @@ objects:
 \begin{description}
 
 \item[responders]
-    {A responder is a module or class with a callable, \method{respond()}, that
-    takes a single argument, an \class{httpy.Request} object. This callable is
-    expected to raise (!) an \class{httpy.Response} object.}
+    {A responder is a module or class with a \method{respond()} callable, which
+    takes an \class{httpy.Request} object and returns an \class{httpy.Response}
+    object.}
 
 \item[couplers]
-    {A coupler puts a responder onto the network.}
+    {A coupler takes a responder and puts it on the network.}
 
 \end{description}
 
-\module{httpy}'s \class{Request} and \class{Response} objects are wooden
-representations of their HTTP counterparts. Likewise, couplers are rather
-pedestrian: that's where the socket and gateway programming happens.
-\module{httpy}'s chief innovation is in overloading Python's \code{raise}
-statement to represent the end of an HTTP transaction. This turns out to be a
-natural fit: HTTP transactions usually see requests pass through multiple layers
-on their way to an origin server -- routers, gateways, proxies, caches -- before
-ending abruptly at any of a number of places on this stack, with a response
-zipping back up the stack to the client. \module{httpy} turns the Python
-interpreter's call stack into an extension of the HTTP stack.
+The whole thing is rather boring: \module{httpy}'s \class{Request} and
+\class{Response} objects are wooden representations of their HTTP counterparts.
+Likewise, couplers are just socket and gateway grunt work. About the only
+interesting twist is that \class{Response} objects represent both success and
+error responses: a responder may also raise a Response. The real interest, of
+course, is in your responders.
 
 
 
@@ -53,7 +49,7 @@ here is \module{httpy}'s hello world:
 >>> from httpy import Response
 >>> class Responder:
 ...   def respond(self, request):
-...     raise Response(200, "Greetings, program!")
+...     return Response(200, "Greetings, program!")
 ...
 >>>
 \end{verbatim}
@@ -62,18 +58,18 @@ A responder is simply a module or class with a \method{respond} callable, which
 takes a \class{Request} object and raises a \class{Response} object. Besides
 being a subclass of \class{StandardError}, \class{Response} is bone simple: its
 constructor takes an integer HTTP code, a body, and a dictionary of headers --
-all optional. At the end of the transaction, this response is raised back up the
-stack towards the client.
+all optional. At the end of the transaction, this response is returned back up
+the stack towards the client.
 
-Your responder will generally raise \class{Response}s from more than one place.
-For example, you could add a check on the incoming method:
+As mentioned, responders can also raise \class{Response}s. So, for example, you
+might add a check on the incoming method:
 
 \begin{verbatim}
 >>> class Responder:
 ...   def respond(self, request):
 ...     if request.method != 'GET':
 ...       raise Response(501)
-...     raise Response(200, "Greetings, program!")
+...     return Response(200, "Greetings, program!")
 ...
 >>>
 \end{verbatim}
@@ -81,10 +77,10 @@ For example, you could add a check on the incoming method:
 In any case, after defining a responder, here is how to put it on the network:
 
 \begin{verbatim}
->>> from httpy import couplers
->>> coupler = couplers.StandAlone(Responder())
+>>> from httpy.couplers.standalone import Coupler
+>>> coupler = Coupler(Responder())
 >>> coupler.go()
-httpy.server     INFO     httpy started on port 8080
+INFO     server.py:126 httpy started on port 8080
 \end{verbatim}
 
 At this point, your program is blocking, waiting for requests on
@@ -149,18 +145,23 @@ be used either above or below \module{httpy} on your stack.
 
 \begin{description}
 
-\item[daemonization, complex error logging]
+\item[daemonization]
     {You probably want \ulink{Dan Bernstein's
-    daemontools}{http://cr.yp.to/daemontools.html}. httpy logs everything to the
-    standard output, so use
-    \ulink{multilog}{http://cr.yp.to/daemontools/multilog.html} to pick up from
-    there.}
+    daemontools}{http://cr.yp.to/daemontools.html}.}
 
-\item[access logging, ssl encryption, virtual hosting, load-balancing]
-    {Use an HTTP proxy server such as \ulink{Pound}{http://www.apsis.ch/pound/}.
-    You could also do these things with a general-purpose HTTP server such as
-    \ulink{Apache}{http://httpd.apache.org/} or
-    \ulink{lighttpd}{http://www.lighttpd.net/}.}
+\item[load-balancing, SSL encryption, virtual hosting]
+    {The HTTP proxy server \ulink{Pound}{http://www.apsis.ch/pound/} provides
+    all of this, as do the general-purpose HTTP servers
+    \ulink{Apache}{http://httpd.apache.org/} and
+    \ulink{lighttpd}{http://www.lighttpd.net/}. If you only need SSL encryption,
+    check out \ulink{Stunnel}{http://www.stunnel.org/}.}
+
+\item[complex logging]
+    {\code{httpy} logs access to the standard output and errors to the standard
+    error. The access log is in Apache's \ulink{Combined Log
+    Format}{http://httpd.apache.org/docs/2.2/logs.html#combined}. Any of the
+    above proxies could be useful in meeting different logging requirements, as
+    well as the \program{multilog} program included with daemontools.}
 
 \item[caching]
     {Use a caching proxy such as \ulink{Squid}{http://www.squid-cache.org/}, or,
@@ -273,7 +274,7 @@ order to be portable between webservers, given some glue code:
     an iterator over strings}
 
 \item[\module{httpy}]
-    {\code{responder.respond(request)} raises a \code{Response} object}
+    {\code{responder.respond(request)} returns a \code{Response} object}
 
 \end{description}
 

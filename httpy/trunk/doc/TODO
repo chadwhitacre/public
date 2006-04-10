@@ -1,21 +1,12 @@
 ========================================
-    0.9 -- MIMEFS + PYCON
+    0.9
 ========================================
 
 logging
-    access to stdout, error to stderr
-    check out Apache Common Log Format
-    needs to log to stderr instead of stdout?
-    log should include file and line number
-    log should take an expression that is only evaluated if needed
-    it would be super cool to change the log level on the fly while running
-        I would want to support this in all modes, including deployment
-    also would be great to throttle logging to a single subsystem
-    mimefs_logger
-    config!
-    how about a custom logger ...
-        devel, debug, stage, deploy instead of info, warn, etc.
-        simple on/off switch in Config
+    HTTP Authentication user in log
+    new opts on command line and in env
+        error log level (0-6/DEBUG-CRITICAL)
+        access log -- 0/1 off/on
 
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
@@ -30,18 +21,20 @@ tweaks
     raise Response(537, {}) -> error!
     why can't we just import StatusCodes from BaseHTTPServer?
 
-
-
-========================================
-    FUTURE
-========================================
-tighten up
+tighten up -- validate all this stuff
     HTTP/1.0 -> HTTP/1.1
     charsets? unicode? i18n?
     keep-alive
     range requests
     chunked encoding
     100 Continue
+
+
+
+
+========================================
+    FUTURE
+========================================
 support interactive features, e.g.:
     ctrl-s -- display configuration settings
     ctrl-d -- toggle postmortem debugging
@@ -52,7 +45,6 @@ add cli options to dump config and exit
 play nice on Windows
     GUI?
     pyexe?
-Response.headers = [()] or {} -- not now!
 Response.code = 200 or (200, 'OK') -- now now!
 consider eggs for pluggability
 should do smart things with large POST bodies, similar to outbound
@@ -232,3 +224,9 @@ sendfile/GPL-free package
 update tests post-refactor
 documentation
 response.headers needs to be msg object just like request.headers
+logging
+    access to stdout, error to stderr
+    tweak format of error log -- include file and line number
+un-flatten import hierarchy (to improve performance)
+    from httpy.responders import Static
+    from httpy.responders.static import Responder as Static
