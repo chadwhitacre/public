@@ -22,12 +22,13 @@ only need to instantiate it directly if you were writing a new coupler.
 
 \begin{classdesc}{Response}{\optional{code} \optional{, body} \optional{,
     headers}}
-Constructs a new \class{Response} object. If given, \var{code} must be
-an integer; the default is
+Constructs a new \class{Response} object. If given, \var{code} must be an
+integer; the default is
 \ulink{200}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1}
 (see \citetitle[http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html]{the HTTP
 spec} for other values that will be meaningful to most HTTP clients). \var{body}
-may be a string or an iterator over strings. \var{headers} must be a dictionary.
+may be a string or an iterator over strings. \var{headers} may be a dictionary
+or a list of 2-tuples.
 
 \var{body} is second rather than \var{headers} because one more often wants to
 specify a body without headers than vice versa. Also note that
@@ -36,9 +37,8 @@ specify a body without headers than vice versa. Also note that
 non-2xx responses.
 
 This class is likewise central to \module{httpy} programming: its instances are
-the payload for \module{httpy}'s overloaded \code{raise} statement. These will
-be caught, validated, flattened, and sent out to the wire by whatever coupler is
-in use.
+what your responders return or raise. These will be captured, validated,
+flattened, and sent out to the wire by whatever coupler is in use.
 \end{classdesc}
 
 

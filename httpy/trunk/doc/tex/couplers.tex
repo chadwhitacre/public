@@ -33,11 +33,11 @@ As an example, here is what a CGI script looks like with \module{httpy}:
 #!/usr/local/bin/python
 """This is a CGI script.
 """
-import httpy
+from httpy.couplers.cgi import Coupler as CGI
 import myresponder
 
-coupler = httpy.couplers.CGI(myresponder)
-coupler.go()
+coupled = CGI(myresponder)
+coupled.go()
 \end{verbatim}
 
 Those wishing to implement new couplers are invited to consult the source code,

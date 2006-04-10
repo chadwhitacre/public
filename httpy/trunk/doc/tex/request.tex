@@ -13,10 +13,10 @@ encoded in one of the following places:
 \item{a \code{POST} body}
 \end{itemize}
 
-httpy doesn't pretend to know the best way for you to encode state in your app's
-requests, nor the best way to object-represent this state. Instead, it gives you
-the raw HTTP message, and a very minimal secondary API. There are a few tools in
-\class{httpy.utils} that might be helpful -- \function{parse_body},
+\code{httpy} doesn't pretend to know the best way for you to encode state in
+your app's requests, nor the best way to object-represent this state. Instead,
+it gives you the raw HTTP message, and a very minimal secondary API. There are a
+few tools in \class{httpy.utils} that might be helpful -- \function{parse_body},
 \function{parse_cookie}, \function{parse_query} -- but you are free to translate
 the \class{Request} to your application's object model however you like.
 
