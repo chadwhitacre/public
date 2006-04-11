@@ -1,0 +1,141 @@
+.Dd January 1, 1970
+.Os
+.Dt HTTPY 1 LOCAL
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh NAME
+.Nm httpy
+.Nd a sane and robust Python web server
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SYNOPSIS
+.Nm
+.Op Ar options
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh DESCRIPTION
+.Nm
+is a Python web server bundled with the Python library of the same name. It
+serves static files from the filesystem out of the box. It is also extensible
+via Python, for which, please refer to the library documentation:
+.Pp
+.Dl http://www.zetadev.com/software/httpy/
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh OPTIONS
+.Bl -tag -width "--threads" -compact
+.It Fl a Ar address
+.It Fl -address Ar address
+The address to which
+.Nm
+should bind. If
+.Ar address
+begins with a dot or a forward slash, then it is interpreted as an AF_UNIX
+socket. Otherwise, it is interpreted as an AF_INET socket. If
+.Ar address
+begins with a colon, then the loopback address is assumed. The default is :8080.
+.It Fl m Ar mode
+.It Fl -mode Ar mode
+.Ar mode
+is one of the strings
+.Sq development ,
+.Sq debugging ,
+.Sq staging ,
+or
+.Sq deployment .
+The
+.Ev HTTPY_MODE
+environment variable will be set to this value, and will be available to your
+responders via the httpy.mode object. The default is
+.Sq development .
+.It Fl t Ar threads
+.It Fl -threads Ar threads
+.Nm
+creates a new thread for each request, up to
+.Ar threads .
+The minimum is 1, and the default is 10. No upper limit is enforced.
+.It Fl u Ar user
+.It Fl -user Ar user
+After binding to
+.Ar address ,
+.Nm
+switches to the uid of
+.Ar user ,
+if given.
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh ENVIRONMENT VARIABLES
+In the absence of the relevant command-line arguments, the
+.Ev HTTPY_MODE
+and HTTPY_THREADS
+variables are used if set.
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh IMPLEMENTATION NOTES
+This program is known to work with the following software:
+.Pp
+.Bl -dash -offset indent -compact
+.It
+FreeBSD 4.11
+.It
+Python 2.4.2
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.\".Sh FILES
+.\"
+.\"
+.\"
+.\"
+.\"
+.\".Sh EXAMPLES
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SEE ALSO
+.Xr python 1 ,
+http://www.zetadev.com/software/httpy/
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh VERSION
+httpy 0.9
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh AUTHORS
+.Bl -item -compact
+.It
+(c) 2006 Chad Whitacre <http://www.zetadev.com/>
+.It
+This program is offered free of charge, warranty, and restrictions.
+.It
+If you like it, buy me a beer someday.
+.El
