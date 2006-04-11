@@ -146,8 +146,9 @@ be used either above or below \module{httpy} on your stack.
 \begin{description}
 
 \item[daemonization]
-    {You probably want \ulink{Dan Bernstein's
-    daemontools}{http://cr.yp.to/daemontools.html}.}
+    {You may be interested in \ulink{Dan Bernstein's
+    daemontools}{http://cr.yp.to/daemontools.html}, which provide a unified
+    interface for managing daemons.}
 
 \item[load-balancing, SSL encryption, virtual hosting]
     {The HTTP proxy server \ulink{Pound}{http://www.apsis.ch/pound/} provides
@@ -159,9 +160,10 @@ be used either above or below \module{httpy} on your stack.
 \item[complex logging]
     {\code{httpy} logs access to the standard output and errors to the standard
     error. The access log is in Apache's \ulink{Combined Log
-    Format}{http://httpd.apache.org/docs/2.2/logs.html#combined}. Any of the
-    above proxies could be useful in meeting different logging requirements, as
-    well as the \program{multilog} program included with daemontools.}
+    Format}{http://httpd.apache.org/docs/2.2/logs.html#combined}. More complex
+    logging requirements can usually be handled with standard tools such as
+    shell redirections. Any of the above proxies could also be useful, as well
+    as the \program{multilog} program included with daemontools.}
 
 \item[caching]
     {Use a caching proxy such as \ulink{Squid}{http://www.squid-cache.org/}, or,

@@ -5,8 +5,10 @@
 logging
     HTTP Authentication user in log
     new opts on command line and in env
-        error log level (0-6/DEBUG-CRITICAL)
-        access log -- 0/1 off/on
+        error log level (0-6/DEBUG-CRITICAL) -- Yes!
+            Not all lines have a prefix (so we can't reliably filter from the outside)
+        ===done===
+        access log -- 0/1 off/on -- No! Use a redirection
 
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
