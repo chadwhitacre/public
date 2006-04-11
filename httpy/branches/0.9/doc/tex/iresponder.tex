@@ -11,10 +11,10 @@ the constructor.
 \begin{classdesc*}{IResponder}
 
 \begin{funcdesc}{respond}{request} Responds to a single HTTP request.
-\var{request} is a \class{Request} object. The \code{raise} statement is used to
-end the transaction. If a \class{Response} object is raised, it will be
-converted to an HTTP Response message and written out to the wire. All other
-\class{Exception}s will result in a \ulink{\code{500 Internal Server
+\var{request} is a \class{Request} object. The transaction is ended by either
+returning or raising a \class{Response} object, which is converted to an HTTP
+Response message and written out to the wire. All other \class{Exception}s
+result in a \ulink{\code{500 Internal Server
 Error}}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1}
 response.\end{funcdesc}
 
@@ -65,7 +65,7 @@ def respond(request):
 
     template = templating.get_template(request.path)
     body = template.render(result)
-    raise Response(200, body)
+    return Response(200, body)
 
 \end{verbatim}
 

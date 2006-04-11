@@ -72,9 +72,7 @@ HOMEPAGE = """\
 <h1>BLAM!!!!!!!!!!!!!!!!!!!!!!!!!1</h1>
 <p>
   Welcome to <a href="http://www.zetadev.com/software/httpy/">httpy</a>, a sane Python HTTP library.<br />
-  Documentation:
-  <a href="/doc/html/">HTML</a> |
-  <a href="/doc/httpy-%(version)s.pdf">PDF</a>
+  <a href="/doc/html/">Documentation</a>
 </p>
 <div id="version">
     version <b>%(version)s</b> |
