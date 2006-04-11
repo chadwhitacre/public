@@ -1,0 +1,41 @@
+\chapter{Manual for the httpy Server \label{manual}}
+
+\program{httpy} is an executable that instantiates the \class{Multiple}
+responder with the \class{StandAlone} coupler. Out of the box, it serves static
+files from the filesystem using \ulink{the \class{Static}
+responder}{static.html}. Please see \ulink{the \class{Multiple}
+documentation}{multiple.html} for information on extending \program{httpy}.
+
+\program{httpy} exposes the following command-line options:
+
+
+\begin{tableiii}{l|l|l}{var}{Option}{Description}{Defaults}
+
+\lineiii{\programopt{-a}/\longprogramopt{-address}=\var{address}}
+    {The address to which \program{httpy} should bind. If \var{address} begins
+    with a dot or a forward slash, then it is interpreted as an AF_UNIX socket.
+    Otherwise, it is interpreted as an AF_INET socket. If \var{address} begins
+    with a colon, then the loopback address is assumed.} {\code{:8080}}
+
+\lineiii{\programopt{-m}/\longprogramopt{-mode}=\var{mode}}
+    {\var{mode} is one of the strings 'development', 'debugging', 'staging', or
+    'deployment'.  The \envvar{HTTPY_MODE} environment variable will be set to
+    this value, and will be available to your responders via the
+    \class{httpy.mode} object.} {\code{development}}
+
+\lineiii{\programopt{-t}/\longprogramopt{-threads}=\var{threads}}
+    {\program{httpy} creates a new thread for each request, up to \var{threads}.
+    The minimum is 1. No upper limit is enforced.}
+    {\code{10}}
+
+\lineiii{\programopt{-u}/\longprogramopt{-user}=\var{user}}
+    {After binding to address, \program{httpy} switches to the uid of
+    \var{user}, if given.}
+    {}
+
+\end{tableiii}
+
+
+\program{httpy} can also take its \var{mode} and \var{threads} parameters from
+the environment, in the \envvar{HTTPY_MODE} and \envvar{HTTPY_THREADS}
+variables. The command line options override the environment variables.
