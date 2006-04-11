@@ -14,17 +14,17 @@ if __name__ == '__main__':
     sys.path.insert(0, os.path.realpath('site-packages'))
 
 import httpy
+from httpy.couplers.standalone import StandAlone
+from httpy.responders.static import Static
 
 
-class Responder:
+class Responder(Static):
     """The homepage is defined below; all else is static from doc/.
     """
-    def __init__(self):
-        self.static = httpy.responders.Static()
     def respond(self, request):
         if request.path == '/':
-            raise httpy.Response(200, HOMEPAGE)
-        self.static.respond(request)
+            return httpy.Response(200, HOMEPAGE)
+        return self.serve_static(request)
 
 
 HOMEPAGE = """\
@@ -88,4 +88,5 @@ HOMEPAGE = """\
 
 
 if __name__ == "__main__":
-    httpy.couplers.StandAlone(Responder()).go()
+    coupled = StandAlone(Responder())
+    coupled.go()
