@@ -2,6 +2,17 @@
     0.9a2 -- Chipy
 ========================================
 
+merge trunk to 0.9
+
+update homepage
+    http://wiki.python.org/moin/WebProgramming
+make announcement
+
+
+========================================
+    0.9a3
+========================================
+
 logging
     HTTP Authentication user in log
     new opts on command line and in env
@@ -23,8 +34,8 @@ tweaks
     raise Response(537, {}) -> error!
     why can't we just import StatusCodes from BaseHTTPServer?
     need outbound hook for error handling in Multiple framework
-    raise Response(2xx) should be an error
-    Requests should only go to Multiple sub-responders when Static gives 404
+    should raise Response(2xx) be an error?
+    perhaps requests should only go to Multiple sub-responders when Static gives 404
         but be sure not to serve responder.py itself or anything
 
 tighten up -- validate all this stuff
