@@ -30,19 +30,20 @@ websites, and its bundled responders include an implementation of each.
 responder object. \var{root} is the filesystem path of the directory to use as
 the publishing root. If not given or \class{None}, then it is set to the current
 working directory. If \var{root} does not point to a directory, \exception
-{ValueError} is raised.\end{classdesc}
+{ValueError} is raised. This class is defined in the
+\module{httpy.responders.multiple} module.\end{classdesc}
 
-\begin{classdesc}{Static}{\optional{root}\optional{, defaults}} Constructs a new
-\class{Static} responder object. \var{root} has the same meaning as in
-\class{Multiple}. \var{defaults} is a sequence of names to use when looking for
-a default resource. If it is omitted or \class{None}, it is set to
-\code{('index.html', 'index.htm')}, after checking the class attribute as with
-\var{root}. \end{classdesc}
+\begin{classdesc}{Static}{\optional{root}\optional{,
+defaults}} Constructs a new \class{Static} responder object. \var{root} has the
+same meaning as in \class{Multiple}. \var{defaults} is a sequence of names to
+use when looking for a default resource. If it is omitted or \class{None}, it is
+set to \code{('index.html', 'index.htm')}, after checking the class attribute as
+with \var{root}. This class is defined in the \module{httpy.responders.static}
+module.\end{classdesc}
 
-\begin{classdesc*}{XMLRPC}
-The XMLRPC responder is not designed to be instantiated directly, but rather
-used as a mixin.
-\end{classdesc*}
+\begin{classdesc*}{XMLRPC} The XMLRPC responder is not
+designed to be instantiated directly, but rather used as a mixin. This class is
+defined in the \module{httpy.responders.xmlrpc} module. \end{classdesc*}
 
 
 \input{multiple}

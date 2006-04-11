@@ -1,20 +1,25 @@
 ========================================
-    0.9 -- MIMEFS + PYCON
+    0.9a2 -- Chipy
 ========================================
+
+merge trunk to 0.9
+
+update homepage
+    http://wiki.python.org/moin/WebProgramming
+make announcement
+
+
+========================================
+    0.9a3
+========================================
+
 logging
-    access to stdout, error to stderr
-    check out Apache Common Log Format
-    needs to log to stderr instead of stdout?
-    log should include file and line number
-    log should take an expression that is only evaluated if needed
-    it would be super cool to change the log level on the fly while running
-        I would want to support this in all modes, including deployment
-    also would be great to throttle logging to a single subsystem
-    mimefs_logger
-    config!
-    how about a custom logger ...
-        devel, debug, stage, deploy instead of info, warn, etc.
-        simple on/off switch in Config
+    HTTP Authentication user in log
+    new opts on command line and in env
+        error log level (0-6/DEBUG-CRITICAL) -- Yes!
+            Not all lines have a prefix (so we can't reliably filter from the outside)
+        ===done===
+        access log -- 0/1 off/on -- No! Use a redirection
 
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
@@ -28,19 +33,24 @@ RestartingServer seems to miss _foo.py
 tweaks
     raise Response(537, {}) -> error!
     why can't we just import StatusCodes from BaseHTTPServer?
+    need outbound hook for error handling in Multiple framework
+    should raise Response(2xx) be an error?
+    perhaps requests should only go to Multiple sub-responders when Static gives 404
+        but be sure not to serve responder.py itself or anything
 
-
-
-========================================
-    FUTURE
-========================================
-tighten up
+tighten up -- validate all this stuff
     HTTP/1.0 -> HTTP/1.1
     charsets? unicode? i18n?
     keep-alive
     range requests
     chunked encoding
     100 Continue
+
+
+
+========================================
+    FUTURE
+========================================
 support interactive features, e.g.:
     ctrl-s -- display configuration settings
     ctrl-d -- toggle postmortem debugging
@@ -51,7 +61,6 @@ add cli options to dump config and exit
 play nice on Windows
     GUI?
     pyexe?
-Response.headers = [()] or {} -- not now!
 Response.code = 200 or (200, 'OK') -- now now!
 consider eggs for pluggability
 should do smart things with large POST bodies, similar to outbound
@@ -59,6 +68,7 @@ ideally we wouldn't have to subclass static.App in order to use serve_static
 think about how serve_* should work, re: reuse
 httpy.couple(responder) -- automatically switches between CGI/FastCGI/StandAlone
     need to find a way to infer FastCGI env
+
 
 
 ========================================
@@ -230,3 +240,15 @@ write a restarting test loader/runner -- testosterone
 sendfile/GPL-free package
 update tests post-refactor
 documentation
+
+
+========================================
+    0.9a2 -- CHIPY
+========================================
+response.headers needs to be msg object just like request.headers
+logging
+    access to stdout, error to stderr
+    tweak format of error log -- include file and line number
+un-flatten import hierarchy (to improve startup)
+    from httpy.responders import Static
+    from httpy.responders.static import Responder as Static
