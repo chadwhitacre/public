@@ -8,17 +8,18 @@ option in each category, and build the couplers on top of those. These decisions
 are purely pragmatic.
 
 \begin{classdesc}{CGI}{responder} Constructs a new \class{CGI} coupler object.
+This class is defined in the \module{httpy.couplers.cgi} module.
 \end{classdesc}
 
 \begin{classdesc}{FastCGI}{responder} Constructs a new \class{FastCGI} coupler
-object.
+object. This class is defined in the \module{httpy.couplers.fastcgi} module.
 \end{classdesc}
 
 \begin{classdesc}{StandAlone}{responder\optional{, argv}} Constructs a new
 \class{StandAlone} coupler object. \var{argv} is a sequence of arguments. If
 omitted or \class{None}, \code{sys.argv} is used. See \ulink{the chapter on the
-\program{httpy} executable}{manual.html} for the available options.
-\end{classdesc}
+\program{httpy} executable}{manual.html} for the available options. This class
+is defined in the \module{httpy.couplers.standalone} module. \end{classdesc}
 
 Each coupler takes a (possibly implicit) provider of the \class{IResponder}
 interface as its first argument, and each provides the following method:
@@ -33,7 +34,7 @@ As an example, here is what a CGI script looks like with \module{httpy}:
 #!/usr/local/bin/python
 """This is a CGI script.
 """
-from httpy.couplers.cgi import Coupler as CGI
+from httpy.couplers.cgi import CGI
 import myresponder
 
 coupled = CGI(myresponder)
