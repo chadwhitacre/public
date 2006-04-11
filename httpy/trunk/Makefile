@@ -62,6 +62,7 @@ dist: clean
 	mkdir dist/httpy-${version}/doc
 	cp -r doc/html \
 	      doc/httpy* \
+	      doc/HISTORY \
 	      dist/httpy-${version}/doc
 
 	find dist/httpy-${version} -name \.svn | xargs rm -r
