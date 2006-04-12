@@ -29,6 +29,9 @@ when restarting in the middle of pdb, terminal gets screwed up -- hrm
         http://www.amk.ca/python/howto/curses/curses.html
 RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
 RestartingServer seems to miss _foo.py
+RestartingServer ought probably to be thread-based anyway rather than process-based
+    play nice on windows
+    see paste.reloader
 
 tweaks
     raise Response(537, {}) -> error!
@@ -37,6 +40,9 @@ tweaks
     should raise Response(2xx) be an error?
     perhaps requests should only go to Multiple sub-responders when Static gives 404
         but be sure not to serve responder.py itself or anything
+
+fix couple()
+    see autorun from QWeb: http://antony.lesuisse.org/qweb/trac/browser/trunk/src/qweb/qweb.py
 
 tighten up -- validate all this stuff
     HTTP/1.0 -> HTTP/1.1
