@@ -2,7 +2,7 @@
 from distutils.core import setup
 
 classifiers = [
-    'Development Status :: 4 - Beta'
+    'Development Status :: 3 - Alpha'
   , 'Environment :: Console'
   , 'Intended Audience :: Developers'
   , 'License :: Freeware'
@@ -16,7 +16,7 @@ classifiers = [
                 ]
 
 setup( name='httpy'
-     , version="0.9"
+     , version="0.9a2"
      , package_dir={'':'site-packages'}
      , packages=[ 'httpy'
                 , 'httpy._zope'
@@ -37,7 +37,7 @@ setup( name='httpy'
                 , 'httpy.responders'
                 , 'httpy.tests'
                  ]
-     , description = 'httpy is a sane and robust HTTP library for Python.'
+     , description = 'httpy is a sane and robust HTTP server and library for Python.'
      , author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
      , url = 'http://www.zetadev.com/software/httpy/'
