@@ -63,6 +63,7 @@ dist: clean
 	cp -r doc/html \
 	      doc/httpy* \
 	      doc/HISTORY \
+              doc/success.gif \
 	      dist/httpy-${version}/doc
 
 	find dist/httpy-${version} -name \.svn | xargs rm -r
