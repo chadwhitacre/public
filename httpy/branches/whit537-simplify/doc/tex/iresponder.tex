@@ -1,0 +1,78 @@
+\subsection{Writing a Responder \label{iresponder}}
+
+In \module{httpy}, a \dfn{responder} is simply an object with a
+\function{respond} callable. For example, a responder can be a module with a
+\function{respond} function, or a class instance with a \method{respond} method.
+Responders have two optional data attributes, which, if not present, will be
+added by whatever coupler is in use. For responders that are classes, this API
+addition takes place prior to instantiation, so the information is available to
+the constructor.
+
+\begin{classdesc*}{IResponder}
+
+\begin{funcdesc}{respond}{request} Responds to a single HTTP request.
+\var{request} is a \class{Request} object. The transaction is ended by either
+returning or raising a \class{Response} object, which is converted to an HTTP
+Response message and written out to the wire. All other \class{Exception}s
+result in a \ulink{\code{500 Internal Server
+Error}}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1}
+response.\end{funcdesc}
+
+\begin{funcdesc}{stop}{} This optional method is called when the application
+terminates normally. \end{funcdesc}
+
+\begin{datadesc}{root} The location of the responder on the local
+filesystem.\end{datadesc}
+
+\begin{datadesc}{uri}The location of the responder on the network.\end{datadesc}
+
+\end{classdesc*}
+
+Responders are validated using \ulink{Zope's interface
+machinery}{http://www.zope.org/Products/ZopeInterface}. Your responder may
+provide this interface without explicitly declaring so. If a responder does not
+have a \function{respond} callable, or if \function{respond} does not accept
+exactly one argument, then an \class{Exception} is raised.
+
+Responders must be able to respond to multiple (non-concurrent) requests.
+
+
+\subsubsection{An Example}
+
+Here is an example showing the general feel of a responder. This example assumes
+a \class{logic} module with API for getting and setting data based on a URI path
+and a POST body. The suggestion here is that these might return a commonly
+formatted data structure, which would then be used to populate a common
+template. Notice the authorization check before setting data.
+
+\begin{verbatim}
+import auth
+import logic
+import templating
+
+from httpy import Response
+
+def respond(request):
+
+    if request.method == 'GET':
+        result = logic.get_data(request.path)
+    elif request.method == 'POST':
+        if not auth.check(request):
+            raise Response(403)
+        result = logic.set_data(request.path, request.raw_body)
+    else:
+        raise Response(501)
+
+    template = templating.get_template(request.path)
+    body = template.render(result)
+    return Response(200, body)
+
+\end{verbatim}
+
+
+This is a contrived example, basically following \ulink{the popular
+Model-View-Controller pattern}{http://c2.com/cgi/wiki?ModelViewController}: the
+\module{auth} and \module{logic} modules are the model, the \module{templating}
+module provides the view, and the responder is the controller. However, this
+pattern is not enforced in any way, and the bottom line is that you've got all
+of Python to play with in writing your responders.
