@@ -1,0 +1,260 @@
+========================================
+    0.9a2 -- Chipy
+========================================
+
+merge trunk to 0.9
+
+update homepage
+    http://wiki.python.org/moin/WebProgramming
+make announcement
+
+
+========================================
+    0.9a3
+========================================
+
+logging
+    HTTP Authentication user in log
+    new opts on command line and in env
+        error log level (0-6/DEBUG-CRITICAL) -- Yes!
+            Not all lines have a prefix (so we can't reliably filter from the outside)
+        ===done===
+        access log -- 0/1 off/on -- No! Use a redirection
+
+when restarting in the middle of pdb, terminal gets screwed up -- hrm
+    see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
+    why can't we manage this in the signal handler? i.e., "if pdb: finish_pdb()"
+        hrm, tried this; not instantly obvious
+    maybe curses has an answer?
+        http://www.amk.ca/python/howto/curses/curses.html
+RestartingServer ends up in infinite loop in some cases (removing files under its watch?)
+RestartingServer seems to miss _foo.py
+RestartingServer ought probably to be thread-based anyway rather than process-based
+    play nice on windows
+    see paste.reloader
+
+tweaks
+    raise Response(537, {}) -> error!
+    why can't we just import StatusCodes from BaseHTTPServer?
+    need outbound hook for error handling in Multiple framework
+    should raise Response(2xx) be an error?
+    perhaps requests should only go to Multiple sub-responders when Static gives 404
+        but be sure not to serve responder.py itself or anything
+
+fix couple()
+    see autorun from QWeb: http://antony.lesuisse.org/qweb/trac/browser/trunk/src/qweb/qweb.py
+
+tighten up -- validate all this stuff
+    HTTP/1.0 -> HTTP/1.1
+    charsets? unicode? i18n?
+    keep-alive
+    range requests
+    chunked encoding
+    100 Continue
+
+
+
+========================================
+    FUTURE
+========================================
+support interactive features, e.g.:
+    ctrl-s -- display configuration settings
+    ctrl-d -- toggle postmortem debugging
+    ctrl-v -- set verbosity on the fly
+AJAX debugger? combine development and debugging modes
+    or keep debugging mode as is and add ajax debugging in dev mode -- "dynamic traceback"
+add cli options to dump config and exit
+play nice on Windows
+    GUI?
+    pyexe?
+Response.code = 200 or (200, 'OK') -- now now!
+consider eggs for pluggability
+should do smart things with large POST bodies, similar to outbound
+ideally we wouldn't have to subclass static.App in order to use serve_static
+think about how serve_* should work, re: reuse
+httpy.couple(responder) -- automatically switches between CGI/FastCGI/StandAlone
+    need to find a way to infer FastCGI env
+
+
+
+========================================
+    0.2 -- STATIC
+========================================
+=====DONE=====
+sensible error handling
+get frame macro instead of template
+configuration
+    think through relationship of cli options, config, and env variables
+        defaults -- can start httpy with no options, etc. and get something
+    check to make sure site root exists on filesystem
+    push all config checking up and out of init
+write a make file
+continue with unit tests
+refactor into multiple modules, distutils + make
+if frame.pt is empty, then frame should just be none
+handle 500 better
+400 -> 501
+test error templates
+ignore empty error template
+test last resort
+put tracebacks in error messages when in development mode
+figure out daemontools
+
+
+========================================
+    0.4 -- DYNAMIC
+========================================
+=====DONE=====
+write html docs
+support something sane like CGI to provide context.py with it's API
+manage sessions, post, querystring, cookies?
+logging -- stdout :-) -- but support different verbosities
+factor out medusa goofiness if possible
+refactor for BaseHTTPServer -- no non-std lib dependencies!
+separate error for each HTTP error? if not then why Redirect sep?
+500 traceback should be in pre -- hardwire this into the message?
+    the problem is that we also use message for redirects, which we don't
+      necessarily want in pre, but on another level it doesn't matter cause
+      noone ever sees that payload
+factor out templating
+need to import rather than execfile
+    guessing its faster
+    need persistence, e.g. for template caching
+        import app rather than from app import Transaction
+        then app.py can run whatever and it stays in memory
+add apps to configuration
+guess content type in response --> NO!!!!!!11
+server string -> httpy
+
+
+========================================
+    0.6 -- zope.server
+========================================
+transfer encoding
+document apps
+tests
+make apps implicit rather than explicit
+    change Config to auto-find apps by default -- can still be overriden
+    also update Config tests to reflect the change
+    shouldn't need to touch Server or Task since their input won't change
+httpy.app.CGIMixin
+supporting on-the-fly reloading of apps in dev mode
+need to figure out how to sanely provide for alternate py libs
+    answer: PYTHONPATH per daemontools -- configurable per site
+    per-site lib
+    per-app lib
+    sys.path is not a simple solution since we have multiple apps -- what is the import order?
+unittests!
+refactor docs in Python style
+remove __init__ requirement (don't always want to configure)
+reconsider naming of Transaction given its meaning in persistence contexts
+Transaction -> Application; persistent object
+should allow any method
+parse post to dict
+add dev_mode to Application API
+add a debug mode, which is dev mode + post-mortem
+    deploy, develop, debug
+raise Response(200, '') should give '', not "Request fulfilled, document follows"
+raise Response(537, {}) should give '{}', not '<no output>'
+ServerConfig --> Config
+Exception --> StandardError
+update to use zope 3.1.0 final
+Task.find_app --> get_app
+do we want traditional access logging? separate access and error logs?
+    consider using logging from the std lib
+    but maybe this just is app's job? answer: yes
+app.py --> __init__.py? --> Application.py?
+    __init__.py implies that the current dir is a package, which it isn't
+    Application.py -- eh, too verbose :^P
+on Windows, should always degrade to Server since RestartingServer won't work
+signal handling
+    TERM -- nice shutdown
+    HUP -- reload config?
+add close hook to Application
+RestartingServer tries to kill a pid that isn't there
+run tests on Windows again
+
+
+
+========================================
+    0.8 -- FLYNN + ACOLYTE
+========================================
+expose threads to configuration
+move mode from env to config
+do we really need to support a config file? no!
+support AF_UNIX
+refactor for app.py instead of __
+fix to work with RestartingServer again
+insert framework layer -- __/framework.py
+RestartingServer should be thinner ... shouldn't instantiate Apps, e.g.
+    it has to in order to know when to restart!
+RestartingServer should use subprocess instead of os.spawn
+add staging mode
+
+
+
+========================================
+    0.9 -- MIMEFS + PYCON
+========================================
+consider capturing NotImplementedError as 505 or something -- no, too much magic
+DocApp?
+lowercase package/module names
+consider moving API up a level -- from httpy.Response import Response --> from httpy import Response
+site-packages -> lib? -- no, I like site-packages since it matches stock
+would be nice to make --sockfam implicit
+    if address starts with a / or a ., then it is interpreted as AF_UNIX
+    otherwise, AF_INET
+pidfile option?
+    no, because in dev you will have it in the foreground, and in dep use daemontools
+config: user from env?
+    no, because the only port below 1024 that you should need to bind to is 80
+add config file support back in
+    nope, back down to 5 options, no need
+don't even need root! just cd before httpy :^)
+SIGHUP -- reload config?
+    nope, just restart
+add mode constants for use in the wild => httpy.modes.STAGING
+do something smart with mode, utils.isdeployed?
+IConfig
+headers should be case-preserved
+consider making app logic more flexible
+    app.Application.respond -> responder.Responder.respond
+    should also support responder.respond
+    tweak responder finding logic; integrate site-packages logic
+    multiple magic directories
+    multiple responders
+    why is App a class but framework is a module?
+consider using inspect rather than zope interfaces?
+    interfaces gives us doc as well as constraint, and it's already there and working
+go back to pooled thread server?
+    this means re-implementing chunk transfer encoding and keep-alives
+    but I don't know if these are working atm anyway
+multiple frameworks? layered or either/or? -- no! too complicated; maybe later
+really should have serve_py by default, no? -- no! we want to encourage responders
+move response flattening out of Task into utils (for use by other couplers)
+httpy.coupler to match httpy.mode? -- no! we want responders to be coupler-agnostic
+need a serve_stream that starts writing before it's done reading
+    not sure how to do this
+    easy, just add support for Response.body as an iterator instead of a string
+think about how httpy could be used in stand-alone servers/applications
+    i.e., one httpy instance per installation, rather than multiple sites per httpy
+grok WSGI
+grok deployment -- standalone vs. CGI/FastGCI/WSGI/mod_python
+find out what is up with Zope/WSGI
+pay jan (lighttpd)
+write a restarting test loader/runner -- testosterone
+sendfile/GPL-free package
+update tests post-refactor
+documentation
+
+
+========================================
+    0.9a2 -- CHIPY
+========================================
+response.headers needs to be msg object just like request.headers
+logging
+    access to stdout, error to stderr
+    tweak format of error log -- include file and line number
+un-flatten import hierarchy (to improve startup)
+    from httpy.responders import Static
+    from httpy.responders.static import Responder as Static

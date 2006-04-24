@@ -1,0 +1,36 @@
+0.9a2 -- April 12, 2006
+=======================
+
+This is the second public release of httpy, incorporating the following
+significant API changes in addition to miscellaneous bug fixes:
+
+  - Since Response objects represent both success and error conditions,
+    responders may now return a Response object, not just raise one. This is
+    not strictly enforced, however (i.e., you can still raise Response(200)),
+    because the alternative -- mapping HTTP response categories to Python
+    success/error conditions -- is overly complicated.
+
+  - The module hierarchy is now more deeply nested to avoid importing unused
+    modules.
+
+  - Response headers may now be specified as a list of 2-tuples or a
+    dictionary; either are converted to an email.Message.Message object by the
+    constructor.
+
+  - httpy now logs to stdout in the Combined Log Format, and to stderr in a
+    custom error format.
+
+
+Also note that we have tweaked the versioning scheme, and 0.9.0 should now be
+considered equivalent to an 0.9a1 version. Depending upon public interest and
+feedback, there may be one or two more alpha releases in which the API may
+change significantly, followed by one or two beta releases, a release candidate,
+and then a final release, which will be called 0.9.1.
+
+
+
+0.9.0 -- February 23, 2006
+==========================
+
+This is the first public release. Please report bugs and other feedback to the
+Google Group.
