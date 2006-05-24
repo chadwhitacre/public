@@ -13,6 +13,10 @@ make announcement
     0.9a3
 ========================================
 
+review documentation for coupler(responder) -> coupler(Responder) change
+consider axing Multiple responder
+consider axing CGI/FastCGI coupler
+
 logging
     HTTP Authentication user in log
     new opts on command line and in env

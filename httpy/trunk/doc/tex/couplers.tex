@@ -7,22 +7,23 @@ couple Python FastCGI libraries too. I've tried to pick the single most mature
 option in each category, and build the couplers on top of those. These decisions
 are purely pragmatic.
 
-\begin{classdesc}{CGI}{responder} Constructs a new \class{CGI} coupler object.
+\begin{classdesc}{CGI}{Responder} Constructs a new \class{CGI} coupler object.
 This class is defined in the \module{httpy.couplers.cgi} module.
 \end{classdesc}
 
-\begin{classdesc}{FastCGI}{responder} Constructs a new \class{FastCGI} coupler
+\begin{classdesc}{FastCGI}{Responder} Constructs a new \class{FastCGI} coupler
 object. This class is defined in the \module{httpy.couplers.fastcgi} module.
 \end{classdesc}
 
-\begin{classdesc}{StandAlone}{responder\optional{, argv}} Constructs a new
+\begin{classdesc}{StandAlone}{Responder\optional{, argv}} Constructs a new
 \class{StandAlone} coupler object. \var{argv} is a sequence of arguments. If
 omitted or \class{None}, \code{sys.argv} is used. See \ulink{the chapter on the
 \program{httpy} executable}{manual.html} for the available options. This class
 is defined in the \module{httpy.couplers.standalone} module. \end{classdesc}
 
-Each coupler takes a (possibly implicit) provider of the \class{IResponder}
-interface as its first argument, and each provides the following method:
+Each coupler takes a class defining a (possibly implicit) provider of the
+\class{IResponder} interface as its first argument, and each provides the
+following method:
 
 \begin{methoddesc}{go}{} For \class{CGI} instances, this responds to a single
 request. For \class{FastCGI} and \class{StandAlone}, this enters a blocking
@@ -35,9 +36,9 @@ As an example, here is what a CGI script looks like with \module{httpy}:
 """This is a CGI script.
 """
 from httpy.couplers.cgi import CGI
-import myresponder
+import MyResponder
 
-coupled = CGI(myresponder)
+coupled = CGI(MyResponder)
 coupled.go()
 \end{verbatim}
 
