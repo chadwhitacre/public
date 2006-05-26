@@ -4,29 +4,37 @@
 
 merge trunk to 0.9
 
-update homepage
-    http://wiki.python.org/moin/WebProgramming
-make announcement
-
-
 ========================================
     0.9a3
 ========================================
 
 remove cruft
-    focus on providing a library, not a server
-    leave url mapping out!
-
-    review documentation for coupler(responder) -> coupler(Responder) change
-    consider axing Multiple responder
     consider axing CGI/FastCGI coupler
+        I think we should still keep these around; not sure why
+        utility to other devs? i.e., not everyone wants to run standalone?
     consider not adding API to Responders
+        I think this is related to CGI/FastCGI
 
+    ===done===
+    focus on providing a library, not a server
+        leave url mapping out!
     factor sys.argv parsing out of Coupler
         that should go in httpy-the-executable
-    httpy-the-executable should implement Static(+StandAlone), not Multiple
-    axe Multiple altogether
-
+    consider axing Multiple responder
+        httpy-the-executable should implement Static(+StandAlone), not Multiple
+        axe Multiple altogether
+    what about execfiling *.py files found in the tree?
+        they get request -- a Request object -- in their namespace
+        ooh! and also response -- a Response object
+        the problem is that this means you are using httpy as a server
+        which I really don't think we want to do
+        we want to stake out the *library* turf
+    axe httpy.utils.couple
+        too implicit
+        swapping couplers is a largely bogus use case
+        you pick one at the start of the project
+        there are only a handful of options
+        and if you switch between them in dev/dep modes, then do that explicitly
 
 logging
     HTTP Authentication user in log
@@ -61,8 +69,6 @@ tweaks
     perhaps requests should only go to Multiple sub-responders when Static gives 404
         but be sure not to serve responder.py itself or anything
 
-fix couple()
-    see autorun from QWeb: http://antony.lesuisse.org/qweb/trac/browser/trunk/src/qweb/qweb.py
 
 tighten up -- validate all this stuff
     HTTP/1.0 -> HTTP/1.1
@@ -71,6 +77,14 @@ tighten up -- validate all this stuff
     range requests
     chunked encoding
     100 Continue
+
+documentation
+tests
+update homepage
+    http://wiki.python.org/moin/WebProgramming
+make announcement
+
+
 
 
 
