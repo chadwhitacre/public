@@ -13,9 +13,20 @@ make announcement
     0.9a3
 ========================================
 
-review documentation for coupler(responder) -> coupler(Responder) change
-consider axing Multiple responder
-consider axing CGI/FastCGI coupler
+remove cruft
+    focus on providing a library, not a server
+    leave url mapping out!
+
+    review documentation for coupler(responder) -> coupler(Responder) change
+    consider axing Multiple responder
+    consider axing CGI/FastCGI coupler
+    consider not adding API to Responders
+
+    factor sys.argv parsing out of Coupler
+        that should go in httpy-the-executable
+    httpy-the-executable should implement Static(+StandAlone), not Multiple
+    axe Multiple altogether
+
 
 logging
     HTTP Authentication user in log
@@ -24,6 +35,10 @@ logging
             Not all lines have a prefix (so we can't reliably filter from the outside)
         ===done===
         access log -- 0/1 off/on -- No! Use a redirection
+
+    no! logging is part of your application
+    httpy is all about writing Python applications that speak HTTP natively and robustly
+
 
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
@@ -36,6 +51,7 @@ RestartingServer seems to miss _foo.py
 RestartingServer ought probably to be thread-based anyway rather than process-based
     play nice on windows
     see paste.reloader
+
 
 tweaks
     raise Response(537, {}) -> error!
