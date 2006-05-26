@@ -1,26 +1,21 @@
 """This module implements a basic httpy application.
 """
-import logging
 import mimetypes
 import rfc822
 import os
 import stat
 import time
 
-import httpy
-from httpy.utils import translate
-
-
-__all__ = ('Responder',)
-__docformat__ = 'rest'
-
-logger = logging.getLogger('httpy.responders.static')
+from httpy import Response
+from httpy.utils import mode, translate
 
 
 class Responder:
 
-    root = ''
-    defaults = ()
+    root = ''                   # The filesystem path of the document root.
+    defaults = ( 'index.html'   # a sequence of names of default resources.
+               , 'index.htm'
+                )
 
     def __init__(self, root='', defaults=None):
         """Takes a filesystem path and a list of default names.
@@ -29,10 +24,12 @@ class Responder:
         if not os.path.isdir(root):
             raise ValueError("root '%s' does not point to a directory" % root)
         self.root = os.path.realpath(root)
-        self.defaults = defaults or self.defaults or ('index.html','index.htm')
+        self.defaults = defaults or self.defaults
+
 
     def respond(self, request):
         return self.serve_static(request)
+
 
     def serve_static(self, request):
         """Serve a static file off of the filesystem.
@@ -53,13 +50,13 @@ class Responder:
         mtime = stats[stat.ST_MTIME]
         size = stats[stat.ST_SIZE]
         content_type = mimetypes.guess_type(translated)[0] or 'text/plain'
-        response = httpy.Response(200)
+        response = Response(200)
 
 
         # Support 304s, but only in deployment mode.
         # ==========================================
 
-        if httpy.mode.IS_DEPLOYMENT or httpy.mode.IS_STAGING:
+        if mode.IS_DEPLOYMENT or mode.IS_STAGING:
             if ims:
                 mod_since = rfc822.parsedate(ims)
                 last_modified = time.gmtime(mtime)

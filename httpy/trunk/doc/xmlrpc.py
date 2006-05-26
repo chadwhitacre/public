@@ -1,15 +1,8 @@
-import logging
 import sys
 import traceback
 import xmlrpclib
 
 from httpy import Response, mode
-
-
-__all__ = ('Responder',)
-__docformat__ = 'reStructuredText'
-
-logger = logging.getLogger('httpy.responders.xmlrpc')
 
 
 class Responder:
@@ -91,12 +84,11 @@ class Responder:
             response.body = body
 
 
-        except: # Bug in the module.
-            logger.error("Error serving request.")
-            logger.debug(traceback.format_exc())
+        except:     # bug in the module
+            traceback.print_exc() # goes to stderr
             raise Response(500)
 
-        else:   # Valid XMLRPC response.
+        else:       # valid XMLRPC response
             return response
 
 
