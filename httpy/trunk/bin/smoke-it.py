@@ -4,7 +4,7 @@
 This script is designed to be run from the root of an httpy bundle. It uses the
 bundle's version of httpy rather than any currently-installed version. Besides
 an initial "welcome" screen, this server publishes the bundled documentation in
-HTML and PDF formats.
+HTML format.
 
 """
 import os
@@ -88,5 +88,4 @@ HOMEPAGE = """\
 
 
 if __name__ == "__main__":
-    coupled = StandAlone(Responder())
-    coupled.go()
+    StandAlone(Responder).go()
