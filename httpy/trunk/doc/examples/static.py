@@ -1,37 +1,32 @@
-"""This module implements a basic httpy application.
+#!/usr/local/bin/python
+"""A basic server using the httpy library.
 """
 import mimetypes
 import rfc822
 import os
 import stat
+import sys
 import time
 
 from httpy import Response
-from httpy.utils import mode, translate
+from httpy.couplers.standalone import StandAlone
+from httpy.couplers.standalone.utils import ConfigError, configure
+from httpy.utils import mode
 
 
 class Responder:
 
-    root = ''                   # The filesystem path of the document root.
-    defaults = ( 'index.html'   # a sequence of names of default resources.
-               , 'index.htm'
-                )
+    root = ''       # The document publishing root on the filesystem.
+    defaults = None # A sequence of names to consider to be default resources.
 
-    def __init__(self, root='', defaults=None):
-        """Takes a filesystem path and a list of default names.
+    def __init__(self):
         """
-        root = root or os.getcwd()
-        if not os.path.isdir(root):
-            raise ValueError("root '%s' does not point to a directory" % root)
-        self.root = os.path.realpath(root)
-        self.defaults = defaults or self.defaults
+        """
+        self.root = os.getcwd()
+        self.defaults = ['index.html', 'index.htm']
 
 
     def respond(self, request):
-        return self.serve_static(request)
-
-
-    def serve_static(self, request):
         """Serve a static file off of the filesystem.
 
         In staging and deployment modes, we honor any 'If-Modified-Since'
@@ -39,7 +34,7 @@ class Responder:
 
         """
 
-        translated = translate(request.path, self.root, self.defaults)
+        translated = self.translate(request.path)
         ims = request.headers.get('If-Modified-Since', '')
 
 
@@ -75,4 +70,76 @@ class Responder:
         return response
 
 
-Static = Responder
+    def translate(self, uri_path):
+        """Translate a requested URI to the filesystem.
+
+        Takes a URI path, which is taken to be rooted in self.root. If the
+        requested path points to a directory, we ensure that the URI ends with a
+        slash, and we look for a default resource per self.defaults. If the URI
+        points to a file, we make sure the file exists.
+
+        This method can raise the following Responses:
+
+            301 Moved Permanently
+            403 Forbidden
+            404 Not Found
+
+        If successful, we return the filesystem path to the particular resource.
+
+        """
+
+        # Knit the requested URI onto the filesystem path.
+        # ================================================
+
+        _parts = [self.root] + uri_path.lstrip('/').split('/')
+        fs_path = os.sep.join(_parts)
+        fs_path = os.path.realpath(fs_path)
+
+
+        # Interpret it.
+        # =============
+
+        if os.path.isdir(fs_path):
+
+            # Process the request as a directory.
+            # ===================================
+
+            if not uri_path.endswith('/'):
+                # redirect directory requests to trailing slash
+                new_location = '%s/' % uri_path
+                response = Response(301)
+                response.headers['Location'] = new_location
+                raise response
+
+            default = None
+            for name in self.defaults:
+                _path = os.path.join(fs_path, name)
+                if os.path.isfile(_path):
+                    default = _path
+                    break
+            if default is None:
+                raise Response(403)
+            fs_path = default
+
+        else:
+
+            # Process the request as a file.
+            # ==============================
+
+            if not os.path.exists(fs_path):
+                raise Response(404)
+
+
+        return fs_path
+
+
+if __name__ == '__main__':
+
+    try:
+        address, threads, uid = configure()
+    except ConfigError, err:
+        print >> sys.stderr, err.msg
+        raise SystemExit(2)
+
+    coupled = StandAlone(Responder, address, threads, uid)
+    coupled.go()

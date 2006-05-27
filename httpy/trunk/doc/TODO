@@ -7,6 +7,8 @@ merge trunk to 0.9
 ========================================
     0.9a3
 ========================================
+httpy is all about writing Python applications that speak HTTP natively and robustly
+
 
 remove cruft
     consider axing CGI/FastCGI coupler
@@ -22,7 +24,7 @@ remove cruft
         that should go in httpy-the-executable
     consider axing Multiple responder
         httpy-the-executable should implement Static(+StandAlone), not Multiple
-        axe Multiple altogether
+        axe Multiple altogether; there should be no httpy-the-executable
     what about execfiling *.py files found in the tree?
         they get request -- a Request object -- in their namespace
         ooh! and also response -- a Response object
@@ -35,18 +37,25 @@ remove cruft
         you pick one at the start of the project
         there are only a handful of options
         and if you switch between them in dev/dep modes, then do that explicitly
+    should we bundle any responders?
+        yes, but only as examples
+        having a Python static resource server isn't that useful; just use file://
 
 logging
+    server.py does a lot of logging
+        most of which will disappear once we get rid of RestartingServer
+    the other hotspot is utils.Deliver
+        think about error handling: applications should be mainly responsible here
     HTTP Authentication user in log
+    but doesn't it make sense for HTTP to centralize access logging?
+        that's fine, put it in utils
+    ===done====
     new opts on command line and in env
         error log level (0-6/DEBUG-CRITICAL) -- Yes!
             Not all lines have a prefix (so we can't reliably filter from the outside)
         ===done===
         access log -- 0/1 off/on -- No! Use a redirection
-
-    no! logging is part of your application
-    httpy is all about writing Python applications that speak HTTP natively and robustly
-
+        this only obtains for an application, not a library; we are a library!
 
 when restarting in the middle of pdb, terminal gets screwed up -- hrm
     see Server.RestartingServer.stop_child and TestCaseRestartingServer.py
