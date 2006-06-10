@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Porter is a Cmd app that manages rewrite.db.
 
 On program initialization, we read data in from rewrite.db into an internal data
@@ -15,6 +16,9 @@ import shutil
 import sys
 
 
+__version__ = '0.2'
+
+
 class PorterError(RuntimeError):
     """ error class for porter """
     pass
@@ -26,6 +30,8 @@ class Porter(cmd.Cmd):
         """
         """
         cmd.Cmd.__init__(self)
+        if db_path.endswith('.db'):
+            db_path = db_path[:-3]
         self.db_path = db_path
 
         # Read our data from storage into self.domains.
@@ -153,10 +159,11 @@ Commands available:
     # Read
     ##
 
-    complete_ls = complete_domains
+    complete_l = complete_ls = complete_domains
 
     def do_ls(self, inStr=''):
-        """ print out a list of the domains we are managing """
+        """Print out a list of the domains we are managing.
+        """
         opts, args = self._parse_inStr(inStr)
         domains = self.domains.keys()
         if ('i' in opts) or ('info' in opts):
@@ -215,6 +222,10 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
                 else:
                     # columnize is an undocumented method in cmd.py
                     self.columnize(domains, displaywidth=79)
+
+    def do_l(self, inStr=''):
+        """ alias for ls -l """
+        self.do_ls('-l ' + inStr)
 
 
     ##
@@ -371,13 +382,39 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
 
 
 
-if __name__ == '__main__':
-    db_path = os.environ.get('PORTER_DB', None)
-    if db_path is None:
-        print >> sys.stderr("Please set PORTER_DB to the path of your dbm file.")
-        raise SystemExit()
+def main(argv=None):
+    """
+    """
+
+    if argv is None:
+        argv = sys.argv
+
+    # Determine the data file we are managing.
+    # ========================================
+
+    arg = argv[1:2]
+    if arg:
+        db_path = arg[0]
+    else:
+        db_path = os.environ.get('PORTER_DB', None)
+        if db_path is None:
+            print >> sys.stderr, "No dbm file specified."
+            raise SystemExit()
+    dp_path = os.path.realpath(db_path)
+    if not os.path.isfile(db_path):
+        if not os.path.isfile(db_path+'.db'):
+            print "Attempt to create new database at:\n  %s." % dp_path
+
+
+    # Manage it.
+    # ==========
+
     porter = Porter(db_path)
     try:
-        c.cmdloop()
+        porter.cmdloop()
     except KeyboardInterrupt:
-        c.onecmd("EOF")
+        porter.onecmd("EOF")
+
+
+if __name__ == '__main__':
+    main(sys.argv)
