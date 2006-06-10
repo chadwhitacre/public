@@ -1,37 +1,43 @@
+"""Porter is a Cmd app that manages rewrite.db.
+
+On program initialization, we read data in from rewrite.db into an internal data
+structure, and we generate an index that we use to present aliases for
+convenience. Then whenever we do one of [mk, rm] we want to save our changes to
+the db.
+
 """
 
-Porter is our Cmd app that manages rewrite.db. On program initialization, we
-read data in from rewrite.db into an internal data structure, and we generate an
-index that we use to present aliases for convenience. Then whenever we do one of
-[mk, rm] we want to save our changes to the db.
+import cmd
+import datetime
+import dbm
+import os
+import shutil
+import sys
 
-"""
-
-import cmd, datetime, dbm, os, shutil, sys
-from os.path import join
 
 class PorterError(RuntimeError):
     """ error class for porter """
     pass
 
+
 class Porter(cmd.Cmd):
 
-    def __init__(self, *args, **kw):
+    def __init__(self, db_path):
+        """
+        """
+        cmd.Cmd.__init__(self)
+        self.db_path = db_path
 
-        # set our data paths
-        PKG_HOME = os.environ.get('PKG_HOME', sys.path[0])
-        INSTANCE_HOME = os.environ.get('INSTANCE_HOME', PKG_HOME)
-        self.var = join(INSTANCE_HOME, 'var')
-        self.db_path = join(self.var, "rewrite")
+        # Read our data from storage into self.domains.
+        # =============================================
+        # We also populate the index self.aliases in this method.
 
-        # read our data from storage into self.domains
-        #  we also populate the index self.aliases in this method
         self._read_from_disk()
 
-        # let our superclass have its way too
-        cmd.Cmd.__init__(self, *args, **kw)
 
-        # ui settings
+        # Set some UI variables.
+        # ======================
+
         year = datetime.date.today().year
         num = len(self.domains)
         if num == 1: word = 'domain'
@@ -45,6 +51,7 @@ class Porter(cmd.Cmd):
 You are currently managing %s %s. Type ? for help.
         """ % (year, num, word)
         self.prompt = 'porter> '
+
 
     ##
     # Help
@@ -254,7 +261,7 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
         domains = {}
         for domain in rawdata:
             if len(domain.split('.')) < 2:
-                continue 
+                continue
             if not domain.startswith('www.'):
                 domains[domain] = rawdata[domain]
 
@@ -361,3 +368,16 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
         if d1 < d2: return -1
         if d1 > d2: return 1
     _domain_cmp = staticmethod(_domain_cmp)
+
+
+
+if __name__ == '__main__':
+    db_path = os.environ.get('PORTER_DB', None)
+    if db_path is None:
+        print >> sys.stderr("Please set PORTER_DB to the path of your dbm file.")
+        raise SystemExit()
+    porter = Porter(db_path)
+    try:
+        c.cmdloop()
+    except KeyboardInterrupt:
+        c.onecmd("EOF")
