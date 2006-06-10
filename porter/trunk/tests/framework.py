@@ -1,8 +1,8 @@
-""" alter sys.path in case we are installed somewhere besides site-packages """
-import os, sys
+"""Alter sys.path to pick up the bin/porter.py script as a module.
+"""
+import os
+import sys
 
-cwd = os.getcwd() # this should be tests/
-sep = os.sep
-pkg_parent = sep.join(cwd.split(sep)[:-2])
-if pkg_parent not in sys.path:
-    sys.path.append(pkg_parent)
+pkg = os.path.realpath('../bin')
+if pkg not in sys.path:
+    sys.path.append(pkg)

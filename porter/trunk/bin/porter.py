@@ -26,10 +26,11 @@ class PorterError(RuntimeError):
 
 class Porter(cmd.Cmd):
 
-    def __init__(self, db_path):
+    def __init__(self, db_path, stdout=None):
         """
         """
-        cmd.Cmd.__init__(self)
+        stdout = stdout or sys.stdout
+        cmd.Cmd.__init__(self, stdout)
         if db_path.endswith('.db'):
             db_path = db_path[:-3]
         self.db_path = db_path
