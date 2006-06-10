@@ -30,7 +30,7 @@ class Porter(cmd.Cmd):
         """
         """
         stdout = stdout or sys.stdout
-        cmd.Cmd.__init__(self, stdout)
+        cmd.Cmd.__init__(self, stdout=stdout)
         if db_path.endswith('.db'):
             db_path = db_path[:-3]
         self.db_path = db_path
