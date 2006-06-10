@@ -2,7 +2,7 @@ if __name__ == '__main__':
     import framework
 
 import unittest
-from Porter.Porter import Porter, PorterError
+from porter import Porter, PorterError
 
 class TestDomainCmp(unittest.TestCase):
 

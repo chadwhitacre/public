@@ -4,7 +4,7 @@ if __name__ == '__main__':
 import unittest, os, pdb
 from os.path import join, abspath, isdir
 from StringIO import StringIO
-from Porter.Porter import Porter
+from porter import Porter
 
 class TestCRUD(unittest.TestCase):
 
