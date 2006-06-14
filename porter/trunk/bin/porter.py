@@ -272,7 +272,7 @@ Commands available:
                     aliases = self.aliases[index][:]
                     aliases.remove(domain)
 
-                    domain  = domain.ljust(28)[:28]
+                    domain  = domain.rjust(28)[-28:]
                     server  = server.ljust(12)[:12]
                     port = port.rjust(4)
                     if aliases:
