@@ -49,8 +49,7 @@ class Porter(cmd.Cmd):
 
         year = datetime.date.today().year
         num = len(self.domains)
-        if num == 1: word = 'domain'
-        if num <> 1: word = 'domains'
+        word = (num == 1) and 'domain' or 'domains'
 
         self.intro = """
 #------------------------------------------------------------------------#
@@ -86,8 +85,9 @@ Commands available:
                 based on domain name (if -l or no options are given), or based
                 on server name (if -s is given). So for example, 'ls zeta'
                 would list zetaweb.com and zetaserver.com, but not zogurt.org
-                nor sub1.zetaweb.com.
-          Domains can be tab-completed.
+                nor sub1.zetaweb.com. If -s is given, results are sorted by
+                server and port number, otherwise by domain name.
+          Domains (or servers with -s) can be tab-completed.
 
     mk -- register a domain
           ARGS: domain server port, e.g.: example.com srvrname 8080
@@ -109,7 +109,7 @@ Commands available:
     def complete_domains_or_servers(self, text, line, begidx, endidx):
         opts, args = self._parse_inStr(line)
         if ('s' in opts) or ('server' in opts):
-            return [s for s in self.servers if s.startswith(text)]
+            return [i[0] for i in self.aliases if i[0].startswith(text)]
         else:
             return [d for d in self.domains if d.startswith(text)]
 
@@ -129,9 +129,12 @@ Commands available:
         self.do_mk(inStr)
 
     def do_mk(self, inStr=''):
-        """ given a domain name and a website, map them """
+        """Given a domain name and a website, map them.
+        """
 
-        # get our arguments and validate them
+        # Get arguments and validate them.
+        # ================================
+
         opts, args = self._parse_inStr(inStr)
         if len(args) < 3:
             print >> self.stdout, "We need a domain name, a server name, " +\
@@ -147,22 +150,32 @@ Commands available:
         # not worth validating port number since it will come from "dropdown" anyway
         # not worth validating server since it will come from "dropdown" anyway
 
-        old_website = self.domains.get(domain)
-        new_website = ':'.join((server,port))
+        old_website = self.domains.get(domain, None)
+        new_website = ':'.join((server, port))
+        new_index = (server, int(port))
 
-        # update our data
+
+        # Update database.
+        # ================
+
         self.domains[domain] = new_website
         self._write_to_disk()
 
-        # and update our index of aliases
+
+        # Update indices.
+        # ===============
+
         if old_website is not None:
-            self.aliases[old_website].remove(domain)
-        if new_website in self.aliases:
-            if domain not in self.aliases[new_website]:
-                self.aliases[new_website].append(domain)
+            server, port = old_website.split(':')
+            old_index = (server, int(port))
+            self.aliases[old_index].remove(domain)
+
+        if new_index in self.aliases:
+            if domain not in self.aliases[new_index]:
+                self.aliases[new_index].append(domain)
         else:
-            self.aliases[new_website] = [domain]
-        self.aliases[new_website].sort(self._domain_cmp)
+            self.aliases[new_index] = [domain]
+        self.aliases[new_index].sort(self._domain_cmp)
 
 
     ##
@@ -202,8 +215,8 @@ Commands available:
             raw.close()
 
 
-        # Display details.
-        # ================
+        # Display more user-friendly details.
+        # ===================================
 
         else:
 
@@ -214,10 +227,10 @@ Commands available:
 
             if ('s' in opts) or ('server' in opts):
                 domains = []
-                for server in sorted(self.servers):
+                for server, port in sorted(self.aliases):
                     if filt and not server.startswith(filt):
                         continue
-                    domains.extend(self.servers[server])
+                    domains.extend(self.aliases[(server, port)])
             else:
                 domains.sort(self._domain_cmp)
                 if filt:
@@ -245,21 +258,27 @@ Commands available:
                            )
                 out.append(self.ruler*79)
 
+                curserver = ''
                 for domain in domains:
 
-                    server, portnum = self.domains[domain].split(':')
-                    aliases = self.aliases[self.domains[domain]][:]
+                    server, port = self.domains[domain].split(':')
+                    if server != curserver: # insert rules in -s mode
+                        if curserver:
+                            out.append('-'*79)
+                        curserver = server
+                    index = (server, int(port))
+                    aliases = self.aliases[index][:]
                     aliases.remove(domain)
 
                     domain  = domain.ljust(28)[:28]
                     server  = server.ljust(12)[:12]
-                    portnum = str(portnum).rjust(4)
+                    port = port.rjust(4)
                     if aliases:
                         alias = aliases.pop(0)[:28]
                     else:
                         alias = ''
 
-                    out.append('  '.join([domain, server, portnum, alias]))
+                    out.append('  '.join([domain, server, port, alias]))
 
                     for alias in aliases:
                         out.append(' '*50 + alias)
@@ -340,24 +359,16 @@ Commands available:
 
         # Index the data.
         # ===============
-        # - aliases: a one-to-many mapping of websites to domains
-        # - servers: a one-to-many mapping of servers to domains
+        # This is a one-to-many mapping of (server, port) tuples to domains.
 
         aliases = {}
-        servers = {}
         for domain in sorted(domains, self._domain_cmp):
-
-            website = domains[domain]
-            if website in aliases:
-                aliases[website].append(domain)
+            server, port = domains[domain].split(':')
+            index = (server, int(port))
+            if index in aliases:
+                aliases[index].append(domain)
             else:
-                aliases[website] = [domain]
-
-            server = website.split(':')[0]
-            if server in servers:
-                servers[server].append(domain)
-            else:
-                servers[server] = [domain]
+                aliases[index] = [domain]
 
 
         # Store it.
@@ -365,23 +376,27 @@ Commands available:
 
         self.domains = domains.copy()
         self.aliases = aliases.copy()
-        self.servers = servers.copy()
 
 
     def _write_to_disk(self):
-        """ given that our data is clean, store it to disk """
+        """Given clean data in self.domains, store it to disk.
+        """
 
-        # create a local copy of self.domains, adding www's back in
+        # Create a local copy of self.domains.
+        # ====================================
+        # This is where we add www aliases back in.
+
         db_records = {}
         for domain in self.domains:
             website = self.domains[domain]
             db_records[domain] = website
             db_records['www.' + domain] = website
 
-        # back up the current file
-        shutil.copyfile(self.db_path + '.db', self.db_path + '.db.old')
 
-        # now write the new one
+        # Back up the current file and write the new one.
+        # ===============================================
+
+        shutil.copyfile(self.db_path + '.db', self.db_path + '.db.old')
         db = dbm.open(self.db_path, 'n')
         for domain in db_records:
             db[domain] = db_records[domain]
