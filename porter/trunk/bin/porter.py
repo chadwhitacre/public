@@ -226,12 +226,14 @@ Commands available:
             filt = args and args[0] or ''
 
             if ('s' in opts) or ('server' in opts):
+                smode = True
                 domains = []
                 for server, port in sorted(self.aliases):
                     if filt and not server.startswith(filt):
                         continue
                     domains.extend(self.aliases[(server, port)])
             else:
+                smode = False
                 domains.sort(self._domain_cmp)
                 if filt:
                     domains = [d for d in domains if d.startswith(filt)]
@@ -262,7 +264,7 @@ Commands available:
                 for domain in domains:
 
                     server, port = self.domains[domain].split(':')
-                    if server != curserver: # insert rules in -s mode
+                    if smode and (server != curserver): # insert rules in -s mode
                         if curserver:
                             out.append('-'*79)
                         curserver = server
