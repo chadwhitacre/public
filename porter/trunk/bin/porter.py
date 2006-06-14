@@ -258,7 +258,7 @@ Commands available:
                           + "PORT" + '  '
                           + "ALIASES"
                            )
-                out.append(self.ruler*79)
+                out.append(self.ruler*78)
 
                 curserver = ''
                 for domain in domains:
@@ -266,7 +266,7 @@ Commands available:
                     server, port = self.domains[domain].split(':')
                     if smode and (server != curserver): # insert rules in -s mode
                         if curserver:
-                            out.append('-'*79)
+                            out.append('-'*78)
                         curserver = server
                     index = (server, int(port))
                     aliases = self.aliases[index][:]
@@ -294,7 +294,7 @@ Commands available:
 
             else:
                 # columnize is an undocumented method in cmd.py
-                self.columnize(domains, displaywidth=79)
+                self.columnize(domains, displaywidth=78)
 
         print >> self.stdout, '\n'.join(out)
 
