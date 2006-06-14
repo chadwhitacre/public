@@ -35,9 +35,11 @@ class Porter(cmd.Cmd):
             db_path = db_path[:-3]
         self.db_path = db_path
 
+
         # Read our data from storage into self.domains.
         # =============================================
-        # We also populate the index self.aliases in this method.
+        # We also populate the indices self.aliases and self.servers in this
+        # method.
 
         self._read_from_disk()
 
@@ -79,15 +81,15 @@ http server architecture. For more on Cambridge ... um, talk to Chad. ;^)
 Commands available:
 
     ls -- list available domains
-          OPTIONS: -l/--long, -i/--info, -r/--raw
-          ARGS: With no options or with the -l option, ls takes an optional
-                argument. If you pass in this argument, Porter only lists
-                domains that begin with that value. So for example, 'ls zeta'
-                would list zetaweb.com and zetaserver.com, but not
-                sub1.zetaweb.com nor zogurt.org.
+          OPTIONS: -l/--long, -i/--info, -r/--raw, -s/--server
+          ARGS: ls takes an optional argument, a prefix by which to constrain
+                based on domain name (if -l or no options are given), or based
+                on server name (if -s is given). So for example, 'ls zeta'
+                would list zetaweb.com and zetaserver.com, but not zogurt.org
+                nor sub1.zetaweb.com.
           Domains can be tab-completed.
 
-    mk -- register a domain with Porter
+    mk -- register a domain
           ARGS: domain server port, e.g.: example.com srvrname 8080
           ALIASES: add, mv
           Domains can be tab-completed with mv.
@@ -103,6 +105,13 @@ Commands available:
 
     def complete_domains(self, text, line, begidx, endidx):
         return [d for d in self.domains.keys() if d.startswith(text)]
+
+    def complete_domains_or_servers(self, text, line, begidx, endidx):
+        opts, args = self._parse_inStr(line)
+        if ('s' in opts) or ('server' in opts):
+            return [s for s in self.servers if s.startswith(text)]
+        else:
+            return [d for d in self.domains if d.startswith(text)]
 
 
     ##
@@ -160,69 +169,113 @@ Commands available:
     # Read
     ##
 
-    complete_l = complete_ls = complete_domains
+    complete_l = complete_ls = complete_domains_or_servers
 
     def do_ls(self, inStr=''):
         """Print out a list of the domains we are managing.
         """
+
+        out = ['']
         opts, args = self._parse_inStr(inStr)
         domains = self.domains.keys()
+
+
+        # Display summary info.
+        # =====================
+
         if ('i' in opts) or ('info' in opts):
             num = len(self.domains)
-            if num == 1: word = 'domain'
-            if num <> 1: word = 'domains'
-            print >> self.stdout, "You are currently managing " +\
-                                  "%s %s." % (num, word)
-            return
-        if len(domains) > 0: # otherwise columnize gives us "<empty>"
+            word = (num == 1) and 'domain' or 'domains'
+            out.append("You are currently managing %s %s." % (num, word))
 
-            # TODO: this might be big enough to refactor into dict switch
-            # notation
 
-            if ('r' in opts) or ('raw' in opts):
-                print >> self.stdout, """
-KEY                           VALUE\n%s""" % (self.ruler*60,)
-                raw = dbm.open(self.db_path,'r')
-                for key in dict(raw):
-                    print >> self.stdout, "%s  %s" % (key.ljust(28),
-                                                      raw[key].ljust(28))
-                print >> self.stdout
-                raw.close()
+        # Display raw details.
+        # ====================
+
+        elif ('r' in opts) or ('raw' in opts):
+            out.append("KEY" + (" " * 27) + "VALUE")
+            out.append(self.ruler*60)
+            raw = dbm.open(self.db_path,'r')
+            for key in dict(raw):
+                out.append("%s  %s" % (key.ljust(28), raw[key].ljust(28)))
+            out.append('')
+            raw.close()
+
+
+        # Display details.
+        # ================
+
+        else:
+
+            # Massage our list of domains.
+            # ============================
+
+            filt = args and args[0] or ''
+
+            if ('s' in opts) or ('server' in opts):
+                domains = []
+                for server in sorted(self.servers):
+                    if filt and not server.startswith(filt):
+                        continue
+                    domains.extend(self.servers[server])
             else:
-                # massage our list of domains
                 domains.sort(self._domain_cmp)
-                if args:
-                    domains = filter(lambda d: d.startswith(args[0]), domains)
+                if filt:
+                    domains = [d for d in domains if d.startswith(filt)]
 
-                if ('l' in opts) or ('long' in opts):
-                    header = """
-DOMAIN NAME                   SERVER        PORT  ALIASES
-%s""" % (self.ruler*79,)
-                    print >> self.stdout, header
-                    for domain in domains:
-                        server, portnum = self.domains[domain].split(':')
-                        aliases = self.aliases[self.domains[domain]][:]
-                        aliases.remove(domain) # don't list ourselves in
-                                               # aliases
 
-                        # format our fields
-                        domain  = domain.ljust(28)[:28]
-                        server  = server.ljust(12)[:12]
-                        portnum = str(portnum).rjust(4)
-                        if aliases: alias = aliases.pop(0)[:28]
-                        else:       alias = ''
+            # Nothing to show.
+            # ================
+            # If we handle this case in the next clause, columnize prints
+            # "<empty>."
 
-                        # build and output our record
-                        record = "%s  %s  %s  %s" % (domain, server,
-                                                     portnum, alias)
-                        print >> self.stdout, record
-                        for alias in aliases:
-                            print >> self.stdout, ' '*50 + alias
-                    print >> self.stdout # newline
+            if len(domains) == 0:
+                pass
 
-                else:
-                    # columnize is an undocumented method in cmd.py
-                    self.columnize(domains, displaywidth=79)
+
+            # Output in long format.
+            # ======================
+
+            elif ('l' in opts) or ('long' in opts):
+
+                out.append( "DOMAIN NAME" + (' '*19)
+                          + "SERVER" + (' '*8)
+                          + "PORT" + '  '
+                          + "ALIASES"
+                           )
+                out.append(self.ruler*79)
+
+                for domain in domains:
+
+                    server, portnum = self.domains[domain].split(':')
+                    aliases = self.aliases[self.domains[domain]][:]
+                    aliases.remove(domain)
+
+                    domain  = domain.ljust(28)[:28]
+                    server  = server.ljust(12)[:12]
+                    portnum = str(portnum).rjust(4)
+                    if aliases:
+                        alias = aliases.pop(0)[:28]
+                    else:
+                        alias = ''
+
+                    out.append('  '.join([domain, server, portnum, alias]))
+
+                    for alias in aliases:
+                        out.append(' '*50 + alias)
+
+                out.append('')
+
+
+            # Output in short format.
+            # =======================
+            # I hardly ever use this. Should it even be here?
+
+            else:
+                # columnize is an undocumented method in cmd.py
+                self.columnize(domains, displaywidth=79)
+
+        print >> self.stdout, '\n'.join(out)
 
     def do_l(self, inStr=''):
         """ alias for ls -l """
@@ -233,7 +286,7 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
     # Delete
     ##
 
-    complete_rm = complete_ls
+    complete_rm = complete_domains
 
     def do_rm(self, inStr=''):
         """ given one or more domain names, remove it/them from our storage """
@@ -257,10 +310,14 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
     ##
 
     def _read_from_disk(self):
-        """ read data in from storage and store it and an index in attrs"""
+        """Read data in from storage, index it, and store it.
+        """
 
-        # read in data from our db, which is a one-to-one mapping of domains
-        #  to websites (website == server:port)
+        # Read in data from our db.
+        # =========================
+        # The database is a one-to-one mapping of domains to websites,
+        # where 'website' means 'server:port'.
+
         db = dbm.open(self.db_path, 'c') # 'c' means create it if not there
         rawdata = dict(db)
         db.close()
@@ -268,8 +325,11 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
         # should we do some integrity checking here? i.e., make sure that all
         # domains have a www counterpart? check for dupes?
 
-        # filter out www's for our users, we will add them back in when we
-        #  write to disk
+
+        # Filter out www's for better usability.
+        # ======================================
+        # We will add them back in when we write to disk.
+
         domains = {}
         for domain in rawdata:
             if len(domain.split('.')) < 2:
@@ -277,18 +337,35 @@ DOMAIN NAME                   SERVER        PORT  ALIASES
             if not domain.startswith('www.'):
                 domains[domain] = rawdata[domain]
 
-        # we also keep an index around
-        #  a one-to-many mapping of websites to domains
+
+        # Index the data.
+        # ===============
+        # - aliases: a one-to-many mapping of websites to domains
+        # - servers: a one-to-many mapping of servers to domains
+
         aliases = {}
-        for domain in domains:
+        servers = {}
+        for domain in sorted(domains, self._domain_cmp):
+
             website = domains[domain]
             if website in aliases:
                 aliases[website].append(domain)
             else:
                 aliases[website] = [domain]
 
+            server = website.split(':')[0]
+            if server in servers:
+                servers[server].append(domain)
+            else:
+                servers[server] = [domain]
+
+
+        # Store it.
+        # =========
+
         self.domains = domains.copy()
         self.aliases = aliases.copy()
+        self.servers = servers.copy()
 
 
     def _write_to_disk(self):
