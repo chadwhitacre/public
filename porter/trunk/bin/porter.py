@@ -467,6 +467,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
 
+
     # Determine the data file we are managing.
     # ========================================
 
@@ -484,14 +485,18 @@ def main(argv=None):
             print "Attempt to create new database at:\n  %s." % dp_path
 
 
-    # Manage it.
-    # ==========
+    # Run a command or enter interactive mode.
+    # ========================================
 
     porter = Porter(db_path)
-    try:
-        porter.cmdloop()
-    except KeyboardInterrupt:
-        porter.onecmd("EOF")
+    command = ' '.join(argv[2:])
+    if command:
+        porter.onecmd(command)
+    else:
+        try:
+            porter.cmdloop()
+        except KeyboardInterrupt:
+            porter.onecmd("EOF")
 
 
 if __name__ == '__main__':
