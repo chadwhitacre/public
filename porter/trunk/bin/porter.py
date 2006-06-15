@@ -16,7 +16,7 @@ import shutil
 import sys
 
 
-__version__ = '0.2'
+__version__ = 'trunk'
 
 
 class PorterError(RuntimeError):
@@ -53,7 +53,7 @@ class Porter(cmd.Cmd):
 
         self.intro = """
 #------------------------------------------------------------------------#
-#  Porter v0.2 (c)2004-%s Zeta Design & Development <www.zetaweb.com>  #
+#  Porter trunk (c)2004-%s Zeta Design & Development <www.zetaweb.com> #
 #------------------------------------------------------------------------#
 
 You are currently managing %s %s. Type ? for help.
@@ -73,9 +73,8 @@ You are currently managing %s %s. Type ? for help.
         else:
             print >> self.stdout, """\
 
-Porter is a piece of software for managing the interface between the public
-Internet and a server cluster set up according to the Cambridge distributed
-http server architecture. For more on Cambridge ... um, talk to Chad. ;^)
+Porter is a dbm file mapping domain names to backend web servers (specified as
+'server:port').
 
 Commands available:
 
@@ -97,6 +96,9 @@ Commands available:
     rm -- unregister a domain
           ARGS: one or more space-separated domain names, e.g.: foo.example.net
           Domains can be tab-completed.
+
+    ci -- checkin the database to the subversion server
+
             """
 
     ##
@@ -310,7 +312,8 @@ Commands available:
     complete_rm = complete_domains
 
     def do_rm(self, inStr=''):
-        """ given one or more domain names, remove it/them from our storage """
+        """Given one or more domain names, remove it/them from our storage.
+        """
         opts, args = self._parse_inStr(inStr)
         for domain in args:
 
@@ -434,10 +437,16 @@ Commands available:
         pass
 
     def do_EOF(self, inStr=''):
-        print >> self.stdout; return True
+        print >> self.stdout
+        return self.do_exit()
     def do_exit(self, *foo):
         return True
     do_q = do_quit = do_exit
+
+    def do_ci(self, inStr=''):
+        directory = os.path.dirname(self.db_path)
+        os.system('svn ci -m"auto-commit from porter" %s' % directory)
+
 
     def _domain_cmp(x, y):
         """
