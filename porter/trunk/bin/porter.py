@@ -401,7 +401,7 @@ Commands available:
         # Back up the current file and write the new one.
         # ===============================================
 
-        shutil.copyfile(self.db_path + '.db', self.db_path + '.old.db')
+        shutil.copyfile(self.db_path + '.db', self.db_path + '-old.db')
         db = dbm.open(self.db_path, 'n')
         for domain in db_records:
             db[domain] = db_records[domain]
