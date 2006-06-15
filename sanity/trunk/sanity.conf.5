@@ -1,4 +1,4 @@
-.Dd March 21, 2005
+.Dd June 15, 2006
 .Os
 .Dt SANITY.CONF 5 LOCAL
 .\"
@@ -17,24 +17,27 @@
 .\"
 .Sh DESCRIPTION
 .Xr sanity 1
-requires that three variables be set in a configuration file at
+requires that four variables be set in a configuration file at
 .Pa /usr/local/etc/sanity.conf Ns :
 
 .Bl -tag -offset indent
+.It email_addy
+an email address to which emergency notifications should be sent
 .It porter_path
 the path to a porter installation (there is no porter man page yet)
 .It server_ip
 the IP address of the server to check for
 .Xr ping 8
-.It email_addy
-an email address to which emergency notifications should be sent
+.It timeout
+the number of seconds to wait for a response before declaring a website in error
 .El
 
 See
 .Xr sanity 1
 for details of how these variables are used. See the
 .Xr python 1
-documentation for the ConfigParser module for the general format of this file.
+documentation for the ConfigParser module documentation for the general format
+of this file.
 .Xr sanity 1
 parses
 .Nm
@@ -50,9 +53,10 @@ Here is an example
 file:
 .Bd -literal
 [default]
+email_addy  = emergency@example.com
 porter_path = /usr/local/porter
 server_ip   = 10.0.0.107
-email_addy  = emergency@example.com
+timeout     = 5
 .Ed
 .\"
 .\"
@@ -69,7 +73,7 @@ email_addy  = emergency@example.com
 .Sh AUTHORS
 .Bl -item -compact
 .It
-(c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+(c) 2005-2006 Chad Whitacre <http://www.zetaweb.com/>
 .It
 This program is beerware. If you like it, buy me a beer someday.
 .It
