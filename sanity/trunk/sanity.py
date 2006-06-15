@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 """For usage, see the sanity(1) manual page.
 """
 import dbm
