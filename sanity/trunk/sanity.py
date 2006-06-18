@@ -1,5 +1,9 @@
 #!/usr/local/bin/python
 """For usage, see the sanity(1) manual page.
+
+- It's a problem that DNS problems with domains not under my control can trigger
+    an error (and SMS flood)
+
 """
 import dbm
 import httplib
@@ -52,8 +56,7 @@ class Sanity:
             if self.verbose:
                 sys.stdout.write('syncing dbm ...')
                 os.system('/usr/local/bin/svn up %s' % self.porter_path)
-                if self.verbose:
-                    print ' done'
+                print ' done'
             else:
                 os.system('/usr/local/bin/svn up --quiet %s' % self.porter_path)
 
@@ -86,7 +89,11 @@ class Sanity:
                     # errors
                     numerrors = len(self.errors); numtoshow = 5
                     s = (numerrors != 1) and 's' or ''
-                    sub = "%s site%s down" % (self.output['numerrors'], s)
+                    sub = "%s down @ %s" % ( self.output['numerrors']
+                                           , time.strftime( '%I:%M%p'
+                                                          , time.localtime()
+                                                           )
+                                            )
                     if numerrors > numtoshow:
                         more = ['+ %s more' % (numerrors-numtoshow,)]
                         self.errors = self.errors[:numtoshow] + more
