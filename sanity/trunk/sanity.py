@@ -89,11 +89,11 @@ class Sanity:
                     # errors
                     numerrors = len(self.errors); numtoshow = 5
                     s = (numerrors != 1) and 's' or ''
-                    sub = "%s down @ %s" % ( self.output['numerrors']
-                                           , time.strftime( '%I:%M%p'
-                                                          , time.localtime()
-                                                           )
-                                            )
+                    sub = "%s @ %s" % ( self.output['numerrors']
+                                      , time.strftime( '%I:%M%p'
+                                                     , time.localtime()
+                                                      )
+                                       )
                     if numerrors > numtoshow:
                         more = ['+ %s more' % (numerrors-numtoshow,)]
                         self.errors = self.errors[:numtoshow] + more
