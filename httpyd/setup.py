@@ -19,7 +19,9 @@ setup( name = 'httpyd'
      , package_dir = {'':'site-packages'}
      , packages = [ 'httpyd'
                    ]
-     , scripts = ['bin/httpyd']
+     , scripts = [ 'bin/httpyd'
+                 , 'bin/hinfo'
+                  ]
      , description = 'httpyd is a robust and sane Python webserver.'
      , author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
