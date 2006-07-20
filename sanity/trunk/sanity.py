@@ -129,7 +129,8 @@ class Sanity:
         for website in websites:
 
             if self.VERBOSE:
-                print website
+                print >> sys.stderr, website
+                sys.stderr.flush()
             elif self.verbose:
                 sys.stdout.write('.')
                 sys.stdout.flush()
