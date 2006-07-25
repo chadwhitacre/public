@@ -36,6 +36,7 @@ setup( name='httpy'
                 , 'httpy.couplers.standalone'
                 , 'httpy.responders'
                 , 'httpy.tests'
+                , 'httpy.utils'
                  ]
      , description = 'httpy is a sane and robust HTTP library for Python.'
      , author = 'Chad Whitacre'
