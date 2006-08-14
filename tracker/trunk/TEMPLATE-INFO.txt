@@ -1,3 +1,0 @@
-Name: zeta
-Description: A simplification of the classic tracker.
-Intended-For: Zeta
