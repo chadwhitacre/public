@@ -2,6 +2,7 @@
 """This is the main httpyd callable. It configures and starts an HTTP server.
 """
 import os
+import site
 import sys
 
 from httpy.couplers.standalone import StandAlone
@@ -22,8 +23,12 @@ def main(argv):
             from httpyd.utils import daemon
             daemon.daemonize()
         os.environ['HTTPY_MODE'] = config.mode
-        website = Website(config.paths)
-        StandAlone(website, config.address, config.threads, config.uid).go()
+        site.website = Website(config.paths)
+        coupled = StandAlone( site.website
+                            , config.address
+                            , config.threads
+                            , config.uid)
+        coupled.go()
 
 
 
