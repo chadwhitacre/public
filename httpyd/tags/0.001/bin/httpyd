@@ -1,0 +1,36 @@
+#!/usr/local/bin/python
+"""This is the main httpyd callable. It configures and starts an HTTP server.
+"""
+import os
+import site
+import sys
+
+from httpy.couplers.standalone import StandAlone
+from httpyd.config import Configuration, ConfigError
+from httpyd.website import Website
+
+
+def main(argv):
+
+    try:
+        config = Configuration(argv[1:])
+    except ConfigError, err:
+        print >> sys.stderr, err.msg
+        print >> sys.stderr, "usage: httpyd --help"
+        raise SystemExit(2)
+    else:
+        if config.daemon:
+            from httpyd.utils import daemon
+            daemon.daemonize()
+        os.environ['HTTPY_MODE'] = config.mode
+        site.website = Website(config.paths)
+        coupled = StandAlone( site.website
+                            , config.address
+                            , config.threads
+                            , config.uid)
+        coupled.go()
+
+
+
+if __name__ == '__main__':
+    main(sys.argv)
