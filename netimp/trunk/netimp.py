@@ -7,7 +7,7 @@ Usage:
     ...
     ImportError: No module named foo
     >>> import netimp
-    >>> netimp.path = ['http://www.zetadev.com/svn/public/netimp/test']
+    >>> netimp.importer.path = ['http://www.zetadev.com/svn/public/netimp/trunk/test/lib']
     >>> import foo
     >>>
 
@@ -64,7 +64,10 @@ class URL:
     def __str__(self):
         """Return the original URL, with any password zeroed out.
         """
-        return _url.replace(self.password+'@', '******@')
+        if self.password is None:
+            return self._url
+        else:
+            return self._url.replace(self.password+'@', '******@')
 
 
 class NetworkImporter(imputil.Importer):
@@ -84,7 +87,6 @@ class NetworkImporter(imputil.Importer):
 
 
         out = None
-        found = False
         for baseurl in self.path:
 
             proto_url = '/'.join([baseurl] + fqname.split('.'))
@@ -94,8 +96,7 @@ class NetworkImporter(imputil.Importer):
             # ==================
             # If so, we want to look for __init__.py.
 
-            index = self.download(proto_url + '/')
-            is_package = index is not None
+            is_package = self.download(proto_url + '/')
             if is_package:
                 proto_url += '/__init__'
 
@@ -105,13 +106,13 @@ class NetworkImporter(imputil.Importer):
 
             for suffix in imp.get_suffixes():
                 url = proto_url + suffix[0]
-                found = self.download(url)
-                if found is not False:
+                fp = self.download(url)
+                if fp is not None:
 
                     # Prepare elements for imputil.Importer.
                     # ======================================
 
-                    mod = imp.load_module(modname, found, found.name, suffix)
+                    mod = imp.load_module(modname, fp, fp.name, suffix)
                     out = (is_package, mod, {})
                     break
 
@@ -128,7 +129,7 @@ class NetworkImporter(imputil.Importer):
         implement different protocols with their own method.
 
         The response body will presumably contain Python code (interpretable or
-        compiled). If the download fails, this method should return False. This
+        compiled). If the download fails, this method should return None. This
         manifests to the caller as ImportError. To see the reason for the
         failure, set netimp.verbose to True and watch stderr.
 
@@ -151,7 +152,7 @@ class NetworkImporter(imputil.Importer):
         # Set things up.
         # ==============
 
-        out = False
+        out = None
         headers = {}
         if (url.username is not None) and (url.password is not None):
             tmp = base64.b64encode(':'.join([url.username, url.password]))
@@ -175,9 +176,10 @@ class NetworkImporter(imputil.Importer):
         # Short-cut when we just care whether it's a package.
 
         if url.path.endswith('/'):
-            out = r.status == '200 OK'
+            out = r.status == 200
 
-        elif r.status == '200 OK':
+
+        elif r.status == 200:
 
             # Wade in.
             # ========
@@ -186,15 +188,17 @@ class NetworkImporter(imputil.Importer):
 
             etag = r.getheader('etag', '')
             lm = r.getheader('last-modified', '')
-            key = sha.new(url + etag + lm).hexdigest()
+            key = sha.new(str(url) + etag + lm).hexdigest()
 
-            if not os.isdir(self.cachedir):
+            if not self.cachedir:
+                raise ValueError("netimp.importer.cachedir not set")
+            if not os.path.isdir(self.cachedir):
                 raise IOError( "netimp.importer.cachedir not found "
                              + "(%s)" % self.cachedir
                               )
 
             path = join(self.cachedir, key)
-            if os.isfile(path):
+            if os.path.isfile(path):
                 out = open(path, 'rb')
             else:
 
@@ -205,13 +209,13 @@ class NetworkImporter(imputil.Importer):
                 conn = httplib.HTTPConnection(url.netloc)
                 conn.request("GET", url.path, '', headers)
                 r = conn.getresponse()
-                conn.close()
-                if r.status == '200 OK': # just in case!
+                if r.status == 200: # just in case!
                     fp = open(path, 'w+b')
-                    fp.write(response.get_body())
+                    fp.write(r.read())
                     fp.flush()
                     fp.close()
                     out = open(path, 'rb')
+                conn.close()
 
         return out
 
@@ -237,13 +241,7 @@ sys.path.append(importer)
 # Test.
 # =====
 
-if __name__ == '__main__':
-    """Test against the test data in our SVN repo.
-
-    NB: _foo.so is compiled on FreeBSD 6.0-RELEASE.
-
-    """
-    importer.path = ['http://www.zetadev.com/svn/public/netimp/trunk/test']
+def test():
 
     # module: foo.py
     import foo
@@ -279,3 +277,23 @@ if __name__ == '__main__':
     # direct
     import bar.really.BLAM
     assert BLAM.made_it == bar.really.BLAM.made_it
+
+
+if __name__ == '__main__':
+    """Test against the test data in our SVN repo.
+
+    NB: _foo.so is compiled on FreeBSD 6.0-RELEASE.
+
+    """
+    import tempfile
+    importer.cachedir = tempfile.mkdtemp()
+    importer.path = ['http://www.zetadev.com/svn/public/netimp/trunk/test/lib']
+    importer.verbose = True
+
+    try:
+        test()
+    finally: # cleanup
+        if 0:
+            for name in os.listdir(importer.cachedir):
+                os.remove(os.path.join(importer.cachedir, name))
+            os.rmdir(importer.cachedir)
