@@ -1,0 +1,123 @@
+% Complete documentation on the extended LaTeX markup used for Python
+% documentation is available in ``Documenting Python'', which is part
+% of the standard documentation for Python.  It may be found online
+% at:
+%
+%     http://www.python.org/doc/current/doc/doc.html
+
+\documentclass{manual}
+
+\title{httpyd}
+
+\author{Chad W. L. Whitacre}
+
+% Please at least include a long-lived email address;
+% the rest is at your discretion.
+\authoraddress{
+	Zeta Design \&\ Development \\
+	\url{http://www.zetadev.com/software/httpyd/} \\
+	Email: \email{\ulink{chad@zetaweb.com}{mailto:chad@zetaweb.com}}
+}
+
+%\date{January 1, 1970} % update before release!
+\date\today
+				% Use an explicit date so that reformatting
+				% doesn't cause a new date to be used.  Setting
+				% the date to \today can be used during draft
+				% stages to make it easier to handle versions.
+
+\release{0.8}			% release version; this is used to define the
+				% \version macro
+
+\makeindex			% tell \index to actually write the .idx file
+\makemodindex			% If this contains a lot of module sections.
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\noindent
+httpyd is a sane and robust HTTP server for Python. It serves highly variable
+Python-based publication and hybrid publication/application websites.
+
+\end{abstract}
+
+\section{Usage}
+
+\program{httpyd} is an executable that instantiates the \class{Multiple}
+responder with the \class{StandAlone} coupler. Out of the box, it serves static
+files from the filesystem using \ulink{the \class{Static}
+responder}{static.html}. Please see \ulink{the \class{Multiple}
+documentation}{multiple.html} for information on extending \program{httpyd}.
+
+\program{httpyd} exposes the following command-line options:
+
+
+\begin{tableiii}{l|l|l}{var}{Option}{Description}{Default}
+
+\lineiii{\programopt{-a}/\longprogramopt{-address}=\var{address}}
+    {The address to which \program{httpyd} should bind. If \var{address} begins
+    with a dot or a forward slash, then it is interpreted as an AF_UNIX socket.
+    Otherwise, it is interpreted as an AF_INET socket. If \var{address} begins
+    with a colon, then the loopback address is assumed.} {\code{:8080}}
+
+\lineiii{\programopt{-d}/\longprogramopt{-daemonize}}
+    {If set, \program{httpyd} will double-fork itself.}
+    {\code{10}}
+
+\lineiii{\programopt{-m}/\longprogramopt{-mode}=\var{mode}}
+    {\var{mode} is one of the strings 'development', 'debugging', 'staging', or
+    'deployment'.  The \envvar{HTTPY_MODE} environment variable will be set to
+    this value, and will be available to your responders via the
+    \class{httpyd.mode} object.} {\code{development}}
+
+\lineiii{\programopt{-t}/\longprogramopt{-threads}=\var{threads}}
+    {\program{httpyd} creates a new thread for each request, up to \var{threads}.
+    The minimum is 1. No upper limit is enforced.}
+    {\code{10}}
+
+\lineiii{\programopt{-u}/\longprogramopt{-user}=\var{user}}
+    {After binding to address, \program{httpyd} switches to the uid of
+    \var{user}, if given.}
+    {}
+
+\end{tableiii}
+
+
+\program{httpyd} can also take its \var{mode} and \var{threads} parameters from
+the environment, in the \envvar{HTTPY_MODE} and \envvar{HTTPY_THREADS}
+variables. The command line options override the environment variables.
+
+
+\section{Runtime Behavior}
+
+\program{httpyd} serves static files from the filesystem. It supports 304 Not
+Modified responses in staging and deployment modes.
+
+
+
+
+% These are adding <Image> things to the last page, and I haven't cleaned up the
+% inputs for indexing anyway.
+%%
+%%  The ugly "%begin{latexonly}" pseudo-environments are really just to
+%%  keep LaTeX2HTML quiet during the \renewcommand{} macros; they're
+%%  not really valuable.
+%%
+%%  If you don't want the Module Index, you can remove all of this up
+%%  until the second \input line.
+%%
+%%begin{latexonly}
+%\renewcommand{\indexname}{Module Index}
+%%end{latexonly}
+%\input{mod\jobname.ind}		% Module Index
+%
+%%begin{latexonly}
+%\renewcommand{\indexname}{Index}
+%%end{latexonly}
+%\input{\jobname.ind}			% Index
+
+\end{document}
