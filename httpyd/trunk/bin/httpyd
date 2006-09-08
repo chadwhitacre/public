@@ -19,17 +19,30 @@ def main(argv):
         print >> sys.stderr, "usage: httpyd --help"
         raise SystemExit(2)
     else:
-        if config.daemon:
-            from httpyd.utils import daemon
+
+        if config.daemonize:
+            raise NotImplementedError("Sorry, no daemonization yet :(")
+            from httpy.utils import daemon
+            daemon.WORKDIR=config.paths.root
             daemon.daemonize()
+
+        if config.log_access is not None:
+            raise NotImplementedError("Sorry, no access logging yet :(")
+
+        if config.log_error is not None:
+            d,f = os.path.split(config.log_error)
+            if not os.path.isdir(d):
+                os.makedirs(d)
+            sys.stdout = sys.stderr = open(config.log_error, 'a+', 0)
+
         os.environ['HTTPY_MODE'] = config.mode
         site.website = Website(config.paths)
         coupled = StandAlone( site.website
                             , config.address
                             , config.threads
-                            , config.uid)
+                            , config.uid
+                             )
         coupled.go()
-
 
 
 if __name__ == '__main__':
