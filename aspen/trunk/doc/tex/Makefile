@@ -1,10 +1,10 @@
 # Makefile to create documentation using the Python LaTeX system.
 
-VERSION=0.4
-PYTHON_SRC = /home/whit537/shelf/Python
-MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
+VERSION=0.2a1
+PYTHON_SRC = /home/whit537/python/2.4.3-threadless/src/Doc
+MKHOWTO    = $(PYTHON_SRC)/tools/mkhowto \
 				--iconserver icons \
-				--split 6 \
+				--split 4 \
 				--link 6 \
 				--favicon icons/zeta.ico \
 				--dir ./html \

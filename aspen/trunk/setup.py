@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 from distutils.core import setup
 
+from aspen import __version__
+
 classifiers = [
-    'Development Status :: 4 - Beta'
+    'Development Status :: 3 - Alpha'
   , 'Environment :: Console'
   , 'Intended Audience :: Developers'
   , 'License :: Freeware'
@@ -15,13 +17,10 @@ classifiers = [
                 ]
 
 setup( name = 'aspen'
-     , version = '0.1'
+     , version = __version__
      , package_dir = {'':'site-packages'}
-     , packages = [ 'aspen'
-                   ]
-     , scripts = [ 'bin/aspen'
-                 , 'bin/hinfo'
-                  ]
+     , packages = ['aspen']
+     , scripts = ['bin/aspen']
      , description = 'aspen is a robust and sane Python webserver.'
      , author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
