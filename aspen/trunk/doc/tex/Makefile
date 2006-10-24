@@ -5,7 +5,7 @@ PYTHON_SRC = /home/whit537/python/2.4.3-threadless/src/Doc
 MKHOWTO    = $(PYTHON_SRC)/tools/mkhowto \
 				--iconserver icons \
 				--split 4 \
-				--link 6 \
+				--link 2 \
 				--favicon icons/zeta.ico \
 				--dir ./html \
 				--logging \
