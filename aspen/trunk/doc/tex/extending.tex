@@ -162,10 +162,10 @@ for directory-based extensions.
 
 The \file{__/etc/apps.conf} file contains a newline-separated list of
 white-space-separated path name/object name pairs. The path names refer to
-URL-space, but must be reflected on the filesystem (or \class{AppsConfError}
-will be raised). If the trailing slash is given, then requests for that
-directory will first be redirected to the trailing slash before being handed off
-to the application. If no trailing slash is given, the application will also get
+URL-space, but must be reflected on the filesystem (or \class{AppsConfError} is
+raised). If the trailing slash is given, then requests for that directory will
+first be redirected to the trailing slash before being handed off to the
+application. If no trailing slash is given, the application will also get
 requests without the slash. Applications match in the order specified.
 
 Each object name must specify a Python class, instance, module, or
@@ -190,7 +190,7 @@ each is treated:
 /bar/baz    example.apps.baz    # also never called
 \end{verbatim}
 
-If it does not already exist, Aspen will place a file called \file{README.aspen}
-in each directory mentioned in \file{apps.conf}, containing the relevant line
-from \file{apps.conf}. If the directory does not exist, we raise
-\class{AppsConfError}.
+Aspen will (over)write a file called \file{README.aspen} in each directory
+mentioned in \file{apps.conf}, containing the relevant line from
+\file{apps.conf}. If the directory does not exist, \class{AppsConfError} is
+raised.
