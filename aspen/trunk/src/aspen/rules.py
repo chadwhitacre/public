@@ -8,7 +8,7 @@ import fnmatch as _fnmatch
 import mimetypes
 import os
 
-from aspen import RuleError
+from aspen.exceptions import RuleError
 
 
 # Helper
@@ -63,9 +63,9 @@ def fnmatch(fp, predicate):
 
 
 def hashbang(fp, predicate):
-    """Match if the file starts with '#!aspen'.
+    """Match if the file starts with '#!'.
     """
-    has_hashbang = (fp.read(7) == '#!aspen')
+    has_hashbang = (fp.read(2) == '#!')
     return has_hashbang is what_we_want(predicate)
 
 

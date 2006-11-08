@@ -1,4 +1,35 @@
-"""A high-speed, production ready, thread pooled, generic WSGI server."""
+"""A high-speed, production ready, thread pooled, generic WSGI server.
+
+This is CherryPy's _cpwsgiserver.py module at r1413, and is used under the
+following license:
+
+Copyright (c) 2004-2006, CherryPy Team (team@cherrypy.org)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of the CherryPy Team nor the names of its contributors
+      may be used to endorse or promote products derived from this software
+      without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+"""
 
 import mimetools # todo: use email
 import Queue
@@ -47,19 +78,19 @@ comma_separated_headers = [
 
 
 class HTTPRequest(object):
-    
+
     def __init__(self, connection):
         self.connection = connection
         self.rfile = self.connection.rfile
         self.environ = connection.environ.copy()
-        
+
         self.ready = False
         self.started_response = False
         self.status = ""
         self.outheaders = []
         self.sent_headers = False
         self.close_connection = False
-    
+
     def parse_request(self):
         # HTTP/1.1 connections are persistent by default. If a client
         # requests a page, then idles (leaves the connection open),
@@ -73,25 +104,25 @@ class HTTPRequest(object):
             # Force self.ready = False so the connection will close.
             self.ready = False
             return
-        
+
         server = self.connection.server
-        
+
         method, path, req_protocol = request_line.strip().split(" ", 2)
         self.environ["REQUEST_METHOD"] = method
-        
+
         # path may be an abs_path (including "http://host.domain.tld");
         scheme, location, path, params, qs, frag = urlparse(path)
-        
+
         if frag:
             self.simple_response("400 Bad Request",
                                  "Illegal #fragment in Request-URI.")
             return
-        
+
         if scheme:
             self.environ["wsgi.url_scheme"] = scheme
         if params:
             path = path + ";" + params
-        
+
         # Unquote the path+params (e.g. "/this%20path" -> "this path").
         # http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.2
         #
@@ -100,7 +131,7 @@ class HTTPRequest(object):
         # safely decoded." http://www.ietf.org/rfc/rfc2396.txt, sec 2.4.2
         atoms = [unquote(x) for x in quoted_slash.split(path)]
         path = "%2F".join(atoms)
-        
+
         if path == "*":
             # This means, of course, that the last wsgi_app (shortest path)
             # will always handle a URI of "*".
@@ -118,11 +149,11 @@ class HTTPRequest(object):
             else:
                 self.simple_response("404 Not Found")
                 return
-        
+
         # Note that, like wsgiref and most other WSGI servers,
         # we unquote the path but not the query string.
         self.environ["QUERY_STRING"] = qs
-        
+
         # Compare request and server HTTP protocol versions, in case our
         # server does not support the requested protocol. Limit our output
         # to min(req, server). We want the following output:
@@ -147,15 +178,15 @@ class HTTPRequest(object):
         # See http://www.faqs.org/rfcs/rfc2145.html.
         self.environ["ACTUAL_SERVER_PROTOCOL"] = server.protocol
         self.response_protocol = "HTTP/%s.%s" % min(rp, sp)
-        
+
         # If the Request-URI was an absoluteURI, use its location atom.
         if location:
             self.environ["SERVER_NAME"] = location
-        
+
         # then all the http headers
         headers = mimetools.Message(self.rfile)
         self.environ.update(self.parse_headers(headers))
-        
+
         # Persistent connection support
         if self.response_protocol == "HTTP/1.1":
             if headers.getheader("Connection", "") == "close":
@@ -167,7 +198,7 @@ class HTTPRequest(object):
                     self.outheaders.append(("Connection", "Keep-Alive"))
             else:
                 self.close_connection = True
-        
+
         # Transfer-Encoding support
         te = headers.getheader("Transfer-Encoding", "")
         te = [x.strip() for x in te.split(",") if x.strip()]
@@ -191,7 +222,7 @@ class HTTPRequest(object):
                 # See http://www.cherrypy.org/ticket/493.
                 self.simple_response("411 Length Required")
                 return
-        
+
         # From PEP 333:
         # "Servers and gateways that implement HTTP 1.1 must provide
         # transparent support for HTTP 1.1's "expect/continue" mechanism.
@@ -211,9 +242,9 @@ class HTTPRequest(object):
         # but it seems like it would be a big slowdown for such a rare case.
         if headers.getheader("Expect", "") == "100-continue":
             self.simple_response(100)
-        
+
         self.ready = True
-    
+
     def parse_headers(self, headers):
         environ = {}
         ct = headers.getheader("Content-type", "")
@@ -222,12 +253,12 @@ class HTTPRequest(object):
         cl = headers.getheader("Content-length") or ""
         if cl:
             environ["CONTENT_LENGTH"] = cl
-        
+
         # Must use keys() here for Python 2.3 (rfc822.Message had no __iter__).
         for k in headers.keys():
             if k in ('transfer-encoding', 'content-type', 'content-length'):
                 continue
-            
+
             envname = "HTTP_" + k.upper().replace("-", "_")
             if k in comma_separated_headers:
                 existing = environ.get(envname)
@@ -238,7 +269,7 @@ class HTTPRequest(object):
             else:
                 environ[envname] = headers[k]
         return environ
-    
+
     def decode_chunked(self):
         """Decode the 'chunked' transfer coding."""
         cl = 0
@@ -257,14 +288,14 @@ class HTTPRequest(object):
                                      "Bad chunked transfer coding "
                                      "(expected '\\r\\n', got %r)" % crlf)
                 return
-        
+
         headers = mimetools.Message(self.rfile)
         self.environ.update(self.parse_headers(headers))
         data.seek(0)
         self.environ["wsgi.input"] = data
         self.environ["CONTENT_LENGTH"] = str(cl) or ""
         return True
-    
+
     def respond(self):
         response = self.wsgi_app(self.environ, self.start_response)
         try:
@@ -277,24 +308,24 @@ class HTTPRequest(object):
                 and not self.connection.server.interrupt):
             self.sent_headers = True
             self.send_headers()
-    
+
     def simple_response(self, status, msg=""):
         """Write a simple response back to the client."""
         status = str(status)
         wfile = self.connection.wfile
         wfile.write("%s %s\r\n" % (self.connection.server.protocol, status))
         wfile.write("Content-Length: %s\r\n" % len(msg))
-        
+
         if status[:3] == "413" and self.response_protocol == 'HTTP/1.1':
             # Request Entity Too Large
             self.close_connection = True
             wfile.write("Connection: close\r\n")
-        
+
         wfile.write("\r\n")
         if msg:
             wfile.write(msg)
         wfile.flush()
-    
+
     def start_response(self, status, headers, exc_info = None):
         if self.started_response:
             if not exc_info:
@@ -308,17 +339,17 @@ class HTTPRequest(object):
         self.status = status
         self.outheaders.extend(headers)
         return self.write
-    
+
     def write(self, d):
         if not self.sent_headers:
             self.sent_headers = True
             self.send_headers()
         self.connection.wfile.write(d)
         self.connection.wfile.flush()
-    
+
     def send_headers(self):
         hkeys = [key.lower() for (key,value) in self.outheaders]
-        
+
         status = int(self.status[:3])
         if (self.response_protocol == 'HTTP/1.1'
             and (# Request Entity Too Large. Close conn to avoid garbage.
@@ -332,17 +363,18 @@ class HTTPRequest(object):
             if "connection" not in hkeys:
                 self.outheaders.append(("Connection", "close"))
             self.close_connection = True
-        
+
         if "date" not in hkeys:
             self.outheaders.append(("Date", rfc822.formatdate()))
-        
+
         server = self.connection.server
         wfile = self.connection.wfile
-        
+
         if "server" not in hkeys:
             self.outheaders.append(("Server", server.version))
-        
+
         wfile.write(server.protocol + " " + self.status + "\r\n")
+
         try:
             for k, v in self.outheaders:
                 wfile.write(k + ": " + v + "\r\n")
@@ -369,11 +401,11 @@ def _ssl_wrap_method(method):
             except SSL.SysCallError, e:
                 if e.args == (-1, 'Unexpected EOF'):
                     return ""
-                
+
                 errno = e.args[0]
                 if errno not in socket_errors_to_ignore:
                     raise socket.error(errno)
-                
+
                 return ""
             except SSL.Error, e:
                 if e.args == (-1, 'Unexpected EOF'):
@@ -387,10 +419,10 @@ def _ssl_wrap_method(method):
 
 class SSL_fileobject(socket._fileobject):
     """Faux file object attached to a socket object."""
-    
+
     ssl_timeout = 3
     ssl_retry = .01
-    
+
     close = _ssl_wrap_method(socket._fileobject.close)
     flush = _ssl_wrap_method(socket._fileobject.flush)
     write = _ssl_wrap_method(socket._fileobject.write)
@@ -401,7 +433,7 @@ class SSL_fileobject(socket._fileobject):
 
 
 class HTTPConnection(object):
-    
+
     rbufsize = -1
     wbufsize = -1
     RequestHandlerClass = HTTPRequest
@@ -412,15 +444,15 @@ class HTTPConnection(object):
                "wsgi.run_once": False,
                "wsgi.errors": sys.stderr,
                }
-    
+
     def __init__(self, sock, addr, server):
         self.socket = sock
         self.addr = addr
         self.server = server
-        
+
         # Copy the class environ into self.
         self.environ = self.environ.copy()
-        
+
         if type(sock) is socket.socket:
             self.rfile = self.socket.makefile("r", self.rbufsize)
             self.wfile = self.socket.makefile("w", self.wbufsize)
@@ -429,11 +461,11 @@ class HTTPConnection(object):
             self.environ["wsgi.url_scheme"] = "https"
             self.rfile = SSL_fileobject(sock, "r", self.rbufsize)
             self.wfile = SSL_fileobject(sock, "w", self.wbufsize)
-        
+
         self.environ.update({"wsgi.input": self.rfile,
                              "SERVER_NAME": self.server.server_name,
                              })
-        
+
         if isinstance(self.server.bind_addr, basestring):
             # AF_UNIX. This isn't really allowed by WSGI, which doesn't
             # address unix domain sockets. But it's better than nothing.
@@ -444,7 +476,7 @@ class HTTPConnection(object):
             self.environ["REMOTE_HOST"] = self.addr[0]
             self.environ["REMOTE_ADDR"] = self.addr[0]
             self.environ["REMOTE_PORT"] = str(self.addr[1])
-    
+
     def communicate(self):
         """Read each request and respond appropriately."""
         try:
@@ -473,7 +505,7 @@ class HTTPConnection(object):
         except:
             if req:
                 req.simple_response("500 Internal Server Error", format_exc())
-    
+
     def close(self):
         self.rfile.close()
         self.wfile.close()
@@ -492,12 +524,12 @@ def format_exc(limit=None):
 _SHUTDOWNREQUEST = None
 
 class WorkerThread(threading.Thread):
-    
+
     def __init__(self, server):
         self.ready = False
         self.server = server
         threading.Thread.__init__(self)
-    
+
     def run(self):
         try:
             self.ready = True
@@ -505,7 +537,7 @@ class WorkerThread(threading.Thread):
                 conn = self.server.requests.get()
                 if conn is _SHUTDOWNREQUEST:
                     return
-                
+
                 try:
                     conn.communicate()
                 finally:
@@ -518,7 +550,7 @@ class SSLConnection:
     def __init__(self, *args):
         self._ssl_conn = SSL.Connection(*args)
         self._lock = threading.RLock()
-    
+
     for f in ('get_context', 'pending', 'send', 'write', 'recv', 'read',
               'renegotiate', 'bind', 'listen', 'connect', 'accept',
               'setblocking', 'fileno', 'shutdown', 'close', 'get_cipher_list',
@@ -538,7 +570,7 @@ class SSLConnection:
 
 class CherryPyWSGIServer(object):
     """An HTTP server for WSGI.
-    
+
     bind_addr: a (host, port) tuple if TCP sockets are desired;
         for UNIX sockets, supply the filename as a string.
     wsgi_app: the WSGI 'application callable'; multiple WSGI applications
@@ -551,21 +583,21 @@ class CherryPyWSGIServer(object):
         specifies the maximum number of queued connections (default 5).
     timeout: the timeout in seconds for accepted connections (default 10).
     """
-    
+
     protocol = "HTTP/1.1"
     version = "CherryPy/3.0.0beta2"
     ready = False
     _interrupt = None
     ConnectionClass = HTTPConnection
-    
+
     # Paths to certificate and private key files
     ssl_certificate = None
     ssl_private_key = None
-    
+
     def __init__(self, bind_addr, wsgi_app, numthreads=10, server_name=None,
                  max=-1, request_queue_size=5, timeout=10):
         self.requests = Queue.Queue(max)
-        
+
         if callable(wsgi_app):
             # We've been handed a single wsgi_app, in CP-2.1 style.
             # Assume it's mounted at "".
@@ -577,7 +609,7 @@ class CherryPyWSGIServer(object):
             self.mount_points = wsgi_app
         self.mount_points.sort()
         self.mount_points.reverse()
-        
+
         self.bind_addr = bind_addr
         self.numthreads = numthreads or 1
         if not server_name:
@@ -585,9 +617,9 @@ class CherryPyWSGIServer(object):
         self.server_name = server_name
         self.request_queue_size = request_queue_size
         self._workerThreads = []
-        
+
         self.timeout = timeout
-    
+
     def start(self):
         """Run the server forever."""
         # We don't have to trap KeyboardInterrupt or SystemExit here,
@@ -595,7 +627,7 @@ class CherryPyWSGIServer(object):
         # If you're using this server with another framework, you should
         # trap those exceptions in whatever code block calls start().
         self._interrupt = None
-        
+
         def bind(family, type, proto=0):
             """Create (or recreate) the actual socket object."""
             self.socket = socket.socket(family, type, proto)
@@ -609,19 +641,19 @@ class CherryPyWSGIServer(object):
                 ctx.use_certificate_file(self.ssl_certificate)
                 self.socket = SSLConnection(ctx, self.socket)
             self.socket.bind(self.bind_addr)
-        
+
         # Select the appropriate socket
         if isinstance(self.bind_addr, basestring):
             # AF_UNIX socket
-            
+
             # So we can reuse the socket...
             try: os.unlink(self.bind_addr)
             except: pass
-            
+
             # So everyone can access the socket...
             try: os.chmod(self.bind_addr, 0777)
             except: pass
-            
+
             info = [(socket.AF_UNIX, socket.SOCK_STREAM, 0, "", self.bind_addr)]
         else:
             # AF_INET or AF_INET6 socket
@@ -633,7 +665,7 @@ class CherryPyWSGIServer(object):
             except socket.gaierror:
                 # Probably a DNS issue. Assume IPv4.
                 info = [(socket.AF_INET, socket.SOCK_STREAM, 0, "", self.bind_addr)]
-        
+
         self.socket = None
         msg = "No socket could be created"
         for res in info:
@@ -648,11 +680,11 @@ class CherryPyWSGIServer(object):
             break
         if not self.socket:
             raise socket.error, msg
-        
+
         # Timeout so KeyboardInterrupt can be caught on Win32
         self.socket.settimeout(1)
         self.socket.listen(self.request_queue_size)
-        
+
         # Create worker threads
         for i in xrange(self.numthreads):
             self._workerThreads.append(WorkerThread(self))
@@ -662,7 +694,7 @@ class CherryPyWSGIServer(object):
         for worker in self._workerThreads:
             while not worker.ready:
                 time.sleep(.1)
-        
+
         self.ready = True
         while self.ready:
             self.tick()
@@ -671,7 +703,7 @@ class CherryPyWSGIServer(object):
                     # Wait for self.stop() to complete
                     time.sleep(0.1)
                 raise self.interrupt
-    
+
     def tick(self):
         try:
             s, addr = self.socket.accept()
@@ -695,7 +727,7 @@ class CherryPyWSGIServer(object):
                 # Just try again. See http://www.cherrypy.org/ticket/479.
                 return
             raise
-    
+
     def _get_interrupt(self):
         return self._interrupt
     def _set_interrupt(self, interrupt):
@@ -703,11 +735,11 @@ class CherryPyWSGIServer(object):
         self.stop()
         self._interrupt = interrupt
     interrupt = property(_get_interrupt, _set_interrupt)
-    
+
     def stop(self):
         """Gracefully shutdown a server that is serving forever."""
         self.ready = False
-        
+
         sock = getattr(self, "socket", None)
         if sock:
             if not isinstance(self.bind_addr, basestring):
@@ -735,12 +767,12 @@ class CherryPyWSGIServer(object):
             if hasattr(sock, "close"):
                 sock.close()
             self.socket = None
-        
+
         # Must shut down threads here so the code that calls
         # this method can know when all threads are stopped.
         for worker in self._workerThreads:
             self.requests.put(_SHUTDOWNREQUEST)
-        
+
         # Don't join currentThread (when stop is called inside a request).
         current = threading.currentThread()
         while self._workerThreads:
