@@ -5,7 +5,9 @@ import os
 import site
 import sys
 
-from httpy.couplers.standalone import StandAlone
+from aspen import mode
+#from aspen import daemon
+from aspen.server import CherryPyWSGIServer as Server
 from aspen.config import Configuration, ConfigError
 from aspen.website import Website
 
@@ -21,10 +23,9 @@ def main(argv):
     else:
 
         if config.daemonize:
-            raise NotImplementedError("Sorry, no daemonization yet :(")
-            from httpy.utils import daemon
-            daemon.WORKDIR=config.paths.root
-            daemon.daemonize()
+            raise NotImplementedError("No daemonization yet")
+            import daemon
+            daemon.become(workdir=config.paths.root)
 
         if config.log_access is not None:
             raise NotImplementedError("Sorry, no access logging yet :(")
@@ -35,14 +36,30 @@ def main(argv):
                 os.makedirs(d)
             sys.stdout = sys.stderr = open(config.log_error, 'a+', 0)
 
-        os.environ['HTTPY_MODE'] = config.mode
-        site.website = Website(config.paths)
-        coupled = StandAlone( site.website
-                            , config.address
-                            , config.threads
-                            , config.uid
-                             )
-        coupled.go()
+        mode.set(config.mode)
+        website = Website(config.paths)
+        server = Server(config.address, website)
+
+        if config.uid:
+            raise NotImplementedError("Need to reimplement user switchi")
+        try:
+
+            if 0:
+                import hotshot, hotshot.stats
+                prof = hotshot.Profile("bench.prof")
+                prof.runcall(server.start)
+            else:
+                server.start()
+
+        except KeyboardInterrupt:
+            server.stop()
+
+        if 0:
+            prof.close()
+            stats = hotshot.stats.load("bench.prof")
+            stats.strip_dirs()
+            stats.sort_stats('time', 'calls')
+            stats.print_stats(20)
 
 
 if __name__ == '__main__':

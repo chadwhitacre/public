@@ -1,35 +1,81 @@
 """A few default handlers for aspen.
 """
+import mimetypes
+import rfc822
 import os
+import stat
 from email import message_from_file, message_from_string
 
-from aspen.website import is_valid_identifier
-from httpy import Response
+from aspen import mode
+from aspen.response import Response
+from aspen.utils import is_valid_identifier
 
 
-# Some simple handlers.
-# =====================
+# A couple simple handlers.
+# =========================
 
-def HTTP404(**foo):
+def HTTP404(environ):
     return Response(404)
 
-def pyscript(fp, **context):
+def pyscript(environ):
     """Execute the script pseudo-CGI-style.
     """
     try:
-        exec fp in context
+        exec environ['aspen.fp'] in environ
     except SystemExit:
         pass
-    return context['response']
+    return environ['response']
 
-def static(website, request, **etc):
-    """Serve the resource statically.
+
+# A moderately complex one.
+# =========================
+
+def static(environ):
+    """Serve a static file off of the filesystem.
+
+    In staging and deployment modes, we honor any 'If-Modified-Since'
+    header, an HTTP header used for caching.
+
     """
-    return website.static.respond(request)
+
+    path = environ['PATH_TRANSLATED']
+    ims = environ.get('HTTP_IF_MODIFIED_SINCE', '')
 
 
-# A bit more complex handler.
-# ===========================
+    # Get basic info from the filesystem and start building a response.
+    # =================================================================
+
+    stats = os.stat(path)
+    mtime = stats[stat.ST_MTIME]
+    size = stats[stat.ST_SIZE]
+    content_type = mimetypes.guess_type(path)[0] or 'text/plain'
+    response = Response(200)
+
+
+    # Support 304s, but only in deployment mode.
+    # ==========================================
+
+    if mode.stprod:
+        if ims:
+            mod_since = rfc822.parsedate(ims)
+            last_modified = time.gmtime(mtime)
+            if last_modified[:6] <= mod_since[:6]:
+                response.code = 304
+
+
+    # Finish building the response and return it.
+    # ===========================================
+
+    response.headers['Last-Modified'] = rfc822.formatdate(mtime)
+    response.headers['Content-Type'] = content_type
+    response.headers['Content-Length'] = size
+    if response.code != 304:
+        response.body = open(path).read()
+    return response
+
+
+# And a rather complex handler.
+# =============================
 
 class Simplate:
 
@@ -64,7 +110,7 @@ class Simplate:
                 self.master = None
 
 
-    def handle(self, website, request, response, **etc):
+    def handle(self, environ):
         """Takes a Response object and populates it.
 
         We perform two levels of substitution: first, on the specific template
@@ -73,7 +119,8 @@ class Simplate:
         specific template as 'body' in the master template substitution.
 
         """
-        response = website.static.respond(request)
+        response = static(environ)
+        return response
         if self.master is not None:
             if not isinstance(response.body, unicode):
                 response.body = response.body.decode(self.charset)

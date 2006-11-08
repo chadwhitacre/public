@@ -10,8 +10,7 @@ try:
 except:
     WINDOWS = True
 
-import httpy
-from httpy._zope.interface import implements
+import mode
 
 
 class ConfigError(StandardError):
@@ -67,7 +66,7 @@ class Configuration:
     daemonize   = False
     log_access  = None # when httpy provides remote IP, then support this
     log_error   = None
-    mode        = httpy.mode.default
+    mode        = 'development'
     threads     = 10
     uid         = ''
     root        = os.getcwd()
@@ -279,8 +278,8 @@ class Configuration:
         if not isinstance(candidate, basestring):
             raise ConfigError(msg)
 
-        mode = httpy.mode._interpret(candidate)
-        if not mode:
+        candidate = candidate.lower()
+        if candidate not in mode.__options:
             raise ConfigError(msg)
         return mode
 
