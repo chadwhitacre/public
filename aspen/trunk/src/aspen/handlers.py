@@ -14,14 +14,21 @@ from aspen.utils import is_valid_identifier
 # A couple simple handlers.
 # =========================
 
-def HTTP404(environ):
-    return Response(404)
+def HTTP404(environ, start_response):
+    raise Response(404)
 
-def pyscript(environ):
+def pyscript(environ, start_response):
     """Execute the script pseudo-CGI-style.
     """
+
+    context = dict(request=environ)
+    context['response'] = Response()
+    context['__file__'] = environ['aspen.fp'].name
+
+    fp = environ['aspen.fp']
+    del environ['aspen.fp']
     try:
-        exec environ['aspen.fp'] in environ
+        exec fp in context
     except SystemExit:
         pass
     return environ['response']
@@ -29,9 +36,9 @@ def pyscript(environ):
 
 # A moderately complex one.
 # =========================
-# XXX: look at Luke Arno's and some others ... Etags? Iteration?
+# XXX: look at Luke Arno's ACK GPL and some others ... Etags? Iteration?
 
-def static(environ):
+def static(environ, start_response):
     """Serve a static file off of the filesystem.
 
     In staging and deployment modes, we honor any 'If-Modified-Since'
@@ -111,7 +118,7 @@ class Simplate:
                 self.master = None
 
 
-    def handle(self, environ):
+    def __call__(self, environ, start_response):
         """Takes a Response object and populates it.
 
         We perform two levels of substitution: first, on the specific template
@@ -120,8 +127,12 @@ class Simplate:
         specific template as 'body' in the master template substitution.
 
         """
-        response = static(environ)
-        return response
+
+        # Need to reimplement/cleanup simplates.
+        # ======================================
+        return static(environ, start_response)
+
+
         if self.master is not None:
             if not isinstance(response.body, unicode):
                 response.body = response.body.decode(self.charset)

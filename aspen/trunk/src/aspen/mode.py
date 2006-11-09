@@ -82,14 +82,15 @@ Example usage:
 
 """
 __author__ = "Chad Whitacre <chad@zetaweb.com>"
-__version__ = "1.0a1"
+__version__ = "1.0a1+"
 
 
 import os
 
 
-__options = ('debugging', 'development', 'production', 'staging')
-__default = 'development'
+options = ('debugging', 'development', 'staging', 'production')
+abbrevs = ('deb', 'dev', 'st', 'prod')
+default = 'development'
 
 
 def get():
@@ -101,10 +102,10 @@ def get():
     """
     mode = os.environ.get('PYTHONMODE', None)
     if mode is None:
-        mode = os.environ['PYTHONMODE'] = __default
+        mode = os.environ['PYTHONMODE'] = default
     else:
         mode = mode.lower()
-    if mode not in __options:
+    if mode not in options:
         raise EnvironmentError("PYTHONMODE set to bad value '%s'" % mode)
     return mode
 
@@ -122,7 +123,7 @@ def setAPI():
     # e.g., development
 
     mode = get()
-    for name in __options:
+    for name in options:
         boolean = mode == name
         g[name.lower()] = boolean # development = True
         g[name.upper()] = boolean # PRODUCTION = False
@@ -164,7 +165,7 @@ def set(mode):
 
     """
     _mode = mode.lower()
-    if _mode not in __options:
+    if _mode not in options:
         raise ValueError("Bad PYTHONMODE '%s'" % mode)
     os.environ['PYTHONMODE'] = _mode
     setAPI()

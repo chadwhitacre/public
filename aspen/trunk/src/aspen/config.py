@@ -1,7 +1,9 @@
+import logging
 import os
 import socket
 import sys
-from optparse import OptionParser
+import optparse
+import ConfigParser
 from os.path import join, isdir, realpath
 
 try:
@@ -10,7 +12,10 @@ try:
 except:
     WINDOWS = True
 
-from aspen import mode
+from aspen import load, mode
+
+
+log = logging.getLogger('aspen.config')
 
 
 class ConfigError(StandardError):
@@ -25,303 +30,329 @@ class ConfigError(StandardError):
         return self.msg
 
 
-class Configuration:
-    """Represent the configuration of an aspen server from three sources:
+# Validators
+# ==========
+# Given a value, return a valid value or raise ConfigError
 
-        - defaults  hard-wired defaults
-        - env       environment variables
-        - opts      command line options
-
-    All options may be specified on the command line. Additionally, mode and
-    threads may be set in the environment. Environment variables override
-    defaults, and command line options override both.
-
-    Instances of this class are callables that take a sys.argv-style list, and
-    return a 5-tuple:
-
-        address     the address to bind to
-        defaults    default names to look for when a directory is requested
-        uid         the uid of the user to run as
-        mode        the httpy mode
-        paths       an object containing useful paths (root, __, lib)
-
+def validate_address(address):
+    """Given a socket address string, return a tuple (sockfam, address)
     """
 
-    options = ( 'address'
-              , 'defaults'
-              , 'mode'
-              , 'root'
-              , 'user'
-               )
+    if address[0] in ('/','.'):
+        if WINDOWS:
+            raise ConfigError("Can't use an AF_UNIX socket on Windows.")
+            # but what about named pipes?
+        sockfam = socket.AF_UNIX
+        # We could test to see if the path exists or is creatable, etc.
+        address = realpath(address)
+
+    else:
+        sockfam = socket.AF_INET
+        # Here we need a tuple: (str, int). The string must be a valid
+        # IPv4 address or the empty string, and the int -- the port --
+        # must be between 0 and 65535, inclusive.
 
 
-    # Defaults
-    # ========
+        # Break out IP and port.
+        # ======================
 
-    address     = ('', 8080)
-    defaults    = ('index.html', 'index.htm', 'index.py')
-    mode        = 'development'
-    root        = os.getcwd()
-    uid         = ''
-
-
-    def __init__(self, argv):
-
-        # Command-line
-        # ============
-
-        usage = "http://www.zetadev.com/software/aspen/"
-        parser_ = OptionParser(usage=usage)
-        parser_.add_option( "-a", "--address"
-                          , dest="address"
-                          , help="the address to listen on [<INADDR_ANY>:8080]"
-                           )
-        parser_.add_option( "-d", "--defaults"
-                          , dest="defaults"
-                          , help=( "a comma-separated list of default names "
-                                 + "[index.html,index.htm,index.py]"
-                                  )
-                           )
-        parser_.add_option( "-m", "--mode"
-                          , dest="mode"
-                          , help="one of: deployment, staging, development, " +
-                                 "debugging [deployment]"
-                           )
-        parser_.add_option( "-r", "--root"
-                          , dest="root"
-                          , help="the publishing root directory [.]"
-                           )
-        parser_.add_option( "-u", "--user"
-                          , dest="user"
-                          , help="the user account to run as []"
-                           )
-        opts, args = parser_.parse_args(args=argv)
-
-        if opts:
-            for key in self.options:
-                if hasattr(opts, key):
-                    value = getattr(opts, key)
-                    if value is not None:
-                        validate = getattr(self, '_validate_%s' % key)
-                        setattr(self, key, validate('command line', value))
-
-
-        # Paths
-        # =====
-
-        class Paths:
-            pass
-        paths = Paths()
-        paths.root = self.root
-        paths.__ = join(paths.root, '__')
-        if not isdir(paths.__):
-            paths.__ = None
-            paths.lib = None
-            paths.plat = None
+        if isinstance(address, (tuple, list)):
+            if len(address) != 2:
+                raise err
+            ip, port = address
+        elif isinstance(address, basestring):
+            if address.count(':') != 1:
+                raise err
+            ip_port = address.split(':')
+            ip, port = [i.strip() for i in ip_port]
         else:
-            lib = join(paths.__, 'lib', 'python'+sys.version[:3])
-            paths.lib = isdir(lib) and lib or None
+            raise err
+
+
+        # IP
+        # ==
+
+        if not isinstance(ip, basestring):
+            raise err
+        elif ip != '': # Blank ip is ok, just don't try to validate it.
+            try:
+                socket.inet_aton(ip)
+            except socket.error:
+                raise err
+
+
+        # port
+        # ====
+        # Coerce to int. Must be between 0 and 65535, inclusive.
+
+        if isinstance(port, basestring):
+            if not port.isdigit():
+                raise err
+            else:
+                port = int(port)
+        elif isinstance(port, int) and not (port is False):
+            # already an int for some reason (called interactively?)
+            pass
+        else:
+            raise err
+
+        if not(0 <= port <= 65535):
+            raise err
+
+
+        # Success!
+        # ========
+
+        address = (ip, port)
+
+
+    return sockfam, address
+
+
+# Command-Line Option Parser
+# ==========================
+# The command-line interface is intentionally limited. There are many more
+# knobs in the config file.
+
+def cb_address(option, opt, value, parser):
+    """Must be a valid AF_INET or AF_UNIX address.
+    """
+    sockfam, address = validate_address(value)
+    parser.values.sockfam = sockfam
+    parser.values.address = address
+
+
+def cb_log_level(option, opt, value, parser):
+    """
+    """
+    try:
+        level = getattr(logging, value.upper())
+    except AttributeError:
+        msg = "Bad log level: %s" % value
+        raise optparse.OptionValueError(msg)
+    parser.values.log_level = level
+
+
+def cb_root(option, opt, value, parser):
+    """Expand the root directory path and make sure the directory exists.
+    """
+    value = realpath(value)
+    if not isdir(value):
+        msg = "%s does not point to a directory" % value
+        raise optparse.OptionValueError(msg)
+    parser.values.root = value
+
+
+usage = "aspen [options] [start,stop,restart]; --help for more"
+optparser = optparse.OptionParser(usage=usage)
+
+optparser.add_option( "-a", "--address"
+                    , action="callback"
+                    , callback=cb_address
+                    , default=('', 8080)
+                    , dest="address"
+                    , help="the IP or Unix address to bind to [:8080]"
+                    , type='string'
+                     )
+optparser.add_option( "-l", "--log_filter"
+                    , default=''
+                    , dest="log_filter"
+                    , help="a subsystem filter for logging []"
+                    , type='string'
+                     )
+optparser.add_option( "-v", "--log_level"
+                    , action="callback"
+                    , callback=cb_log_level
+                    , choices=[ 'notset', 'debug', 'info', 'warning', 'error'
+                              , 'critical'
+                               ]
+                    , default='warning'
+                    , dest="log_level"
+                    , help=( "the level below which messages will be stiffled "
+                           + "[warning]"
+                            )
+                    , type='choice'
+                     )
+optparser.add_option( "-m", "--mode"
+                    , choices=[ 'debugging', 'deb', 'development', 'dev'
+                              , 'staging', 'st', 'production', 'prod'
+                               ]
+                    , default='development'
+                    , dest="mode"
+                    , help=( "one of: debugging, development, staging, "
+                           + "production [development]"
+                            )
+                    , type='choice'
+                     )
+optparser.add_option( "-r", "--root"
+                    , action="callback"
+                    , callback=cb_root
+                    , default=os.getcwd()
+                    , dest="root"
+                    , help="the root publishing directory [.]"
+                    , type='string'
+                     )
+
+
+# Paths
+# =====
+
+class Paths:
+
+    def __init__(self, root):
+        """Takes the website's filesystem root.
+
+            root    website's filesystem root: /
+            __      magic directory: /__
+            lib     python library: /__/lib/python2.x
+            plat    platform-specific python library: /__/lib/plat-<foo>
+
+        If there is no magic directory, then __, lib, and plat are all None. If
+        there is, then lib and plat are added to sys.path.
+
+        """
+        self.root = root
+        self.__ = join(self.root, '__')
+        if not isdir(self.__):
+            self.__ = None
+            self.lib = None
+            self.plat = None
+        else:
+            lib = join(self.__, 'lib', 'python'+sys.version[:3])
+            self.lib = isdir(lib) and lib or None
             sys.path.insert(0, lib)
 
             plat = join(lib, 'plat-'+sys.platform)
-            paths.plat = isdir(plat) and plat or None
+            self.plat = isdir(plat) and plat or None
             sys.path.insert(0, plat)
 
-        self.paths = paths
+
+class Configuration(load.Mixin):
+    """Aggregate configuration from several sources.
+
+      opts      an optparse.Values instance
+      args      a list of command line arguments (no options included)
+      paths     a Paths instance (subattrs: root, __, lib, plat)
+      fileconf  a RawConfigParser, or None if there is no config file
+
+      command   one of start, stop, restart, runfg (from the command line)
+
+
+    """
+
+    defaults = ('index.html', 'index.htm', 'index.py')
+
+    def __init__(self, argv):
+        """
+        """
+
+        # Basics
+        # ======
+
+        self.optparser = optparser
+        self.opts, self.args = self.optparser.parse_args(argv)
+        self.paths = Paths(self.opts.root)
+
+        conf = None
+        if self.paths.__ is not None:
+            conf = ConfigParser.RawConfigParser()
+            conf.read(join(self.paths.__, 'etc', 'aspen.conf'))
+        self.conf = conf
+        # XXX: validate config file values
+
+        self.environ = dict()
+        for k,v in os.environ.items():
+            if k.startswith('ASPEN_'):
+                self.environ[k[len('ASPEN_'):]] = v
+        # XXX: validate envvar values
+
+
+        # Command
+        # =======
+
+        self.command = self.args and self.args[0] or 'runfg'
+        if self.command not in ('start', 'stop', 'restart', 'runfg'):
+            raise ConfigError("Bad command: %s" % self.command)
+
+
+        # Logging
+        # =======
+        # When run in the foreground, always log to stdout/stderr; otherwise,
+        # always log to __/var/log/error.log.x. Expose rotation options though.
+        #
+        # Currently we just support throttling from the command line based on
+        # subsystem and level.
+
+        handler = logging.StreamHandler()
+        handler.addFilter(logging.Filter(self.opts.log_filter))
+        form = logging.Formatter(logging.BASIC_FORMAT)
+        handler.setFormatter(form)
+        logging.root.addHandler(handler)
+        logging.root.setLevel(self.opts.log_level)
+        log.debug("logging configured")
+
+
+        # Address
+        # =======
+
+        self.address = self.opts.address
 
 
     # Validators
     # ==========
 
-    def _validate_address(self, context, candidate):
-        """Must be a valid address for the given socket family.
-        """
-
-        def const2name(n):
-            if n==1: return 'AF_UNIX'
-            if n==2: return 'AF_INET'
-            if n==28: return 'AF_INET6'
-
-        msg = "Found bad address `%s' for address family `%s'."
-        self.sockfam = 2
-        msg = msg % (candidate, const2name(self.sockfam))
-        err = ConfigError(msg)
-
-
-        if not isinstance(candidate, basestring):
-            raise err
-
-        if candidate[0] in ('/','.'):
-            if WINDOWS:
-                raise ConfigError("Can't use an AF_UNIX socket on Windows.")
-                # but what about named pipes?
-            self.sockfam = socket.AF_UNIX
-            # We could test to see if the path exists or is creatable, etc.
-            candidate = realpath(candidate)
-
-        else:
-            self.sockfam = socket.AF_INET
-            # Here we need a tuple: (str, int). The string must be a valid
-            # IPv4 address or the empty string, and the int -- the port --
-            # must be between 0 and 65535, inclusive.
-
-
-            # Break out IP and port.
-            # ======================
-
-            if isinstance(candidate, (tuple, list)):
-                if len(candidate) != 2:
-                    raise err
-                ip, port = candidate
-            elif isinstance(candidate, basestring):
-                if candidate.count(':') != 1:
-                    raise err
-                ip_port = candidate.split(':')
-                ip, port = [i.strip() for i in ip_port]
-            else:
-                raise err
-
-
-            # IP
-            # ==
-
-            if not isinstance(ip, basestring):
-                raise err
-            elif ip != '': # Blank ip is ok, just don't try to validate it.
-                try:
-                    socket.inet_aton(ip)
-                except socket.error:
-                    raise err
-
-
-            # port
-            # ====
-            # Coerce to int. Must be between 0 and 65535, inclusive.
-
-            if isinstance(port, basestring):
-                if not port.isdigit():
-                    raise err
-                else:
-                    port = int(port)
-            elif isinstance(port, int) and not (port is False):
-                # already an int for some reason (called interactively?)
-                pass
-            else:
-                raise err
-
-            if not(0 <= port <= 65535):
-                raise err
-
-
-            # Success!
-            # ========
-
-            candidate = (ip, port)
-
-
-        return candidate
-
-
-    def _validate_defaults(self, context, candidate):
-        """
-        """
-
-        msg = ("Found bad defaults `%s' in context `%s'. Defaults must be " +
-               "a comma-separated list of filenames.")
-        msg = msg % (str(candidate), context)
-
-        if not isinstance(candidate, basestring):
-            raise ConfigError(msg)
-
-        defaults = [n.strip() for n in candidate.split(',')]
-        return defaults
-
-
-    def _validate_daemonize(self, context, candidate):
-        """Should only ever be True or False.
-        """
-        assert candidate in (True, False)
-        return candidate
-
-
-    def _validate_log_error(self, context, candidate):
-        return candidate
-
-    def _validate_log_access(self, context, candidate):
-        return candidate
-
-
-    def _validate_mode(self, context, candidate):
-        """We expand abbreviations to the full term.
-        """
-
-        msg = ("Found bad mode `%s' in context `%s'. Mode must be " +
-               "either `debugging,' `development,' `staging' or " +
-               "`production.'")
-        msg = msg % (str(candidate), context)
-
-        if not isinstance(candidate, basestring):
-            raise ConfigError(msg)
-
-        candidate = candidate.lower()
-        if candidate not in mode.__options:
-            raise ConfigError(msg)
-        mode.set(candidate)
-        return candidate
-
-
-    def _validate_root(self, context, candidate):
-        """Must be a valid directory (also check perms?)
-        """
-
-        msg = "Found bad root `%s' in context `%s'. " +\
-              "Root must point to a directory."
-        msg = msg % (str(candidate), context)
-
-        if isinstance(candidate, basestring):
-            candidate = realpath(candidate)
-        else:
-            raise ConfigError(msg)
-
-        if not isdir(candidate):
-            raise ConfigError(msg)
-
-        return candidate
-
-
-    def _validate_threads(self, context, candidate):
-        """Must be an integer greater than or equal to 1.
-        """
-
-        msg = ("Found bad thread count `%s' in context `%s'. " +
-               "Threads must be an integer greater than or equal to one.")
-        msg = msg % (str(candidate), context)
-
-        if not isinstance(candidate, (int, long)):
-            isstring = isinstance(candidate, basestring)
-            if not isstring or not candidate.isdigit():
-                raise ConfigError(msg)
-        candidate = int(candidate)
-        if not candidate >= 1:
-            raise ConfigError(msg)
-
-        return candidate
-
-
-    def _validate_user(self, context, candidate):
-        """Must be a valid user account on this system.
-        """
-
-        if WINDOWS:
-            raise ConfigError("This option is not available on Windows.")
-
-        msg = ("Found bad user `%s' in context `%s'. " +
-               "User must be a valid user account on this system.")
-        msg = msg % (str(candidate), context)
-
-        try:
-            candidate = pwd.getpwnam(candidate)[2]
-        except KeyError:
-            raise ConfigError(msg)
-
-        return candidate
+    #def validate_mode(self, context, candidate):
+    #    """We expand abbreviations to the full term.
+    #    """
+    #
+    #    msg = ("Found bad mode `%s' in context `%s'. Mode must be " +
+    #           "either `debugging,' `development,' `staging' or " +
+    #           "`production.'")
+    #    msg = msg % (str(candidate), context)
+    #
+    #    if not isinstance(candidate, basestring):
+    #        raise ConfigError(msg)
+    #
+    #    candidate = candidate.lower()
+    #    if candidate not in mode.__options:
+    #        raise ConfigError(msg)
+    #    mode.set(candidate)
+    #    return candidate
+    #
+    #
+    #def validate_threads(self, context, candidate):
+    #    """Must be an integer greater than or equal to 1.
+    #    """
+    #
+    #    msg = ("Found bad thread count `%s' in context `%s'. " +
+    #           "Threads must be an integer greater than or equal to one.")
+    #    msg = msg % (str(candidate), context)
+    #
+    #    if not isinstance(candidate, (int, long)):
+    #        isstring = isinstance(candidate, basestring)
+    #        if not isstring or not candidate.isdigit():
+    #            raise ConfigError(msg)
+    #    candidate = int(candidate)
+    #    if not candidate >= 1:
+    #        raise ConfigError(msg)
+    #
+    #    return candidate
+    #
+    #
+    #def validate_user(self, context, candidate):
+    #    """Must be a valid user account on this system.
+    #    """
+    #
+    #    if WINDOWS:
+    #        raise ConfigError("This option is not available on Windows.")
+    #
+    #    msg = ("Found bad user `%s' in context `%s'. " +
+    #           "User must be a valid user account on this system.")
+    #    msg = msg % (str(candidate), context)
+    #
+    #    try:
+    #        candidate = pwd.getpwnam(candidate)[2]
+    #    except KeyError:
+    #        raise ConfigError(msg)
+    #
+    #    return candidate

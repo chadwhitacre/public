@@ -2,12 +2,14 @@
 """
 import cStringIO
 import inspect
+import logging
 from os.path import isdir, isfile, join, realpath
 
-from aspen import utils
+from aspen import httpy, utils
 from aspen.exceptions import *
 
 
+log = logging.getLogger('aspen.load')
 clean = lambda x: x.split('#',1)[0].strip() # clears comments & whitespace
 default_handlers_conf = """\
 
@@ -145,6 +147,99 @@ __/etc/apps.conf. To wit:
 
 class Mixin:
 
+    # Apps
+    # ====
+
+    def load_apps(self):
+        """Given a path, return a list of (URI paths, WSGI application) tuples.
+
+        This method parses the __/etc/apps.conf file. This file contains a
+        newline-separated list of white-space-separated path name/object name
+        pairs. The path names are absolute URL paths that must also be reflected
+        on the filesystem. If the trailing slash is given, then requests for
+        that directory will first be redirected to the trailing slash before
+        being handed off to the application. If no trailing slash is given, the
+        application will also get requests w/o the slash. Applications match in
+        the order specified.
+
+        Each object name must specify a Python class, instance, or function in
+        dotted notation. In each case we are looking for a callable that takes a
+        single positional parameter, which is the Website instance, and returns
+        a WSGI application. The last part of the dotted name becomes an 'import'
+        target, and the remaining dotted portion becomes the 'from' target:
+
+            example.apps.foo => from example.apps import foo
+
+
+        After being imported, we set the urlpath attribute of the application
+        object to the URL path given in apps.conf. We also place a file called
+        README.aspen (overwriting any existing file) in each directory mentioned
+        in apps.conf, containing the relevant line from apps.conf. If the
+        directory does not exist, AppsConfError is raised.
+
+        The comment character for this file is #, and comments can be included
+        in-line. Blank lines are ignored, as is initial and trailing whitespace
+        per-line.
+
+        Example:
+
+            /foo        example.apps.foo    # will get both /foo and /foo/
+            /bar/       example.apps.bar    # /bar will redirect to /bar/
+            /bar        example.apps.Bar    # will never be called
+            /bar/baz    example.apps.baz    # also never called
+
+        """
+
+        # Find a conf file to parse.
+        # ==========================
+
+        apps = []
+
+        try:
+            if self.paths.__ is None:
+                raise NotImplementedError
+            path = join(self.paths.__, 'etc', 'apps.conf')
+            if not isfile(path):
+                raise NotImplementedError
+        except NotImplementedError:
+            log.info("No apps configured.")
+            return apps
+
+
+        # We have a config file; proceed.
+        # ===============================
+
+        fp = open(path)
+        lineno = 0
+
+        for line in fp:
+            lineno += 1
+            original = line # for README.aspen
+            line = clean(line)
+            if not line:                            # blank line
+                continue
+            else:                                   # specification
+                urlpath, name = line.split(None, 1)
+                if not urlpath.startswith('/'):
+                    msg = "URL path not specified absolutely: %s" % line
+                    raise AppsConfError(msg, lineno)
+                fspath = utils.translate(urlpath)
+                if not isdir(fspath):
+                    msg = "%s does not point to a directory" % fspath
+                    raise AppsConfError(msg, lineno)
+                readme = join(fspath, 'README.aspen')
+                open(readme, 'w+').write(README_aspen % (lineno, original))
+
+                obj = self.import_(name, AppsConfError, lineno)
+                if not callable(obj):
+                    msg = "app object %s is not callable" % name
+                    raise AppsConfError(msg, lineno)
+                obj.urlpath = urlpath
+                apps.append((urlpath, obj))
+
+        return apps
+
+
     # Handler Rulesets
     # ================
 
@@ -152,6 +247,7 @@ __/etc/apps.conf. To wit:
         """Given a path, return a list of HandlerRuleSet instances.
 
         XXX: consider dropping module/package support; only from foo import bar
+        XXX: also, need to update this doc
 
         This method parses the __/etc/handlers.conf file. This file begins with
         a newline-separated list of white-space-separated rule name/object name
@@ -205,6 +301,7 @@ __/etc/apps.conf. To wit:
         if user_conf:
             fp = open(path)
         else:
+            log.info("No handlers configured; using defaults.")
             fp = cStringIO.StringIO(default_handlers_conf)
 
 
@@ -228,14 +325,10 @@ __/etc/apps.conf. To wit:
                     raise HandlersConfError("missing end-bracket", lineno)
                 name = line[1:-1]
                 obj = self.import_(name, HandlersConfError, lineno)
-                msg = ''
-                if inspect.isfunction(obj):
-                    obj.handle = obj
-                elif not hasattr(obj, 'handle'):
-                    msg = "handler object at %s has no 'handle' callable" % name
-                elif not callable(obj.handle):
-                    msg = "'handle' attribute of %s is not callable" % name
-                if msg:
+                if inspect.isclass(obj):
+                    obj = obj(self)
+                if not callable(obj):
+                    msg = "handler object %s is not callable" % name
                     raise HandlersConfError(msg, lineno)
                 ruleset = HandlerRuleSet(rulefuncs, obj, name)
                 rulesets.append(ruleset)
@@ -243,107 +336,14 @@ __/etc/apps.conf. To wit:
             elif ruleset is None:                   # anonymous section
                 rulename, name = line.split(None, 1)
                 obj = self.import_(name, HandlersConfError, lineno)
-                msg = ''
-                if inspect.isfunction(obj):
-                    obj.rule = obj
-                elif not hasattr(obj, 'rule'):
-                    msg = "rule object at %s has no 'rule' callable" % name
-                elif not callable(obj.rule):
-                    msg = "'rule' attribute of %s is not callable" % name
-                if msg:
+                if not callable(obj):
+                    msg = "rule %s is not callable" % name
                     raise HandlersConfError(msg, lineno)
-                rulefuncs[rulename] = obj.rule
+                rulefuncs[rulename] = obj
             else:                                   # named section
                 ruleset.add(line, lineno)
 
         return rulesets
-
-
-    # Apps
-    # ====
-
-    def load_apps(self):
-        """Given a path, return a list of (URI paths, WSGI application) tuples.
-
-        This method parses the __/etc/apps.conf file. This file contains a
-        newline-separated list of white-space-separated path name/object name
-        pairs. The path names are absolute URL paths that must also be reflected
-        on the filesystem. If the trailing slash is given, then requests for
-        that directory will first be redirected to the trailing slash before
-        being handed off to the application. If no trailing slash is given, the
-        application will also get requests w/o the slash. Applications match in
-        the order specified.
-
-        Each object name must specify a Python class, instance, or function in
-        dotted notation. In each case we are looking for a callable that takes a
-        single positional parameter, which is the Website instance, and returns
-        a WSGI application. The last part of the dotted name becomes an 'import'
-        target, and the remaining dotted portion becomes the 'from' target:
-
-            example.apps.foo => from example.apps import foo
-
-
-        After being imported, we set the urlpath attribute of the application
-        object to the URL path given in apps.conf. We also place a file called
-        README.aspen (overwriting any existing file) in each directory mentioned
-        in apps.conf, containing the relevant line from apps.conf. If the
-        directory does not exist, AppsConfError is raised.
-
-        The comment character for this file is #, and comments can be included
-        in-line. Blank lines are ignored, as is initial and trailing whitespace
-        per-line.
-
-        Example:
-
-            /foo        example.apps.foo    # will get both /foo and /foo/
-            /bar/       example.apps.bar    # /bar will redirect to /bar/
-            /bar        example.apps.Bar    # will never be called
-            /bar/baz    example.apps.baz    # also never called
-
-        """
-
-        # Find a conf file to parse.
-        # ==========================
-
-        apps = []
-
-        if self.paths.__ is None:
-            return apps
-
-        path = join(self.paths.__, 'etc', 'apps.conf')
-        if not isfile(path):
-            return apps
-
-
-        # We have a config file; proceed.
-        # ===============================
-
-        fp = open(path)
-        lineno = 0
-
-        for line in fp:
-            lineno += 1
-            original = line # for README.aspen
-            line = clean(line)
-            if not line:                            # blank line
-                continue
-            else:                                   # specification
-                urlpath, name = line.split(None, 1)
-                if not urlpath.startswith('/'):
-                    msg = "URL path not specified absolutely: %s" % line
-                    raise AppsConfError(msg, lineno)
-                fspath = utils.translate(urlpath)
-                if not isdir(fspath):
-                    msg = "%s does not point to a directory" % fspath
-                    raise AppsConfError(msg, lineno)
-                readme = join(fspath, 'README.aspen')
-                open(readme, 'w+').write(README_aspen % (lineno, original))
-
-                obj = self.import_(name, AppsConfError, lineno)
-                obj.urlpath = urlpath
-                apps.append((urlpath, obj))
-
-        return apps
 
 
     # Middleware
@@ -352,64 +352,40 @@ __/etc/apps.conf. To wit:
     def load_middleware(self):
         """Return a list of (URI paths, WSGI callable) tuples.
 
-        This method parses the __/etc/apps.conf file. This file contains a
-        newline-separated list of white-space-separated path name/object name
-        pairs. The path names refer to URL-space, but must be reflected on the
-        filesystem. If the trailing slash is given, then requests for that
-        directory will first be redirected to the trailing slash before being
-        handed off to the application. If no trailing slash is given, the
-        application will also get requests w/o the slash. Applications match in
-        the order specified.
-
-        Each object name must specify a Python class, instance, module, or
-        function in dotted notation. In each case we are looking for a callable
-        that takes a request object and returns a response object. Here's how
-        each is treated:
-
-            class -- instantiated with the website instance as a positional
-                     argument; a 'respond' attribute is the callable
-
-            instance/module -- a 'respond' attribute is the callable
-
-            function -- the function itself is the callable
-
-
-        If the object name has no dots, it is imported as a module/package. If
-        it does contain dots, then the last name becomes the 'import' target, and
-        the remaining dotted portion becomes the 'from' target.
+        This method parses the __/etc/middleware.conf file. This file contains a
+        newline-separated list of object names. Each name must specify a WSGI
+        application in dotted notation. The last part of the name becomes an
+        'import' target, and the remaining dotted portion becomes the 'from'
+        target:
 
             example.apps.foo => from example.apps import foo
 
 
+        These WSGI applications will be instantiated as a middleware stack. Each
+        application will be instantiated with a single positional argument,
+        which is the next application on the stack. The first app in the stack
+        will be an httpy.Responder; the last will be an aspen.website.Website.
+
         The comment character for this file is #, and comments can be included
         in-line. Blank lines are ignored, as is initial and trailing whitespace
         per-line.
-
-        Example:
-
-            /foo        example.apps.foo    # will get both /foo and /foo/
-            /bar/       example.apps.bar    # /bar will redirect to /bar/
-            /bar        example.apps.Bar    # will never be called
-            /bar/baz    example.apps.baz    # also never called
-
-
-        If it doesn't already exist, aspen will place a file called README.aspen
-        in each directory mentioned in apps.conf, containing the relevant line
-        from apps.conf. If the directory does not exist, we raise AppsConfError.
 
         """
 
         # Find a conf file to parse.
         # ==========================
 
-        apps = []
+        stack = [httpy.Responder]
 
-        if self.paths.__ is None:
-            return apps
-
-        path = join(self.paths.__, 'etc', 'apps.conf')
-        if not isfile(path):
-            return apps
+        try:
+            if self.paths.__ is None:
+                raise NotImplementedError
+            path = join(self.paths.__, 'etc', 'middleware.conf')
+            if not isfile(path):
+                raise NotImplementedError
+        except NotImplementedError:
+            log.info("No middleware configured.")
+            return stack
 
 
         # We have a config file; proceed.
@@ -422,37 +398,17 @@ __/etc/apps.conf. To wit:
 
         for line in fp:
             lineno += 1
-            original = line # for README.aspen
             line = clean(line)
             if not line:                            # blank line
                 continue
             else:                                   # specification
-                urlpath, name = line.split(None, 1)
-                if not urlpath.startswith('/'):
-                    msg = "URL path not specified absolutely: %s" % line
+                obj = self.import_(name, MiddlewareConfError, lineno)
+                if not callable(obj):
+                    msg = "WSGI application %s is not callable" % name
                     raise AppsConfError(msg, lineno)
-                fspath = utils.translate(urlpath)
-                if not isdir(fspath):
-                    msg = "%s does not point to a directory" % fspath
-                    raise AppsConfError(msg, lineno)
-                readme = join(fspath, 'README.aspen')
-                open(readme, 'w+').write(README_aspen % (lineno, original))
+                stack.append((urlpath, obj))
 
-                obj = self.import_(name, AppsConfError, lineno)
-                msg = ''
-                if inspect.isfunction(obj):
-                    obj.respond = obj
-                elif not hasattr(obj, 'respond'):
-                    msg = "app object at %s has no 'respond' callable" % name
-                elif not callable(obj.respond):
-                    msg = "'respond' attribute of %s is not callable" % name
-                if msg:
-                    raise AppsConfError(msg, lineno)
-
-                obj.urlpath = urlpath
-                apps.append((urlpath, obj))
-
-        return apps
+        return stack
 
 
     # Import
@@ -494,6 +450,4 @@ __/etc/apps.conf. To wit:
         else:
             modname, objname = name.rsplit('.', 1)
             exec 'from %s import %s as obj' % (modname, objname)
-        if inspect.isclass(obj):
-            obj = obj(self)
         return obj

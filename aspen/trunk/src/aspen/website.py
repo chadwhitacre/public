@@ -1,47 +1,23 @@
 import logging
 import os
 import sys
-import threading
 from os.path import exists, isdir
 
-from aspen import load, mode, utils
+from aspen import mode
 from aspen.exceptions import HandlerError
 from aspen.httpy import Response
+from aspen.utils import check_trailing_slash, find_default, translate
 
 
 log = logging.getLogger('aspen.website')
-reloading = threading.Lock()
 
 
-class Website(load.Mixin):
+class Website:
     """Represent a website for aspen to publish.
     """
 
     def __init__(self, config):
         self.config = config
-        self.paths = config.paths
-        self.defaults = config.defaults
-        self.load()
-
-
-    def load(self):
-        """Set apps, middleware, and handler rulesets on self.
-
-        Eventually this should maybe respond to SIGHUP or something?
-
-        """
-        reloading.acquire()
-        try: # critical section
-            self.apps = self.load_apps()
-            self.rulesets = self.load_rulesets()
-        finally:
-            reloading.release()
-
-
-    def on_startup(self):
-        """Call startup hook on all WSGI middleware and apps.
-        """
-        pass
 
 
     # Main Dispatcher
@@ -54,9 +30,9 @@ reloading = threading.Lock()
         # Translate the request to the filesystem.
         # ========================================
 
-        fspath = utils.translate(self.paths.root, environ['PATH_INFO'])
-        if self.paths.__ is not None:
-            if fspath.startswith(self.paths.__): # protect magic directory
+        fspath = translate(self.config.paths.root, environ['PATH_INFO'])
+        if self.config.paths.__ is not None:
+            if fspath.startswith(self.config.paths.__): # protect magic directory
                 raise Response(404)
         environ['PATH_TRANSLATED'] = fspath
 
@@ -66,12 +42,12 @@ reloading = threading.Lock()
 
         app = self.get_app(environ) # 301
         if app is not None:                                 # app
-            response = app(environ, start_response)
+            response = app(environ, start_response) # WSGI
         else:                                               # handler
             if not exists(fspath):
                 raise Response(404)
-            utils.check_trailing_slash(environ)
-            fspath = utils.find_default(self.defaults, fspath) # 403
+            check_trailing_slash(environ)
+            fspath = find_default(self.config.defaults, fspath) # 403
 
             environ['PATH_TRANSLATED'] = fspath
             environ['aspen.website'] = self
@@ -79,7 +55,7 @@ reloading = threading.Lock()
 
             handler = self.get_handler(fp)
             fp.seek(0)
-            response = handler.handle(environ)
+            response = handler(environ, start_response) # WSGI
 
         return response
 
@@ -93,11 +69,11 @@ reloading = threading.Lock()
         """Given WSGI arguments, return the first matching app.
         """
         app = None
-        for app_urlpath, _app in self.apps:
+        for app_urlpath, _app in self.config.apps:
             if environ['PATH_INFO'].startswith(app_urlpath):
-                environ['PATH_TRANSLATED'] = utils.translate( self.paths.root
-                                                            , app_urlpath
-                                                             )
+                environ['PATH_TRANSLATED'] = translate( self.config.paths.root
+                                                      , app_urlpath
+                                                       )
                 if not isdir(environ['PATH_TRANSLATED']):
                     raise Response(404)
                 if app_urlpath.endswith('/'):
@@ -113,7 +89,7 @@ reloading = threading.Lock()
         """Given a filesystem path, return the first matching handler.
         """
         handler = None
-        for ruleset in self.rulesets:
+        for ruleset in self.config.rulesets:
             fp.seek(0)
             if ruleset.match(fp):
                 handler = ruleset.handler
