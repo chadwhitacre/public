@@ -4,43 +4,42 @@
 TODO:
 
     middleware
+    configuration
+        envvars (log_level)
+        aspen.conf
+        middleware.conf
+        apps.conf
+        handlers.conf
+    documentation
 
     module reloading (or server restarting)
     access logging
     user switching
-    configuration
-        aspen.conf
-            bind_addr   ('', 8080)
-            mode        development
-            log level   debug, info, WARNING, error, critical
-            threads     10
-            user
-            group
-        middleware.conf
-        apps.conf
-        handlers.con
     daemonization
     SSL
-
-    documentation
 
 Roadmap:
 
     0.3 -- WSGI
     0.x -- alpha quality, no 0.x.x, just 0.x, as many as we need
 
-    1.0r1 -- release candidate
+    1.0c1 -- release candidate
     1.0.0 -- final
 
 """
+import logging
 import os
-import site
 import sys
+from optparse import OptionError
+from os.path import join
 
 from aspen import httpy, load
 from aspen.server import CherryPyWSGIServer as Server
-from aspen.config import Configuration, ConfigError
+from aspen.config import ConfigError, Configuration, usage
 from aspen.website import Website
+
+
+log = logging.getLogger('aspen')
 
 
 def main(argv):
@@ -49,31 +48,30 @@ def main(argv):
     # ==========
 
     try:
-        config = Configuration(argv[1:])
+        config = Configuration(argv)
+        website = Website(config)
     except ConfigError, err:
+        print >> sys.stderr, usage
         print >> sys.stderr, err.msg
-        print >> sys.stderr, "usage: aspen --help"
         raise SystemExit(2)
 
 
-    # Build a WSGI stack.
-    # ===================
 
-    website = Website(config)
-    stack = website.load_middleware()
-    stack.append(httpy.Responder)
+    # Wrap the website in a WSGI stack and serve it.
+    # ==============================================
+
+    stack = config.load_middleware()
     for app in stack:
         website = app(website)
 
-
-    # Serve.
-    # ======
-
     server = Server(config.address, website)
     try:
+        log.warn("starting server on %s" % str(config.address))
         server.start()
     except KeyboardInterrupt:
+        log.warn("stopping server")
         server.stop()
+
 
 
 # Stuff that needs to be (re-)implemented
@@ -115,4 +113,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys.argv[1:])
