@@ -10,7 +10,7 @@ try:
 except:
     WINDOWS = True
 
-import mode
+from aspen import load, mode
 
 
 class ConfigError(StandardError):
@@ -50,11 +50,8 @@ class Configuration:
     """
 
     options = ( 'address'
-              , 'daemonize'
-              , 'log_error'
               , 'mode'
               , 'root'
-              , 'threads'
               , 'user'
                )
 
@@ -63,27 +60,12 @@ class Configuration:
     # ========
 
     address     = ('', 8080)
-    daemonize   = False
-    log_access  = None # when httpy provides remote IP, then support this
-    log_error   = None
     mode        = 'development'
-    threads     = 10
-    uid         = ''
     root        = os.getcwd()
+    uid         = ''
 
 
     def __init__(self, argv):
-
-        # Environment
-        # ===========
-
-        for key in ('mode', 'threads'):
-            envvar = 'HTTPY_%s' % key.upper()
-            if os.environ.has_key(envvar):
-                value = os.environ.get(envvar)
-                validate = getattr(self, '_validate_%s' % key)
-                setattr(self, key, validate('environment', value))
-
 
         # Command-line
         # ============
@@ -94,19 +76,6 @@ class Configuration:
                           , dest="address"
                           , help="the address to listen on [<INADDR_ANY>:8080]"
                            )
-        parser_.add_option( "-d", "--daemonize"
-                          , dest="daemonize"
-                          , action='store_true'
-                          , help="if given, daemonize the process"
-                           )
-        parser_.add_option( "-l", "--log_access"
-                          , dest="log_access"
-                          , help="not supported yet (httpy doesn't provide IP)"
-                           )
-        parser_.add_option( "-e", "--log_error"
-                          , dest="log_error"
-                          , help="if given, std{out,err} will be sent here"
-                           )
         parser_.add_option( "-m", "--mode"
                           , dest="mode"
                           , help="one of: deployment, staging, development, " +
@@ -115,10 +84,6 @@ class Configuration:
         parser_.add_option( "-r", "--root"
                           , dest="root"
                           , help="the publishing root directory [.]"
-                           )
-        parser_.add_option( "-t", "--threads"
-                          , dest="threads"
-                          , help="the number of worker threads to use [10]"
                            )
         parser_.add_option( "-u", "--user"
                           , dest="user"
@@ -135,8 +100,8 @@ class Configuration:
                         setattr(self, key, validate('command line', value))
 
 
-        # Search for paths and return.
-        # ============================
+        # Paths
+        # =====
 
         class Paths:
             pass
@@ -157,7 +122,6 @@ class Configuration:
             sys.path.insert(0, plat)
 
         self.paths = paths
-
 
 
     # Validators
@@ -271,8 +235,8 @@ class Configuration:
         """
 
         msg = ("Found bad mode `%s' in context `%s'. Mode must be " +
-               "either `deployment,' `staging,' `development' or " +
-               "`debugging.' Abbreviations are fine.")
+               "either `debugging,' `development,' `staging' or " +
+               "`production.'")
         msg = msg % (str(candidate), context)
 
         if not isinstance(candidate, basestring):
@@ -281,7 +245,8 @@ class Configuration:
         candidate = candidate.lower()
         if candidate not in mode.__options:
             raise ConfigError(msg)
-        return mode
+        mode.set(candidate)
+        return candidate
 
 
     def _validate_root(self, context, candidate):
