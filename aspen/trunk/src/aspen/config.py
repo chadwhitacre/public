@@ -10,7 +10,7 @@ try:
 except:
     WINDOWS = True
 
-from aspen import load, mode
+from aspen import mode
 
 
 class ConfigError(StandardError):
@@ -40,9 +40,7 @@ class Configuration:
     return a 5-tuple:
 
         address     the address to bind to
-        daemonize   whether or not to daemonize the process
-        log_error     if given, stdout and stderr will be sent here
-        threads     the number of threads to start
+        defaults    default names to look for when a directory is requested
         uid         the uid of the user to run as
         mode        the httpy mode
         paths       an object containing useful paths (root, __, lib)
@@ -50,6 +48,7 @@ class Configuration:
     """
 
     options = ( 'address'
+              , 'defaults'
               , 'mode'
               , 'root'
               , 'user'
@@ -60,6 +59,7 @@ class Configuration:
     # ========
 
     address     = ('', 8080)
+    defaults    = ('index.html', 'index.htm', 'index.py')
     mode        = 'development'
     root        = os.getcwd()
     uid         = ''
@@ -75,6 +75,12 @@ class Configuration:
         parser_.add_option( "-a", "--address"
                           , dest="address"
                           , help="the address to listen on [<INADDR_ANY>:8080]"
+                           )
+        parser_.add_option( "-d", "--defaults"
+                          , dest="defaults"
+                          , help=( "a comma-separated list of default names "
+                                 + "[index.html,index.htm,index.py]"
+                                  )
                            )
         parser_.add_option( "-m", "--mode"
                           , dest="mode"
@@ -214,6 +220,21 @@ class Configuration:
 
 
         return candidate
+
+
+    def _validate_defaults(self, context, candidate):
+        """
+        """
+
+        msg = ("Found bad defaults `%s' in context `%s'. Defaults must be " +
+               "a comma-separated list of filenames.")
+        msg = msg % (str(candidate), context)
+
+        if not isinstance(candidate, basestring):
+            raise ConfigError(msg)
+
+        defaults = [n.strip() for n in candidate.split(',')]
+        return defaults
 
 
     def _validate_daemonize(self, context, candidate):
