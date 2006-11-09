@@ -45,6 +45,9 @@ from aspen.website import Website
 
 def main(argv):
 
+    # Configure.
+    # ==========
+
     try:
         config = Configuration(argv[1:])
     except ConfigError, err:
@@ -52,12 +55,21 @@ def main(argv):
         print >> sys.stderr, "usage: aspen --help"
         raise SystemExit(2)
 
-    def middleware(app):
-        return app
 
-    website = middleware(httpy.Responder(Website(config.paths)))
+    # Build a WSGI stack.
+    # ===================
+
+    website = Website(config)
+    stack = website.load_middleware()
+    stack.append(httpy.Responder)
+    for app in stack:
+        website = app(website)
+
+
+    # Serve.
+    # ======
+
     server = Server(config.address, website)
-
     try:
         server.start()
     except KeyboardInterrupt:

@@ -10,33 +10,32 @@ from aspen.httpy import Response
 
 
 log = logging.getLogger('aspen.website')
-config_lock = threading.Lock()
+reloading = threading.Lock()
 
 
 class Website(load.Mixin):
     """Represent a website for aspen to publish.
     """
 
-    def __init__(self, paths):
-        self.paths = paths
-        self.defaults = ['index.htm', 'index.html', 'index.py'] # XXX: expose this to config
-        self.configure()
+    def __init__(self, config):
+        self.config = config
+        self.paths = config.paths
+        self.defaults = config.defaults
+        self.load()
 
 
-    def configure(self):
+    def load(self):
         """Set apps, middleware, and handler rulesets on self.
 
-        Eventually this should maybe respond to SIGHUP.
+        Eventually this should maybe respond to SIGHUP or something?
 
         """
-        config_lock.acquire()
+        reloading.acquire()
         try: # critical section
-            self.stack = self.load_middleware()
             self.apps = self.load_apps()
             self.rulesets = self.load_rulesets()
-            self.on_startup()
         finally:
-            config_lock.release()
+            reloading.release()
 
 
     def on_startup(self):
