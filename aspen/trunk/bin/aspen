@@ -1,12 +1,43 @@
 #!/usr/local/bin/python
 """This is the main aspen callable. It configures and starts an HTTP server.
+
+TODO:
+
+    middleware
+
+    module reloading (or server restarting)
+    access logging
+    user switching
+    configuration
+        aspen.conf
+            bind_addr   ('', 8080)
+            mode        development
+            log level   debug, info, WARNING, error, critical
+            threads     10
+            user
+            group
+        middleware.conf
+        apps.conf
+        handlers.con
+    daemonization
+    SSL
+
+    documentation
+
+Roadmap:
+
+    0.3 -- WSGI
+    0.x -- alpha quality, no 0.x.x, just 0.x, as many as we need
+
+    1.0r1 -- release candidate
+    1.0.0 -- final
+
 """
 import os
 import site
 import sys
 
-from aspen import mode
-#from aspen import daemon
+from aspen import httpy, load
 from aspen.server import CherryPyWSGIServer as Server
 from aspen.config import Configuration, ConfigError
 from aspen.website import Website
@@ -20,46 +51,55 @@ def main(argv):
         print >> sys.stderr, err.msg
         print >> sys.stderr, "usage: aspen --help"
         raise SystemExit(2)
-    else:
 
-        if config.daemonize:
-            raise NotImplementedError("No daemonization yet")
-            import daemon
-            daemon.become(workdir=config.paths.root)
+    def middleware(app):
+        return app
 
-        if config.log_access is not None:
-            raise NotImplementedError("Sorry, no access logging yet :(")
+    website = middleware(httpy.Responder(Website(config.paths)))
+    server = Server(config.address, website)
 
-        if config.log_error is not None:
-            d,f = os.path.split(config.log_error)
-            if not os.path.isdir(d):
-                os.makedirs(d)
-            sys.stdout = sys.stderr = open(config.log_error, 'a+', 0)
+    try:
+        server.start()
+    except KeyboardInterrupt:
+        server.stop()
 
-        mode.set(config.mode)
-        website = Website(config.paths)
-        server = Server(config.address, website)
 
-        if config.uid:
-            raise NotImplementedError("Need to reimplement user switchi")
-        try:
+# Stuff that needs to be (re-)implemented
+# =======================================
+#
+#    if config.daemonize:
+#        raise NotImplementedError("No daemonization yet")
+#        import daemon
+#        daemon.become(workdir=config.paths.root)
+#
+#    if config.log_access is not None:
+#        raise NotImplementedError("Sorry, no access logging yet :(")
+#
+#    if config.log_error is not None:
+#        d,f = os.path.split(config.log_error)
+#        if not os.path.isdir(d):
+#            os.makedirs(d)
+#        sys.stdout = sys.stderr = open(config.log_error, 'a+', 0)
+#
+#    if config.uid:
+#        raise NotImplementedError("Need to reimplement user switching")
 
-            if 0:
-                import hotshot, hotshot.stats
-                prof = hotshot.Profile("bench.prof")
-                prof.runcall(server.start)
-            else:
-                server.start()
-
-        except KeyboardInterrupt:
-            server.stop()
-
-        if 0:
-            prof.close()
-            stats = hotshot.stats.load("bench.prof")
-            stats.strip_dirs()
-            stats.sort_stats('time', 'calls')
-            stats.print_stats(20)
+# For profiling
+# =============
+#
+#    import hotshot, hotshot.stats
+#    prof = hotshot.Profile("bench.prof")
+#
+#    try:
+#        prof.runcall(server.start)
+#    except KeyboardInterrupt:
+#        server.stop()
+#
+#    prof.close()
+#    stats = hotshot.stats.load("bench.prof")
+#    stats.strip_dirs()
+#    stats.sort_stats('time', 'calls')
+#    stats.print_stats(20)
 
 
 if __name__ == '__main__':

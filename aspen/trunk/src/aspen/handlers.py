@@ -7,7 +7,7 @@ import stat
 from email import message_from_file, message_from_string
 
 from aspen import mode
-from aspen.response import Response
+from aspen.httpy import Response
 from aspen.utils import is_valid_identifier
 
 
@@ -29,6 +29,7 @@ def pyscript(environ):
 
 # A moderately complex one.
 # =========================
+# XXX: look at Luke Arno's and some others ... Etags? Iteration?
 
 def static(environ):
     """Serve a static file off of the filesystem.

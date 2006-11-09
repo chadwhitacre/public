@@ -1,4 +1,9 @@
+import os
 import string
+import urllib
+from os.path import isdir, isfile, join, realpath
+
+from aspen.httpy import Response
 
 
 INITIAL = '_' + string.letters
@@ -28,6 +33,76 @@ def is_valid_identifier(s):
         return False
 
 
+# Paths
+# =====
+
+def check_trailing_slash(environ):
+    """Given a WSGI environ, return None or raise 301.
+
+    environ must have PATH_TRANSLATED set in addition to PATH_INFO, which
+    latter is required by the spec.
+
+    """
+    fs = environ['PATH_TRANSLATED']
+    url = environ['PATH_INFO']
+    if isdir(fs) and not url.endswith('/'):
+        environ['PATH_INFO'] += '/'
+        response = Response(301)
+        response.headers['Location'] = utils.full_url(environ)
+        raise response
+
+
+def find_default(defaults, path):
+    """Given a list of defaults and a path, return a filepath or raise 403.
+    """
+    if isdir(path):
+        default = None
+        for name in defaults:
+            _path = join(path, name)
+            if isfile(_path):
+                default = _path
+                break
+        if default is None:
+            raise Response(403)
+        path = default
+    return path
+
+
+def full_url(environ):
+    """Given a WSGI environ, return the full URL of the request.
+
+    This is Ian's recipe from PEP 333.
+
+    """
+    url = environ['wsgi.url_scheme']+'://'
+
+    if environ.get('HTTP_HOST'):
+        url += environ['HTTP_HOST']
+    else:
+        url += environ['SERVER_NAME']
+
+        if environ['wsgi.url_scheme'] == 'https':
+            if environ['SERVER_PORT'] != '443':
+               url += ':' + environ['SERVER_PORT']
+        else:
+            if environ['SERVER_PORT'] != '80':
+               url += ':' + environ['SERVER_PORT']
+
+    url += urllib.quote(environ.get('SCRIPT_NAME',''))
+    url += urllib.quote(environ.get('PATH_INFO',''))
+    if environ.get('QUERY_STRING'):
+        url += '?' + environ['QUERY_STRING']
+
+
+def translate(root, url):
+    """Translate a URL to the filesystem.
+    """
+    parts = [root] + url.lstrip('/').split('/')
+    return realpath(os.sep.join(parts))
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
+
+
