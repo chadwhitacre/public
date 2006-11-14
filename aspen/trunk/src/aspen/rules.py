@@ -93,10 +93,10 @@ def svn_prop(fp, predicate):
         raise RuleError('bad predicate for svn_prop: %s' % predicate)
 
     command = "svn propget '%s' %s" % (propname, fp.name)
-    status, actual = commands.getstatusoutput(command)
+    status, output = commands.getstatusoutput(command)
     if status > 0:
         raise RuleError(output)
-    actual = actual.strip()
+    actual = output.strip()
 
     return expected == actual
 

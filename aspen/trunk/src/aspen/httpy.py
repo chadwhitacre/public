@@ -20,8 +20,8 @@ from email.Message import Message
 
 
 __author__ = "Chad Whitacre <chad@zetaweb.com>"
-__version__ = "1.0"
-__all__ = ('Response', 'Responder')
+__version__ = "1.0a1"
+__all__ = ('Responder', 'Response')
 
 
 _responses = BaseHTTPServer.BaseHTTPRequestHandler.responses
@@ -65,23 +65,23 @@ class Response(StandardError):
         return "<Response: %s>" % str(self)
 
     def __str__(self):
-        return "%d %s" % (self.code, self.status_msg()[0])
+        return "%d %s" % (self.code, self._status()[0])
 
-    def status_msg(self):
+    def _status(self):
         return _responses.get(self.code, ('???','Unknown HTTP status'))
 
 
-    def to_wsgi(self, start_response):
-        """Convert ourselves to a WSGI response.
+    def __call__(self, environ, start_response):
+        """We ourselves are a WSGI app.
 
         XXX: WSGI exception handling?
 
         """
-        response = self.status_msg()
+        _status = self._status()
 
-        status = "%d %s" % (self.code, response[0])
+        status = "%d %s" % (self.code, _status[0])
         headers = [(str(k), str(v)) for k,v in self.headers.items()]
-        body = [self.body and self.body or response[1]]
+        body = [self.body and self.body or _status[1]]
 
         start_response(status, headers)
         return body
@@ -103,11 +103,11 @@ class Responder(object):
             raise
 
         if isinstance(response, Response):
-            response = response.to_wsgi(start_response)
+            response = response(start_response)
         elif isinstance(response, basestring):
             response = Response(200, response)
             response.headers['Content-Type'] = 'text/html'
-            response = response.to_wsgi(start_response)
+            response = response(environ, start_response)
 
         return response
 
@@ -136,3 +136,34 @@ if __name__ == '__main__':
     #server = Server(app) # unwrapped; raises AssertionError when hit
 
     server.serve_forever()
+
+
+""" <http://opensource.org/licenses/bsd-license.php>
+Copyright (c) 2006, Chad Whitacre <chad@zetaweb.com>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Chad Whitacre nor the names of any other contributors
+    or copyright holders may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""

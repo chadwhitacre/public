@@ -408,6 +408,7 @@ __/etc/apps.conf. To wit:
                     raise AppsConfError(msg, lineno)
                 stack.append((urlpath, obj))
 
+        stack.reverse()
         return stack
 
 

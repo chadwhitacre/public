@@ -25,3 +25,6 @@ class HooksConfError(ConfigError):
 
 class AppsConfError(ConfigError):
     filename = join('__', 'etc', 'apps.conf')
+
+class MiddlewareConfError(ConfigError):
+    filename = join('__', 'etc', 'middleware.conf')
