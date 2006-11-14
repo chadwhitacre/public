@@ -2,16 +2,18 @@
 from distutils.core import setup
 
 classifiers = [
-    'Development Status :: 4 - Beta'
+    'Development Status :: 3 - Alpha'
   , 'Environment :: Console'
   , 'Intended Audience :: Developers'
-  , 'License :: Freeware'
+  , 'License :: OSI Approved :: New BSD License'
   , 'Natural Language :: English'
   , 'Operating System :: MacOS :: MacOS X'
   , 'Operating System :: Microsoft :: Windows'
   , 'Operating System :: POSIX'
+  , 'Operating System :: Unix'
   , 'Programming Language :: Python'
-  , 'Topic :: Internet :: WWW/HTTP'
+  , 'Topic :: Internet :: WWW/HTTP :: HTTP Servers'
+  , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Server'
   , 'Topic :: Software Development :: Libraries :: Python Modules'
                 ]
 
@@ -38,7 +40,7 @@ setup( name='httpy'
                 , 'httpy.tests'
                 , 'httpy.utils'
                  ]
-     , description = 'httpy is a sane and robust HTTP library for Python.'
+     , description = 'httpy is an HTTP server library for Python.'
      , author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
      , url = 'http://www.zetadev.com/software/httpy/'
