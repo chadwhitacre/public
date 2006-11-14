@@ -32,8 +32,8 @@ log = logging.getLogger('aspen.website')
 
         fspath = translate(self.config.paths.root, environ['PATH_INFO'])
         if self.config.paths.__ is not None:
-            if fspath.startswith(self.config.paths.__): # protect magic directory
-                raise Response(404)
+            if fspath.startswith(self.config.paths.__):
+                raise Response(404) # protect magic directory
         environ['PATH_TRANSLATED'] = fspath
 
 
@@ -66,7 +66,7 @@ log = logging.getLogger('aspen.website')
     # per-request.
 
     def get_app(self, environ):
-        """Given WSGI arguments, return the first matching app.
+        """Given a WSGI environ, return the first matching app.
         """
         app = None
         for app_urlpath, _app in self.config.apps:

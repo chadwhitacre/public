@@ -1,23 +1,6 @@
 #!/usr/local/bin/python
 """This is the main aspen callable. It configures and starts an HTTP server.
 
-TODO:
-
-    middleware
-    configuration
-        envvars (log_level)
-        aspen.conf
-        middleware.conf
-        apps.conf
-        handlers.conf
-    documentation
-
-    module reloading (or server restarting)
-    access logging
-    user switching
-    daemonization
-    SSL
-
 Roadmap:
 
     0.3 -- WSGI
@@ -49,6 +32,8 @@ def main(argv):
 
     try:
         config = Configuration(argv)
+        import pdb; pdb.set_trace()
+
         website = Website(config)
     except ConfigError, err:
         print >> sys.stderr, usage
@@ -60,9 +45,7 @@ def main(argv):
     # Wrap the website in a WSGI stack and serve it.
     # ==============================================
 
-    stack = config.load_middleware()
-    stack.reverse()
-    for app in stack:
+    for app in config.middleware:
         website = app(website)
 
     server = Server(config.address, website)

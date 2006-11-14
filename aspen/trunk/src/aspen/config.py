@@ -111,8 +111,6 @@ def validate_address(address):
 
 # Command-Line Option Parser
 # ==========================
-# The command-line interface is intentionally limited. There are many more
-# knobs in the config file.
 
 def cb_address(option, opt, value, parser):
     """Must be a valid AF_INET or AF_UNIX address.
@@ -153,6 +151,12 @@ optparser.add_option( "-a", "--address"
                     , dest="address"
                     , help="the IP or Unix address to bind to [:8080]"
                     , type='string'
+                     )
+optparser.add_option( "-x", "--log_access"
+                    , default=False
+                    , action="store_true"
+                    , dest="log_access"
+                    , help="if set, maintain an access log"
                      )
 optparser.add_option( "-l", "--log_filter"
                     , default=''
@@ -278,7 +282,7 @@ class Paths:
         # Logging
         # =======
         # When run in the foreground, always log to stdout/stderr; otherwise,
-        # always log to __/var/log/error.log.x. Expose rotation options though.
+        # always log to __/var/log/error.log.x, rotating per megabyte.
         #
         # Currently we just support throttling from the command line based on
         # subsystem and level.
@@ -296,6 +300,10 @@ class Paths:
         # =======
 
         self.address = self.opts.address
+        self.apps = self.load_apps()
+        self.rulesets = self.load_rulesets()
+        self.middleware = self.load_middleware()
+
 
 
     # Validators
