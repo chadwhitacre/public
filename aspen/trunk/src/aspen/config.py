@@ -152,30 +152,11 @@ optparser.add_option( "-a", "--address"
                     , help="the IP or Unix address to bind to [:8080]"
                     , type='string'
                      )
-optparser.add_option( "-x", "--log_access"
-                    , default=False
-                    , action="store_true"
-                    , dest="log_access"
-                    , help="if set, maintain an access log"
-                     )
 optparser.add_option( "-l", "--log_filter"
                     , default=''
                     , dest="log_filter"
                     , help="a subsystem filter for logging []"
                     , type='string'
-                     )
-optparser.add_option( "-v", "--log_level"
-                    , action="callback"
-                    , callback=cb_log_level
-                    , choices=[ 'notset', 'debug', 'info', 'warning', 'error'
-                              , 'critical'
-                               ]
-                    , default='warning'
-                    , dest="log_level"
-                    , help=( "the level below which messages will be stiffled "
-                           + "[warning]"
-                            )
-                    , type='choice'
                      )
 optparser.add_option( "-m", "--mode"
                     , choices=[ 'debugging', 'deb', 'development', 'dev'
@@ -195,6 +176,19 @@ optparser.add_option( "-r", "--root"
                     , dest="root"
                     , help="the root publishing directory [.]"
                     , type='string'
+                     )
+optparser.add_option( "-v", "--log_level"
+                    , action="callback"
+                    , callback=cb_log_level
+                    , choices=[ 'notset', 'debug', 'info', 'warning', 'error'
+                              , 'critical'
+                               ]
+                    , default='warning'
+                    , dest="log_level"
+                    , help=( "the level below which messages will be stiffled "
+                           + "[warning]"
+                            )
+                    , type='choice'
                      )
 
 
