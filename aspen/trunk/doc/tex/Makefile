@@ -1,8 +1,7 @@
 # Makefile to create documentation using the Python LaTeX system.
 
-VERSION=0.2a1
-PYTHON_SRC = /home/whit537/python/2.4.3-threadless/src/Doc
-MKHOWTO    = $(PYTHON_SRC)/tools/mkhowto \
+VERSION=~~VERSION~~
+MKHOWTO    = $(PYTHONSRC)/Doc/tools/mkhowto \
 				--iconserver icons \
 				--split 4 \
 				--link 2 \
@@ -24,7 +23,7 @@ html: clean
 	rm -rf ../html && mv ./html ../
 
 pdf:
-	$(PYTHON_SRC)/Doc/tools/mkhowto --pdf aspen.tex
+	$(PYTHONSRC)/Doc/tools/mkhowto --pdf aspen.tex
 	mv aspen.pdf ../aspen-$(VERSION).pdf
 
 clean:
