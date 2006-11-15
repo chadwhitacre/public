@@ -24,14 +24,14 @@ class ConfigError(AspenError):
 class AppsConfError(ConfigError):
     def __init__(self, msg, lineno):
         filename = join('__', 'etc', 'apps.conf')
-        ConfigError.__init__(msg, filename, lineno)
+        ConfigError.__init__(self, msg, filename, lineno)
 
 class HandlersConfError(ConfigError):
     def __init__(self, msg, lineno):
         filename = join('__', 'etc', 'handlers.conf')
-        ConfigError.__init__(msg, filename, lineno)
+        ConfigError.__init__(self, msg, filename, lineno)
 
 class MiddlewareConfError(ConfigError):
     def __init__(self, msg, lineno):
         filename = join('__', 'etc', 'middleware.conf')
-        ConfigError.__init__(msg, filename, lineno)
+        ConfigError.__init__(self, msg, filename, lineno)

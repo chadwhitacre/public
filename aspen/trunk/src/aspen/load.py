@@ -396,15 +396,15 @@ __/etc/apps.conf. To wit:
 
         for line in fp:
             lineno += 1
-            line = clean(line)
-            if not line:                            # blank line
+            name = clean(line)
+            if not name:                            # blank line
                 continue
             else:                                   # specification
                 obj = colon.colonize(name, fp.name, lineno)
                 if not callable(obj):
                     msg = "WSGI application %s is not callable" % name
                     raise MiddlewareConfError(msg, lineno)
-                stack.append((urlpath, obj))
+                stack.append(obj)
 
         stack.reverse()
         return stack
