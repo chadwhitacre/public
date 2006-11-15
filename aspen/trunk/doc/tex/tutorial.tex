@@ -91,8 +91,8 @@ open \class{file} object of that file.
 If you are familiar with the WSGI specification, you will recognize that
 \function{handy.handle} is very nearly a WSGI callable. Aspen plugins all speak
 a slight superset of WSGI. Also notice that the rules for when a certain handler
-is invoked are themselves extensible: in addition to writing handlers, you can
-write your own rules.
+is invoked are themselves extensible. The \code{fnmatch} rule comes with Aspen,
+but you can also write your own.
 
 
 \section{What You've Learned \label{tutorial-learned}}
@@ -101,12 +101,12 @@ In this brief tutorial we've introduced these key facts about Aspen:
 
 \begin{itemize}
 \item{Aspen websites use the filesystem for site hierarchy.}
-\item{Aspen websites are extended and configured via a "magic directory."}
-\item{Aspen extensions are slightly extended WSGI callables.}
+\item{Aspen websites are configured and extended via a "magic directory."}
 \item{Aspen configuration happens through plain-text configuration files.}
+\item{Aspen extensions are slightly extended WSGI callables.}
 \end{itemize}
 
-Aspen also supports wiring up arbitrary WSGI apps at certain paths, and
-maintaining a global WSGI middleware stack. If this all fits your style of
-development, then check out the reference documentation that follows for the
-full story.
+Besides handlers, Aspen can be extended by wiring up arbitrary WSGI apps at
+certain paths, and maintaining a global WSGI middleware stack. If this all fits
+your style of development, then check out the reference documentation that
+follows for the full story.
