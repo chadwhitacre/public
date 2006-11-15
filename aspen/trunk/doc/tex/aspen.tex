@@ -7,7 +7,7 @@
 
 \documentclass{manual}
 
-\title{aspen}
+\title{Aspen}
 
 \author{Chad W. L. Whitacre}
 
@@ -26,12 +26,8 @@
 				% the date to \today can be used during draft
 				% stages to make it easier to handle versions.
 
-\release{0.2}			% release version; this is used to define the
-				% \version macro
-
-\makeindex			% tell \index to actually write the .idx file
-\makemodindex			% If this contains a lot of module sections.
-
+\release{~~VERSION~~}   % release version; this is used to define the
+				        % \version macro
 
 \begin{document}
 
@@ -40,34 +36,14 @@
 \begin{abstract}
 
 \noindent
-Aspen is a web server. It serves highly extensible Python-based publication,
+Aspen is a web server for highly extensible Python-based publication,
 application, and hybrid websites.
 
 \end{abstract}
 
 \input{intro}
+\input{interface}
 \input{extending}
-
-
-
-% These are adding <Image> things to the last page, and I haven't cleaned up the
-% inputs for indexing anyway.
-%%
-%%  The ugly "%begin{latexonly}" pseudo-environments are really just to
-%%  keep LaTeX2HTML quiet during the \renewcommand{} macros; they're
-%%  not really valuable.
-%%
-%%  If you don't want the Module Index, you can remove all of this up
-%%  until the second \input line.
-%%
-%%begin{latexonly}
-%\renewcommand{\indexname}{Module Index}
-%%end{latexonly}
-%\input{mod\jobname.ind}		% Module Index
-%
-%%begin{latexonly}
-%\renewcommand{\indexname}{Index}
-%%end{latexonly}
-%\input{\jobname.ind}			% Index
+\input{api}
 
 \end{document}

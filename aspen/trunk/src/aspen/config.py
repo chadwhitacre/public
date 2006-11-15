@@ -300,6 +300,11 @@ class Paths:
         # =======
 
         self.address = self.opts.address
+
+
+        # Plugins
+        # =======
+
         self.apps = self.load_apps()
         self.rulesets = self.load_rulesets()
         self.middleware = self.load_middleware()

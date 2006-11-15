@@ -390,8 +390,6 @@ __/etc/apps.conf. To wit:
 
         # We have a config file; proceed.
         # ===============================
-        # The conditions in the loop below are not in the order found in the
-        # file, but are in the order necessary for correct processing.
 
         fp = open(path)
         lineno = 0
@@ -416,11 +414,16 @@ __/etc/apps.conf. To wit:
     # ======
 
     def import_(self, name, Err, lineno=None):
-        """Given a dotted name and some helpers, return an object.
+        """Given a name and some helpers, return an object.
 
-        If Err is None then all ImportErrors are swallowed, and None is
-        returned. If Err is not None, the lineno should be the line number of
-        the file where the bad import name occurs.
+        The format of name is a subset of setuptools entry_point format: a
+        dotted module name, followed by a colon and a dotted identifier naming
+        an object within the module.
+
+        Err is an error object to raise if the import fails. If Err is None then
+        all ImportErrors are swallowed, and None is returned. If Err is not
+        None, the lineno should be the line number of the file where the bad
+        import name occurs.
 
         """
         obj = None
@@ -444,6 +447,9 @@ __/etc/apps.conf. To wit:
         instance as a positional argument.
 
         """
+        if name.count(':') != 1:
+            msg = "Bad name on line %s of "
+            raise ConfigError()
         if not utils.is_valid_identifier(name.replace('.','')):
             raise ImportError('%s is not a valid Python dotted name.' % name)
         if '.' not in name:

@@ -32,8 +32,6 @@ def main(argv):
 
     try:
         config = Configuration(argv)
-        import pdb; pdb.set_trace()
-
         website = Website(config)
     except ConfigError, err:
         print >> sys.stderr, usage

@@ -1,82 +1,74 @@
 \chapter{Extending Aspen}
 
-Aspen is extensible with the Python programming language. There are three
-categories of extension:
+Aspen uses Python's WSGI specification for its extension architecture. There are
+three categories of extension:
 
 \begin{tableii}{l|l}{}{Category}{Explanation}
-\lineii{hooks}{one or many global hooks may be specified; all hooks touch every
-    request}
 \lineii{applications}{applications are connected to directories within the site
     hierarchy; only one app touches any given request}
-\lineii{handlers}{handlers are tied to resources (i.e., files) based on
-    extensible rules; only one handler touches any given request}
+\lineii{handlers}{handlers are tied to individual resources (i.e., files) based
+    on extensible rules; only one handler touches any given request}
+\lineii{middleware}{one or many middleware applications may be specified;
+    all middleware generally touches every request}
 \end{tableii}
 
-The basic pattern is that all extensions are Python callables with a certain
-signature. You connect these callables to the various entry points with three
-configuration files in \file{__/etc}:
+All extensions are WSGI callables, connected to the above entry points with
+three configuration files in \file{__/etc}:
 
 \begin{itemize}
-\item{\file{hooks.conf}}
-\item{\file{handlers.conf}}
 \item{\file{apps.conf}}
+\item{\file{handlers.conf}}
+\item{\file{middleware.conf}}
 \end{itemize}
 
-Where called for in these files, objects are specified in dot notation. If a
-given name has no dot, it is imported as a module/package. If it does contain a
-dot, then the last part becomes the \code{import} target, and the remaining
-dotted portion becomes the \code{from} target. E.g.:
+Where called for in these files, objects are specified in a notation derived
+from setuptools' entry_points feature: a dotted module name, followed by a colon
+and a dotted identifier naming an object within the module. This is referred to
+below as \dfn{colon notation}. The following example would import the \code{bar}
+object from \code{example.package.foo}, and use its \code{baz} attribute (a WSGI
+callable):
 
 \begin{verbatim}
-example.foo.bar => from example.foo import bar
+example.package.foo:bar.baz
 \end{verbatim}
 
 The comment character for these files is \#, and comments can be included
 in-line. Blank lines are ignored, as is initial and trailing whitespace
-per-line.
+per-line. Where section names are called for, they are given in brackets.
 
-\section{Global Extension through Hooks}
 
-Aspen defines four points at which you may insert callables conforming to a
-specified signature. The hooks, their positional arguments, and return values
-are as follows:
+\section{Applications: Path-based Extension \label{apps}}
 
-\begin{tableiii}{l|l|l}{}{Hook Name}{Arguments}{Return Value}
-\lineiii{startup}{\var{website}}{undefined (ignored)}
-\lineiii{request}{\var{website}, \var{request}}{\class{httpy.Request}}
-\lineiii{response}{\var{website}, \var{request}, \var{response}}{\class{httpy.Response}}
-\lineiii{exception}{\var{website}, \var{request}, \var{response}}{\class{httpy.Response}}
-\end{tableiii}
+Whereas handlers allow for file-based extensions, the application mechanism is
+for directory-based extensions.
 
-The \file{__/etc/hooks.conf} file gives you fine-grained control over any Python
-callables that should be invoked at each hook. The file contains a list of
-Python dotted names, split into 5 sections: an initial anonymous section, and
-four named sections. All sections are optional.
+The \file{__/etc/apps.conf} file contains a newline-separated list of
+white-space-separated path name/object name pairs. The path names refer to
+URL-space, but must be reflected on the filesystem (or \class{AppsConfError} is
+raised). If the trailing slash is given, then requests for that directory will
+first be redirected to the trailing slash before being handed off to the
+application. If no trailing slash is given, the application will also get
+requests without the slash. Applications match in the order specified.
 
-For each object named in any initial anonymous section, Aspen will look for
-callable attributes with names corresponding to each hook. Callables specified
-in this manner are called in forward order for the startup and request hooks,
-and in reverse order for the response and exception hooks. Modules need not
-define a callable for every hook.
+Object names are in colon notation, and they name WSGI callables.
 
-Names for named sections are given in brackets, and correspond to the hook names
-given above. The dotted names within each section must point to callable
-objects; they will be called in the order specified.
+Aspen will (over)write a file called \file{README.aspen} in each directory
+mentioned in \file{apps.conf}, containing the relevant line from
+\file{apps.conf}. If the directory does not exist, \class{AppsConfError} is
+raised.
 
-\subsection{Example hooks.conf \label{hooks.conf}}
+
+\subsection{Example apps.conf \label{apps.conf}}
 
 \begin{verbatim}
-foo.hooks   # will look for {exception,request,response,startup}
-bar.hooks   #   in these modules/objects
-
-[startup]
-  example.hooks.startup
-
-[exception]
-  OtherExample.ErrorHandling.hook
+/foo        example.apps:foo    # will get both /foo and /foo/
+/bar/       example.apps:bar    # /bar will redirect to /bar/
+/bar        example.apps:Bar    # will never be called
+/bar/baz    example.apps:baz    # also never called
 \end{verbatim}
 
-\section{Resource-based Extension through Handlers}
+
+\section{Handlers: Resource-based Extension \label{handlers}}
 
 Aspen provides an extensible mechanism for supporting ASP/PHP-style web
 development, where URLs map literally to the filesystem, and the response is
@@ -84,37 +76,27 @@ generated by somehow processing a filesystem resource.
 
 The \file{__/etc/handlers.conf} file begins with a newline-separated list of
 white-space-separated rule name/object name pairs. Rule names can be any string
-without whitespace. Each object name must specify a Python class, instance,
-module/package, or function. In each case we are looking for a \dfn{rule}, a
-callable that takes a Python file object and an arbitrary predicate string, and
-returns \class{True} or \class{False}. Here is how each case is treated:
-
-\begin{tableii}{l|l}{}{Object Type}{Behavior}
-\lineii{class}{instantiated with the website instance as a positional
-               argument; a \var{rule} attribute is the callable}
-\lineii{instance, module, or package}{a \var{rule} attribute is the callable}
-\lineii{function}{the function itself is the callable}
-\end{tableii}
+without whitespace. Each object name (in colon notation) specifies a \dfn{rule},
+a callable taking a Python file object and an arbitrary predicate string, and
+returning \class{True} or \class{False}.
 
 Following the rule specification are sections specifying \dfn{handlers}, which
-are Python callables that, given the following keyword arguments, return an
-\class{httpy.Response} object:
+as mentioned above are WSGI callables. When called, handlers receive the
+following additional objects in \code{environ}:
 
-\begin{tableii}{l|l}{var}{Argument}{Description}
-\lineii{fp}{the filesystem resource as a file object, positioned at zero}
-\lineii{request}{the current \class{httpy.Request} object}
-\lineii{response}{a newly-created \class{httpy.Response} object}
-\lineii{website}{the website instance}
+\begin{tableii}{l|l}{var}{key}{value}
+\lineii{aspen.fp}{the filesystem resource as a \class{file} object, positioned at zero}
+\lineii{aspen.website}{the \class{Website} instance}
 \end{tableii}
 
-Handlers are specified in brackets as the name of each section. Following each
-such name is a newline-separated list of conditions under which this handler is
-to be called. Fundamentally, these conditions are made up of a rule name as
-defined at the beginning of the file, and an arbitrary predicate string that is
-meaningful to the matching rule callable. If no predicate is given, then the
-rule callable will receive \class{None} for its predicate argument. Rules must
-be explicitly specified at the beginning of the file before being available
-within handler sections.
+The name of each section specifies a handler (a WSGI callable) in colon
+notation. The body of each section is a newline-separated list of conditions
+under which this handler is to be called. Fundamentally, these conditions are
+made up of a rule name as defined at the beginning of the file, and an arbitrary
+predicate string that is meaningful to the matching rule callable. If no
+predicate is given, then the rule callable will receive \class{None} for its
+predicate argument. Rules must be explicitly specified at the beginning of the
+file before being available within handler sections.
 
 
 After the first condition in a handler section, additional condition lines must
@@ -124,6 +106,9 @@ this handler. On each request, handlers are considered in the order given, and
 the first matching handler is used. Only one handler is used for any given
 request.
 
+Note that if the file \file{__/etc/handlers.conf} exists at all, the defaults
+(see the example below) disappear, and you must respecify any of the default
+rules in your own file if you want them.
 
 
 \subsection{Example handlers.conf \label{handlers.conf}}
@@ -141,7 +126,7 @@ fnmatch *.py[cod]           # hide any compiled Python scripts
 
 [aspen.handlers.pyscript]
     fnmatch     *.py        # exec python scripts ...
-OR  hashbang                # ... and anything with a hashbang
+OR  hashbang                # ... and anything beginning with #!
 
 
 [aspen.handlers.Simplate]
@@ -152,45 +137,6 @@ mime-type text/html         # run html files through the Simplates engine
 fnmatch *                   # anything else, serve it statically
 \end{verbatim}
 
-Note that if the file \file{__/etc/handlers.conf} exists at all, these defaults
-disappear, and you must respecify these rules in your own file if you want them.
 
-\section{Path-based Extension through Applications}
+\section{Middleware: Global Extension \label{middleware}}
 
-Whereas handlers allow for file-based extensions, the application mechanism is
-for directory-based extensions.
-
-The \file{__/etc/apps.conf} file contains a newline-separated list of
-white-space-separated path name/object name pairs. The path names refer to
-URL-space, but must be reflected on the filesystem (or \class{AppsConfError} is
-raised). If the trailing slash is given, then requests for that directory will
-first be redirected to the trailing slash before being handed off to the
-application. If no trailing slash is given, the application will also get
-requests without the slash. Applications match in the order specified.
-
-Each object name must specify a Python class, instance, module, or
-function in dotted notation. In each case we are looking for a callable
-that takes a request object and returns a response object. Here's how
-each is treated:
-
-\begin{tableii}{l|l}{}{Object Type}{Behavior}
-\lineii{class}{instantiated with the website instance as a positional
-               argument; a \var{respond} attribute is the callable}
-\lineii{instance, module, or package}{a \var{respond} attribute is the callable}
-\lineii{function}{the function itself is the callable}
-\end{tableii}
-
-
-\subsection{Example apps.conf \label{apps.conf}}
-
-\begin{verbatim}
-/foo        example.apps.foo    # will get both /foo and /foo/
-/bar/       example.apps.bar    # /bar will redirect to /bar/
-/bar        example.apps.Bar    # will never be called
-/bar/baz    example.apps.baz    # also never called
-\end{verbatim}
-
-Aspen will (over)write a file called \file{README.aspen} in each directory
-mentioned in \file{apps.conf}, containing the relevant line from
-\file{apps.conf}. If the directory does not exist, \class{AppsConfError} is
-raised.
