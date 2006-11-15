@@ -5,7 +5,7 @@ import inspect
 import logging
 from os.path import isdir, isfile, join, realpath
 
-from aspen import httpy, utils
+from aspen import colon, httpy, utils
 from aspen.exceptions import *
 
 
@@ -230,7 +230,7 @@ __/etc/apps.conf. To wit:
                 readme = join(fspath, 'README.aspen')
                 open(readme, 'w+').write(README_aspen % (lineno, original))
 
-                obj = self.import_(name, AppsConfError, lineno)
+                obj = colon.colonize(name, fp.name, lineno)
                 if not callable(obj):
                     msg = "app object %s is not callable" % name
                     raise AppsConfError(msg, lineno)
@@ -324,7 +324,7 @@ __/etc/apps.conf. To wit:
                 if not line.endswith(']'):
                     raise HandlersConfError("missing end-bracket", lineno)
                 name = line[1:-1]
-                obj = self.import_(name, HandlersConfError, lineno)
+                obj = colon.colonize(name, fp.name, lineno)
                 if inspect.isclass(obj):
                     obj = obj(self)
                 if not callable(obj):
@@ -335,7 +335,7 @@ __/etc/apps.conf. To wit:
                 continue
             elif ruleset is None:                   # anonymous section
                 rulename, name = line.split(None, 1)
-                obj = self.import_(name, HandlersConfError, lineno)
+                obj = colon.colonize(name, fp.name, lineno)
                 if not callable(obj):
                     msg = "rule %s is not callable" % name
                     raise HandlersConfError(msg, lineno)
@@ -400,61 +400,11 @@ __/etc/apps.conf. To wit:
             if not line:                            # blank line
                 continue
             else:                                   # specification
-                obj = self.import_(name, MiddlewareConfError, lineno)
+                obj = colon.colonize(name, fp.name, lineno)
                 if not callable(obj):
                     msg = "WSGI application %s is not callable" % name
-                    raise AppsConfError(msg, lineno)
+                    raise MiddlewareConfError(msg, lineno)
                 stack.append((urlpath, obj))
 
         stack.reverse()
         return stack
-
-
-    # Import
-    # ======
-
-    def import_(self, name, Err, lineno=None):
-        """Given a name and some helpers, return an object.
-
-        The format of name is a subset of setuptools entry_point format: a
-        dotted module name, followed by a colon and a dotted identifier naming
-        an object within the module.
-
-        Err is an error object to raise if the import fails. If Err is None then
-        all ImportErrors are swallowed, and None is returned. If Err is not
-        None, the lineno should be the line number of the file where the bad
-        import name occurs.
-
-        """
-        obj = None
-        if Err is None:
-            try:
-                obj = self.import_unsafe(name)
-            except ImportError:
-                pass
-        else:
-            try:
-                obj = self.import_unsafe(name)
-            except ImportError, err:
-                raise Err(err.args[0], lineno)
-        return obj
-
-
-    def import_unsafe(self, name):
-        """Import w/o error handling.
-
-        If the imported thing is a class, we instantiate it with the website
-        instance as a positional argument.
-
-        """
-        if name.count(':') != 1:
-            msg = "Bad name on line %s of "
-            raise ConfigError()
-        if not utils.is_valid_identifier(name.replace('.','')):
-            raise ImportError('%s is not a valid Python dotted name.' % name)
-        if '.' not in name:
-            exec 'import %s as obj'
-        else:
-            modname, objname = name.rsplit('.', 1)
-            exec 'from %s import %s as obj' % (modname, objname)
-        return obj
