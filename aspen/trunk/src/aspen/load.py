@@ -56,8 +56,10 @@ __/etc/apps.conf. To wit:
 
     """
 
-    _handler = None # the handler callable we are tracking
+    handle = None # the actual callable we are tracking
     _rules = None # a list containing the rules
+    _funcs = None # a mapping of rulenames to rulefuncs
+    _name = '' # the name of the callable
 
     def __init__(self, rulefuncs, handle):
         """Takes a mapping of rulename to rulefunc, and a WSGI callable.
@@ -66,8 +68,24 @@ __/etc/apps.conf. To wit:
         self.handle = handle
 
     def __str__(self):
-        return "<handler %s>" % self.handle.__name__
+        return "<%s>" % repr(self.handle)
     __repr__ = __str__
+
+    def __eq__(self, other):
+        """This is mostly here to ease testing.
+
+        Account for function, method, and class.
+
+        """
+        try:
+            assert utils.cmp_routines(self.handle, other.handle)
+            assert self._rules == other._rules
+            assert sorted(self._funcs.keys()) == sorted(other._funcs.keys())
+            for k,v in self._funcs.items():
+                assert utils.cmp_routines(v, other._funcs[k])
+            return True
+        except AssertionError:
+            return False
 
 
     def add(self, rule, lineno):

@@ -20,7 +20,7 @@ def always_false(fp, pred):
     return False
 
 def rule(fp, predicate):
-    return predicate == 'foo'
+    return fp.read() == predicate
 
 def Handler(*rules, **rulefuncs):
     if not rulefuncs:
@@ -39,8 +39,51 @@ fp = StringIO.StringIO("foo")
 
 def test_basic():
     handler = Handler()
-    assert str(handler) == '<handler handle>'
-    assert handler.handle() == 'BLAM!!!'
+    assert str(handler).startswith("<<function handle at ")
+    assert handler.handle() == "BLAM!!!"
+
+
+# Equality
+# ========
+# cmp_routines is the meaty part; that's in utils
+
+def test_eq_basic():
+    h1 = _Handler({}, handle)
+    h2 = _Handler({}, handle)
+    assert h1 == h2
+
+def test_eq_complex():
+    foo = lambda: True
+    h1 = _Handler({'foo':foo}, handle)
+    h2 = _Handler({'foo':foo}, handle)
+    h1.add("foo bar", 0)
+    h2.add("foo bar", 0)
+    assert h1 == h2
+
+def test_eq_failure_different_callables():
+    h1 = _Handler({}, lambda:True)
+    h2 = _Handler({}, lambda:True)
+    assert h1 != h2
+
+def test_eq_failure_different_rules():
+    foo = lambda: True
+    h1 = _Handler({'foo':foo}, handle)
+    h2 = _Handler({'foo':foo}, handle)
+    assert h1 == h2
+    h1.add("foo bar", 0)
+    h2.add("foo buz", 0)
+    assert h1 != h2
+
+def test_eq_failure_different_rulefunc_keys():
+    foo = lambda: True
+    h1 = _Handler({'foo':foo}, handle)
+    h2 = _Handler({'bar':foo}, handle)
+    assert h1 != h2
+
+def test_eq_failure_different_rulefuncs():
+    h1 = _Handler({'foo':lambda:True}, handle)
+    h2 = _Handler({'foo':lambda:True}, handle)
+    assert h1 != h2
 
 
 # Add
