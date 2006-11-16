@@ -73,9 +73,6 @@ __/etc/apps.conf. To wit:
 
     def __eq__(self, other):
         """This is mostly here to ease testing.
-
-        Account for function, method, and class.
-
         """
         try:
             assert utils.cmp_routines(self.handle, other.handle)
@@ -222,11 +219,11 @@ __/etc/apps.conf. To wit:
                 continue
             else:                                   # specification
                 if ' ' not in line:
-                    msg = "malformed line (no space): %s" % line
+                    msg = "malformed line (no space): '%s'" % line
                     raise AppsConfError(msg, lineno)
                 urlpath, name = line.split(None, 1)
                 if not urlpath.startswith('/'):
-                    msg = "URL path not specified absolutely: %s" % urlpath
+                    msg = "URL path not specified absolutely: '%s'" % urlpath
                     raise AppsConfError(msg, lineno)
 
                 fspath = utils.translate(self.paths.root, urlpath)
@@ -295,21 +292,26 @@ __/etc/apps.conf. To wit:
             elif line.startswith('['):              # new section
                 if not line.endswith(']'):
                     raise HandlersConfError("missing end-bracket", lineno)
+                if not rulefuncs:
+                    raise HandlersConfError("no rules specified yet", lineno)
                 name = line[1:-1]
                 obj = colon.colonize(name, fpname, lineno)
                 if inspect.isclass(obj):
                     obj = obj(self)
                 if not callable(obj):
-                    msg = "handler object %s is not callable" % name
+                    msg = "'%s' is not callable" % name
                     raise HandlersConfError(msg, lineno)
                 handler = Handler(rulefuncs, obj)
                 handlers.append(handler)
                 continue
             elif handler is None:                   # anonymous section
+                if ' ' not in line:
+                    msg = "malformed line (no space): '%s'" % line
+                    raise HandlersConfError(msg, lineno)
                 rulename, name = line.split(None, 1)
                 obj = colon.colonize(name, fpname, lineno)
                 if not callable(obj):
-                    msg = "rule %s is not callable" % name
+                    msg = "'%s' is not callable" % name
                     raise HandlersConfError(msg, lineno)
                 rulefuncs[rulename] = obj
             else:                                   # named section

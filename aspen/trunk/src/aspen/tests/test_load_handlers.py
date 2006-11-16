@@ -62,7 +62,7 @@ def test_basic():
         """))
     expected = [handler]
     actual = Loader().load_handlers()
-    assert actual == expected
+    assert actual == expected, actual
 
 
 # No handlers configured
@@ -74,44 +74,58 @@ def test_no_magic_directory():
     loader.paths.__ = None
     expected = DEFAULTS
     actual = loader.load_handlers()
-    assert actual == expected
+    assert actual == expected, actual
 
 def test_no_file():
     mk('__', '__/etc')
     expected = DEFAULTS
     actual = Loader().load_handlers()
-    assert actual == expected
+    assert actual == expected, actual
 
 def test_empty_file():
     mk('__', '__/etc', ('__/etc/handlers.conf', ''))
     expected = []
     actual = Loader().load_handlers()
-    assert actual == expected
+    assert actual == expected, actual
 
 
-if 0:
-    # Errors
-    # ======
+# Errors
+# ======
 
-    def test_bad_line():
-        mk('__', '__/etc', ('__/etc/apps.conf', 'godisnowhere'))
-        err = assert_raises(AppsConfError, Loader().load_handlers)
-        assert err.msg == "malformed line (no space): godisnowhere"
+def test_anon_bad_line():
+    mk('__', '__/etc', ('__/etc/handlers.conf', 'foo\n[foo]'))
+    err = assert_raises(HandlersConfError, Loader().load_handlers)
+    assert err.msg == "malformed line (no space): 'foo'", err.msg
 
-    def test_bad_urlpath():
-        mk('__', '__/etc', ('__/etc/apps.conf', 'foo string:digits'))
-        err = assert_raises(AppsConfError, Loader().load_handlers)
-        assert err.msg == "URL path not specified absolutely: foo"
+def test_anon_not_callable():
+    mk('__', '__/etc', ('__/etc/handlers.conf', 'foo string:digits'))
+    err = assert_raises(HandlersConfError, Loader().load_handlers)
+    assert err.msg == "'string:digits' is not callable", err.msg
 
-    def test_not_callable():
-        mk('__', '__/etc', ('__/etc/apps.conf', '/ string:digits'))
-        err = assert_raises(AppsConfError, Loader().load_handlers)
-        assert err.msg == "'string:digits' is not callable"
 
-    def test_contested_url_path():
-        mk('__', '__/etc', ('__/etc/apps.conf', '/ random:choice\n/ random:seed'))
-        err = assert_raises(AppsConfError, Loader().load_handlers)
-        assert err.msg == "URL path is contested: '/'"
+def test_section_bad_section_header():
+    mk('__', '__/etc', ('__/etc/handlers.conf', '[foo'))
+    err = assert_raises(HandlersConfError, Loader().load_handlers)
+    assert err.msg == "missing end-bracket", err.msg
+
+def test_section_no_rules_yet():
+    mk('__', '__/etc', ('__/etc/handlers.conf', '[foo]'))
+    err = assert_raises(HandlersConfError, Loader().load_handlers)
+    assert err.msg == "no rules specified yet", err.msg
+
+def test_section_not_callable():
+    mk('__', '__/etc', ('__/etc/handlers.conf', """
+
+        foo random:choice
+
+        [string:digits]
+        foo
+
+        """))
+
+    err = assert_raises(HandlersConfError, Loader().load_handlers)
+    assert err.msg == "'string:digits' is not callable", err.msg
+
 
 
 
@@ -123,7 +137,7 @@ if 0:
         mk('__', '__/etc', ('__/etc/handlers.conf', '\n\n/ random:choice\n\n'))
         expected = [('/', random.choice)]
         actual = Loader().load_handlers()
-        assert actual == expected
+        assert actual == expected, actual
 
     def test_comments_ignored():
         mk('__', '__/etc', ('__/etc/handlers.conf', """\
@@ -135,7 +149,7 @@ if 0:
             """))
         expected = [('/foo', random.choice), ('/bar', random.sample)]
         actual = Loader().load_handlers()
-        assert actual == expected
+        assert actual == expected, actual
 
 
 # Remove the filesystem fixture after each test.
