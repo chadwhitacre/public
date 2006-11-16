@@ -4,7 +4,7 @@ import sys
 from aspen import load
 from aspen.httpy import Responder
 from aspen.tests import assert_raises
-from aspen.tests.fsfix import mk, rm, convert_path
+from aspen.tests.fsfix import mk, rm
 from aspen.exceptions import *
 
 
@@ -13,10 +13,6 @@ from aspen.exceptions import *
 
 import random
 import string
-
-lib_python = '__/lib/python'+sys.version[:3]
-path = os.path.realpath(convert_path('fsfix/'+lib_python))
-sys.path.insert(0, path)
 
 class Paths:
     pass

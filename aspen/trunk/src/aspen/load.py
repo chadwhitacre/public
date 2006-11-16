@@ -176,6 +176,7 @@ __/etc/apps.conf. To wit:
 
         fp = open(path)
         lineno = 0
+        urlpaths = []
 
         for line in fp:
             lineno += 1
@@ -191,11 +192,18 @@ __/etc/apps.conf. To wit:
                 if not urlpath.startswith('/'):
                     msg = "URL path not specified absolutely: %s" % urlpath
                     raise AppsConfError(msg, lineno)
+
                 fspath = utils.translate(self.paths.root, urlpath)
                 if not isdir(fspath):
                     os.makedirs(fspath)
+                    log.info("created app directory '%s'"% fspath)
                 readme = join(fspath, 'README.aspen')
                 open(readme, 'w+').write(README_aspen % (lineno, original))
+
+                if urlpath in urlpaths:
+                    msg = "URL path is contested: '%s'" % urlpath
+                    raise AppsConfError(msg, lineno)
+                urlpaths.append(urlpath)
 
                 obj = colon.colonize(name, fp.name, lineno)
                 if not callable(obj):
@@ -203,6 +211,8 @@ __/etc/apps.conf. To wit:
                     raise AppsConfError(msg, lineno)
                 apps.append((urlpath, obj))
 
+        apps.sort()
+        apps.reverse()
         return apps
 
         """
