@@ -3,6 +3,7 @@
 import cStringIO
 import inspect
 import logging
+import os
 from os.path import isdir, isfile, join, realpath
 
 from aspen import colon, httpy, utils
@@ -224,22 +225,31 @@ __/etc/apps.conf. To wit:
                     raise AppsConfError(msg, lineno)
                 urlpath, name = line.split(None, 1)
                 if not urlpath.startswith('/'):
-                    msg = "URL path not specified absolutely: %s" % line
+                    msg = "URL path not specified absolutely: %s" % urlpath
                     raise AppsConfError(msg, lineno)
                 fspath = utils.translate(self.paths.root, urlpath)
                 if not isdir(fspath):
-                    msg = "%s does not point to a directory" % fspath
-                    raise AppsConfError(msg, lineno)
+                    os.makedirs(fspath)
                 readme = join(fspath, 'README.aspen')
                 open(readme, 'w+').write(README_aspen % (lineno, original))
 
                 obj = colon.colonize(name, fp.name, lineno)
                 if not callable(obj):
-                    msg = "app object %s is not callable" % name
+                    msg = "'%s' is not callable" % name
                     raise AppsConfError(msg, lineno)
                 apps.append((urlpath, obj))
 
         return apps
+
+        """
+
+        to support line continuations:
+
+        while line.endswith('\'):
+            line += line
+            lineno += 1
+
+        """
 
 
     # Handler Rulesets
