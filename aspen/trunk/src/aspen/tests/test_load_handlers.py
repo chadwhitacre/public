@@ -39,7 +39,7 @@ pyscript = load.Handler(rulefuncs, handlers.pyscript)
 pyscript.add("fnmatch *.py", 0)
 pyscript.add("OR hashbang", 0)
 
-simplate = load.Handler(rulefuncs, handlers.Simplate)
+simplate = load.Handler(rulefuncs, handlers.Simplate(Loader()))
 simplate.add("mime-type text/html", 0)
 
 static = load.Handler(rulefuncs, handlers.static)
@@ -67,7 +67,7 @@ def test_basic():
 
 # No handlers configured
 # ======================
-# Should get defaults in each instance
+# Should get defaults when there's no file, an empty when there's an empty file.
 
 def test_no_magic_directory():
     loader = Loader()
@@ -84,7 +84,7 @@ def test_no_file():
 
 def test_empty_file():
     mk('__', '__/etc', ('__/etc/handlers.conf', ''))
-    expected = DEFAULTS
+    expected = []
     actual = Loader().load_handlers()
     assert actual == expected
 

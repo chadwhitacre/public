@@ -33,7 +33,6 @@ def Handler(*rules, **rulefuncs):
 fp = StringIO.StringIO("foo")
 
 
-
 # Basic
 # =====
 
