@@ -1,52 +1,40 @@
-from aspen import colon
+from aspen.colon import *
+from aspen.tests import assert_raises as _assert_raises
 
+
+def assert_raises(name, Err):
+    _assert_raises(Err, colonize, name, 'filename', 0)
+
+
+# Working
+# =======
 
 def test_basic():
     from aspen.handlers import HTTP404 as expected
-    actual = colon.colonize('aspen.handlers:HTTP404', 'filename', 0)
+    actual = colonize('aspen.handlers:HTTP404', 'filename', 0)
     assert expected is actual
+
+
+# Errors
+# ======
 
 def test_must_have_colon():
-    try:
-        colon.colonize('foo.bar', 'filename', 0)
-    except colon.ColonizeError, err:
-        assert isinstance(err, colon.ColonizeBadColonsError)
+    assert_raises('foo.bar', ColonizeBadColonsError)
 
 def test_but_only_one_colon():
-    try:
-        colon.colonize('foo.bar:baz:buz', 'filename', 0)
-    except colon.ColonizeError, err:
-        assert isinstance(err, colon.ColonizeBadColonsError)
+    assert_raises('foo.bar:baz:buz', ColonizeBadColonsError)
 
 def test_module_name():
-    try:
-        colon.colonize('foo.bar; import os; os.remove();:', 'filename', 0)
-    except colon.ColonizeError, err:
-        assert isinstance(err, colon.ColonizeBadModuleError)
+    assert_raises('foo.bar; import os; os.remove();:', ColonizeBadModuleError)
 
 def test_module_not_there():
-    try:
-        colon.colonize('foo.bar:baz', 'filename', 0)
-    except colon.ColonizeError, err:
-        assert isinstance(err, colon.ColonizeImportError)
+    assert_raises('foo.bar:baz', ColonizeImportError)
 
 def test_object_name():
-    try:
-        colon.colonize('string:baz; import os; os.remove();', 'filename', 0)
-    except colon.ColonizeError, err:
-        assert isinstance(err, colon.ColonizeBadObjectError)
+    assert_raises('string:baz; import os; os.remove();', ColonizeBadObjectError)
 
 def test_object_not_there():
-    try:
-        colon.colonize('string:foo', 'filename', 0)
-    except colon.ColonizeError, err:
-        assert isinstance(err, colon.ColonizeAttributeError)
+    assert_raises('string:foo', ColonizeAttributeError)
 
 def test_nested_object_not_there():
-    from string import digits as expected
-    actual = colon.colonize('string:digits', 'filename', 0)
-    assert expected is actual
-    try:
-        colon.colonize('string:digits.duggems', 'filename', 0)
-    except colon.ColonizeError, err:
-        assert isinstance(err, colon.ColonizeAttributeError)
+    assert_raises('string:digits.duggems', ColonizeAttributeError)

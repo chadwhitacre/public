@@ -219,11 +219,14 @@ __/etc/apps.conf. To wit:
             if not line:                            # blank line
                 continue
             else:                                   # specification
+                if ' ' not in line:
+                    msg = "malformed line (no space): %s" % line
+                    raise AppsConfError(msg, lineno)
                 urlpath, name = line.split(None, 1)
                 if not urlpath.startswith('/'):
                     msg = "URL path not specified absolutely: %s" % line
                     raise AppsConfError(msg, lineno)
-                fspath = utils.translate(urlpath)
+                fspath = utils.translate(self.paths.root, urlpath)
                 if not isdir(fspath):
                     msg = "%s does not point to a directory" % fspath
                     raise AppsConfError(msg, lineno)
@@ -234,7 +237,6 @@ __/etc/apps.conf. To wit:
                 if not callable(obj):
                     msg = "app object %s is not callable" % name
                     raise AppsConfError(msg, lineno)
-                obj.urlpath = urlpath
                 apps.append((urlpath, obj))
 
         return apps
@@ -354,17 +356,12 @@ __/etc/apps.conf. To wit:
 
         This method parses the __/etc/middleware.conf file. This file contains a
         newline-separated list of object names. Each name must specify a WSGI
-        application in dotted notation. The last part of the name becomes an
-        'import' target, and the remaining dotted portion becomes the 'from'
-        target:
-
-            example.apps.foo => from example.apps import foo
-
+        application in colon notation.
 
         These WSGI applications will be instantiated as a middleware stack. Each
         application will be instantiated with a single positional argument,
-        which is the next application on the stack. The first app in the stack
-        will be an httpy.Responder; the last will be an aspen.website.Website.
+        which is the next application on the stack. At the top of the stack will
+        be an httpy.Responder; at the bottom, an aspen.website.Website.
 
         The comment character for this file is #, and comments can be included
         in-line. Blank lines are ignored, as is initial and trailing whitespace
