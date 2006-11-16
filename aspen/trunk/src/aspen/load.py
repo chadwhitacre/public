@@ -14,25 +14,25 @@ log = logging.getLogger('aspen.load')
 clean = lambda x: x.split('#',1)[0].strip() # clears comments & whitespace
 default_handlers_conf = """\
 
-    fnmatch     aspen.rules.fnmatch
-    hashbang    aspen.rules.hashbang
-    mime-type   aspen.rules.mimetype
+    fnmatch     aspen.rules:fnmatch
+    hashbang    aspen.rules:hashbang
+    mime-type   aspen.rules:mimetype
 
 
-    [aspen.handlers.HTTP404]
+    [aspen.handlers:HTTP404]
     fnmatch *.py[cod]           # hide any compiled Python scripts
 
 
-    [aspen.handlers.pyscript]
+    [aspen.handlers:pyscript]
         fnmatch     *.py        # exec python scripts ...
     OR  hashbang                # ... and anything with a hashbang
 
 
-    [aspen.handlers.Simplate]
+    [aspen.handlers:Simplate]
     mime-type text/html         # run html files through the Simplates engine
 
 
-    [aspen.handlers.static]
+    [aspen.handlers:static]
     fnmatch *                   # anything else, serve it statically
 
 """
@@ -46,8 +46,8 @@ __/etc/apps.conf. To wit:
 """
 
 
-class HandlerRuleSet(object):
-    """Represent the set of rules associated with a handler.
+class Handler(object):
+    """Represent a function that knows how to obey the rules.
 
     Some optimization ideas:
 
@@ -56,26 +56,26 @@ __/etc/apps.conf. To wit:
 
     """
 
-    handler = None # the handler callable we are tracking
+    _handler = None # the handler callable we are tracking
     _rules = None # a list containing the rules
 
-    def __init__(self, rulefuncs, handler, handler_name):
-        """Takes a mapping of rulename to rulefunc, and a handler callable.
+    def __init__(self, rulefuncs, handle):
+        """Takes a mapping of rulename to rulefunc, and a WSGI callable.
         """
         self._funcs = rulefuncs
-        self.handler = handler
-        self.handler_name = handler_name
+        self.handle = handle
 
     def __str__(self):
-        return "<RuleSet for %s>" % self.handler_name
+        return "<handler %s>" % self.handle.__name__
     __repr__ = __str__
 
 
     def add(self, rule, lineno):
         """Given a rule string, add it to the rules for this handler.
 
-        The first item in self._rules is a two-tuple: (rulename, predicate),
-        subsequent items are three-tuples: (boolean, rulename, predicate).
+        The rules are stored in self._rules, the first item of which is a
+        two-tuple: (rulename, predicate); subsequent items are three-tuples:
+        (boolean, rulename, predicate).
 
             boolean -- one of 'and', 'or', 'and not'. Any NOT in the conf file
                        becomes 'and not' here.
@@ -88,23 +88,25 @@ __/etc/apps.conf. To wit:
         lineno is for error handling.
 
         """
+
+        # Tokenize and get the boolean
+        # ============================
+
         if self._rules is None:                 # no rules yet
+            self._rules = []
             parts = rule.split(None, 1)
-            if len(parts) != 2:
-                msg = "need two tokens in '%s'" % rule
+            if len(parts) not in (1, 2):
+                msg = "need one or two tokens in '%s'" % rule
                 raise HandlersConfError(msg, lineno)
-            rulename, predicate = parts
-            if rulename not in self._funcs:
-                msg = "no rule named '%s'" % rulename
-                raise HandlersConfError(msg, lineno)
-            self._rules = [(rulename, predicate)]
+            parts.reverse()
+            boolean = None
         else:                                   # we have at least one rule
             parts = rule.split(None, 2)
             if len(parts) not in (2,3):
                 msg = "need two or three tokens in '%s'" % rule
                 raise HandlersConfError(msg, lineno)
-            parts.reverse()
 
+            parts.reverse()
             orig = parts.pop()
             boolean = orig.lower()
             if boolean not in ('and', 'or', 'not'):
@@ -112,14 +114,30 @@ __/etc/apps.conf. To wit:
                 raise HandlersConfError(msg, lineno)
             boolean = (boolean == 'not') and 'and not' or boolean
 
-            rulename = parts.pop()
-            if rulename not in self._funcs:
-                msg = "no rule named '%s'" % rulename
-                raise HandlersConfError(msg, lineno)
 
-            predicate = parts and parts.pop() or None
+        # Get the rulename and predicate
+        # ==============================
 
-            self._rules.append((boolean, rulename, predicate))
+        rulename = parts.pop()
+        if rulename not in self._funcs:
+            msg = "no rule named '%s'" % rulename
+            raise HandlersConfError(msg, lineno)
+        predicate = parts and parts.pop() or None
+        assert len(parts) == 0 # for good measure
+
+
+        # Package up and store
+        # ====================
+
+        if boolean is None:
+            _rule = (rulename, predicate)
+        else:
+            _rule = (boolean, rulename, predicate)
+
+        if _rule in self._rules:
+            log.info("duplicate handlers rule: %s [line %d]" % (rule, lineno))
+        else:
+            self._rules.append(_rule)
 
 
     def match(self, fp):
@@ -215,22 +233,12 @@ __/etc/apps.conf. To wit:
         apps.reverse()
         return apps
 
-        """
 
-        to support line continuations:
+    # Handlers
+    # ========
 
-        while line.endswith('\'):
-            line += line
-            lineno += 1
-
-        """
-
-
-    # Handler Rulesets
-    # ================
-
-    def load_rulesets(self):
-        """Return a list of HandlerRuleSet instances.
+    def load_handlers(self):
+        """Return a list of Handler instances.
         """
 
         # Find a config file to parse.
@@ -244,9 +252,11 @@ __/etc/apps.conf. To wit:
 
         if user_conf:
             fp = open(path)
+            fpname = fp.name
         else:
             log.info("No handlers configured; using defaults.")
             fp = cStringIO.StringIO(default_handlers_conf)
+            fpname = '<default>'
 
 
         # We have a config file; proceed.
@@ -255,8 +265,8 @@ __/etc/apps.conf. To wit:
         # file, but are in the order necessary for correct processing.
 
         rulefuncs = {} # a mapping of function names to rule functions
-        rulesets = [] # a list of HandlerRuleSet objects
-        ruleset = None # the HandlerRuleSet we are currently processing
+        handlers = [] # a list of Handler objects
+        handler = None # the Handler we are currently processing
         lineno = 0
 
         for line in fp:
@@ -268,26 +278,26 @@ __/etc/apps.conf. To wit:
                 if not line.endswith(']'):
                     raise HandlersConfError("missing end-bracket", lineno)
                 name = line[1:-1]
-                obj = colon.colonize(name, fp.name, lineno)
+                obj = colon.colonize(name, fpname, lineno)
                 if inspect.isclass(obj):
                     obj = obj(self)
                 if not callable(obj):
                     msg = "handler object %s is not callable" % name
                     raise HandlersConfError(msg, lineno)
-                ruleset = HandlerRuleSet(rulefuncs, obj, name)
-                rulesets.append(ruleset)
+                handler = Handler(rulefuncs, obj)
+                handlers.append(handler)
                 continue
-            elif ruleset is None:                   # anonymous section
+            elif handler is None:                   # anonymous section
                 rulename, name = line.split(None, 1)
-                obj = colon.colonize(name, fp.name, lineno)
+                obj = colon.colonize(name, fpname, lineno)
                 if not callable(obj):
                     msg = "rule %s is not callable" % name
                     raise HandlersConfError(msg, lineno)
                 rulefuncs[rulename] = obj
             else:                                   # named section
-                ruleset.add(line, lineno)
+                handler.add(line, lineno)
 
-        return rulesets
+        return handlers
 
 
     # Middleware

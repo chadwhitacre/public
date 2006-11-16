@@ -1,5 +1,4 @@
 import os
-import sys
 
 from aspen import load
 from aspen.httpy import Responder
@@ -81,9 +80,12 @@ def test_blank_lines_skipped():
 
 def test_comments_ignored():
     mk('__', '__/etc', ('__/etc/middleware.conf', """
-#comment
-random:choice#comment
-random:sample # comments"""))
+
+        #comment
+        random:choice#comment
+        random:sample # comments
+
+        """))
     loader = Loader()
     expected = [random.sample, random.choice, Responder]
     actual = loader.load_middleware()
