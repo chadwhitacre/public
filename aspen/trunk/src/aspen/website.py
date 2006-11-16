@@ -13,7 +13,7 @@ log = logging.getLogger('aspen.website')
 
 
 class Website:
-    """Represent a website for aspen to publish.
+    """Represent a publication, application, or hybrid website.
     """
 
     def __init__(self, config):
@@ -55,7 +55,7 @@ log = logging.getLogger('aspen.website')
 
             handler = self.get_handler(fp)
             fp.seek(0)
-            response = handler(environ, start_response) # WSGI
+            response = handler.handle(environ, start_response) # WSGI
 
         return response
 
@@ -88,13 +88,10 @@ log = logging.getLogger('aspen.website')
     def get_handler(self, fp):
         """Given a filesystem path, return the first matching handler.
         """
-        handler = None
-        for ruleset in self.config.rulesets:
+        for handler in self.config.handlers:
             fp.seek(0)
-            if ruleset.match(fp):
-                handler = ruleset.handler
-                break
-        if handler is None:
-            log.warn("No handler found for filesystem path '%s'" % fp.name)
-            raise HandlerError("No handler found.")
-        return handler
+            if handler.match(fp):
+                return handler
+
+        log.warn("No handler found for filesystem path '%s'" % fp.name)
+        raise HandlerError("No handler found.")

@@ -1,5 +1,4 @@
 import os
-import sys
 
 from aspen import load
 from aspen.tests import assert_raises
@@ -37,11 +36,13 @@ def test_basic():
 
 def test_apps_layer():
     mk('__', '__/etc', ('__/etc/apps.conf', """
-/ random:choice
-/foo random:sample
-/foo/bar random:shuffle
-/baz random:seed
-"""))
+
+        / random:choice
+        /foo random:sample
+        /foo/bar random:shuffle
+        /baz random:seed
+
+        """))
     expected = [ ('/foo/bar', random.shuffle)
                , ('/foo', random.sample)
                , ('/baz', random.seed)
