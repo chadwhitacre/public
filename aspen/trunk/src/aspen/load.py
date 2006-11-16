@@ -152,47 +152,11 @@ __/etc/apps.conf. To wit:
     # ====
 
     def load_apps(self):
-        """Given a path, return a list of (URI paths, WSGI application) tuples.
-
-        This method parses the __/etc/apps.conf file. This file contains a
-        newline-separated list of white-space-separated path name/object name
-        pairs. The path names are absolute URL paths that must also be reflected
-        on the filesystem. If the trailing slash is given, then requests for
-        that directory will first be redirected to the trailing slash before
-        being handed off to the application. If no trailing slash is given, the
-        application will also get requests w/o the slash. Applications match in
-        the order specified.
-
-        Each object name must specify a Python class, instance, or function in
-        dotted notation. In each case we are looking for a callable that takes a
-        single positional parameter, which is the Website instance, and returns
-        a WSGI application. The last part of the dotted name becomes an 'import'
-        target, and the remaining dotted portion becomes the 'from' target:
-
-            example.apps.foo => from example.apps import foo
-
-
-        After being imported, we set the urlpath attribute of the application
-        object to the URL path given in apps.conf. We also place a file called
-        README.aspen (overwriting any existing file) in each directory mentioned
-        in apps.conf, containing the relevant line from apps.conf. If the
-        directory does not exist, AppsConfError is raised.
-
-        The comment character for this file is #, and comments can be included
-        in-line. Blank lines are ignored, as is initial and trailing whitespace
-        per-line.
-
-        Example:
-
-            /foo        example.apps.foo    # will get both /foo and /foo/
-            /bar/       example.apps.bar    # /bar will redirect to /bar/
-            /bar        example.apps.Bar    # will never be called
-            /bar/baz    example.apps.baz    # also never called
-
+        """Return a list of (URI path, WSGI application) tuples.
         """
 
-        # Find a conf file to parse.
-        # ==========================
+        # Find a config file to parse.
+        # ============================
 
         apps = []
 
@@ -256,53 +220,11 @@ __/etc/apps.conf. To wit:
     # ================
 
     def load_rulesets(self):
-        """Given a path, return a list of HandlerRuleSet instances.
+        """Return a list of HandlerRuleSet instances.
+        """
 
-        XXX: consider dropping module/package support; only from foo import bar
-        XXX: also, need to update this doc
-
-        This method parses the __/etc/handlers.conf file. This file begins with
-        a newline-separated list of white-space-separated rule name/object name
-        pairs. The rule names can be any string without whitespace.
-
-        Each object name must specify a Python class, instance, module, or
-        function in dotted notation. In each case we are looking for a callable
-        that takes a file object (positioned at 0) and an arbitrary predicate
-        string, and returns a boolean. Here's how each is treated:
-
-            class -- instantiated with the website instance as a positional
-                     argument; a 'rule' attribute is the callable
-
-            instance/module -- a 'rule' attribute is the callable
-
-            function -- the function itself is the callable
-
-
-        If the object name has no dots, it is imported as a module/package. If
-        it does contain dots, then the last name becomes the 'import' target, and
-        the remaining dotted portion becomes the 'from' target.
-
-            aspen.handlers.static => from aspen.handlers import static
-
-
-        The comment character for this file is #, and comments can be included
-        in-line. Blank lines are ignored, as is initial and trailing whitespace
-        per-line.
-
-        Example (this is Aspen's default handlers configuration):
-
-            %s
-
-
-        If the file __/etc/handlers.conf exists at all, these defaults
-        disappear, and you must respecify these rules in your own file if you
-        want them.
-
-        """ % default_handlers_conf
-
-
-        # Find a conf file to parse.
-        # ==========================
+        # Find a config file to parse.
+        # ============================
 
         user_conf = False
         if self.paths.__ is not None:
@@ -362,25 +284,11 @@ __/etc/apps.conf. To wit:
     # ==========
 
     def load_middleware(self):
-        """Return a list of (URI paths, WSGI callable) tuples.
-
-        This method parses the __/etc/middleware.conf file. This file contains a
-        newline-separated list of object names. Each name must specify a WSGI
-        application in colon notation.
-
-        These WSGI applications will be instantiated as a middleware stack. Each
-        application will be instantiated with a single positional argument,
-        which is the next application on the stack. At the top of the stack will
-        be an httpy.Responder; at the bottom, an aspen.website.Website.
-
-        The comment character for this file is #, and comments can be included
-        in-line. Blank lines are ignored, as is initial and trailing whitespace
-        per-line.
-
+        """Return a list of (URI path, WSGI middleware) tuples.
         """
 
-        # Find a conf file to parse.
-        # ==========================
+        # Find a config file to parse.
+        # ============================
 
         stack = [httpy.Responder]
 
@@ -409,7 +317,7 @@ __/etc/apps.conf. To wit:
             else:                                   # specification
                 obj = colon.colonize(name, fp.name, lineno)
                 if not callable(obj):
-                    msg = "WSGI application %s is not callable" % name
+                    msg = "'%s' is not callable" % name
                     raise MiddlewareConfError(msg, lineno)
                 stack.append(obj)
 

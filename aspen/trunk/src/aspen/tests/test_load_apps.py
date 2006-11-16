@@ -137,8 +137,6 @@ def test_comments_ignored():
     assert actual == expected
 
 
-
-
 # Remove the filesystem fixture after each test.
 # ==============================================
 

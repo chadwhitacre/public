@@ -10,9 +10,26 @@ def assert_raises(name, Err):
 # =======
 
 def test_basic():
-    from aspen.handlers import HTTP404 as expected
-    actual = colonize('aspen.handlers:HTTP404', 'filename', 0)
-    assert expected is actual
+    from random import choice as expected
+    actual = colonize('random:choice', 'filename', 0)
+    assert actual is expected
+
+def test_dotted_name():
+    from email.Message import Message as expected
+    actual = colonize('email.Message:Message', 'filename', 0)
+    assert actual is expected
+
+def test_dotted_object():
+    from random import SystemRandom
+    expected = SystemRandom.__init__
+    actual = colonize('random:SystemRandom.__init__', 'filename', 0)
+    assert actual == expected
+
+def test_dotted_both():
+    from email.Message import Message
+    expected = Message.__init__
+    actual = colonize('email.Message:Message.__init__', 'filename', 0)
+    assert actual == expected
 
 
 # Errors
