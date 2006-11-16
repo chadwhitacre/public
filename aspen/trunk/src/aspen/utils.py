@@ -1,3 +1,4 @@
+import inspect
 import os
 import string
 import urllib
@@ -28,6 +29,32 @@ def is_valid_identifier(s):
     try:
         assert s[0] in INITIAL
         assert False not in [x in INNER for x in s]
+        return True
+    except AssertionError:
+        return False
+
+
+def is_callable_instance(o):
+    return hasattr(o, '__class__') and hasattr(o, '__call__')
+
+def cmp_routines(f1, f2):
+    """Given two callables, return a boolean. Used in testing.
+    """
+    try:
+        if inspect.isclass(f1):
+            assert inspect.isclass(f2)
+            assert f1 == f2
+        elif inspect.ismethod(f1):
+            assert inspect.ismethod(f2)
+            assert f1.im_class == f2.im_class
+        elif inspect.isfunction(f1):
+            assert inspect.isfunction(f2)
+            assert f1 == f2
+        elif is_callable_instance(f1):
+            assert is_callable_instance(f2)
+            assert f1.__class__ == f2.__class__
+        else:
+            raise AssertionError("These aren't routines.")
         return True
     except AssertionError:
         return False
