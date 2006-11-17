@@ -48,5 +48,10 @@ def rm():
                 os.remove(os.path.join(root, name))
         os.rmdir(root)
 
-# so you can do 'from fsfixture import teardown' and have nose pick it up
-teardown = rm
+
+def attach_rm(context, prefix):
+    """Given a namespace and a routine prefix, attach the rm function.
+    """
+    for name in context.keys():
+        if name.startswith(prefix):
+            context[name].teardown = rm
