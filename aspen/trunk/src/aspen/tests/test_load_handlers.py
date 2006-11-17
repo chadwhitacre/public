@@ -67,7 +67,8 @@ def test_basic():
 
 # No handlers configured
 # ======================
-# Should get defaults when there's no file, an empty when there's an empty file.
+# Should get defaults when there's no file, an empty list when there's an empty
+# file.
 
 def test_no_magic_directory():
     loader = Loader()
@@ -127,29 +128,9 @@ def test_section_not_callable():
     assert err.msg == "'string:digits' is not callable", err.msg
 
 
-
-
 # Basics
 # ======
-
-if 0:
-    def test_blank_lines_skipped():
-        mk('__', '__/etc', ('__/etc/handlers.conf', '\n\n/ random:choice\n\n'))
-        expected = [('/', random.choice)]
-        actual = Loader().load_handlers()
-        assert actual == expected, actual
-
-    def test_comments_ignored():
-        mk('__', '__/etc', ('__/etc/handlers.conf', """\
-
-            #comment
-            /foo random:choice#comment
-            /bar random:sample # comments
-
-            """))
-        expected = [('/foo', random.choice), ('/bar', random.sample)]
-        actual = Loader().load_handlers()
-        assert actual == expected, actual
+# Blank lines and comments are tested in the default file.
 
 
 # Remove the filesystem fixture after each test.
