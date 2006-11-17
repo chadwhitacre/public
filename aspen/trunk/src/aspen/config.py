@@ -183,7 +183,7 @@ optparser.add_option( "-v", "--log_level"
                     , choices=[ 'notset', 'debug', 'info', 'warning', 'error'
                               , 'critical'
                                ]
-                    , default='warning'
+                    , default='info'
                     , dest="log_level"
                     , help=( "the level below which messages will be stiffled "
                            + "[warning]"
