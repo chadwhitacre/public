@@ -34,7 +34,7 @@ def is_valid_identifier(s):
         return False
 
 
-def is_callable_instance(o):
+def _is_callable_instance(o):
     return hasattr(o, '__class__') and hasattr(o, '__call__')
 
 def cmp_routines(f1, f2):
@@ -50,8 +50,8 @@ def cmp_routines(f1, f2):
         elif inspect.isfunction(f1):
             assert inspect.isfunction(f2)
             assert f1 == f2
-        elif is_callable_instance(f1):
-            assert is_callable_instance(f2)
+        elif _is_callable_instance(f1):
+            assert _is_callable_instance(f2)
             assert f1.__class__ == f2.__class__
         else:
             raise AssertionError("These aren't routines.")
@@ -82,17 +82,19 @@ def check_trailing_slash(environ):
 def find_default(defaults, path):
     """Given a list of defaults and a path, return a filepath or raise 403.
     """
-    if isdir(path):
-        default = None
-        for name in defaults:
-            _path = join(path, name)
-            if isfile(_path):
-                default = _path
-                break
-        if default is None:
-            raise Response(403)
-        path = default
-    return path
+    if not isdir(path):
+        msg = "can't find defaults under non-directory: '%s'" % path
+        raise ValueError(msg)
+
+    default = None
+    for name in defaults:
+        _path = join(path, name)
+        if isfile(_path):
+            default = _path
+            break
+    if default is None:
+        raise Response(403)
+    return default
 
 
 def full_url(environ):

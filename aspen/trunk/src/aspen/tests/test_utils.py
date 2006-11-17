@@ -1,5 +1,7 @@
-from aspen import utils
+from aspen import utils as u
+from aspen.httpy import Response
 from aspen.tests import assert_raises
+from aspen.tests.fsfix import mk, attach_rm
 
 
 # Fixture
@@ -19,33 +21,63 @@ class Class:
 # ============
 
 def test_cmp_routines_bound_methods():
-    assert utils.cmp_routines(Class().call, Class().call)
+    assert u.cmp_routines(Class().call, Class().call)
 
 def test_cmp_routines_unbound_methods():
-    assert utils.cmp_routines(Class.call, Class.call)
+    assert u.cmp_routines(Class.call, Class.call)
 
 def test_cmp_routines_mixed_methods(): # actually, this should probably fail
-    assert utils.cmp_routines(Class().call, Class.call)
+    assert u.cmp_routines(Class().call, Class.call)
 
 def test_cmp_routines_functions():
-    assert utils.cmp_routines(function, function)
+    assert u.cmp_routines(function, function)
 
 def test_cmp_routines_classes():
-    assert utils.cmp_routines(Class, Class)
+    assert u.cmp_routines(Class, Class)
 
 def test_cmp_routines_instances():
-    assert utils.cmp_routines(Class(), Class())
+    assert u.cmp_routines(Class(), Class())
 
 
 def test_cmp_routines_mixed():
-    assert not utils.cmp_routines(function, Class)
+    assert not u.cmp_routines(function, Class)
 
 def test_cmp_routines_mixed2():
-    assert not utils.cmp_routines(function, Class())
+    assert not u.cmp_routines(function, Class())
 
 def test_cmp_routines_mixed2():
-    assert not utils.cmp_routines(function, Class.call)
+    assert not u.cmp_routines(function, Class.call)
 
 def test_cmp_routines_mixed2():
-    assert not utils.cmp_routines(function, Class().call)
+    assert not u.cmp_routines(function, Class().call)
 
+
+# find_default
+# ============
+
+def test_find_default():
+    mk(('index.html', ''))
+    expected = 'fsfix/index.html'
+    actual = u.find_default(['index.html'], 'fsfix')
+    assert actual == expected, actual
+
+
+# find_default errors
+# ===================
+
+def test_find_default_bad_path():
+    err = assert_raises(ValueError, u.find_default, ['foo'], 'fsfix')
+    expected = "can't find defaults under non-directory: 'fsfix'"
+    assert err.args[0] == expected, err.args[0]
+
+def test_find_default_no_default():
+    mk('fsfix')
+    err = assert_raises(Response, u.find_default, ['index.htm'], 'fsfix')
+    assert err.code == 403, err.code
+
+
+
+# Remove the filesystem fixture after some tests.
+# ===============================================
+
+attach_rm(globals(), 'test_find_default')

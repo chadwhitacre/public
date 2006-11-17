@@ -2,7 +2,7 @@ import os
 
 from aspen import handlers, load, rules
 from aspen.tests import assert_raises
-from aspen.tests.fsfix import mk, rm
+from aspen.tests.fsfix import mk, attach_rm
 from aspen.exceptions import *
 
 
@@ -136,7 +136,4 @@ def test_section_not_callable():
 # Remove the filesystem fixture after each test.
 # ==============================================
 
-globals_ = globals()
-for name in dir():
-    if name.startswith('test_'):
-        globals_[name].teardown = rm
+attach_rm(globals(), 'test_')
