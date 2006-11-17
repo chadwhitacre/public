@@ -25,7 +25,7 @@ default_handlers_conf = """\
 
     [aspen.handlers:pyscript]
         fnmatch     *.py        # exec python scripts ...
-    OR  hashbang                # ... and anything with a hashbang
+    OR  hashbang                # ... and anything starting with #!
 
 
     [aspen.handlers:Simplate]
@@ -218,6 +218,10 @@ __/etc/apps.conf. To wit:
             if not line:                            # blank line
                 continue
             else:                                   # specification
+
+                # Perform basic validation.
+                # =========================
+
                 if ' ' not in line:
                     msg = "malformed line (no space): '%s'" % line
                     raise AppsConfError(msg, lineno)
@@ -226,6 +230,10 @@ __/etc/apps.conf. To wit:
                     msg = "URL path not specified absolutely: '%s'" % urlpath
                     raise AppsConfError(msg, lineno)
 
+
+                # Instantiate the app on the filesystem.
+                # ======================================
+
                 fspath = utils.translate(self.paths.root, urlpath)
                 if not isdir(fspath):
                     os.makedirs(fspath)
@@ -233,16 +241,30 @@ __/etc/apps.conf. To wit:
                 readme = join(fspath, 'README.aspen')
                 open(readme, 'w+').write(README_aspen % (lineno, original))
 
+
+                # Determine whether we already have an app for this path.
+                # =======================================================
+
+                msg = "URL path is contested: '%s'" % urlpath
+                contested = AppsConfError(msg, lineno)
                 if urlpath in urlpaths:
-                    msg = "URL path is contested: '%s'" % urlpath
-                    raise AppsConfError(msg, lineno)
+                    raise contested
+                if urlpath.endswith('/'):
+                    if urlpath[:-1] in urlpaths:
+                        raise contested
+                elif urlpath+'/' in urlpaths:
+                    raise contested
                 urlpaths.append(urlpath)
 
-                obj = colon.colonize(name, fp.name, lineno)
-                if not callable(obj):
+
+                # Load the app, check it, store it.
+                # =================================
+
+                app = colon.colonize(name, fp.name, lineno)
+                if not callable(app):
                     msg = "'%s' is not callable" % name
                     raise AppsConfError(msg, lineno)
-                apps.append((urlpath, obj))
+                apps.append((urlpath, app))
 
         apps.sort()
         apps.reverse()

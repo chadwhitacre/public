@@ -39,25 +39,23 @@ per-line. Where section names are called for, they are given in brackets.
 
 \section{Applications: Path-based Extension \label{apps}}
 
-Whereas handlers allow for file-based extensions, the application mechanism is
-for directory-based extensions.
+In Aspen, an \dfn{application} or \dfn{app} refers to a WSGI application that is
+connected to a particular directory. Apps are set up in \file{__/etc/apps.conf}.
 
 The \file{__/etc/apps.conf} file contains a newline-separated list of
 white-space-separated path name/object name pairs. The path names refer to
-URL-space, but must be reflected on the filesystem (or \class{AppsConfError} is
-raised). If the trailing slash is given, then requests for that directory will
-first be redirected to the trailing slash before being handed off to the
-application. If no trailing slash is given, the application will also get
-requests without the slash. Applications match in the order specified.
+URL-space, and are translated literally to the filesystem. If the trailing slash
+is given, then requests for that directory will first be redirected to the
+trailing slash before being handed off to the application. If no trailing slash
+is given, the application will also get requests without the slash. When
+choosing an application to service a request, the most specific pathname matches
+first.
 
 Object names are in colon notation, and they name WSGI callables.
 
 Aspen will (over)write a file called \file{README.aspen} in each directory
 mentioned in \file{apps.conf}, containing the relevant line from
-\file{apps.conf}. If the directory does not exist, \class{AppsConfError} is
-raised.
-
-TODO: README.aspen => 404
+\file{apps.conf}. If the directory does not exist, it is created.
 
 
 \subsection{Example apps.conf \label{apps.conf}}
@@ -66,7 +64,7 @@ TODO: README.aspen => 404
 /foo        example.apps:foo    # will get both /foo and /foo/
 /bar/       example.apps:bar    # /bar will redirect to /bar/
 /bar        example.apps:Bar    # will never be called
-/bar/baz    example.apps:baz    # also never called
+/bar/baz    example.apps:baz    # but this may be
 \end{verbatim}
 
 
