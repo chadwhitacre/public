@@ -62,7 +62,7 @@ mentioned in \file{apps.conf}, containing the relevant line from
 \file{apps.conf}. If the directory does not exist, it is created.
 
 
-\subsection{Example apps.conf \label{apps.conf}}
+\subsection{Example apps.conf}
 
 \begin{verbatim}
 /foo        example.apps:foo    # will get both /foo and /foo/
@@ -114,7 +114,7 @@ Note that if the file \file{__/etc/handlers.conf} exists at all, the defaults
 rules in your own file if you want them.
 
 
-\subsection{Example handlers.conf \label{handlers.conf}}
+\subsection{Example handlers.conf}
 This is Aspen's default handler configuration:
 
 \begin{verbatim}
@@ -150,9 +150,9 @@ the outer-most in the stack (i.e., closest to the browser).
 
 Aspen adds an \class{httpy.Responder} instance to the bottom of the stack.
 
-\subsection{Example handlers.conf \label{handlers.conf}}
+\subsection{Example middleware.conf}
 
 \begin{verbatim}
 example.foo:bar # called as is
-example.baz:Buz # will be instantied
+example.baz:Buz # will be instantiated
 \end{verbatim}
