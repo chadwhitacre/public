@@ -34,21 +34,21 @@ def test_no_magic_directory():
     loader.paths.__ = None
     expected = [Responder]
     actual = loader.load_middleware()
-    assert actual == expected
+    assert actual == expected, actual
 
 def test_no_file():
     mk('__', '__/etc')
     loader = Loader()
     expected = [Responder]
     actual = loader.load_middleware()
-    assert actual == expected
+    assert actual == expected, actual
 
 def test_empty_file():
     mk('__', '__/etc', ('__/etc/middleware.conf', ''))
     loader = Loader()
     expected = []
     actual = loader.load_apps()
-    assert actual == expected
+    assert actual == expected, actual
 
 
 # Middleware configured
@@ -57,9 +57,9 @@ def test_empty_file():
 def test_something():
     mk('__', '__/etc', ('__/etc/middleware.conf', 'random:choice'))
     loader = Loader()
-    expected = [random.choice, Responder]
+    expected = [Responder, random.choice]
     actual = loader.load_middleware()
-    assert actual == expected
+    assert actual == expected, actual
 
 def test_must_be_callable():
     mk('__', '__/etc', ('__/etc/middleware.conf', 'string:digits'))
@@ -74,9 +74,9 @@ def test_must_be_callable():
 def test_blank_lines_skipped():
     mk('__', '__/etc', ('__/etc/middleware.conf', '\n\nrandom:choice\n\n'))
     loader = Loader()
-    expected = [random.choice, Responder]
+    expected = [Responder, random.choice]
     actual = loader.load_middleware()
-    assert actual == expected
+    assert actual == expected, actual
 
 def test_comments_ignored():
     mk('__', '__/etc', ('__/etc/middleware.conf', """
@@ -87,9 +87,9 @@ def test_comments_ignored():
 
         """))
     loader = Loader()
-    expected = [random.sample, random.choice, Responder]
+    expected = [Responder, random.sample, random.choice]
     actual = loader.load_middleware()
-    assert actual == expected
+    assert actual == expected, actual
 
 
 # Remove the filesystem fixture after each test.
