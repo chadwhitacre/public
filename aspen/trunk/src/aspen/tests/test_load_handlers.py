@@ -1,4 +1,5 @@
 import os
+import sys
 
 from aspen import handlers, load, rules
 from aspen.tests import assert_raises
@@ -11,6 +12,9 @@ from aspen.exceptions import *
 
 import random
 import string
+
+lib_python = os.path.join('__', 'lib', 'python%s' % sys.version[:3])
+sys.path.insert(0, os.path.join('fsfix', lib_python))
 
 class Paths:
     pass
@@ -47,12 +51,26 @@ static.add("fnmatch *", 0)
 
 DEFAULTS = [http404, pyscript, simplate, static]
 
+MODULE = """\
+class Rule:
+  def __init__(self, website):
+    self.website = website
+  def __call__(self, fp, predicate):
+    return True
+
+class App:
+  def __init__(self, website):
+    self.website = website
+  def __call__(self, env, start):
+    return "Greetings, program!"
+"""
+
 
 # Working
 # =======
 
 def test_basic():
-    mk('__', '__/etc', ('__/etc/handlers.conf', """
+    mk('__/etc', ('__/etc/handlers.conf', """
 
         fnmatch aspen.rules:fnmatch
 
@@ -62,6 +80,26 @@ def test_basic():
         """))
     expected = [handler]
     actual = Loader().load_handlers()
+    assert actual == expected, actual
+
+def test_classes_instantiated():
+    mk( '__/etc', lib_python
+      , ('__/etc/handlers.conf', """
+            foo TESTING_handlers:Rule
+            [TESTING_handlers:App]
+            foo *
+            """)
+      , (lib_python+'/TESTING_handlers.py', MODULE)
+       )
+    from TESTING_handlers import App, Rule
+    handlers = Loader().load_handlers()
+
+    expected = App
+    actual = handlers[0].handle.__class__
+    assert actual == expected, actual
+
+    expected = Rule
+    actual = handlers[0]._funcs['foo'].__class__
     assert actual == expected, actual
 
 
@@ -78,44 +116,45 @@ def test_no_magic_directory():
     assert actual == expected, actual
 
 def test_no_file():
-    mk('__', '__/etc')
+    mk('__/etc')
     expected = DEFAULTS
     actual = Loader().load_handlers()
     assert actual == expected, actual
 
 def test_empty_file():
-    mk('__', '__/etc', ('__/etc/handlers.conf', ''))
+    mk('__/etc', ('__/etc/handlers.conf', ''))
     expected = []
     actual = Loader().load_handlers()
     assert actual == expected, actual
+
 
 
 # Errors
 # ======
 
 def test_anon_bad_line():
-    mk('__', '__/etc', ('__/etc/handlers.conf', 'foo\n[foo]'))
+    mk('__/etc', ('__/etc/handlers.conf', 'foo\n[foo]'))
     err = assert_raises(HandlersConfError, Loader().load_handlers)
     assert err.msg == "malformed line (no space): 'foo'", err.msg
 
 def test_anon_not_callable():
-    mk('__', '__/etc', ('__/etc/handlers.conf', 'foo string:digits'))
+    mk('__/etc', ('__/etc/handlers.conf', 'foo string:digits'))
     err = assert_raises(HandlersConfError, Loader().load_handlers)
     assert err.msg == "'string:digits' is not callable", err.msg
 
 
 def test_section_bad_section_header():
-    mk('__', '__/etc', ('__/etc/handlers.conf', '[foo'))
+    mk('__/etc', ('__/etc/handlers.conf', '[foo'))
     err = assert_raises(HandlersConfError, Loader().load_handlers)
     assert err.msg == "missing end-bracket", err.msg
 
 def test_section_no_rules_yet():
-    mk('__', '__/etc', ('__/etc/handlers.conf', '[foo]'))
+    mk('__/etc', ('__/etc/handlers.conf', '[foo]'))
     err = assert_raises(HandlersConfError, Loader().load_handlers)
     assert err.msg == "no rules specified yet", err.msg
 
 def test_section_not_callable():
-    mk('__', '__/etc', ('__/etc/handlers.conf', """
+    mk('__/etc', ('__/etc/handlers.conf', """
 
         foo random:choice
 
@@ -126,6 +165,7 @@ def test_section_not_callable():
 
     err = assert_raises(HandlersConfError, Loader().load_handlers)
     assert err.msg == "'string:digits' is not callable", err.msg
+
 
 
 # Basics

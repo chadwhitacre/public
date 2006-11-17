@@ -1,4 +1,5 @@
 import os
+import sys
 
 from aspen import load
 from aspen.httpy import Responder
@@ -13,6 +14,9 @@ from aspen.exceptions import *
 import random
 import string
 
+lib_python = os.path.join('__', 'lib', 'python%s' % sys.version[:3])
+sys.path.insert(0, os.path.join('fsfix', lib_python))
+
 class Paths:
     pass
 
@@ -24,6 +28,14 @@ def Loader():
     loader.paths.root = os.path.realpath('fsfix')
     loader.paths.__ = os.path.realpath('fsfix/__')
     return loader
+
+MODULE = """\
+class App:
+  def __init__(self, website):
+    self.website = website
+  def __call__(self, env, start):
+    return "Greetings, program!"
+"""
 
 
 # No middleware configured
@@ -37,17 +49,15 @@ def test_no_magic_directory():
     assert actual == expected, actual
 
 def test_no_file():
-    mk('__', '__/etc')
-    loader = Loader()
+    mk('__/etc')
     expected = [Responder]
-    actual = loader.load_middleware()
+    actual = Loader().load_middleware()
     assert actual == expected, actual
 
 def test_empty_file():
-    mk('__', '__/etc', ('__/etc/middleware.conf', ''))
-    loader = Loader()
+    mk('__/etc', ('__/etc/middleware.conf', ''))
     expected = []
-    actual = loader.load_apps()
+    actual = Loader().load_apps()
     assert actual == expected, actual
 
 
@@ -55,40 +65,52 @@ def test_empty_file():
 # =====================
 
 def test_something():
-    mk('__', '__/etc', ('__/etc/middleware.conf', 'random:choice'))
+    mk('__/etc', ('__/etc/middleware.conf', 'random:choice'))
     loader = Loader()
     expected = [Responder, random.choice]
-    actual = loader.load_middleware()
+    actual = Loader().load_middleware()
     assert actual == expected, actual
 
 def test_must_be_callable():
-    mk('__', '__/etc', ('__/etc/middleware.conf', 'string:digits'))
-    loader = Loader()
-    err = assert_raises(MiddlewareConfError, loader.load_middleware)
+    mk('__/etc', ('__/etc/middleware.conf', 'string:digits'))
+    err = assert_raises(MiddlewareConfError, Loader().load_middleware)
     assert err.msg == "'string:digits' is not callable"
+
+def test_order():
+    mk('__/etc', ('__/etc/middleware.conf', 'random:choice\nrandom:seed'))
+    expected = [Responder, random.seed, random.choice]
+    actual = Loader().load_middleware()
+    assert actual == expected, actual
+
+def test_classes_instantiated():
+    mk( '__/etc', lib_python
+      , ('__/etc/middleware.conf', 'TESTING_middleware:App')
+      , (lib_python+'/TESTING_middleware.py', MODULE)
+       )
+    from TESTING_middleware import App as expected
+    actual = Loader().load_middleware()[1].__class__
+    assert actual == expected, actual
 
 
 # Basics
 # ======
 
 def test_blank_lines_skipped():
-    mk('__', '__/etc', ('__/etc/middleware.conf', '\n\nrandom:choice\n\n'))
-    loader = Loader()
+    mk('__/etc', ('__/etc/middleware.conf', '\n\nrandom:choice\n\n'))
     expected = [Responder, random.choice]
-    actual = loader.load_middleware()
+    actual = Loader().load_middleware()
     assert actual == expected, actual
 
 def test_comments_ignored():
-    mk('__', '__/etc', ('__/etc/middleware.conf', """
+    mk('__/etc', ('__/etc/middleware.conf', """
 
         #comment
         random:choice#comment
         random:sample # comments
 
         """))
-    loader = Loader()
     expected = [Responder, random.sample, random.choice]
-    actual = loader.load_middleware()
+    actual = Loader().load_middleware()
     assert actual == expected, actual
 
 

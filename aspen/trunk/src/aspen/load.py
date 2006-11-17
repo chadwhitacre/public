@@ -260,11 +260,13 @@ __/etc/apps.conf. To wit:
                 # Load the app, check it, store it.
                 # =================================
 
-                app = colon.colonize(name, fp.name, lineno)
-                if not callable(app):
+                obj = colon.colonize(name, fp.name, lineno)
+                if inspect.isclass(obj):
+                    obj = obj(self)
+                if not callable(obj):
                     msg = "'%s' is not callable" % name
                     raise AppsConfError(msg, lineno)
-                apps.append((urlpath, app))
+                apps.append((urlpath, obj))
 
         apps.sort()
         apps.reverse()
@@ -332,6 +334,8 @@ __/etc/apps.conf. To wit:
                     raise HandlersConfError(msg, lineno)
                 rulename, name = line.split(None, 1)
                 obj = colon.colonize(name, fpname, lineno)
+                if inspect.isclass(obj):
+                    obj = obj(self)
                 if not callable(obj):
                     msg = "'%s' is not callable" % name
                     raise HandlersConfError(msg, lineno)
@@ -379,6 +383,8 @@ __/etc/apps.conf. To wit:
                 continue
             else:                                   # specification
                 obj = colon.colonize(name, fp.name, lineno)
+                if inspect.isclass(obj):
+                    obj = obj(self)
                 if not callable(obj):
                     msg = "'%s' is not callable" % name
                     raise MiddlewareConfError(msg, lineno)

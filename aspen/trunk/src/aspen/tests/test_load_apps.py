@@ -1,4 +1,5 @@
 import os
+import sys
 
 from aspen import load
 from aspen.tests import assert_raises
@@ -12,6 +13,9 @@ from aspen.exceptions import *
 import random
 import string
 
+lib_python = os.path.join('__', 'lib', 'python%s' % sys.version[:3])
+sys.path.insert(0, os.path.join('fsfix', lib_python))
+
 class Paths:
     pass
 
@@ -24,32 +28,50 @@ def Loader():
     loader.paths.__ = os.path.realpath('fsfix/__')
     return loader
 
+MODULE = """\
+class App:
+  def __init__(self, website):
+    self.website = website
+  def __call__(self, env, start):
+    return "Greetings, program!"
+"""
+
 
 # Working
 # =======
 
 def test_basic():
-    mk('__', '__/etc', ('__/etc/apps.conf', '/ random:choice'))
+    mk('__/etc', ('__/etc/apps.conf', '/ random:choice'))
     expected = [('/', random.choice)]
     actual = Loader().load_apps()
     assert actual == expected, actual
 
 def test_apps_layer():
-    mk('__', '__/etc', ('__/etc/apps.conf', """
+    mk('__/etc', ('__/etc/apps.conf', """
 
-        / random:choice
-        /foo random:sample
-        /foo/bar random:shuffle
-        /baz random:seed
+        /           random:choice
+        /foo        random:sample
+        /foo/bar    random:shuffle
+        /baz/       random:seed
 
         """))
     expected = [ ('/foo/bar', random.shuffle)
                , ('/foo', random.sample)
-               , ('/baz', random.seed)
+               , ('/baz/', random.seed)
                , ('/', random.choice)
                 ]
     actual = Loader().load_apps()
     assert actual == expected, actual
+
+def test_classes_instantiated():
+    mk( '__/etc', lib_python
+      , ('__/etc/apps.conf', '/ TESTING_apps:App')
+      , (lib_python+'/TESTING_apps.py', MODULE)
+       )
+    from TESTING_apps import App as expected
+    actual = Loader().load_apps()[0][1].__class__
+    assert actual == expected, actual
+
 
 
 # No apps configured
@@ -63,13 +85,13 @@ def test_no_magic_directory():
     assert actual == expected, actual
 
 def test_no_file():
-    mk('__', '__/etc')
+    mk('__/etc')
     expected = []
     actual = Loader().load_apps()
     assert actual == expected, actual
 
 def test_empty_file():
-    mk('__', '__/etc', ('__/etc/apps.conf', ''))
+    mk('__/etc', ('__/etc/apps.conf', ''))
     expected = []
     actual = Loader().load_apps()
     assert actual == expected, actual
@@ -79,22 +101,22 @@ def test_empty_file():
 # ======
 
 def test_bad_line():
-    mk('__', '__/etc', ('__/etc/apps.conf', 'godisnowhere'))
+    mk('__/etc', ('__/etc/apps.conf', 'godisnowhere'))
     err = assert_raises(AppsConfError, Loader().load_apps)
     assert err.msg == "malformed line (no space): 'godisnowhere'", err.msg
 
 def test_bad_urlpath():
-    mk('__', '__/etc', ('__/etc/apps.conf', 'foo string:digits'))
+    mk('__/etc', ('__/etc/apps.conf', 'foo string:digits'))
     err = assert_raises(AppsConfError, Loader().load_apps)
     assert err.msg == "URL path not specified absolutely: 'foo'", err.msg
 
 def test_not_callable():
-    mk('__', '__/etc', ('__/etc/apps.conf', '/ string:digits'))
+    mk('__/etc', ('__/etc/apps.conf', '/ string:digits'))
     err = assert_raises(AppsConfError, Loader().load_apps)
     assert err.msg == "'string:digits' is not callable", err.msg
 
 def test_contested_url_path():
-    mk('__', '__/etc', ('__/etc/apps.conf', """
+    mk('__/etc', ('__/etc/apps.conf', """
 
         /foo random:choice
         /foo random:sample
@@ -104,7 +126,7 @@ def test_contested_url_path():
     assert err.msg == "URL path is contested: '/foo'", err.msg
 
 def test_contested_url_path_trailing_first():
-    mk('__', '__/etc', ('__/etc/apps.conf', """
+    mk('__/etc', ('__/etc/apps.conf', """
 
         /foo/ random:choice
         /foo  random:sample
@@ -114,7 +136,7 @@ def test_contested_url_path_trailing_first():
     assert err.msg == "URL path is contested: '/foo'", err.msg
 
 def test_contested_url_path_trailing_second():
-    mk('__', '__/etc', ('__/etc/apps.conf', """
+    mk('__/etc', ('__/etc/apps.conf', """
 
         /foo  random:choice
         /foo/ random:sample
@@ -128,17 +150,17 @@ def test_contested_url_path_trailing_second():
 # =========
 
 def test_directory_created():
-    mk('__', '__/etc', ('__/etc/apps.conf', '/foo random:choice'))
+    mk('__/etc', ('__/etc/apps.conf', '/foo random:choice'))
     Loader().load_apps()
     assert os.path.isdir('fsfix/foo')
 
 def test_readme_created():
-    mk('__', '__/etc', ('__/etc/apps.conf', '/foo random:choice'))
+    mk('__/etc', ('__/etc/apps.conf', '/foo random:choice'))
     Loader().load_apps()
     assert os.path.isfile('fsfix/foo/README.aspen')
 
 def test_readme_contents():
-    mk('__', '__/etc', ('__/etc/apps.conf', '/foo random:choice'))
+    mk('__/etc', ('__/etc/apps.conf', '/foo random:choice'))
     Loader().load_apps()
     expected = """\
 This directory is served by the application configured on line 1 of
@@ -155,13 +177,13 @@ __/etc/apps.conf. To wit:
 # ======
 
 def test_blank_lines_skipped():
-    mk('__', '__/etc', ('__/etc/apps.conf', '\n\n/ random:choice\n\n'))
+    mk('__/etc', ('__/etc/apps.conf', '\n\n/ random:choice\n\n'))
     expected = [('/', random.choice)]
     actual = Loader().load_apps()
     assert actual == expected, actual
 
 def test_comments_ignored():
-    mk('__', '__/etc', ('__/etc/apps.conf', """\
+    mk('__/etc', ('__/etc/apps.conf', """\
 #comment
 /foo random:choice#comment
 /bar random:sample # comments"""))
