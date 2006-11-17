@@ -300,7 +300,7 @@ class Paths:
         # =======
 
         self.apps = self.load_apps()
-        self.rulesets = self.load_rulesets()
+        self.handlers = self.load_handlers()
         self.middleware = self.load_middleware()
 
 

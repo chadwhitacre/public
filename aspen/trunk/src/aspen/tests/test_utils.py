@@ -61,16 +61,22 @@ def test_find_default():
     actual = u.find_default(['index.html'], 'fsfix')
     assert actual == expected, actual
 
+def test_find_default_non_dir():
+    mk(('foo', ''))
+    expected = 'fsfix/foo'
+    actual = u.find_default(['index.html'], 'fsfix/foo')
+    assert actual == expected, actual
+
+def test_find_default_non_existant():
+    expected = 'fsfix/foo'
+    actual = u.find_default(['index.html'], 'fsfix/foo')
+    assert actual == expected, actual
+
 
 # find_default errors
 # ===================
 
-def test_find_default_bad_path():
-    err = assert_raises(ValueError, u.find_default, ['foo'], 'fsfix')
-    expected = "can't find defaults under non-directory: 'fsfix'"
-    assert err.args[0] == expected, err.args[0]
-
-def test_find_default_no_default():
+def test_find_default_dir_no_default():
     mk('fsfix')
     err = assert_raises(Response, u.find_default, ['index.htm'], 'fsfix')
     assert err.code == 403, err.code
