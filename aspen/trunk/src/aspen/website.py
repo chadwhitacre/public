@@ -69,8 +69,11 @@ log = logging.getLogger('aspen.website')
         """Given a WSGI environ, return the first matching app.
         """
         app = None
+        test_path = environ['PATH_INFO']
+        if not test_path.endswith('/'):
+            test_path += '/'
         for app_urlpath, _app in self.config.apps:
-            if environ['PATH_INFO'].startswith(app_urlpath):
+            if test_path.startswith(app_urlpath):
                 environ['PATH_TRANSLATED'] = translate( self.config.paths.root
                                                       , app_urlpath
                                                        )

@@ -75,7 +75,7 @@ def check_trailing_slash(environ):
     if isdir(fs) and not url.endswith('/'):
         environ['PATH_INFO'] += '/'
         response = Response(301)
-        response.headers['Location'] = utils.full_url(environ)
+        response.headers['Location'] = full_url(environ)
         raise response
 
 
@@ -122,6 +122,8 @@ def full_url(environ):
     url += urllib.quote(environ.get('PATH_INFO',''))
     if environ.get('QUERY_STRING'):
         url += '?' + environ['QUERY_STRING']
+
+    return url
 
 
 def translate(root, url):

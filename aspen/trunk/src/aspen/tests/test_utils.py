@@ -82,8 +82,8 @@ def test_find_default_dir_no_default():
     assert err.code == 403, err.code
 
 
-
 # Remove the filesystem fixture after some tests.
 # ===============================================
 
 attach_rm(globals(), 'test_find_default')
+attach_rm(globals(), 'test_check_trailing_slash')

@@ -28,7 +28,7 @@ def mk(*treedef):
         if isinstance(item, basestring):
             path = convert_path(item.lstrip('/'))
             path = os.sep.join([root, path])
-            os.mkdir(path)
+            os.makedirs(path)
         elif isinstance(item, tuple):
             filepath, contents = item
             path = convert_path(filepath.lstrip('/'))
