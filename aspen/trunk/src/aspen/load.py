@@ -330,7 +330,7 @@ __/etc/apps.conf. To wit:
         # Find a config file to parse.
         # ============================
 
-        stack = [httpy.Responder]
+        default_stack = [httpy.Responder]
 
         try:
             if self.paths.__ is None:
@@ -340,7 +340,7 @@ __/etc/apps.conf. To wit:
                 raise NotImplementedError
         except NotImplementedError:
             log.info("No middleware configured.")
-            return stack
+            return default_stack
 
 
         # We have a config file; proceed.
@@ -348,6 +348,7 @@ __/etc/apps.conf. To wit:
 
         fp = open(path)
         lineno = 0
+        stack = []
 
         for line in fp:
             lineno += 1
@@ -361,5 +362,6 @@ __/etc/apps.conf. To wit:
                     raise MiddlewareConfError(msg, lineno)
                 stack.append(obj)
 
+        stack.append(httpy.Responder)
         stack.reverse()
         return stack
