@@ -81,20 +81,21 @@ def check_trailing_slash(environ):
 
 def find_default(defaults, path):
     """Given a list of defaults and a path, return a filepath or raise 403.
-    """
-    if not isdir(path):
-        msg = "can't find defaults under non-directory: '%s'" % path
-        raise ValueError(msg)
 
+    If the path isn't a directory, simply return it.
+
+    """
     default = None
-    for name in defaults:
-        _path = join(path, name)
-        if isfile(_path):
-            default = _path
-            break
-    if default is None:
-        raise Response(403)
-    return default
+    if isdir(path):
+        for name in defaults:
+            _path = join(path, name)
+            if isfile(_path):
+                default = _path
+                break
+        if default is None:
+            raise Response(403)
+        path = default
+    return path
 
 
 def full_url(environ):
