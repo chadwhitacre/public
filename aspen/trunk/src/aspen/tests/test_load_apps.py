@@ -94,9 +94,34 @@ def test_not_callable():
     assert err.msg == "'string:digits' is not callable", err.msg
 
 def test_contested_url_path():
-    mk('__', '__/etc', ('__/etc/apps.conf', '/ random:choice\n/ random:seed'))
+    mk('__', '__/etc', ('__/etc/apps.conf', """
+
+        /foo random:choice
+        /foo random:sample
+
+        """))
     err = assert_raises(AppsConfError, Loader().load_apps)
-    assert err.msg == "URL path is contested: '/'", err.msg
+    assert err.msg == "URL path is contested: '/foo'", err.msg
+
+def test_contested_url_path_trailing_first():
+    mk('__', '__/etc', ('__/etc/apps.conf', """
+
+        /foo/ random:choice
+        /foo  random:sample
+
+        """))
+    err = assert_raises(AppsConfError, Loader().load_apps)
+    assert err.msg == "URL path is contested: '/foo'", err.msg
+
+def test_contested_url_path_trailing_second():
+    mk('__', '__/etc', ('__/etc/apps.conf', """
+
+        /foo  random:choice
+        /foo/ random:sample
+
+        """))
+    err = assert_raises(AppsConfError, Loader().load_apps)
+    assert err.msg == "URL path is contested: '/foo/'", err.msg
 
 
 # App on fs
