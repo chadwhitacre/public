@@ -10,9 +10,11 @@ import httplib
 import socket
 import sys
 import time
+import traceback
 import os
 from ConfigParser import RawConfigParser, NoOptionError
 from popen2 import Popen3
+from urlparse import urlparse
 
 
 class Sanity:
@@ -37,6 +39,7 @@ class Sanity:
         keys.sort()
         if keys <> [ 'email_addy'
                    , 'porter_path'
+                   , 'redirects'
                    , 'server_ip'
                    , 'timeout'
                    ]:
@@ -46,6 +49,7 @@ class Sanity:
             self.porter_path = CP.get('default', 'porter_path')
             self.server_ip   = CP.get('default', 'server_ip')
             self.email_addy  = CP.get('default', 'email_addy')
+            self.redirects   = int(CP.get('default', 'redirects'))
             self.timeout     = float(CP.get('default', 'timeout'))
 
 
@@ -120,8 +124,8 @@ class Sanity:
         websites = [w for w in websites if not w.startswith('www.')]
 
         self.output['numwebsites'] = len(websites)
-        self.output['errors'] = self.output['warnings'] = self.output['clear'] = ''
-        self.output['numerrors'] = self.output['numwarnings'] = self.output['numclear'] = 0
+        self.output['redirects'] = self.output['errors'] = self.output['warnings'] = self.output['clear'] = ''
+        self.output['numredirects'] = self.output['numerrors'] = self.output['numwarnings'] = self.output['numclear'] = 0
 
         if self.verbose:
             sys.stdout.write('checking sites ')
@@ -144,67 +148,135 @@ class Sanity:
             #   is this actually true? [cwlw; 2006-06-15]
 
             try:
-                start = time.time()
-                try:
-                    http = httplib.HTTPConnection(website, 80)
-
-
-                    # Monitor the getaddrinfo call.
-                    # =============================
-                    # I'm seeing this behavior: a domain with bad DNS takes
-                    # forever in the next call, but still returns 200
-                    # eventually. I can get the page with fetch, but Firefox
-                    # times out much earlier. We want to flag this condition.
-
-                    res = socket.getaddrinfo( http.host
-                                            , http.port
-                                            , socket.AF_INET
-                                            , socket.SOCK_STREAM
-                                            , socket.IPPROTO_TCP
-                                             )[0]
-                    so_far = time.time() - start
-                    if so_far > self.timeout:
-                        raise socket.error("getaddrinfo returned")
-
-
-                    # Proceed.
-                    # ========
-
-                    af, socktype, proto, canonname, sa = res
-                    http.sock = socket.socket(af, socktype, proto)
-                    http.sock.settimeout(self.timeout)
-                    http.sock.connect(sa)
-
-                    # write output based on site status
-                    http.request('GET','/')
-                    status = http.getresponse().status
-                    line = '%s  %s\n' % (status, website)
-                    if status == 200:
-                        self.output['numclear'] += 1
-                        self.output['clear'] += line
-                    elif str(status)[0] == '3':
-                        self.output['numwarnings'] += 1
-                        self.output['warnings'] += line
-                    else:
-                        self.output['numerrors'] += 1
-                        self.output['errors'] += line
-                        self.errors.append(website)
-
-                except socket.error, msg:
-                    end = time.time()
-                    msg = 'XXX  %s (%s after %d seconds)\n' % ( website
-                                                              , msg
-                                                              , (end-start)
-                                                               )
-                    self.output['errors'] += msg
-                    self.output['numerrors'] += 1
-                    self.errors.append(website)
-
-            finally:
-                http.close()
-
+                self.check_website(website, website, 0)
+            except: # HTTP exception handling is lower down in hit_website
+                traceback.print_exc()
+                
         if self.verbose:
             print ' done'
+
+
+    def check_website(self, current, original, i):
+        """Recursive function to follow redirects.
+        """
+        status, line, location = self.hit_website(current, i)
+        if status == 200:
+            if i == 0:
+                self.output['numclear'] += 1
+                self.output['clear'] += line
+            else:
+                self.output['numredirects'] += 1
+                self.output['redirects'] += line
+        elif status in (301, 302):
+            if (i == 0):
+                self.output['numredirects'] += 1
+            self.output['redirects'] += line
+            assert location is not None, 'Location missing for %s' % current
+            if i > self.redirects : # safety belt
+                msg = "XXX  %s (more than %d redirects)\n" % ( original
+                                                             , self.redirects
+                                                              )
+                self.output['errors'] += msg
+                self.output['numerrors'] += 1
+                self.errors.append(original)
+            else:
+                if location.startswith('/'): # just the path 
+                                             # @@ bug here if the first redirect
+                                             # is /foo and the second includes 
+                                             # a host
+                    location = 'http://%s%s' % (original, location)
+                self.check_website(location, original, i+1)
+        else:
+            self.output['numerrors'] += 1
+            self.output['errors'] += line
+            self.errors.append(original)
+                
+            
+
+    def hit_website(self, website, i):
+        """Hit the website; return status, line, location (for redirects).
+        """
+        start = time.time()
+        http = None
+        try:
+            try:
+
+                # Parse the website string.
+                # =========================
+                # The ones coming from our database are the hostname only, 
+                # but if we get a redirect it will be a full URL.
+                
+                host = website
+                port = 80
+                path = '/'
+                
+                if '://' in website:
+                    scheme, netloc, path, params, query, frag = urlparse(website)
+                    if ':' in  netloc:
+                        assert netloc.count(':') == 1 # sanity check
+                        host, port = netloc.split(':')
+                        port = int(port)
+                    else:
+                        assert scheme in ('http', 'https')
+                        host = netloc
+                        if scheme == 'http':
+                            port = 80
+                        elif scheme == 'https':
+                            port = 443
+        
+        
+                # Make the connection, monitoring the getaddrinfo call.
+                # =====================================================
+                # I'm seeing this behavior: a domain with bad DNS takes
+                # forever in the next call, but still returns 200
+                # eventually. I can get the page with fetch, but Firefox
+                # times out much earlier. We want to flag this condition.
+        
+                http = httplib.HTTPConnection(host, port)
+                res = socket.getaddrinfo( http.host
+                                        , http.port
+                                        , socket.AF_INET
+                                        , socket.SOCK_STREAM
+                                        , socket.IPPROTO_TCP
+                                         )[0]
+                so_far = time.time() - start
+                if so_far > self.timeout:
+                    raise socket.error("getaddrinfo returned")
+        
+        
+                # Proceed.
+                # ========
+        
+                af, socktype, proto, canonname, sa = res
+                http.sock = socket.socket(af, socktype, proto)
+                http.sock.settimeout(self.timeout)
+                http.sock.connect(sa)
+        
+                http.request('GET', path)
+                response = http.getresponse()
+                status = response.status
+                line = '%s%s  %s' % (' '*i, status, website)
+                if len(line) >= 79:
+                    line = line[:76] + '...'
+                line += '\n'
+                location = response.getheader('Location', None)
+                
+                return status, line, location
+                
+            except socket.error, msg:
+                end = time.time()
+                msg = 'XXX  %s (%s after %d seconds)\n' % ( website
+                                                          , msg
+                                                          , (end-start)
+                                                           )
+                self.output['errors'] += msg
+                self.output['numerrors'] += 1
+                self.errors.append(website)
+                raise
+
+        finally:
+            if http is not None:
+                http.close()
 
 
     def domain_cmp(self, x, y):
@@ -255,9 +327,9 @@ THE SERVER IS %(server)s
 ----------------------------------------
 %(errors)s
 
-%(numwarnings)s WARNING(S)
+%(numredirects)s REDIRECT(S)
 ----------------------------------------
-%(warnings)s
+%(redirects)s
 
 %(numclear)s ALL CLEAR
 ----------------------------------------
