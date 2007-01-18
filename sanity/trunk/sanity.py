@@ -172,9 +172,11 @@ class Sanity:
                 self.output['numredirects'] += 1
             self.output['redirects'] += line
             assert location is not None, 'Location missing for %s' % current
-            if i > self.redirects : # safety belt
-                msg = "XXX  %s (more than %d redirects)\n" % ( original
+            if i >= self.redirects : # safety belt
+                plural = (self.redirects != 1) and 's' or ''
+                msg = "XXX  %s (more than %d redirect%s)\n" % ( original
                                                              , self.redirects
+                                                             , plural
                                                               )
                 self.output['errors'] += msg
                 self.output['numerrors'] += 1
