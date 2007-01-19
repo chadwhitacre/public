@@ -13,7 +13,6 @@ import time
 import traceback
 import os
 from ConfigParser import RawConfigParser, NoOptionError
-from popen2 import Popen3
 from urlparse import urlparse
 
 
@@ -79,7 +78,6 @@ class Sanity:
         """
 
         if not self.badconfig:
-            self.check_ping()
             self.check_http() # sets output values w/in
 
             if self.verbose or self.errors:
@@ -105,15 +103,6 @@ class Sanity:
                     msg = '%s: %s' % (sub, msg)
                     os.system("""echo "%s" | mail -s '%s' %s""" % (msg, sub,
                                                            self.email_addy))
-
-
-    def check_ping(self):
-        """check our IP address for ping, set output accordingly"""
-        ping = Popen3('/sbin/ping -c1 -t1 -q %s' % self.server_ip).wait()
-        if ping == 0:
-            self.output['server'] = 'UP'
-        else:
-            self.output['server'] = 'DOWN'
 
 
     def check_http(self):
@@ -274,7 +263,6 @@ class Sanity:
                 self.output['errors'] += msg
                 self.output['numerrors'] += 1
                 self.errors.append(website)
-                raise
 
         finally:
             if http is not None:
@@ -318,8 +306,6 @@ class Sanity:
 
 
     body = """
-
-THE SERVER IS %(server)s
 
 ========================================
     %(numwebsites)s WEBSITES
