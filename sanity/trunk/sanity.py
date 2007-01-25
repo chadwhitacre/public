@@ -140,7 +140,7 @@ class Sanity:
                 self.check_website(website, website, 0)
             except: # HTTP exception handling is lower down in hit_website
                 traceback.print_exc()
-                
+
         if self.verbose:
             print ' done'
 
@@ -148,7 +148,11 @@ class Sanity:
     def check_website(self, current, original, i):
         """Recursive function to follow redirects.
         """
-        status, line, location = self.hit_website(current, i)
+        result = self.hit_website(current, i)
+        if result is None:
+            return # socket.error already recorded
+        status, line, location = result
+
         if status == 200:
             if i == 0:
                 self.output['numclear'] += 1
@@ -171,9 +175,9 @@ class Sanity:
                 self.output['numerrors'] += 1
                 self.errors.append(original)
             else:
-                if location.startswith('/'): # just the path 
+                if location.startswith('/'): # just the path
                                              # @@ bug here if the first redirect
-                                             # is /foo and the second includes 
+                                             # is /foo and the second includes
                                              # a host
                     location = 'http://%s%s' % (original, location)
                 self.check_website(location, original, i+1)
@@ -181,8 +185,8 @@ class Sanity:
             self.output['numerrors'] += 1
             self.output['errors'] += line
             self.errors.append(original)
-                
-            
+
+
 
     def hit_website(self, website, i):
         """Hit the website; return status, line, location (for redirects).
@@ -194,13 +198,13 @@ class Sanity:
 
                 # Parse the website string.
                 # =========================
-                # The ones coming from our database are the hostname only, 
+                # The ones coming from our database are the hostname only,
                 # but if we get a redirect it will be a full URL.
-                
+
                 host = website
                 port = 80
                 path = '/'
-                
+
                 if '://' in website:
                     scheme, netloc, path, params, query, frag = urlparse(website)
                     if ':' in  netloc:
@@ -214,15 +218,15 @@ class Sanity:
                             port = 80
                         elif scheme == 'https':
                             port = 443
-        
-        
+
+
                 # Make the connection, monitoring the getaddrinfo call.
                 # =====================================================
                 # I'm seeing this behavior: a domain with bad DNS takes
                 # forever in the next call, but still returns 200
                 # eventually. I can get the page with fetch, but Firefox
                 # times out much earlier. We want to flag this condition.
-        
+
                 http = httplib.HTTPConnection(host, port)
                 res = socket.getaddrinfo( http.host
                                         , http.port
@@ -233,16 +237,16 @@ class Sanity:
                 so_far = time.time() - start
                 if so_far > self.timeout:
                     raise socket.error("getaddrinfo returned")
-        
-        
+
+
                 # Proceed.
                 # ========
-        
+
                 af, socktype, proto, canonname, sa = res
                 http.sock = socket.socket(af, socktype, proto)
                 http.sock.settimeout(self.timeout)
                 http.sock.connect(sa)
-        
+
                 http.request('GET', path)
                 response = http.getresponse()
                 status = response.status
@@ -251,9 +255,9 @@ class Sanity:
                     line = line[:76] + '...'
                 line += '\n'
                 location = response.getheader('Location', None)
-                
+
                 return status, line, location
-                
+
             except socket.error, msg:
                 end = time.time()
                 msg = 'XXX  %s (%s after %d seconds)\n' % ( website
@@ -263,6 +267,8 @@ class Sanity:
                 self.output['errors'] += msg
                 self.output['numerrors'] += 1
                 self.errors.append(website)
+
+                return None
 
         finally:
             if http is not None:
