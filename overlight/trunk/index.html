@@ -1,0 +1,110 @@
+<html>
+<head>
+  <script src="MochiKit/MochiKit.js"></script>
+  <script src="overlight.js"></script>
+  <style>@import url('overlight.css');</style>
+
+  <style>
+    body {
+      font: normal 10pt/12pt Georgia, serif;
+    }
+    h3 {
+      margin: 2em 0 1em;
+    }
+    .pane {
+      width: 300px;
+      float: left;
+      margin: 0 20px 0 0;
+      padding: 0;
+      height: 400px;
+    }
+
+    #overlight-logout {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Overlight</h1>
+<h2>A web UI</h2>
+
+<a id="overlight-logout"></a>
+
+
+<div class="pane">
+
+  <div class="overlight-pane"
+       run="https://mail.google.com/mail"">
+
+    <h3>Intro</h3>
+
+    <p>Overlight is a user interface for websites. The idea is to display
+    information on a page like normal, but to add a <a
+    href="http://en.wikipedia.org/wiki/Quasimode">quasimode</a> that shows parts
+    of the page that can be manipulated somehow. Choosing one of these parts
+    pops up an arbitrary web application over top of the page, and when you're
+    done manipulating the info, you close the app.</p>
+
+  </div>
+
+  <div class="overlight-pane"
+       run="http://del.icio.us/">
+
+    <h3>Usage</h3>
+
+    <p>Overlight is enabled on this page, as the big green "Ready" at bottom left
+    indicates. Here's how to test-drive it:</p>
+
+    <ul>
+      <li>Press and hold "Escape" to enter the Overlight quasimode.</li>
+      <li>While in this quasimode, hit a number key or click a pane to launch an
+      app to manage the info in that pane.</li>
+      <li>After you're done with the app, click "Close" or hit "Escape" again.</li>
+    </ul>
+
+  </div>
+
+</div>
+
+<div class="pane overlight-pane"
+     run="http://www.flickr.com/">
+
+<h3>Wiring</h3>
+<p>Here's how to add Overlight to a web page:</p>
+
+<ul>
+  <li>Include MochiKit.js, Overlight.js, and Overlight.css</li>
+  <li>Add the class "overlight-pane" to any element that should get its own
+  overlay.</li>
+  <li>Also add a "run" attribute to each such element, with the URL of the app
+  to load.</li>
+  <li>Add an element with id "overlight-logout" to indicate that you are
+  authenticated.</li>
+</ul>
+
+<p>Obviously, you should view source on this page to see an example.</p>
+
+
+<h3>Status</h3>
+
+<p>Overlight is a proof of concept (read: bug-ridden garbage). I wrote it in
+August 2006, and I've decided to publish it after talking to <a
+href="http://www.pagodacms.org/">these guys</a>.</p>
+
+
+<h3>Props</h3>
+
+<p><a href="http://rchi.raskincenter.org/index.php?title=Archy_FAQ">Archy</a>
+turned me on to quasimodes. Then I met <a
+href="http://humanized.com/">Humanized</a>, who are commercializing Archy under
+the name <a href="http://humanized.com/products/">Enso</a>. I wrote Overlight
+after meeting them. I ended up <a
+href="http://tech.whit537.org/2007/01/humanized-launches-enso.html">beta-testing</a>
+Enso, and I now use it regularly. Thanks for the inspiration guys!</p>
+
+</div>
+
+
+</body>
+</html>
