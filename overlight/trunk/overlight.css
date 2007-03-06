@@ -10,13 +10,14 @@
     position: absolute;
     z-index: 2001;
     overflow: hidden;
-    border: 4px solid white;
-    color: white;
-    font: bold 70px/70px Arial, sans-serif;
+    border: 4px solid #CCC;
+    color: #CCC;
+    font: bold 120px/120px Arial, sans-serif;
     text-decoration: none;
+    text-align: center;
     }
 
 .overlight-pane-overlay-text:hover {
-    border-color: #CCC;
-    color: #CCC;
+    border-color: white;
+    color: white;
     }
