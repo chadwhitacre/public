@@ -91,6 +91,7 @@ Doc = { // represent the document
 // ==================================
 
 var zetaGreen = '#00A251';
+var black = '#000000';
 
 Mask = {
   // Represent the modal mask between Overlight and the site itself.
@@ -290,18 +291,18 @@ Close = {
   },
 
   turn_on: function() {
-    var knob= IMG({ src:'close.gif'
+    var knob= IMG({ src:'_lib/close.gif'
                   , id:'overlight-close'
                   , style:this.style
                    });
 
     connect(knob, 'onmouseover',
       function() {
-        knob.src = 'close-on.gif'
+        knob.src = '_lib/close-on.gif'
       });
     connect(knob, 'onmouseout',
       function() {
-        knob.src = 'close.gif'
+        knob.src = '_lib/close.gif'
       });
     connect(knob, 'onclick',
       function() {
@@ -352,7 +353,7 @@ Loading = {
   },
 
   turn_on: function() {
-    var knob= IMG({ src:'loading.gif'
+    var knob= IMG({ src:'_lib/loading.gif'
                   , id:'overlight-loading'
                   , style:this.style
                    });
@@ -571,6 +572,7 @@ states.panes.create = function() {
     // ========================================================================
 
     overlay.mask = DIV({'class':'overlight-pane-overlay-mask'});
+    overlay.mask.bgcolor = zetaGreen;
     setOpacity(overlay.mask, 0.25);
     setElementDimensions(overlay.mask, dim);
     setElementPosition(overlay.mask, pos);
@@ -579,7 +581,7 @@ states.panes.create = function() {
     var dim2 = {}
     dim2.w = (dim.w-8)
     dim2.h = (dim.h-8);
-    paddingTop = parseInt(((dim2.h / 2)-35), 10);
+    paddingTop = parseInt(((dim2.h / 2)-60), 10);
     dim3 = {}
     dim3.w = dim2.w;
     dim3.h = dim2.h - paddingTop;
