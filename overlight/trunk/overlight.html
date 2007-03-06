@@ -31,11 +31,11 @@
 
 <a id="overlight-logout"></a>
 
-
 <div class="pane">
 
-  <div class="overlight-pane"
-       run="https://mail.google.com/mail"">
+  <div class="overlight-pane" run="/overlight.html">
+
+       <!--run="https://mail.google.com/mail"-->
 
     <h3>Intro</h3>
 
@@ -74,22 +74,22 @@
 <p>Here's how to add Overlight to a web page:</p>
 
 <ul>
-  <li>Include MochiKit.js, Overlight.js, and Overlight.css</li>
+  <li>Include MochiKit.js, overlight.js, and overlight.css</li>
   <li>Add the class "overlight-pane" to any element that should get its own
   overlay.</li>
-  <li>Also add a "run" attribute to each such element, with the URL of the app
-  to load.</li>
+  <li>Also add a "run" attribute to each such element, set to the URL of the
+  app to load.</li>
   <li>Add an element with id "overlight-logout" to indicate that you are
   authenticated.</li>
 </ul>
 
-<p>Obviously, you should view source on this page to see an example.</p>
+<p>View source on this page to see an example.</p>
 
 
 <h3>Status</h3>
 
 <p>Overlight is a proof of concept (read: bug-ridden garbage). I wrote it in
-August 2006, and I've decided to publish it after talking to <a
+August 2006, and I decided to publish it after talking to <a
 href="http://www.pagodacms.org/">these guys</a>.</p>
 
 
@@ -104,6 +104,10 @@ href="http://tech.whit537.org/2007/01/humanized-launches-enso.html">beta-testing
 Enso, and I now use it regularly. Thanks for the inspiration guys!</p>
 
 </div>
+
+
+<iframe style="border: none; margin: 0; padding: 0;" name="overlight-iframe"
+        id="overlight-iframe"></iframe>
 
 
 </body>

@@ -291,18 +291,18 @@ Close = {
   },
 
   turn_on: function() {
-    var knob= IMG({ src:'_lib/close.gif'
+    var knob= IMG({ src:'./_lib/close.gif'
                   , id:'overlight-close'
                   , style:this.style
                    });
 
     connect(knob, 'onmouseover',
       function() {
-        knob.src = '_lib/close-on.gif'
+        knob.src = './_lib/close-on.gif'
       });
     connect(knob, 'onmouseout',
       function() {
-        knob.src = '_lib/close.gif'
+        knob.src = './_lib/close.gif'
       });
     connect(knob, 'onclick',
       function() {
@@ -353,7 +353,7 @@ Loading = {
   },
 
   turn_on: function() {
-    var knob= IMG({ src:'_lib/loading.gif'
+    var knob= IMG({ src:'./_lib/loading.gif'
                   , id:'overlight-loading'
                   , style:this.style
                    });
@@ -443,15 +443,17 @@ State.prototype.enter = function() {
 
     iframeStyle = 'border: none; margin: 0; padding: 0;'
     console.log(this.run);
-    iframe = createDOM('iframe', { src:'/foo'//this.run //+ '?' + window.location
-                                 , name:'overlight-iframe' // possible security concern?
-                                 , id:'overlight-iframe' // possible security concern?
-                                 , style:iframeStyle
-                                 //, frameReady:0
-                                  });
+//    iframe = createDOM('iframe', { src:''
+//                                 , name:'overlight-iframe' // possible security concern?
+//                                 , id:'overlight-iframe' // possible security concern?
+//                                 , style:iframeStyle
+//                                 //, frameReady:0
+//                                  });
+    iframe = document.getElementById('overlight-iframe');
     console.log(iframe.src);
     setElementDimensions(iframe, Overlight.dim);
-    appendChildNodes(Overlight.overlight, iframe);
+//    appendChildNodes(Overlight.overlight, iframe);
+    document.getElementById('overlight-iframe').src = this.run; //+ '?' + window.location
 
     connect(iframe, 'onload', Loading, Loading.turn_off)
   }
