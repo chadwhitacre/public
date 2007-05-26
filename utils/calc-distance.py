@@ -15,7 +15,7 @@ import sys
 # ========================
 
 kml = open(sys.argv[1], 'r+').read()
-match = re.search("<coordinates>(.*)</coordinates>", kml, re.DOTALL)
+match = re.search("<coordinates>\n(.*?)</coordinates>", kml, re.DOTALL)
 coords = [tuple([float(c) for c in d.split(',')]) for d in match.groups()[0].split()]
 
 
