@@ -487,12 +487,13 @@ def process(fogbugz, timesheet):
         print
         # We can't delete intervals using the API (version 5), so users have 
         # to manually resolve conflicts.
-        if nconflicts == 1:
+        nnon = nall - nconflicts
+        if nnon == 1:
             prompt = ("Would you like to proceed with posting the 1 non-"
                       "conflicting entry? [Y/n] ")
         else:
             prompt = ("Would you like to proceed with posting the %d non-"
-                      "conflicting entries? [Y/n] " % (nall - nconflicts))
+                      "conflicting entries? [Y/n] " % nnon)
         while 1:
             val = raw_input(prompt).lower()
             if val == 'n':
