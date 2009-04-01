@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+# (c) 2005-2009 Chad Whitacre <http://www.zetadev.com/>
 # This program is beerware. If you like it, buy me a beer someday.
 # No warranty is expressed or implied.
 
@@ -9,22 +9,19 @@ from sets import Set
 from ConfigParser import RawConfigParser
 
 
+nix = re.compile(r'(?<!\r)\n')
+win = re.compile(r'\r\n')
+mac = re.compile(r'\r(?!\n)')
+
+
 class EOLToolkit:
     """This is a toolkit for cleaning up line endings in a tree.
     """
 
-    __version__ = '0.9'
+    __version__ = '1.0'
 
     def __init__(self):
         pass
-
-
-    def __call__(self, subcommand, path, to_windows):
-        method = getattr(self, subcommand)
-        if subcommand == 'clean':
-            method(path, to_windows)
-        else:
-            method(path)
 
 
     def _confglobs(self):
@@ -82,82 +79,84 @@ class EOLToolkit:
         """Given a tree root, clean up newlines in all text files.
         """
 
-        filepaths = self.find(top, raw=1)
-        nix = re.compile(r'(?<!\r)\n')
-        win = re.compile(r'\r\n')
-        mac = re.compile(r'\r(?!\n)')
-        j = 0; sys.stdout.write('scrubbing newlines ...')
+        sys.stdout.write('scrubbing newlines ...')
+        sys.stdout.flush()
+        j = 0
 
-        for path in filepaths:
-            if not os.path.isfile(path):
-                continue
-            # do the replacements
+        for path in self._find(top):
+
+            # Do the replacements.
+            # ====================
+
             textfile = file(path, 'r+')
             tmp = textfile.read()
 
             if to_windows:
-                tmp, k = nix.subn('\r\n', tmp)
-                tmp, l = mac.subn('\r\n', tmp)
+                cleaned, k = nix.subn('\r\n', tmp)
+                cleaned, l = mac.subn('\r\n', cleaned)
             else:
-                tmp, k = win.subn('\n', tmp)
-                tmp, l = mac.subn('\n', tmp)
+                cleaned, k = win.subn('\n', tmp)
+                cleaned, l = mac.subn('\n', cleaned)
 
-            textfile.seek(0)
-            textfile.truncate()
-            textfile.write(tmp)
-            textfile.close()
 
-            # indicate progress
+            # Indicate progress.
+            # ==================
+
             if k + l > 0:
+
+                textfile.seek(0)
+                textfile.truncate()
+                textfile.write(cleaned)
+                textfile.close()
+
                 j += 1
                 if j % 50 == 0:
                     sys.stdout.write('.')
                     sys.stdout.flush()
 
-        print ' %s files cleaned' % j
+        print ' %s file%s cleaned' % (j, (j != 1) and 's' or '')
 
 
-    def find(self, top, raw=0):
+    def find_dirty(self, top, to_windows):
+        """Given a tree root, find all text files that have unclean newlines.
+        """
+        for path in self._find(top):
+            tmp = file(path, 'r').read()
+            if to_windows:
+                if nix.search(tmp):
+                    print path
+                elif mac.search(tmp):
+                    print path
+            else:
+                if win.search(tmp):
+                    print path
+                elif mac.search(tmp):
+                    print path
+
+
+    def find(self, top, to_windows_ignored):
         """Given a tree root, walk the tree and find all text files.
         """
+        for filepath in self._find(top):
+            print filepath
 
-        textfiles = Set()
-        if raw: i = 0; sys.stdout.write('locating text files ...')
+
+    def _find(self, top):
+        """Generator that yields paths of text files.
+        """
         globs = self._confglobs()
-
-        for path, dirs, foo in os.walk(top):
+        for path, dirs, filenames in os.walk(top):
             for pattern in globs:
                 fullpattern = '%s/%s' % (path, pattern)
                 for textfile in glob(fullpattern):
-                    if raw:
-                        # Indicate progress.
-                        i += 1
-                        if i % 50 == 0:
-                            sys.stdout.write('.')
-                            sys.stdout.flush()
-                    textfiles.add(textfile)
-
-            # Skip Subversion directories.
+                    if not os.path.isfile(textfile):
+                        continue # could be dir, eh?
+                    yield textfile
             if '.svn' in dirs:
                 dirs.remove('.svn')
 
-        textfiles = tuple(textfiles)
-
-        if raw:
-            print ' %s found' % len(textfiles)
-            return textfiles
-        else:
-            for textfile in textfiles:
-                try:
-                    print textfile
-                except IOError:
-                    # play nice with less(1)
-                    pass
-
-
 
 if __name__ == '__main__':
-
 
     # Get our subcommand.
     # ===================
@@ -166,13 +165,12 @@ if __name__ == '__main__':
     if not subcommand:
         print "see man 1 svneol for usage"
         sys.exit(2)
-    elif subcommand not in (['clean'], ['confgen'], ['find']):
-        print "'%s' command not available; " % subcommand +\
+    elif subcommand not in (['clean'], ['confgen'], ['find_dirty'], ['find']):
+        print "'%s' command not available; " % subcommand[0] +\
               "see man 1 svneol for usage"
         sys.exit(2)
     else:
         subcommand = subcommand[0]
-
 
 
     # Decide if we want to convert to windows newlines.
@@ -182,7 +180,6 @@ if __name__ == '__main__':
     if '-w' in sys.argv:
         to_windows = True
         sys.argv.remove('-w')
-
 
 
     # Determine the root of the tree.
@@ -196,9 +193,12 @@ if __name__ == '__main__':
     path = os.path.realpath(path)
 
 
-
     # Instantiate and invoke the toolkit.
     # ===================================
 
     toolkit = EOLToolkit()
-    toolkit(subcommand, path, to_windows)
+    func = getattr(toolkit, subcommand)
+    try:
+        func(path, to_windows)
+    except IOError:
+        pass # play nice with less(1)

@@ -1,4 +1,4 @@
-.Dd May 31, 2005
+.Dd April 1, 2009
 .Os
 .Dt SVNEOL 1 LOCAL
 .\"
@@ -44,7 +44,7 @@ program that makes the job easier for a whole tree of files.
 .Nm
 walks the tree rooted at
 .Ar path
-(which defaults to the current working directory) and does one of three things,
+(which defaults to the current working directory) and does one of four things,
 depending on
 .Ar subcommand :
 .Bl -hang -offset indent
@@ -65,13 +65,17 @@ in an auto-props section, setting 'svn:eol-style' to 'native'.
 .\"
 .It Nm find
 prints the paths of all text files
+.It Nm find_dirty
+prints the paths of all text files that would be changed if you ran 
+.Nm clean
 .El
 .Pp
 
 For
-.Nm clean
-and
+.Nm clean ,
 .Nm find ,
+and
+.Nm find_dirty ,
 the definition of a text file
 is taken from the current user's
 .Xr svn 1
@@ -109,11 +113,11 @@ This program is known to work with the following software:
 .Pp
 .Bl -dash -offset indent -compact
 .It
-FreeBSD 4.11
+FreeBSD 4.11+
 .It
-Python 2.4
+Python 2.4+
 .It
-Subversion 1.1.0
+Subversion 1.1.0+
 .El
 .\"
 .\"
@@ -134,7 +138,7 @@ Subversion 1.1.0
 $ cd ~/FooProject/
 $ svneol confgen > ~/.subversion/config
 $ vi ~/.subversion/config # manually remove extensions for binary files
-$ svneol find | less
+$ svneol find_dirty | less
 \&... # assuage any paranoia that binary files will be broken
 $ svneol clean
 locating text files ...................... 952 found
@@ -158,6 +162,10 @@ $
 .\"
 .Sh HISTORY
 .Bl -hang
+.It Em 2009-04-01
+released version 1.0
+.It Em 2005-05-31
+released version 0.9
 .It Em 2005-04-01
 released version 0.8
 .El
@@ -169,7 +177,7 @@ released version 0.8
 .Sh AUTHORS
 .Bl -item -compact
 .It
-(c) 2005 Chad Whitacre <http://www.zetaweb.com/>
+(c) 2005-2009 Chad Whitacre <http://www.zetadev.com/>
 .It
 This program is beerware. If you like it, buy me a beer someday.
 .It
@@ -182,8 +190,6 @@ No warranty is expressed or implied.
 .\"
 .Sh TODO
 .Bl -dash
-.It
-add a -w arg to clean; standardizes on crlf rather than lf
 .It
 refactor for getopt/optparse
 .It
