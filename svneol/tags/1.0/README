@@ -1,0 +1,31 @@
+(c) 2005-2009 Chad Whitacre <http://www.zetadev.com/>
+This program is beerware. If you like it, buy me a beer someday.
+No warranty is expressed or implied.
+
+svneol is a toolkit that simplifies the task of cleaning up line endings on a
+large tree of files. The primary use case is preparing a large, non-versioned
+tree to be imported into a Subversion repository.
+
+Contents of this distribution:
+
+    Makefile    full installation instructions
+
+    README      this file
+
+    svneol.1    manual page
+
+    svneol.py   script itself
+
+
+To install:
+
+    % cd ~
+    % svn export http://svn.zetadev.com/public/svneol/trunk svneol
+    % cd svneol
+    % make install
+
+
+To uninstall:
+
+    % cd ~/svneol
+    % make uninstall
