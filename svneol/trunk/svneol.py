@@ -5,7 +5,10 @@
 
 import os, re, sys
 from glob import glob
-from sets import Set
+try:
+    set
+except NameError: # pre-2.6 (post-2.3)
+    from sets import Set as set
 from ConfigParser import RawConfigParser
 
 
