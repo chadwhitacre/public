@@ -40,7 +40,7 @@ class EOLToolkit:
             sys.exit(1)
 
         autoprops = config.options('auto-props')
-        globs = Set()
+        globs = set()
         for pattern in autoprops:
             if 'svn:eol-style' in config.get('auto-props', pattern):
                 globs.add(pattern)
@@ -53,7 +53,7 @@ class EOLToolkit:
         based on the filenames found.
         """
 
-        globs = Set()
+        globs = set()
         for path, dirs, files in os.walk(top):
             for filename in files:
                 parts = filename.split('.')
