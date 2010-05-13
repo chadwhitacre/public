@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (c) 2005-2009 Chad Whitacre <http://www.zetadev.com/>
+# (c) 2005-2010 Chad Whitacre <http://www.zetadev.com/>
 # This program is beerware. If you like it, buy me a beer someday.
 # No warranty is expressed or implied.
 
@@ -12,6 +12,13 @@ except NameError: # pre-2.6 (post-2.3)
 from ConfigParser import RawConfigParser
 
 
+WINDOWS = sys.platform == 'win32'
+if WINDOWS:
+    CONFIG = '~/Application Data/Subversion/config'
+else:
+    CONFIG = '~/.subversion/config'
+
+
 nix = re.compile(r'(?<!\r)\n')
 win = re.compile(r'\r\n')
 mac = re.compile(r'\r(?!\n)')
@@ -21,7 +28,7 @@ class EOLToolkit:
     """This is a toolkit for cleaning up line endings in a tree.
     """
 
-    __version__ = '1.0'
+    __version__ = '1.0+'
 
     def __init__(self):
         pass
@@ -34,7 +41,7 @@ class EOLToolkit:
         config = RawConfigParser()
         config.optionxform = lambda x: x # stock parser is case-insensitive
 
-        config.read(os.path.expanduser('~/.subversion/config'))
+        config.read(os.path.expanduser(CONFIG))
         if not config.has_section('auto-props'):
             print 'Your subversion config file has no auto-props section.'
             sys.exit(1)
@@ -164,13 +171,18 @@ if __name__ == '__main__':
     # Get our subcommand.
     # ===================
 
+    def print_usage():
+        print "svneol {clean,confgen,find_dirty,find} [-w] [path]"
+        if not WINDOWS:
+            print "see man 1 svneol for usage"
+
     subcommand = sys.argv[1:2]
     if not subcommand:
-        print "see man 1 svneol for usage"
+        print_usage()
         sys.exit(2)
     elif subcommand not in (['clean'], ['confgen'], ['find_dirty'], ['find']):
-        print "'%s' command not available; " % subcommand[0] +\
-              "see man 1 svneol for usage"
+        print "'%s' command not available" % subcommand[0]
+        print_usage()
         sys.exit(2)
     else:
         subcommand = subcommand[0]
